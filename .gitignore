@@ -1,0 +1,29 @@
+# JetBrains IDE 配置文件（所有三个工具通用）
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# 后端 Java/Maven/Gradle
+target/
+build/
+*.jar
+*.war
+
+# 前端 Node.js
+node_modules/
+dist/
+build/
+npm-debug.log*
+
+# 数据库
+*.db
+*.sqlite
+# 数据库密码/配置文件（敏感信息）
+application-*.yml
+*.properties
+
+# 系统垃圾文件
+.DS_Store
+Thumbs.db
+*.log
