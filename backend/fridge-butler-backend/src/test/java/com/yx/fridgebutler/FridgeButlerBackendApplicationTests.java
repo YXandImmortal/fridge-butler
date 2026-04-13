@@ -1,4 +1,4 @@
-package com.yx.fridgebutlerbackend;
+package com.yx.fridgebutler;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
