@@ -2,7 +2,7 @@ package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.dto.LoginRequest;
 import com.yx.fridgebutler.dto.LoginResponse;
-import com.yx.fridgebutler.service.impl.AuthService;
+import com.yx.fridgebutler.service.AuthService;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
