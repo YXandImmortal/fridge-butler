@@ -107,6 +107,7 @@ create table sys_user
         primary key,
     username    varchar(50)                          not null,
     password    varchar(60)                          not null,
+    mobile      varchar(11)                          null comment '用户手机号',
     role_id     bigint                               not null comment '角色ID',
     create_time datetime   default CURRENT_TIMESTAMP not null,
     update_time datetime   default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
@@ -115,5 +116,8 @@ create table sys_user
         unique (username)
 )
     comment '系统用户表';
+
+create index idx_sys_user_mobile
+    on sys_user (mobile);
 
 
