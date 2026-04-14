@@ -17,27 +17,39 @@ public class BusinessException extends RuntimeException {
         this.code = resultCode.getCode();
     }
 
-    public static BusinessException authFailed(String message) {
-        return new BusinessException(ResultCode.UNAUTHORIZED.getCode(), message);
+    public static BusinessException authFailed() {
+        return new BusinessException(ResultCode.UNAUTHORIZED);
+    }
+
+    public static BusinessException forbidden() {
+        return new BusinessException(ResultCode.FORBIDDEN);
+    }
+
+    public static BusinessException notFound() {
+        return new BusinessException(ResultCode.NOT_FOUND);
     }
 
     public static BusinessException loginAuthFailed() {
         return new BusinessException(ResultCode.LOGIN_FAILED_USER_INFO_WRONG);
     }
 
-    public static BusinessException forbidden(String message) {
-        return new BusinessException(ResultCode.FORBIDDEN.getCode(), message);
-    }
-
     public static BusinessException loginForbidden() {
         return new BusinessException(ResultCode.LOGIN_FAILED_ACCOUNT_DISABLED);
     }
 
-    public static BusinessException notFound(String message) {
-        return new BusinessException(ResultCode.NOT_FOUND.getCode(), message);
-    }
-
     public static BusinessException loginRoleNotFound() {
         return new BusinessException(ResultCode.LOGIN_FAILED_ROLE_NOT_FOUND);
+    }
+
+    public static BusinessException registerUserExist() {
+        return new BusinessException(ResultCode.REGISTER_FAILED_USER_EXIST);
+    }
+
+    public static BusinessException registerPasswordNotMatch() {
+        return new BusinessException(ResultCode.REGISTER_FAILED_PASSWORD_NOT_MATCH);
+    }
+
+    public static BusinessException registerUserRoleNotFound() {
+        return new BusinessException(ResultCode.REGISTER_FAILED_ROLE_NOT_FOUND);
     }
 }

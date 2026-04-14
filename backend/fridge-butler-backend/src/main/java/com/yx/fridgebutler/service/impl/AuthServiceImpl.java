@@ -2,6 +2,7 @@ package com.yx.fridgebutler.service.impl;
 
 import com.yx.fridgebutler.dto.LoginRequest;
 import com.yx.fridgebutler.dto.LoginResponse;
+import com.yx.fridgebutler.dto.RegisterRequest;
 import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.entity.SysUser;
 import com.yx.fridgebutler.exception.BusinessException;
@@ -14,9 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
+    private static final Long NORMAL_USER_ROLE_ID = 2L;
 
     @Autowired
     private SysUserRepository userRepository;
@@ -30,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Override
     public LoginResponse login(LoginRequest request) {
         log.info("用户登录请求，用户名：{}", request.getUsername());
 
@@ -68,5 +73,37 @@ public class AuthServiceImpl implements AuthService {
                 .roleName(role.getRoleName())
                 .userId(user.getId())
                 .build();
+    }
+
+    @Override
+    public void registerUser(RegisterRequest request) {
+        log.info("普通用户注册请求，用户名：{}", request.getUsername());
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            log.error("普通用户注册失败，用户名：{}两次密码不一致", request.getUsername());
+            throw BusinessException.registerPasswordNotMatch();
+        }
+
+        if (userRepository.existsByUsername(request.getUsername())) {
+            log.error("普通用户注册失败，用户名：{}已存在", request.getUsername());
+            throw BusinessException.registerUserExist();
+        }
+
+        roleRepository.findById(NORMAL_USER_ROLE_ID)
+                .orElseThrow(() -> {
+                    log.error("普通用户注册失败，用户名：{}的角色ID：{}不存在", request.getUsername(), NORMAL_USER_ROLE_ID);
+                    return BusinessException.registerUserRoleNotFound();
+                });
+
+        SysUser user = new SysUser();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRoleId(NORMAL_USER_ROLE_ID);
+        user.setCreateTime(Instant.now());
+        user.setUpdateTime(Instant.now());
+        user.setIsDeleted(false);
+
+        userRepository.save(user);
+        log.info("普通用户注册成功，用户名：{}", request.getUsername());
     }
 }
