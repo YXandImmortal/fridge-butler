@@ -1,0 +1,28 @@
+/* 全局主题变量 + ElementPlus 主题覆盖 */
+:root {
+    /* 自定义淡蓝主题色 */
+    --primary-color: #64B5F6;
+    --primary-dark: #42A5F5;
+    --primary-light: #E3F2FD;
+    --success-color: #81D4FA;
+    --warn-color: #FFB74D;
+    --danger-color: #F87171;
+
+    /* 覆盖 ElementPlus 主色调（按钮、输入框、菜单全部生效） */
+    --el-color-primary: #64B5F6;
+    --el-color-primary-light-3: #90CAF9;
+    --el-color-primary-light-5: #BBDEFB;
+    --el-color-primary-light-7: #E3F2FD;
+    --el-color-primary-dark-2: #42A5F5;
+
+    /* 页面背景 */
+    --page-bg: #F8FAFC;
+    --card-bg: #ffffff;
+}
+
+/* 全局页面默认背景 */
+body {
+    background-color: var(--page-bg);
+    margin: 0;
+    padding: 0;
+}
