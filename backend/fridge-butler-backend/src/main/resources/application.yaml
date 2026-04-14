@@ -4,8 +4,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/fridge_butler_db?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password: yx011215
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:yx011215}
 
   jpa:
     hibernate:
@@ -27,5 +27,5 @@ server:
     context-path: /api
 
 jwt:
-  secret: secret-key-2026-fridge-butler
-  expiration: 86400000
+  secret: ${JWT_SECRET:default-secret-key}
+  expiration: ${JWT_EXPIRATION:86400000}

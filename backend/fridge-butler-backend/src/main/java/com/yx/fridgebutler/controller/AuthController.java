@@ -2,6 +2,7 @@ package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.dto.LoginRequest;
 import com.yx.fridgebutler.dto.LoginResponse;
+import com.yx.fridgebutler.enums.ResultCode;
 import com.yx.fridgebutler.service.AuthService;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
@@ -20,6 +21,6 @@ public class AuthController {
     @PostMapping("/login")
     public Result<LoginResponse> login(@Valid LoginRequest request) {
         LoginResponse response = authService.login(request);
-        return Result.success("Login Success", response);
+        return Result.success(ResultCode.LOGIN_SUCCESS, response);
     }
 }

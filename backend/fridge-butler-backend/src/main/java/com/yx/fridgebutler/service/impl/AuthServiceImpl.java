@@ -36,23 +36,23 @@ public class AuthServiceImpl implements AuthService {
         SysUser user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> {
                     log.error("登陆失败，用户不存在：{}", request.getUsername());
-                    return BusinessException.authFailed("用户名或密码错误");
+                    return BusinessException.loginAuthFailed();
                 });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             log.error("登陆失败，用户名：{}密码错误：", request.getUsername());
-            throw BusinessException.authFailed("用户名或密码错误");
+            throw BusinessException.loginAuthFailed();
         }
 
         if (user.getIsDeleted() != null && user.getIsDeleted()) {
             log.error("登陆失败，用户名：{}账号已被禁用：", request.getUsername());
-            throw BusinessException.forbidden("账号已被禁用");
+            throw BusinessException.loginForbidden();
         }
 
         SysRole role = roleRepository.findById(user.getRoleId())
                 .orElseThrow(() -> {
                     log.error("登陆失败，用户名：{}的角色ID：{}不存在：", request.getUsername(), user.getRoleId());
-                    return BusinessException.notFound("角色不存在");
+                    return BusinessException.loginRoleNotFound();
                 });
 
         String token = jwtUtil.generateToken(

@@ -1,5 +1,6 @@
 package com.yx.fridgebutler.vo;
 
+import com.yx.fridgebutler.enums.ResultCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,19 +20,28 @@ public class Result<T> {
 
     public static <T> Result<T> success(T data) {
         return Result.<T>builder()
-                .code(200)
-                .message("成功")
+                .code(ResultCode.SUCCESS.getCode())
+                .message(ResultCode.SUCCESS.getMessage())
                 .data(data)
                 .build();
     }
 
     public static <T> Result<T> success(String message, T data) {
         return Result.<T>builder()
-                .code(200)
+                .code(ResultCode.SUCCESS.getCode())
                 .message(message)
                 .data(data)
                 .build();
     }
+
+    public static <T> Result<T> success(ResultCode resultCode, T data) {
+        return Result.<T>builder()
+                .code(resultCode.getCode())
+                .message(resultCode.getMessage())
+                .data(data)
+                .build();
+    }
+
 
     public static <T> Result<T> error(Integer code, String message) {
         return Result.<T>builder()
@@ -43,8 +53,16 @@ public class Result<T> {
 
     public static <T> Result<T> error(String message) {
         return Result.<T>builder()
-                .code(500)
+                .code(ResultCode.ERROR.getCode())
                 .message(message)
+                .data(null)
+                .build();
+    }
+
+    public static <T> Result<T> error(ResultCode resultCode) {
+        return Result.<T>builder()
+                .code(resultCode.getCode())
+                .message(resultCode.getMessage())
                 .data(null)
                 .build();
     }
