@@ -52,4 +52,12 @@ public class BusinessException extends RuntimeException {
     public static BusinessException registerUserRoleNotFound() {
         return new BusinessException(ResultCode.REGISTER_FAILED_ROLE_NOT_FOUND);
     }
+
+    public static BusinessException registerPhoneFormatError() {
+        return new BusinessException(ResultCode.REGISTER_FAILED_PHONE_FORMAT_ERROR);
+    }
+
+    public static BusinessException registerPhoneExist() {
+        return new BusinessException(ResultCode.REGISTER_FAILED_PHONE_EXIST);
+    }
 }

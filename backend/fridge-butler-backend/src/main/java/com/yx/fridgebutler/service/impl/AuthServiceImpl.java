@@ -1,5 +1,6 @@
 package com.yx.fridgebutler.service.impl;
 
+import cn.hutool.core.util.PhoneUtil;
 import com.yx.fridgebutler.dto.LoginRequest;
 import com.yx.fridgebutler.dto.LoginResponse;
 import com.yx.fridgebutler.dto.RegisterRequest;
@@ -36,11 +37,15 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        log.info("用户登录请求，用户名：{}", request.getUsername());
+        request.validateLoginParam();
+        log.info("用户登录请求，用户名：{}，手机号：{}", request.getUsername(), request.getMobile());
 
-        SysUser user = userRepository.findByUsername(request.getUsername())
+        SysUser user = userRepository.findByUsernameOrMobile(
+                        request.getUsername() == null ? "" : request.getUsername().trim(),
+                        request.getMobile() == null ? "" : request.getMobile().trim()
+                )
                 .orElseThrow(() -> {
-                    log.error("登陆失败，用户不存在：{}", request.getUsername());
+                    log.error("登陆失败，用户不存在：用户名={}，手机号={}", request.getUsername(), request.getMobile());
                     return BusinessException.loginAuthFailed();
                 });
 
@@ -65,7 +70,8 @@ public class AuthServiceImpl implements AuthService {
                 user.getId(),
                 role.getRoleCode()
         );
-        log.info("用户{}登录成功，生成token（部分脱敏）：{}", request.getUsername(), token.substring(0, 10) + "****");
+        log.info("用户{}（手机号：{}）登录成功，生成token（部分脱敏）：{}",
+                user.getUsername(), user.getMobile(), token.substring(0, 10) + "****");
 
         return LoginResponse.builder()
                 .token(token)
@@ -89,6 +95,18 @@ public class AuthServiceImpl implements AuthService {
             throw BusinessException.registerUserExist();
         }
 
+        String mobile = request.getMobile();
+        if (mobile != null && !mobile.isBlank()) {
+            if (!PhoneUtil.isMobile(mobile)) {
+                log.error("普通用户注册失败，手机号：{}格式错误", mobile);
+                throw BusinessException.registerPhoneFormatError();
+            }
+            if (userRepository.existsByMobile(mobile)) {
+                log.error("普通用户注册失败，手机号：{}已存在", mobile);
+                throw BusinessException.registerPhoneExist();
+            }
+        }
+
         roleRepository.findById(NORMAL_USER_ROLE_ID)
                 .orElseThrow(() -> {
                     log.error("普通用户注册失败，用户名：{}的角色ID：{}不存在", request.getUsername(), NORMAL_USER_ROLE_ID);
@@ -98,12 +116,13 @@ public class AuthServiceImpl implements AuthService {
         SysUser user = new SysUser();
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setMobile(mobile);
         user.setRoleId(NORMAL_USER_ROLE_ID);
         user.setCreateTime(Instant.now());
         user.setUpdateTime(Instant.now());
         user.setIsDeleted(false);
 
         userRepository.save(user);
-        log.info("普通用户注册成功，用户名：{}", request.getUsername());
+        log.info("普通用户注册成功，用户名：{}，手机号：{}", request.getUsername(), mobile);
     }
 }

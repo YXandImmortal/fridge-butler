@@ -30,7 +30,9 @@ public enum ResultCode {
     REGISTER_SUCCESS(200, "注册成功"),
     REGISTER_FAILED_USER_EXIST(400, "用户名已存在"),
     REGISTER_FAILED_PASSWORD_NOT_MATCH(400, "两次密码不一致"),
-    REGISTER_FAILED_ROLE_NOT_FOUND(404, "注册角色不存在");
+    REGISTER_FAILED_ROLE_NOT_FOUND(404, "注册角色不存在"),
+    REGISTER_FAILED_PHONE_FORMAT_ERROR(400, "手机号格式不正确"),
+    REGISTER_FAILED_PHONE_EXIST(400, "手机号已被注册");
 
     private final Integer code;
     private final String message;

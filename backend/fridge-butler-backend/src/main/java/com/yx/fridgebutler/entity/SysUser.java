@@ -33,6 +33,10 @@ public class SysUser {
     @Column(name = "password", nullable = false, length = 60)
     private String password;
 
+    @Size(max = 11)
+    @Column(name = "mobile", length = 11)
+    private String mobile;
+
     @NotNull
     @Column(name = "role_id", nullable = false)
     private Long roleId;
@@ -49,6 +53,5 @@ public class SysUser {
     @ColumnDefault("0")
     @Column(name = "is_deleted")
     private Boolean isDeleted;
-
 
 }
