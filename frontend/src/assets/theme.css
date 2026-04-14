@@ -26,3 +26,93 @@ body {
     margin: 0;
     padding: 0;
 }
+
+/* 登录页面渐变背景 */
+.login-gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+/* 玻璃态卡片效果 */
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* 输入框增强样式 */
+.enhanced-input :deep(.el-input__wrapper) {
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 8px rgba(100, 181, 246, 0.1);
+    transition: all 0.3s ease;
+}
+
+.enhanced-input :deep(.el-input__wrapper:hover) {
+    box-shadow: 0 4px 12px rgba(100, 181, 246, 0.2);
+}
+
+.enhanced-input :deep(.el-input__wrapper.is-focus) {
+    box-shadow: 0 4px 16px rgba(100, 181, 246, 0.3);
+}
+
+/* 按钮增强样式 */
+.enhanced-button {
+    border-radius: 12px;
+    padding: 12px 32px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.enhanced-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(100, 181, 246, 0.4);
+}
+
+/* 复选框样式优化 */
+.custom-checkbox :deep(.el-checkbox__label) {
+    color: #606266;
+    font-size: 14px;
+}
+
+.custom-checkbox :deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* 标题动画效果 */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animated-title {
+    animation: fadeInDown 0.6s ease-out;
+}
+
+/* 图标容器 */
+.icon-container {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(100, 181, 246, 0.3);
+}
+
+.icon-container svg {
+    width: 40px;
+    height: 40px;
+    fill: white;
+}

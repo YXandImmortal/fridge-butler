@@ -1,31 +1,22 @@
+<!-- src/App.vue -->
 <template>
-  <div class="smart-fridge-container" style="padding: 50px; text-align: center">
-    <h1>智能冰箱管理系统</h1>
-
-    <!-- Element Plus 按钮组件 -->
-    <el-button type="primary" @click="showMessage">添加食材</el-button>
-    <el-button type="success">查看库存</el-button>
-    <el-button type="danger">删除食材</el-button>
-
-    <!-- Element Plus 卡片组件 -->
-    <el-card style="width: 300px; margin: 20px auto">
-      食材：牛奶<br/>
-      保质期：3天
-    </el-card>
-  </div>
+  <!-- 路由出口：所有页面都在这里渲染（登录页/首页/注册页） -->
+  <router-view />
 </template>
 
 <script setup>
-// 自动导入，无需手动写 import！
-import { ElMessage } from 'element-plus'
-
-const showMessage = () => {
-  ElMessage.success('食材添加成功！')
-}
+// 无需编写任何代码，空的 setup 即可
 </script>
 
-<style scoped>
-h1 {
-  color: #409eff;
+<style>
+/* 全局样式（可选，比如重置默认样式） */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --page-bg: #f5f5f5;
 }
 </style>
