@@ -31,7 +31,10 @@ public class GlobalExceptionHandler {
      * 处理参数绑定异常
      * <p>
      * 当系统抛出BindException时，该方法会捕获并处理异常，
-     * 提取参数校验失败的错误信息，记录警告日志并返回400错误响应。
+     * 按照优先级顺序提取参数校验失败的错误信息：
+     * 优先返回account字段的错误信息，其次返回password字段的错误信息，
+     * 最后返回其他字段的错误信息。
+     * 记录警告日志并返回400错误响应。
      * </p>
      *
      * @param e 绑定异常对象，包含参数校验的错误信息
@@ -39,7 +42,16 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BindException.class)
     public Result<Void> handleBindException(BindException e) {
-        String message = Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage();
+        String message;
+
+        if (e.getBindingResult().hasFieldErrors("account")) {
+            message = Objects.requireNonNull(e.getBindingResult().getFieldError("account")).getDefaultMessage();
+        } else if (e.getBindingResult().hasFieldErrors("password")) {
+            message = Objects.requireNonNull(e.getBindingResult().getFieldError("password")).getDefaultMessage();
+        } else {
+            message = Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage();
+        }
+
         log.warn("参数校验异常：{}", message);
         return Result.error(400, message);
     }

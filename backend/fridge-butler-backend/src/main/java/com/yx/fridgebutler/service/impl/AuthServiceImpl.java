@@ -37,31 +37,30 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        request.validateLoginParam();
-        log.info("用户登录请求，用户名：{}，手机号：{}", request.getUsername(), request.getMobile());
+        log.info("用户登录请求，账号：{}", request.getAccount());
 
         SysUser user = userRepository.findByUsernameOrMobile(
-                        request.getUsername() == null ? "" : request.getUsername().trim(),
-                        request.getMobile() == null ? "" : request.getMobile().trim()
+                        request.getAccount() == null ? "" : request.getAccount().trim(),
+                        request.getAccount() == null ? "" : request.getAccount().trim()
                 )
                 .orElseThrow(() -> {
-                    log.error("登陆失败，用户不存在：用户名={}，手机号={}", request.getUsername(), request.getMobile());
+                    log.error("登陆失败，用户不存在：账号：{}", request.getAccount());
                     return BusinessException.loginAuthFailed();
                 });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            log.error("登陆失败，用户名：{}密码错误：", request.getUsername());
+            log.error("登陆失败，账号：{}密码错误：", request.getAccount());
             throw BusinessException.loginAuthFailed();
         }
 
         if (user.getIsDeleted() != null && user.getIsDeleted()) {
-            log.error("登陆失败，用户名：{}账号已被禁用：", request.getUsername());
+            log.error("登陆失败，账号：{}已被禁用：", request.getAccount());
             throw BusinessException.loginForbidden();
         }
 
         SysRole role = roleRepository.findById(user.getRoleId())
                 .orElseThrow(() -> {
-                    log.error("登陆失败，用户名：{}的角色ID：{}不存在：", request.getUsername(), user.getRoleId());
+                    log.error("登陆失败，账号：{}的角色ID：{}不存在：", request.getAccount(), user.getRoleId());
                     return BusinessException.loginRoleNotFound();
                 });
 
