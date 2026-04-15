@@ -29,7 +29,7 @@ export const useUserStore = defineStore('user', () => {
             data: {
                 account: loginForm.account,
                 password: loginForm.password,
-                rememberMe: loginForm.rememberMe
+                //rememberMe: loginForm.rememberMe
             }
         })
 

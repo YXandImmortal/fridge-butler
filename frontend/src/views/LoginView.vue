@@ -93,6 +93,7 @@ import { ElMessage } from 'element-plus'
 import { User, Lock , QuestionFilled} from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import showMessage from '@/utils/message'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -117,11 +118,11 @@ const handleLogin = async () => {
 
     // 校验后端返回的code是否为200
     if (res.code === 200) {
-      ElMessage.success(res.message || '登录成功！')
+      showMessage.success(res.message || '登录成功！')
       // 现阶段暂时不跳转至其他页面
       // router.push('/')
     } else {
-      ElMessage.error(res.message || '登录失败')
+      showMessage.error(res.message || '登录失败')
     }
   } catch (error) {
     // 网络错误等异常情况
@@ -134,7 +135,7 @@ const handleLogin = async () => {
 // 注册按钮（功能留空）
 const handleRegister = () => {
   // TODO: 实现注册功能
-  ElMessage.info('注册功能暂未开放')
+  showMessage.info('注册功能暂未开放')
 }
 </script>
 
