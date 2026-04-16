@@ -64,13 +64,15 @@ public class AuthServiceImpl implements AuthService {
                     return BusinessException.loginRoleNotFound();
                 });
 
+        boolean rememberMe = request.getRememberMe() != null && request.getRememberMe();
         String token = jwtUtil.generateToken(
                 user.getUsername(),
                 user.getId(),
-                role.getRoleCode()
+                role.getRoleCode(),
+                rememberMe
         );
-        log.info("用户{}（手机号：{}）登录成功，生成token（部分脱敏）：{}",
-                user.getUsername(), user.getMobile(), token.substring(0, 10) + "****");
+        log.info("用户{}（手机号：{}）登录成功，记住我：{}，生成token（部分脱敏）：{}",
+                user.getUsername(), user.getMobile(), rememberMe, token.substring(0, 10) + "****");
 
         return LoginResponse.builder()
                 .token(token)

@@ -21,17 +21,26 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private Long expiration;
 
+    @Value("${jwt.remember-me-expiration:2592000000}")
+    private Long rememberMeExpiration;
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(String username, Long userId, String roleName) {
+        return generateToken(username, userId, roleName, false);
+    }
+
+    public String generateToken(String username, Long userId, String roleName, boolean rememberMe) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("roleName", roleName);
+        claims.put("rememberMe", rememberMe);
 
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expiration);
+        Long expireTime = rememberMe ? rememberMeExpiration : expiration;
+        Date expiryDate = new Date(now.getTime() + expireTime);
 
         return Jwts.builder()
                 .claims(claims)
@@ -76,5 +85,10 @@ public class JwtUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public Boolean extractRememberMe(String token) {
+        Claims claims = extractAllClaims(token);
+        return (Boolean) claims.get("rememberMe", Boolean.class);
     }
 }

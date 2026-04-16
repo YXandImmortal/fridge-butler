@@ -1,7 +1,6 @@
 package com.yx.fridgebutler.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,5 +17,7 @@ public class LoginRequest {
 
     @NotBlank(message = "密码不能为空")
     private String password;
+
+    private Boolean rememberMe;
 
 }
