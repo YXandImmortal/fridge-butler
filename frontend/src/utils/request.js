@@ -1,6 +1,6 @@
 import axios from 'axios'
-import {ElMessage} from 'element-plus'
-import {useUserStore} from '@/stores/user'
+import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 
 // 创建axios实例
 const service = axios.create({
@@ -14,6 +14,14 @@ service.interceptors.request.use(
         const userStore = useUserStore()
         // 如果有token，添加到请求头（后端鉴权用）
         if (userStore.token) {
+            // 检查token是否过期
+            if (userStore.expireTime && Date.now() > userStore.expireTime) {
+                ElMessage.warning('登录已过期，请重新登录')
+                userStore.logout()
+                // 可以选择跳转到登录页
+                // window.location.href = '/login'
+                return Promise.reject(new Error('Token expired'))
+            }
             config.headers['Authorization'] = `Bearer ${userStore.token}`
         }
         return config
@@ -30,7 +38,16 @@ service.interceptors.response.use(
         return response.data
     },
     (error) => {
-        ElMessage.error(error.message || '服务器错误')
+        // 处理401未授权错误
+        if (error.response && error.response.status === 401) {
+            const userStore = useUserStore()
+            userStore.logout()
+            ElMessage.error('登录已过期，请重新登录')
+            // 可以选择跳转到登录页
+            // window.location.href = '/login'
+        } else {
+            ElMessage.error(error.message || '服务器错误')
+        }
         return Promise.reject(error)
     }
 )
