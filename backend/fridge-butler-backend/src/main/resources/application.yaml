@@ -25,6 +25,6 @@ server:
   port: 8080
 
 jwt:
-  secret: ${JWT_SECRET:default-secret-key}
+  secret: ${JWT_SECRET:fridge-bulter-default-2026-secret-pass-key}
   expiration: ${JWT_EXPIRATION:86400000}
   remember-me-expiration: ${JWT_REMEMBER_ME_EXPIRATION:2592000000}

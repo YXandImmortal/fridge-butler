@@ -56,12 +56,12 @@ public class AuthServiceImpl implements AuthService {
                 });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            log.error("登陆失败，账号：{}密码错误：", request.getAccount());
+            log.error("登陆失败，账号：{}密码：{}错误", request.getAccount(), request.getPassword());
             throw BusinessException.loginAuthFailed();
         }
 
         if (user.getIsDeleted() != null && user.getIsDeleted()) {
-            log.error("登陆失败，账号：{}已被禁用：", request.getAccount());
+            log.error("登陆失败，账号：{}已被禁用", request.getAccount());
             throw BusinessException.loginForbidden();
         }
 
