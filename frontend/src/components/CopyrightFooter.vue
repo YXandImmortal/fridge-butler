@@ -2,7 +2,7 @@
   <footer class="copyright-footer">
     <div class="copyright-content">
       <span class="copyright-text">
-        © 2026 智能冰箱管理系统
+        © 2026 智鲜·引擎
       </span>
       <span class="divider">|</span>
       <span class="copyright-text">by

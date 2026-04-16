@@ -9,7 +9,7 @@
             </svg>
           </div>
           <h2 class="auth-title animated-title">用户注册</h2>
-          <p class="auth-subtitle">创建您的账户，开启智能冰箱管理之旅</p>
+          <p class="auth-subtitle">创建您的账户，开启智鲜·引擎之旅</p>
         </div>
 
         <el-form

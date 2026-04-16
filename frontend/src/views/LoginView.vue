@@ -9,7 +9,7 @@
               <path d="M8 6h8v2H8zm0 4h8v2H8zm0 4h5v2H8z"/>
             </svg>
           </div>
-          <h2 class="auth-title animated-title">智能冰箱管理系统</h2>
+          <h2 class="auth-title animated-title">智鲜·引擎</h2>
           <p class="auth-subtitle">欢迎回来，请登录您的账户</p>
         </div>
 
