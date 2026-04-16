@@ -16,10 +16,11 @@
         <el-form
             ref="loginFormRef"
             :model="loginForm"
+            :rules="loginRules"
             class="login-form"
             @keyup.enter="handleLogin"
         >
-          <el-form-item>
+          <el-form-item prop="account">
             <el-input
                 v-model="loginForm.account"
                 placeholder="请输入用户名或手机号"
@@ -33,7 +34,7 @@
             </el-input>
           </el-form-item>
 
-          <el-form-item>
+          <el-form-item prop="password">
             <el-input
                 v-model="loginForm.password"
                 type="password"
@@ -89,7 +90,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import { ElMessage } from 'element-plus'
 import { User, Lock , QuestionFilled} from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
@@ -107,13 +107,25 @@ const loginForm = ref({
   rememberMe: false
 })
 
+// 表单验证规则
+const loginRules = {
+  account: [
+    { required: true, message: '用户名或手机号不能为空', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '密码不能为空', trigger: 'blur' }
+  ]
+}
+
 // 登录方法
 const handleLogin = async () => {
   if (loading.value) return
 
-  loading.value = true
-
   try {
+    await loginFormRef.value.validate()
+
+    loading.value = true
+
     const res = await userStore.login(loginForm.value)
 
     // 校验后端返回的code是否为200
@@ -128,8 +140,12 @@ const handleLogin = async () => {
       showMessage.error(res.message || '登录失败')
     }
   } catch (error) {
-    // 网络错误等异常情况
-    console.error('登录失败:', error)
+    if (error?.message) {
+      console.log('表单验证失败')
+    } else {
+      // 网络错误等异常情况
+      console.error('登录失败:', error)
+    }
   } finally {
     loading.value = false
   }
@@ -137,8 +153,7 @@ const handleLogin = async () => {
 
 // 注册按钮（功能留空）
 const handleRegister = () => {
-  // TODO: 实现注册功能
-  showMessage.info('注册功能暂未开放')
+  router.push('/register')
 }
 </script>
 
@@ -208,6 +223,10 @@ const handleRegister = () => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.custom-checkbox :deep(.el-checkbox__label) {
+  margin-top: -1px;
 }
 
 .tips-icon {
