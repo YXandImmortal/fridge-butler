@@ -1,92 +1,60 @@
 <template>
-  <div class="auth-page">
-    <div class="auth-wrapper">
-      <el-card class="auth-card glass-card">
-        <div class="auth-header">
-          <div class="icon-container">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H6V4h12v16z"/>
-              <path d="M8 6h8v2H8zm0 4h8v2H8zm0 4h5v2H8z"/>
-            </svg>
-          </div>
-          <h2 class="auth-title animated-title">智鲜·引擎</h2>
-          <p class="auth-subtitle">欢迎回来，请登录您的账户</p>
+  <AuthLayout
+    title="智鲜·引擎"
+    subtitle="欢迎回来，请登录您的账户"
+    icon="login"
+  >
+    <el-form
+        ref="loginFormRef"
+        :model="loginForm"
+        :rules="loginRules"
+        class="auth-form"
+        @keyup.enter="handleLogin"
+    >
+      <el-form-item prop="account">
+        <EnhancedInput
+            v-model="loginForm.account"
+            placeholder="请输入用户名或手机号"
+            :icon="User"
+        />
+      </el-form-item>
+
+      <el-form-item prop="password">
+        <EnhancedInput
+            v-model="loginForm.password"
+            placeholder="请输入密码"
+            :icon="Lock"
+            type="password"
+            :show-password="true"
+        />
+      </el-form-item>
+
+      <el-form-item class="remember-me-item">
+        <div class="remember-me-wrapper">
+          <el-checkbox v-model="loginForm.rememberMe" class="custom-checkbox">
+            下次自动登录
+          </el-checkbox>
+          <el-tooltip
+              content="勾选后30天内无需输入密码自动登录"
+              placement="top"
+              effect="light"
+              :show-after="200"
+          >
+            <el-icon class="tips-icon"><QuestionFilled /></el-icon>
+          </el-tooltip>
         </div>
+      </el-form-item>
 
-        <el-form
-            ref="loginFormRef"
-            :model="loginForm"
-            :rules="loginRules"
-            class="auth-form"
-            @keyup.enter="handleLogin"
-        >
-          <el-form-item prop="account">
-            <el-input
-                v-model="loginForm.account"
-                placeholder="请输入用户名或手机号"
-                class="enhanced-input"
-                clearable
-                size="large"
-            >
-              <template #prefix>
-                <el-icon><User /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
-
-          <el-form-item prop="password">
-            <el-input
-                v-model="loginForm.password"
-                type="password"
-                placeholder="请输入密码"
-                class="enhanced-input"
-                show-password
-                clearable
-                size="large"
-            >
-              <template #prefix>
-                <el-icon><Lock /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
-
-          <el-form-item class="remember-me-item">
-            <div class="remember-me-wrapper">
-              <el-checkbox v-model="loginForm.rememberMe" class="custom-checkbox">
-                下次自动登录
-              </el-checkbox>
-              <el-tooltip
-                  content="勾选后30天内无需输入密码自动登录"
-                  placement="top"
-                  effect="light"
-                  :show-after="200"
-              >
-                <el-icon class="tips-icon"><QuestionFilled /></el-icon>
-              </el-tooltip>
-            </div>
-          </el-form-item>
-
-          <el-form-item class="button-group">
-            <el-button
-                type="primary"
-                @click="handleLogin"
-                class="enhanced-button auth-primary-btn"
-                :loading="loading"
-            >
-              {{ loading ? '登录中...' : '登 录' }}
-            </el-button>
-            <el-button
-                @click="handleRegister"
-                class="enhanced-button auth-secondary-btn"
-            >
-              注 册
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </el-card>
-    </div>
-    <CopyrightFooter />
-  </div>
+      <AuthButtonGroup
+          primary-text="登 录"
+          secondary-text="注 册"
+          :loading="loading"
+          loading-text="登录中..."
+          @primary-action="handleLogin"
+          @secondary-action="handleRegister"
+      />
+    </el-form>
+  </AuthLayout>
 </template>
 
 <script setup>
@@ -95,7 +63,9 @@ import { User, Lock , QuestionFilled} from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import showMessage from '@/utils/message'
-import CopyrightFooter from "@/components/CopyrightFooter.vue";
+import AuthLayout from "@/components/auth/AuthLayout.vue";
+import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue";
+import EnhancedInput from "@/components/EnhancedInput.vue";
 
 const router = useRouter()
 const userStore = useUserStore()

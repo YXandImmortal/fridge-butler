@@ -1,105 +1,62 @@
 <template>
-  <div class="auth-page">
-    <div class="auth-wrapper">
-      <el-card class="auth-card glass-card">
-        <div class="auth-header">
-          <div class="icon-container">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
-          </div>
-          <h2 class="auth-title animated-title">用户注册</h2>
-          <p class="auth-subtitle">创建您的账户，开启智鲜·引擎之旅</p>
-        </div>
+  <AuthLayout
+    title="用户注册"
+    subtitle="创建您的账户，开启智鲜·引擎之旅"
+    icon="register"
+  >
+    <el-form
+        ref="registerFormRef"
+        :model="registerForm"
+        :rules="registerRules"
+        class="auth-form"
+        @keyup.enter="handleRegister"
+    >
+      <el-form-item prop="username">
+        <EnhancedInput
+            v-model="registerForm.username"
+            placeholder="请输入用户名（最多50个字符）"
+            :icon="User"
+        />
+      </el-form-item>
 
-        <el-form
-            ref="registerFormRef"
-            :model="registerForm"
-            :rules="registerRules"
-            class="auth-form"
-            @keyup.enter="handleRegister"
-        >
-          <el-form-item prop="username">
-            <el-input
-                v-model="registerForm.username"
-                placeholder="请输入用户名（最多50个字符）"
-                class="enhanced-input"
-                clearable
-                size="large"
-            >
-              <template #prefix>
-                <el-icon><User /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
+      <el-form-item prop="password">
+        <EnhancedInput
+            v-model="registerForm.password"
+            placeholder="请输入密码"
+            :icon="Lock"
+            type="password"
+            :show-password="true"
+        />
+      </el-form-item>
 
-          <el-form-item prop="password">
-            <el-input
-                v-model="registerForm.password"
-                type="password"
-                placeholder="请输入密码"
-                class="enhanced-input"
-                show-password
-                clearable
-                size="large"
-            >
-              <template #prefix>
-                <el-icon><Lock /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
+      <el-form-item prop="confirmPassword">
+        <EnhancedInput
+            v-model="registerForm.confirmPassword"
+            placeholder="请再次输入密码"
+            :icon="Lock"
+            type="password"
+            :show-password="true"
+        />
+      </el-form-item>
 
-          <el-form-item prop="confirmPassword">
-            <el-input
-                v-model="registerForm.confirmPassword"
-                type="password"
-                placeholder="请再次输入密码"
-                class="enhanced-input"
-                show-password
-                clearable
-                size="large"
-            >
-              <template #prefix>
-                <el-icon><Lock /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
+      <el-form-item prop="mobile">
+        <EnhancedInput
+            v-model="registerForm.mobile"
+            placeholder="请输入手机号码"
+            :icon="Phone"
+        />
+      </el-form-item>
 
-          <el-form-item prop="mobile">
-            <el-input
-                v-model="registerForm.mobile"
-                placeholder="请输入手机号码"
-                class="enhanced-input"
-                clearable
-                size="large"
-            >
-              <template #prefix>
-                <el-icon><Phone /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
-
-          <el-form-item class="button-group">
-            <el-button
-                type="primary"
-                @click="handleRegister"
-                class="enhanced-button auth-primary-btn"
-                :loading="loading"
-            >
-              {{ loading ? '注册中...' : '注 册' }}
-            </el-button>
-            <el-button
-                @click="handleBackToLogin"
-                class="enhanced-button auth-secondary-btn"
-            >
-              返 回
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </el-card>
-    </div>
-    <CopyrightFooter />
-  </div>
+      <AuthButtonGroup
+          primary-text="注 册"
+          secondary-text="返 回"
+          :loading="loading"
+          loading-text="注册中..."
+          @primary-action="handleRegister"
+          @secondary-action="handleBackToLogin"
+      />
+    </el-form>
+  </AuthLayout>
 </template>
 
 <script setup>
@@ -108,7 +65,9 @@ import { User, Lock, Phone } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import request from '@/utils/request'
 import showMessage from '@/utils/message'
-import CopyrightFooter from "@/components/CopyrightFooter.vue";
+import AuthLayout from "@/components/auth/AuthLayout.vue";
+import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue";
+import EnhancedInput from "@/components/EnhancedInput.vue";
 
 const router = useRouter()
 const registerFormRef = ref()

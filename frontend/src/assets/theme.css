@@ -17,12 +17,12 @@
     --page-bg: #aeaeae;
     --card-bg: #ffffff;
     --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-lavender-25: rgba(224, 224, 242, 0.25);
 
     /* 透明度变体 */
     --white-10: rgba(255, 255, 255, 0.1);
     --white-20: rgba(255, 255, 255, 0.2);
     --white-85: rgba(255, 255, 255, 0.85);
-    --lavender-25: rgba(224, 224, 242, 0.25);
     --primary-10: rgba(100, 181, 246, 0.1);
     --primary-20: rgba(100, 181, 246, 0.2);
     --primary-30: rgba(100, 181, 246, 0.3);
@@ -107,16 +107,11 @@ body {
 /* 认证卡片 */
 .auth-card {
     padding: 40px;
-    backdrop-filter: blur(15px);
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--white-20);
     transition: all 0.3s ease;
 }
 
 .auth-card:hover {
-    box-shadow: 0 12px 60px var(--lavender-25);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
 }
 
 /* 认证头部 */
@@ -234,6 +229,11 @@ body {
     backdrop-filter: blur(10px);
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    box-shadow: 0 12px 60px var(--glass-lavender-25);
 }
 
 /* 输入框增强样式 */
