@@ -1,23 +1,23 @@
 <template>
-  <div class="login-page">
-    <div class="login-wrapper">
-      <el-card class="login-card glass-card">
-        <div class="login-header">
+  <div class="auth-page">
+    <div class="auth-wrapper">
+      <el-card class="auth-card glass-card">
+        <div class="auth-header">
           <div class="icon-container">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H6V4h12v16z"/>
               <path d="M8 6h8v2H8zm0 4h8v2H8zm0 4h5v2H8z"/>
             </svg>
           </div>
-          <h2 class="login-title animated-title">智能冰箱管理系统</h2>
-          <p class="login-subtitle">欢迎回来，请登录您的账户</p>
+          <h2 class="auth-title animated-title">智能冰箱管理系统</h2>
+          <p class="auth-subtitle">欢迎回来，请登录您的账户</p>
         </div>
 
         <el-form
             ref="loginFormRef"
             :model="loginForm"
             :rules="loginRules"
-            class="login-form"
+            class="auth-form"
             @keyup.enter="handleLogin"
         >
           <el-form-item prop="account">
@@ -70,14 +70,14 @@
             <el-button
                 type="primary"
                 @click="handleLogin"
-                class="enhanced-button login-btn"
+                class="enhanced-button auth-primary-btn"
                 :loading="loading"
             >
               {{ loading ? '登录中...' : '登 录' }}
             </el-button>
             <el-button
                 @click="handleRegister"
-                class="enhanced-button register-btn"
+                class="enhanced-button auth-secondary-btn"
             >
               注 册
             </el-button>
@@ -158,125 +158,5 @@ const handleRegister = () => {
 </script>
 
 <style scoped>
-.login-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.login-wrapper {
-  width: 100%;
-  max-width: 480px;
-  animation: fadeInUp 0.6s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.login-card {
-  padding: 40px;
-  border: none;
-}
-
-.login-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.login-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #2d3748;
-  margin: 20px 0 8px 0;
-}
-
-.login-subtitle {
-  font-size: 14px;
-  color: #718096;
-  margin: 0;
-}
-
-.login-form {
-  margin-top: 10px;
-}
-
-.login-form :deep(.el-form-item) {
-  margin-bottom: 20px;
-}
-
-.remember-me-item {
-  margin-bottom: 24px !important;
-}
-
-.remember-me-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.custom-checkbox :deep(.el-checkbox__label) {
-  margin-top: -1px;
-}
-
-.tips-icon {
-  color: var(--primary-color);
-  font-size: 16px;
-  cursor: help;
-  transition: all 0.3s ease;
-}
-
-.tips-icon:hover {
-  color: var(--primary-dark);
-  transform: scale(1.1);
-}
-
-.button-group {
-  margin-bottom: 0 !important;
-  display: flex;
-  gap: 12px;
-}
-
-.login-btn {
-  flex: 1;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  border: none;
-}
-
-.register-btn {
-  flex: 1;
-  background: #ffffff;
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
-}
-
-.register-btn:hover {
-  background: var(--primary-light);
-  border-color: var(--primary-dark);
-  color: var(--primary-dark);
-}
-
-@media (max-width: 480px) {
-  .login-card {
-    padding: 30px 20px;
-  }
-
-  .login-title {
-    font-size: 24px;
-  }
-
-  .button-group {
-    flex-direction: column;
-  }
-}
+@import '@/assets/theme.css';
 </style>

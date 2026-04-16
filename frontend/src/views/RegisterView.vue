@@ -1,22 +1,22 @@
 <template>
-  <div class="register-page">
-    <div class="register-wrapper">
-      <el-card class="register-card glass-card">
-        <div class="register-header">
+  <div class="auth-page">
+    <div class="auth-wrapper">
+      <el-card class="auth-card glass-card">
+        <div class="auth-header">
           <div class="icon-container">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
           </div>
-          <h2 class="register-title animated-title">用户注册</h2>
-          <p class="register-subtitle">创建您的账户，开启智能冰箱管理之旅</p>
+          <h2 class="auth-title animated-title">用户注册</h2>
+          <p class="auth-subtitle">创建您的账户，开启智能冰箱管理之旅</p>
         </div>
 
         <el-form
             ref="registerFormRef"
             :model="registerForm"
             :rules="registerRules"
-            class="register-form"
+            class="auth-form"
             @keyup.enter="handleRegister"
         >
           <el-form-item prop="username">
@@ -83,14 +83,14 @@
             <el-button
                 type="primary"
                 @click="handleRegister"
-                class="enhanced-button register-btn"
+                class="enhanced-button auth-primary-btn"
                 :loading="loading"
             >
               {{ loading ? '注册中...' : '注 册' }}
             </el-button>
             <el-button
                 @click="handleBackToLogin"
-                class="enhanced-button login-btn"
+                class="enhanced-button auth-secondary-btn"
             >
               返 回
             </el-button>
@@ -194,100 +194,5 @@ const handleBackToLogin = () => {
 </script>
 
 <style scoped>
-.register-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.register-wrapper {
-  width: 100%;
-  max-width: 480px;
-  animation: fadeInUp 0.6s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.register-card {
-  padding: 40px;
-  border: none;
-}
-
-.register-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.register-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #2d3748;
-  margin: 20px 0 8px 0;
-}
-
-.register-subtitle {
-  font-size: 14px;
-  color: #718096;
-  margin: 0;
-}
-
-.register-form {
-  margin-top: 10px;
-}
-
-.register-form :deep(.el-form-item) {
-  margin-bottom: 20px;
-}
-
-.button-group {
-  margin-bottom: 0 !important;
-  display: flex;
-  gap: 12px;
-}
-
-.register-btn {
-  flex: 1;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  border: none;
-}
-
-.login-btn {
-  flex: 1;
-  background: #ffffff;
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
-}
-
-.login-btn:hover {
-  background: var(--primary-light);
-  border-color: var(--primary-dark);
-  color: var(--primary-dark);
-}
-
-@media (max-width: 480px) {
-  .register-card {
-    padding: 30px 20px;
-  }
-
-  .register-title {
-    font-size: 24px;
-  }
-
-  .button-group {
-    flex-direction: column;
-  }
-}
+@import '@/assets/theme.css';
 </style>
-

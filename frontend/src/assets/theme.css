@@ -27,6 +27,146 @@ body {
     padding: 0;
 }
 
+/* ========== 认证页面通用样式（登录/注册）========== */
+
+/* 认证页面容器 */
+.auth-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* 认证页面包装器 */
+.auth-wrapper {
+    width: 100%;
+    max-width: 480px;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* 认证卡片 */
+.auth-card {
+    padding: 40px;
+    border: none;
+}
+
+/* 认证头部 */
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* 认证标题 */
+.auth-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 20px 0 8px 0;
+}
+
+/* 认证副标题 */
+.auth-subtitle {
+    font-size: 14px;
+    color: #718096;
+    margin: 0;
+}
+
+/* 认证表单 */
+.auth-form {
+    margin-top: 10px;
+}
+
+.auth-form :deep(.el-form-item) {
+    margin-bottom: 20px;
+}
+
+/* 记住我选项 */
+.remember-me-item {
+    margin-bottom: 24px !important;
+}
+
+.remember-me-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.custom-checkbox :deep(.el-checkbox__label) {
+    margin-top: -1px;
+}
+
+/* 提示图标 */
+.tips-icon {
+    color: var(--primary-color);
+    font-size: 16px;
+    cursor: help;
+    transition: all 0.3s ease;
+}
+
+.tips-icon:hover {
+    color: var(--primary-dark);
+    transform: scale(1.1);
+}
+
+/* 按钮组 */
+.button-group {
+    margin-bottom: 0 !important;
+    display: flex;
+    gap: 12px;
+}
+
+/* 主要按钮（登录/注册） */
+.auth-primary-btn {
+    flex: 1;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+}
+
+/* 次要按钮（返回/跳转） */
+.auth-secondary-btn {
+    flex: 1;
+    background: #ffffff;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.auth-secondary-btn:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-dark);
+    color: var(--primary-dark);
+}
+
+/* 淡入向上动画 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 30px 20px;
+    }
+
+    .auth-title {
+        font-size: 24px;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+}
+
+/* ========== 原有样式 ========== */
+
 /* 登录页面渐变背景 */
 .login-gradient-bg {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -60,7 +200,7 @@ body {
 /* 按钮增强样式 */
 .enhanced-button {
     border-radius: 12px;
-    padding: 12px 32px;
+    padding: 20px 32px;
     font-weight: 600;
     letter-spacing: 1px;
     transition: all 0.3s ease;
@@ -95,24 +235,6 @@ body {
 }
 
 /* 图标容器 */
-/*.icon-container {*/
-/*    width: 80px;*/
-/*    height: 80px;*/
-/*    margin: 0 auto 20px;*/
-/*    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));*/
-/*    border-radius: 50%;*/
-/*    display: flex;*/
-/*    align-items: center;*/
-/*    justify-content: center;*/
-/*    box-shadow: 0 4px 16px rgba(100, 181, 246, 0.3);*/
-/*}*/
-
-/*.icon-container svg {*/
-/*    width: 40px;*/
-/*    height: 40px;*/
-/*    fill: white;*/
-/*}*/
-
 .icon-container {
     display: inline-flex;
     align-items: center;
@@ -143,3 +265,4 @@ body {
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
+
