@@ -8,6 +8,12 @@
     --warn-color: #FFB74D;
     --danger-color: #F87171;
 
+    /* 认证页面渐变颜色 */
+    --auth-gradient-1: #E3F2FD;
+    --auth-gradient-2: #90CAF9;
+    --auth-gradient-3: #64B5F6;
+    --auth-gradient-4: #42A5F5;
+
     /* 覆盖 ElementPlus 主色调（按钮、输入框、菜单全部生效） */
     --el-color-primary: #64B5F6;
     --el-color-primary-light-3: #90CAF9;
@@ -45,11 +51,36 @@ body {
 /* 认证页面容器 */
 .auth-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /*background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+    background: radial-gradient(ellipse at center, var(--auth-gradient-4) 0%, var(--auth-gradient-3) 35%, var(--auth-gradient-2) 70%, var(--auth-gradient-1) 100%);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 认证页面装饰元素 */
+.auth-page::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+    animation: pulse 8s ease-in-out infinite;
+}
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.6;
+    }
 }
 
 /* 认证页面包装器 */
@@ -57,12 +88,25 @@ body {
     width: 100%;
     max-width: 480px;
     animation: fadeInUp 0.6s ease-out;
+    transform: translateZ(0);
+    position: relative;
+    z-index: 1;
 }
 
 /* 认证卡片 */
 .auth-card {
     padding: 40px;
-    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.auth-card:hover {
+    box-shadow: 0 12px 40px rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 /* 认证头部 */
@@ -104,10 +148,6 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-}
-
-.custom-checkbox :deep(.el-checkbox__label) {
-    margin-top: -1px;
 }
 
 /* 提示图标 */
@@ -273,9 +313,15 @@ body {
 
 .animated-title {
     animation: fadeInDown 0.6s ease-out;
+    transform: translateZ(0);
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
+.copyright-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}

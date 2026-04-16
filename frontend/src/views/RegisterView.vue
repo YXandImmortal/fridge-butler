@@ -98,6 +98,7 @@
         </el-form>
       </el-card>
     </div>
+    <CopyrightFooter />
   </div>
 </template>
 
@@ -107,6 +108,7 @@ import { User, Lock, Phone } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import request from '@/utils/request'
 import showMessage from '@/utils/message'
+import CopyrightFooter from "@/components/CopyrightFooter.vue";
 
 const router = useRouter()
 const registerFormRef = ref()

@@ -85,6 +85,7 @@
         </el-form>
       </el-card>
     </div>
+    <CopyrightFooter />
   </div>
 </template>
 
@@ -94,6 +95,7 @@ import { User, Lock , QuestionFilled} from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import showMessage from '@/utils/message'
+import CopyrightFooter from "@/components/CopyrightFooter.vue";
 
 const router = useRouter()
 const userStore = useUserStore()
