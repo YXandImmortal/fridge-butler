@@ -13,6 +13,7 @@ import com.yx.fridgebutler.service.AuthService;
 import com.yx.fridgebutler.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Value("${jwt.expiration}")
+    private Long expiration;
+
+    @Value("${jwt.remember-me-expiration:2592000000}")
+    private Long rememberMeExpiration;
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -74,11 +81,14 @@ public class AuthServiceImpl implements AuthService {
         log.info("用户{}（手机号：{}）登录成功，记住我：{}，生成token（部分脱敏）：{}",
                 user.getUsername(), user.getMobile(), rememberMe, token.substring(0, 10) + "****");
 
+        Long expireTime = System.currentTimeMillis() + (rememberMe ? rememberMeExpiration : expiration);
         return LoginResponse.builder()
                 .token(token)
                 .username(user.getUsername())
                 .roleName(role.getRoleName())
                 .userId(user.getId())
+                .rememberMe(rememberMe)
+                .expireTime(expireTime)
                 .build();
     }
 

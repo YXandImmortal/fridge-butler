@@ -18,4 +18,8 @@ public class LoginResponse {
     private String roleName;
 
     private Long userId;
+
+    private Boolean rememberMe;
+
+    private Long expireTime;
 }
