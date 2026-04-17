@@ -1,7 +1,7 @@
 <template>
   <AuthLayout
     title="用户注册"
-    subtitle="创建您的账户，开启智鲜·引擎之旅"
+    :subtitle="`创建您的账户，开启${systemName || '冰箱管理系统'}之旅`"
     icon="register"
   >
     <el-form
@@ -60,18 +60,26 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { User, Lock, Phone } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import request from '@/utils/request'
 import showMessage from '@/utils/message'
+import { useSystemStore } from '@/stores/system'
 import AuthLayout from "@/components/auth/AuthLayout.vue";
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue";
 import EnhancedInput from "@/components/EnhancedInput.vue";
 
 const router = useRouter()
+const systemStore = useSystemStore()
+const { systemName, getSystemInfo } = systemStore;
 const registerFormRef = ref()
 const loading = ref(false)
+
+// 初始化系统信息
+onMounted(async () => {
+  await getSystemInfo()
+})
 
 // 注册表单数据
 const registerForm = reactive({

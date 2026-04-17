@@ -8,7 +8,7 @@
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
           </svg>
         </div>
-        <h1 class="app-title">冰箱管家</h1>
+        <h1 class="app-title">{{ systemName || '冰箱管理系统' }}</h1>
       </div>
     </div>
 
@@ -29,14 +29,27 @@
             <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
           </svg>
         </div>
-        <span class="user-name">用户</span>
+        <span class="user-name">{{ username }}</span>
       </div>
     </div>
   </header>
 </template>
 
 <script setup>
-// 头部组件逻辑
+import { onMounted } from 'vue'
+import { useUserStore } from "@/stores/user.js"
+import { useSystemStore } from "@/stores/system.js"
+
+const userStore = useUserStore()
+const systemStore = useSystemStore()
+const { username, initUser } = userStore;
+const { systemName, getSystemInfo } = systemStore;
+
+// 初始化用户信息和系统信息
+onMounted(async () => {
+  initUser()
+  await getSystemInfo()
+})
 </script>
 
 <style scoped>

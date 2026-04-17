@@ -1,6 +1,6 @@
 <template>
   <AuthLayout
-    title="智鲜·引擎"
+    :title="systemName || '冰箱管理系统'"
     subtitle="欢迎回来，请登录您的账户"
     icon="login"
   >
@@ -58,10 +58,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { User, Lock , QuestionFilled} from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useSystemStore } from '@/stores/system'
 import showMessage from '@/utils/message'
 import AuthLayout from "@/components/auth/AuthLayout.vue";
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue";
@@ -69,8 +70,15 @@ import EnhancedInput from "@/components/EnhancedInput.vue";
 
 const router = useRouter()
 const userStore = useUserStore()
+const systemStore = useSystemStore()
+const { systemName, getSystemInfo } = systemStore;
 const loginFormRef = ref()
 const loading = ref(false)
+
+// 初始化系统信息
+onMounted(async () => {
+  await getSystemInfo()
+})
 
 // 登录表单数据
 const loginForm = ref({

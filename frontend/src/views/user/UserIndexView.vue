@@ -20,9 +20,19 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue';
 import Header from '@/components/Header.vue';
 import Sidebar from '@/components/Sidebar.vue';
 import CopyrightFooter from '@/components/CopyrightFooter.vue';
+import { useSystemStore } from '@/stores/system';
+
+const systemStore = useSystemStore();
+const { getSystemInfo } = systemStore;
+
+// 初始化系统信息
+onMounted(async () => {
+  await getSystemInfo();
+});
 </script>
 
 <style scoped>

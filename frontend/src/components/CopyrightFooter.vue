@@ -2,11 +2,15 @@
   <footer class="copyright-footer">
     <div class="copyright-content">
       <span class="copyright-text">
-        © 2026 智鲜·引擎
+        © 2026 {{ systemName || '冰箱管理系统' }}
       </span>
       <span class="divider">|</span>
       <span class="copyright-text">by
       <a href="https://github.com/YXandImmortal" target="_blank" rel="noopener noreferrer" class="font-link">YXandImmortal</a>
+      </span>
+      <span class="divider">|</span>
+      <span class="font-info">
+        版本: {{ systemVersion || '1.0.0' }}
       </span>
       <span class="divider">|</span>
       <span class="font-info">
@@ -21,7 +25,16 @@
 </template>
 
 <script setup>
-// 无需额外逻辑
+import { onMounted } from 'vue'
+import { useSystemStore } from "@/stores/system.js"
+
+const systemStore = useSystemStore()
+const { systemName, systemVersion, getSystemInfo } = systemStore;
+
+// 初始化系统信息
+onMounted(async () => {
+  await getSystemInfo()
+})
 </script>
 
 <style scoped>
