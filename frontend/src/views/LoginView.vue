@@ -71,7 +71,7 @@ import EnhancedInput from "@/components/EnhancedInput.vue";
 const router = useRouter()
 const userStore = useUserStore()
 const systemStore = useSystemStore()
-const { systemName, getSystemInfo } = systemStore;
+const { systemName, getSystemInfo } = systemStore
 const loginFormRef = ref()
 const loading = ref(false)
 

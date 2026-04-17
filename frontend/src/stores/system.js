@@ -5,7 +5,7 @@ import request from '@/utils/request'
 export const useSystemStore = defineStore('system', () => {
     const systemName = ref('')
     const systemVersion = ref('')
-    const userIndexFeathers = ref([])
+    const userIndexFeatures = ref([])
     const isLoading = ref(false)
 
     // 从localStorage加载数据
@@ -16,7 +16,7 @@ export const useSystemStore = defineStore('system', () => {
                 const parsedData = JSON.parse(storedData)
                 systemName.value = parsedData.systemName || ''
                 systemVersion.value = parsedData.systemVersion || ''
-                userIndexFeathers.value = parsedData.userIndexFeathers || []
+                userIndexFeatures.value = parsedData.userIndexFeatures || []
             } catch (error) {
                 console.error('Error loading system info from localStorage:', error)
                 // 清除损坏的数据
@@ -30,7 +30,7 @@ export const useSystemStore = defineStore('system', () => {
         const data = {
             systemName: systemName.value,
             systemVersion: systemVersion.value,
-            userIndexFeathers: userIndexFeathers.value
+            userIndexFeatures: userIndexFeatures.value
         }
         localStorage.setItem('systemInfo', JSON.stringify(data))
     }
@@ -54,7 +54,7 @@ export const useSystemStore = defineStore('system', () => {
     const getSystemInfo = async () => {
         if (isLoading.value) {
             // 防止重复请求
-            return { systemName: systemName.value, systemVersion: systemVersion.value, userIndexFeathers: userIndexFeathers.value }
+            return { systemName: systemName.value, systemVersion: systemVersion.value, userIndexFeatures: userIndexFeatures.value }
         }
 
         isLoading.value = true
@@ -65,7 +65,7 @@ export const useSystemStore = defineStore('system', () => {
             
             if (!backendInfo) {
                 // 如果后端请求失败，使用本地数据
-                return { systemName: systemName.value, systemVersion: systemVersion.value, userIndexFeathers: userIndexFeathers.value }
+                return { systemName: systemName.value, systemVersion: systemVersion.value, userIndexFeatures: userIndexFeatures.value }
             }
 
             // 检查版本号是否变更
@@ -73,14 +73,14 @@ export const useSystemStore = defineStore('system', () => {
                 // 版本号变更，更新数据
                 systemName.value = backendInfo.systemName || ''
                 systemVersion.value = backendInfo.systemVersion || ''
-                userIndexFeathers.value = backendInfo.userIndexFeathers || []
+                userIndexFeatures.value = backendInfo.userIndexFeatures || []
                 
                 // 保存到localStorage
                 saveToLocalStorage()
             }
 
             // 返回最新数据
-            return { systemName: systemName.value, systemVersion: systemVersion.value, userIndexFeathers: userIndexFeathers.value }
+            return { systemName: systemName.value, systemVersion: systemVersion.value, userIndexFeatures: userIndexFeatures.value }
         } finally {
             isLoading.value = false
         }
@@ -92,7 +92,7 @@ export const useSystemStore = defineStore('system', () => {
     return { 
         systemName, 
         systemVersion, 
-        userIndexFeathers,
+        userIndexFeatures,
         isLoading,
         getSystemInfo,
         loadFromLocalStorage
