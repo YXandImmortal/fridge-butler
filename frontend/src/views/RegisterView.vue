@@ -119,7 +119,7 @@ const handleRegister = async () => {
     loading.value = true
 
     const res = await request({
-      url: '/auth/register',
+      url: '/auth/register/user',
       method: 'post',
       data: {
         username: registerForm.username,

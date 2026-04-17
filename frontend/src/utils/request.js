@@ -43,8 +43,7 @@ service.interceptors.response.use(
             const userStore = useUserStore()
             userStore.logout()
             showMessage.error('登录已过期，请重新登录')
-            // 可以选择跳转到登录页
-            // window.location.href = '/login'
+            window.location.href = '/login'
         } else {
             showMessage.error(error.message || '服务器错误')
         }

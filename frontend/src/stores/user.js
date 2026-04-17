@@ -7,6 +7,7 @@ export const useUserStore = defineStore('user', () => {
     const token = ref('')
     const username = ref('')
     const roleName = ref('')
+    const roleId = ref('')
     const userId = ref('')
     const rememberMe = ref(false)
     const expireTime = ref(0)
@@ -27,6 +28,7 @@ export const useUserStore = defineStore('user', () => {
             token.value = info.token
             username.value = info.username
             roleName.value = info.roleName
+            roleId.value = info.roleId
             userId.value = info.userId
             rememberMe.value = info.rememberMe || false
             expireTime.value = info.expireTime || 0
@@ -60,6 +62,7 @@ export const useUserStore = defineStore('user', () => {
                 token: resToken,
                 username: resName,
                 roleName: resRole,
+                roleId: resRoleId,
                 userId: resId,
                 rememberMe: resRememberMe,
                 expireTime: resExpireTime
@@ -69,6 +72,7 @@ export const useUserStore = defineStore('user', () => {
             token.value = resToken
             username.value = resName
             roleName.value = resRole
+            roleId.value = resRoleId
             userId.value = resId
             rememberMe.value = resRememberMe || false
             expireTime.value = resExpireTime || 0
@@ -78,6 +82,7 @@ export const useUserStore = defineStore('user', () => {
                 token: resToken,
                 username: resName,
                 roleName: resRole,
+                roleId: resRoleId,
                 userId: resId,
                 rememberMe: resRememberMe || false,
                 expireTime: resExpireTime || 0
@@ -105,6 +110,7 @@ export const useUserStore = defineStore('user', () => {
         token.value = ''
         username.value = ''
         roleName.value = ''
+        roleId.value = ''
         userId.value = ''
         rememberMe.value = false
         expireTime.value = 0
@@ -112,5 +118,5 @@ export const useUserStore = defineStore('user', () => {
         sessionStorage.removeItem('userInfo')
     }
 
-    return { token, username, roleName, userId, rememberMe, expireTime, initUser, login, logout }
+    return { token, username, roleName, roleId, userId, rememberMe, expireTime, initUser, login, logout }
 })

@@ -106,8 +106,8 @@ const handleLogin = async () => {
           ? '登录成功！30天内自动登录'
           : (res.message || '登录成功！')
       showMessage.success(message)
-      // 现阶段暂时不跳转至其他页面
-      // router.push('/')
+
+      await router.push('/user/index')
     } else {
       showMessage.error(res.message || '登录失败')
     }
