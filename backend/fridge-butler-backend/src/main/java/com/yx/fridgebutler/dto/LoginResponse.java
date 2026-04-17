@@ -17,6 +17,8 @@ public class LoginResponse {
 
     private String roleName;
 
+    private Long roleId;
+
     private Long userId;
 
     private Boolean rememberMe;

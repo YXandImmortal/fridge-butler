@@ -86,6 +86,7 @@ public class AuthServiceImpl implements AuthService {
                 .token(token)
                 .username(user.getUsername())
                 .roleName(role.getRoleName())
+                .roleId(user.getRoleId())
                 .userId(user.getId())
                 .rememberMe(rememberMe)
                 .expireTime(expireTime)
