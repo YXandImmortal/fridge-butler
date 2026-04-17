@@ -29,7 +29,7 @@ import { onMounted } from 'vue'
 import { useSystemStore } from "@/stores/system.js"
 
 const systemStore = useSystemStore()
-const { systemName, systemVersion, getSystemInfo } = systemStore;
+const { systemName, systemVersion, getSystemInfo } = systemStore
 
 // 初始化系统信息
 onMounted(async () => {
@@ -39,13 +39,13 @@ onMounted(async () => {
 
 <style scoped>
 .copyright-footer {
-  width: 100%;
+  z-index: 1000;
   padding: 20px 24px;
   background: radial-gradient(ellipse, rgba(255, 255, 255, 1) 0%, rgba(248, 250, 252, 0.85) 80%, rgba(248, 250, 252, 0.6) 100%);
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(100, 181, 246, 0.15);
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
-  position: relative;
+  position: fixed;
   box-sizing: border-box;
 }
 
