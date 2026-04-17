@@ -5,14 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SystemInfoDTO {
-    private String systemName;
-    private String systemVersion;
-    private List<SidebarFeature> userIndexFeatures;
+public class SidebarFeature {
+    private Integer id;
+    private String name;
+    private String path;
 }
