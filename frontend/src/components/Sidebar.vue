@@ -82,7 +82,6 @@
   position: fixed;
   top: 64px;
   left: 0;
-  z-index: 999;
   transition: all 0.3s ease;
   overflow-y: auto;
 }
