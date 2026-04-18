@@ -22,31 +22,37 @@ public class SystemController {
                         .id(1)
                         .name("首页")
                         .path("/user/index")
+                        .icon("HomeFilled")
                         .build(),
                 SidebarFeature.builder()
                         .id(2)
                         .name("冰箱管理")
                         .path("/user/fridge-management")
+                        .icon("Refrigerator")
                         .build(),
                 SidebarFeature.builder()
                         .id(3)
                         .name("物品分类")
                         .path("/user/item-category")
+                        .icon("Goods")
                         .build(),
                 SidebarFeature.builder()
                         .id(4)
                         .name("物品单位")
                         .path("/user/item-unit")
+                        .icon("Box")
                         .build(),
                 SidebarFeature.builder()
                         .id(5)
                         .name("个人中心")
                         .path("/user/center")
+                        .icon("Avatar")
                         .build(),
                 SidebarFeature.builder()
                         .id(6)
                         .name("关于系统")
                         .path("/system/about")
+                        .icon("InfoFilled")
                         .build()
         );
     }
