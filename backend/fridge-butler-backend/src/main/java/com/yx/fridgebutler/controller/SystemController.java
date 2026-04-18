@@ -13,7 +13,7 @@ import java.util.List;
 @RequestMapping("/system")
 public class SystemController {
     public static final String SYSTEM_NAME = "智鲜·引擎";
-    public static final String SYSTEM_VERSION = "alpha 0.0.2";
+    public static final String SYSTEM_VERSION = "alpha 0.0.3";
     public static final List<SidebarFeature> USER_INDEX_FEATURES;
 
     static {
@@ -22,37 +22,37 @@ public class SystemController {
                         .id(1)
                         .name("首页")
                         .path("/user/index")
-                        .icon("HomeFilled")
+                        .icon("icon-home")
                         .build(),
                 SidebarFeature.builder()
                         .id(2)
                         .name("冰箱管理")
                         .path("/user/fridge-management")
-                        .icon("Refrigerator")
+                        .icon("icon-fridge-line")
                         .build(),
                 SidebarFeature.builder()
                         .id(3)
                         .name("物品分类")
                         .path("/user/item-category")
-                        .icon("Goods")
+                        .icon("icon-inbox-full")
                         .build(),
                 SidebarFeature.builder()
                         .id(4)
                         .name("物品单位")
                         .path("/user/item-unit")
-                        .icon("Box")
+                        .icon("icon-label")
                         .build(),
                 SidebarFeature.builder()
                         .id(5)
                         .name("个人中心")
                         .path("/user/center")
-                        .icon("Avatar")
+                        .icon("icon-user")
                         .build(),
                 SidebarFeature.builder()
                         .id(6)
                         .name("关于系统")
                         .path("/system/about")
-                        .icon("InfoFilled")
+                        .icon("icon-info-box")
                         .build()
         );
     }
