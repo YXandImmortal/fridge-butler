@@ -2,7 +2,6 @@
   <AuthLayout
     title="用户注册"
     :subtitle="`创建您的账户，开启${systemName || '冰箱管理系统'}之旅`"
-    icon="register"
   >
     <el-form
         ref="registerFormRef"

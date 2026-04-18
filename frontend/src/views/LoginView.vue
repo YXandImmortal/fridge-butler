@@ -2,7 +2,6 @@
   <AuthLayout
     :title="systemName || '冰箱管理系统'"
     subtitle="欢迎回来，请登录您的账户"
-    icon="login"
   >
     <el-form
         ref="loginFormRef"

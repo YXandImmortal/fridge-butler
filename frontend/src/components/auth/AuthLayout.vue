@@ -5,7 +5,6 @@
         <AuthHeader
             :title="title"
             :subtitle="subtitle"
-            :icon="icon"
         />
         <slot></slot>
       </el-card>
@@ -25,10 +24,6 @@ const props = defineProps({
     required: true
   },
   subtitle: {
-    type: String,
-    required: true
-  },
-  icon: {
     type: String,
     required: true
   }

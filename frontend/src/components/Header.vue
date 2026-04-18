@@ -4,9 +4,10 @@
     <div class="header-left">
       <div class="logo-container">
         <div class="logo-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
+<!--          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">-->
+<!--            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>-->
+<!--          </svg>-->
+          <Logo />
         </div>
         <h1 class="app-title">{{ systemName || '冰箱管理系统' }}</h1>
       </div>
@@ -16,18 +17,24 @@
     <div class="header-right">
       <!-- 通知图标 -->
       <div class="notification-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-        </svg>
+<!--        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">-->
+<!--          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>-->
+<!--        </svg>-->
+        <el-icon size="24">
+          <BellFilled />
+        </el-icon>
         <span class="notification-badge">3</span>
       </div>
 
       <!-- 用户信息 -->
       <div class="user-info">
         <div class="user-avatar">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-          </svg>
+<!--          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">-->
+<!--            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>-->
+<!--          </svg>-->
+          <el-icon size="20">
+            <Avatar />
+          </el-icon>
         </div>
         <span class="user-name">{{ username }}</span>
       </div>
@@ -39,6 +46,8 @@
 import { onMounted } from 'vue'
 import { useUserStore } from "@/stores/user.js"
 import { useSystemStore } from "@/stores/system.js"
+import {Avatar, BellFilled} from "@element-plus/icons-vue";
+import Logo from './Logo.vue'
 
 const userStore = useUserStore()
 const systemStore = useSystemStore()
@@ -82,20 +91,16 @@ onMounted(async () => {
 }
 
 .logo-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--primary-color);
-  border-radius: 50%;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px var(--primary-30);
   transition: all 0.3s ease;
 }
 
 .logo-icon:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 16px var(--primary-40);
 }
 
 .logo-icon svg {
@@ -121,6 +126,8 @@ onMounted(async () => {
   cursor: pointer;
   color: var(--text-secondary);
   transition: all 0.3s ease;
+  vertical-align: middle;
+  margin-top: 6px;
 }
 
 .notification-icon:hover {
@@ -158,7 +165,7 @@ onMounted(async () => {
 }
 
 .user-info:hover {
-  transform: translateY(-2px);
+  transform: scale(1.04);
 }
 
 .user-avatar {
@@ -173,7 +180,7 @@ onMounted(async () => {
   transition: all 0.3s ease;
 }
 
-.user-avatar:hover {
+.user-info:hover .user-avatar {
   background: var(--primary-color);
   color: white;
 }

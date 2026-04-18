@@ -3,14 +3,19 @@
     <!-- 导航菜单 -->
     <nav class="sidebar-nav">
       <ul class="nav-menu">
-        <li v-for="feather in userIndexFeatures" :key="feather.id" :class="['nav-item', { active: isActive(feather.path) }]">
-          <router-link :to="feather.path" class="nav-link">
+        <li v-for="feature in userIndexFeatures" :key="feature.id" :class="['nav-item', { active: isActive(feature.path) }]">
+          <router-link :to="feature.path" class="nav-link">
             <div class="nav-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <!-- 使用Element Plus图标 -->
+              <el-icon v-if="feature.icon" size="20">
+                <component :is="feature.icon" />
+              </el-icon>
+              <!--  fallback到默认图标 -->
+              <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
               </svg>
             </div>
-            <span class="nav-text">{{ feather.name }}</span>
+            <span class="nav-text">{{ feature.name }}</span>
           </router-link>
         </li>
       </ul>
@@ -19,12 +24,12 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted } from 'vue'
 import { useSystemStore } from "@/stores/system.js"
 import { useRoute } from 'vue-router'
 
 const systemStore = useSystemStore()
-const { systemName, userIndexFeatures, getSystemInfo } = systemStore
+const { userIndexFeatures, getSystemInfo } = systemStore
 const route = useRoute()
 
 // 检查当前路径是否与菜单项路径匹配
@@ -39,7 +44,7 @@ onMounted(async () => {
 
 <style scoped>
 .app-sidebar {
-  width: 240px;
+  width: 200px;
   height: calc(100vh - 64px);
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
@@ -101,8 +106,9 @@ onMounted(async () => {
 }
 
 .nav-icon {
-  width: 24px;
-  height: 24px;
+  margin-left: 12px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
