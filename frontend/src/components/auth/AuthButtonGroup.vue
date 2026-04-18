@@ -4,9 +4,15 @@
         type="primary"
         @click="primaryAction"
         class="enhanced-button auth-primary-btn"
-        :loading="loading"
+        :loading="false"
     >
-      {{ loading ? loadingText : primaryText }}
+      <template v-if="loading">
+        <i class="iconfont icon-loader auth-loading-icon"></i>
+        {{ loadingText }}
+      </template>
+      <template v-else>
+        {{ primaryText }}
+      </template>
     </el-button>
     <el-button
         @click="secondaryAction"
@@ -52,4 +58,18 @@ const secondaryAction = () => {
 
 <style scoped>
 @import '@/assets/theme.css';
+
+.auth-loading-icon {
+  margin-right: 8px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 </style>

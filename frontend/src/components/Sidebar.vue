@@ -7,9 +7,7 @@
           <router-link :to="feature.path" class="nav-link">
             <div class="nav-icon">
               <!-- 使用Element Plus图标 -->
-              <el-icon v-if="feature.icon" size="20">
-                <component :is="feature.icon" />
-              </el-icon>
+              <i v-if="feature.icon" class="iconfont" :class="feature.icon" />
               <!--  fallback到默认图标 -->
               <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
@@ -54,6 +52,10 @@ onMounted(async () => {
   left: 0;
   transition: all 0.3s ease;
   overflow-y: auto;
+}
+
+.iconfont {
+  font-size: 22px !important;
 }
 
 .sidebar-nav {

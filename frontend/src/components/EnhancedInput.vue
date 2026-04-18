@@ -10,9 +10,7 @@
       size="large"
   >
     <template #prefix>
-      <el-icon>
-        <component :is="icon" />
-      </el-icon>
+      <i class="iconfont" :class="icon" />
     </template>
     <slot name="prefix"></slot>
     <slot name="suffix"></slot>
@@ -32,7 +30,7 @@ const props = defineProps({
     required: true
   },
   icon: {
-    type: Object,
+    type: String,
     required: true
   },
   type: {

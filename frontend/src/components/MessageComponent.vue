@@ -2,13 +2,9 @@
   <transition name="message-fade" @after-leave="handleClose">
     <div v-show="visible" :class="['custom-message', `custom-message--${type}`]">
       <div class="message-content">
-        <el-icon v-if="iconComponent" :class="['message-icon', iconClass]">
-          <component :is="iconComponent" />
-        </el-icon>
+        <i :class="['message-icon', 'iconfont', iconFontClass]"></i>
         <span class="message-text">{{ message }}</span>
-        <el-icon class="message-close" @click="close">
-          <Close />
-        </el-icon>
+        <i class="message-close iconfont icon-close" @click="close"></i>
       </div>
     </div>
   </transition>
@@ -16,7 +12,6 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Close, CircleCheckFilled, CircleCloseFilled, WarningFilled, InfoFilled } from '@element-plus/icons-vue'
 
 const props = defineProps({
   id: String,
@@ -35,18 +30,14 @@ const props = defineProps({
 
 const visible = ref(false)
 
-const iconComponent = computed(() => {
+const iconFontClass = computed(() => {
   const icons = {
-    success: CircleCheckFilled,
-    error: CircleCloseFilled,
-    warning: WarningFilled,
-    info: InfoFilled
+    success: 'icon-checkbox',
+    error: 'icon-close-box',
+    warning: 'icon-warning-box',
+    info: 'icon-info-box'
   }
   return icons[props.type]
-})
-
-const iconClass = computed(() => {
-  return `icon-${props.type}`
 })
 
 onMounted(() => {
@@ -89,23 +80,23 @@ const handleClose = () => {
 }
 
 .message-icon {
-  font-size: 20px;
+  font-size: 20px !important;
   flex-shrink: 0;
 }
 
-.icon-success {
+.icon-checkbox {
   color: #81D4FA;
 }
 
-.icon-error {
+.icon-close-box {
   color: #F87171;
 }
 
-.icon-warning {
+.icon-warning-box {
   color: #FFB74D;
 }
 
-.icon-info {
+.icon-info-box {
   color: #64B5F6;
 }
 
@@ -117,7 +108,7 @@ const handleClose = () => {
 }
 
 .message-close {
-  font-size: 16px;
+  font-size: 16px !important;
   color: #a0aec0;
   cursor: pointer;
   transition: all 0.3s ease;

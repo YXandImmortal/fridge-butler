@@ -14,7 +14,7 @@
         <EnhancedInput
             v-model="registerForm.username"
             placeholder="请输入用户名（最多50个字符）"
-            :icon="User"
+            icon="icon-contact"
         />
       </el-form-item>
 
@@ -22,7 +22,7 @@
         <EnhancedInput
             v-model="registerForm.password"
             placeholder="请输入密码"
-            :icon="Lock"
+            icon="icon-lock"
             type="password"
             :show-password="true"
         />
@@ -32,7 +32,7 @@
         <EnhancedInput
             v-model="registerForm.confirmPassword"
             placeholder="请再次输入密码"
-            :icon="Lock"
+            icon="icon-lock"
             type="password"
             :show-password="true"
         />
@@ -42,7 +42,7 @@
         <EnhancedInput
             v-model="registerForm.mobile"
             placeholder="请输入手机号码"
-            :icon="Phone"
+            icon="icon-device-phone"
         />
       </el-form-item>
 
@@ -60,7 +60,6 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { User, Lock, Phone } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import request from '@/utils/request'
 import showMessage from '@/utils/message'

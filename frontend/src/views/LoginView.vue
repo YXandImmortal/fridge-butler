@@ -14,7 +14,7 @@
         <EnhancedInput
             v-model="loginForm.account"
             placeholder="请输入用户名或手机号"
-            :icon="User"
+            icon="icon-contact"
         />
       </el-form-item>
 
@@ -22,7 +22,7 @@
         <EnhancedInput
             v-model="loginForm.password"
             placeholder="请输入密码"
-            :icon="Lock"
+            icon="icon-lock"
             type="password"
             :show-password="true"
         />
@@ -35,11 +35,11 @@
           </el-checkbox>
           <el-tooltip
               content="勾选后30天内无需输入密码自动登录"
-              placement="top"
+              placement="right"
               effect="light"
               :show-after="200"
           >
-            <el-icon class="tips-icon"><QuestionFilled /></el-icon>
+            <i class="tips-icon iconfont icon-info-box" />
           </el-tooltip>
         </div>
       </el-form-item>
@@ -58,7 +58,6 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { User, Lock , QuestionFilled} from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useSystemStore } from '@/stores/system'

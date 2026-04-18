@@ -4,49 +4,66 @@
     <div class="header-left">
       <div class="logo-container">
         <div class="logo-icon">
-<!--          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">-->
-<!--            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>-->
-<!--          </svg>-->
           <Logo />
         </div>
         <h1 class="app-title">{{ systemName || '冰箱管理系统' }}</h1>
       </div>
     </div>
 
+    <!-- 中间文本 -->
+    <div class="header-center">
+      <span class="header-center-text">引擎启动 · 新鲜常驻</span>
+    </div>
+
     <!-- 右侧用户信息和操作 -->
     <div class="header-right">
       <!-- 通知图标 -->
       <div class="notification-icon">
-<!--        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">-->
-<!--          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>-->
-<!--        </svg>-->
-        <el-icon size="24">
-          <BellFilled />
-        </el-icon>
+        <i class="iconfont icon-notification" />
         <span class="notification-badge">3</span>
       </div>
 
       <!-- 用户信息 -->
-      <div class="user-info">
+      <div class="user-info" 
+           @mouseenter="handleMouseEnter" 
+           @mouseleave="handleMouseLeave"
+           @click="toggleUserMenu"
+           @keydown="handleKeydown"
+           tabindex="0"
+           role="button"
+           :aria-expanded="showUserMenu">
         <div class="user-avatar">
-<!--          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">-->
-<!--            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>-->
-<!--          </svg>-->
-          <el-icon size="20">
-            <Avatar />
-          </el-icon>
+          <i class="iconfont icon-avatar" />
         </div>
         <span class="user-name">{{ username }}</span>
+        <i class="iconfont icon-chevron-down user-arrow" :class="{ 'rotate-180': showUserMenu }" />
+        
+        <!-- 下拉菜单 -->
+        <div class="user-dropdown" 
+             ref="dropdownRef" 
+             v-show="showUserMenu" 
+             @mouseenter="clearHideTimer"
+             @mouseleave="startHideTimer">
+          <div class="dropdown-item" 
+               @click="goToProfile"
+               @keydown.enter="goToProfile"
+               tabindex="0"
+               role="menuitem">个人中心<i class="iconfont icon-user" /></div>
+          <div class="dropdown-item" 
+               @click="logout"
+               @keydown.enter="logout"
+               tabindex="0"
+               role="menuitem" style="color: var(--danger-color)">退出登录<i class="iconfont icon-logout" /></div>
+        </div>
       </div>
     </div>
   </header>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useUserStore } from "@/stores/user.js"
 import { useSystemStore } from "@/stores/system.js"
-import {Avatar, BellFilled} from "@element-plus/icons-vue";
 import Logo from './Logo.vue'
 
 const userStore = useUserStore()
@@ -54,11 +71,94 @@ const systemStore = useSystemStore()
 const { username, initUser } = userStore;
 const { systemName, getSystemInfo } = systemStore;
 
+// 控制下拉菜单显示/隐藏
+const showUserMenu = ref(false);
+const dropdownRef = ref(null);
+let hideTimer = null;
+
 // 初始化用户信息和系统信息
 onMounted(async () => {
   initUser()
   await getSystemInfo()
 })
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+    hideTimer = null;
+  }
+})
+
+// 鼠标进入处理
+const handleMouseEnter = () => {
+  clearHideTimer();
+  showUserMenu.value = true;
+}
+
+// 鼠标离开处理
+const handleMouseLeave = () => {
+  startHideTimer();
+}
+
+// 清除隐藏定时器
+const clearHideTimer = () => {
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+    hideTimer = null;
+  }
+}
+
+// 开始隐藏定时器
+const startHideTimer = () => {
+  hideTimer = setTimeout(() => {
+    showUserMenu.value = false;
+  }, 300); // 300ms延迟，给用户足够时间移动鼠标到下拉菜单
+}
+
+// 切换用户菜单显示/隐藏
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value;
+  clearHideTimer();
+}
+
+// 键盘事件处理
+const handleKeydown = (event) => {
+  switch (event.key) {
+    case 'Enter':
+    case ' ':
+      event.preventDefault();
+      toggleUserMenu();
+      break;
+    case 'Escape':
+      showUserMenu.value = false;
+      break;
+    case 'Tab':
+      if (showUserMenu.value) {
+        // 如果菜单打开，Tab键应该先聚焦到菜单项
+        event.preventDefault();
+        setTimeout(() => {
+          const firstMenuItem = dropdownRef.value?.querySelector('.dropdown-item');
+          firstMenuItem?.focus();
+        }, 0);
+      }
+      break;
+  }
+}
+
+// 个人中心
+const goToProfile = () => {
+  console.log('跳转到个人中心');
+  // 这里可以添加跳转到个人中心页面的逻辑
+  showUserMenu.value = false;
+}
+
+// 退出登录
+const logout = () => {
+  console.log('退出登录');
+  // 这里可以添加退出登录的逻辑
+  showUserMenu.value = false;
+}
 </script>
 
 <style scoped>
@@ -90,6 +190,10 @@ onMounted(async () => {
   gap: 12px;
 }
 
+.iconfont.icon-avatar {
+  font-size: 28px !important;
+}
+
 .logo-icon {
   width: 50px;
   height: 50px;
@@ -115,6 +219,21 @@ onMounted(async () => {
   margin: 0;
 }
 
+.header-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.header-center-text {
+  letter-spacing: 15px;
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
 .header-right {
   display: flex;
   align-items: center;
@@ -127,7 +246,6 @@ onMounted(async () => {
   color: var(--text-secondary);
   transition: all 0.3s ease;
   vertical-align: middle;
-  margin-top: 6px;
 }
 
 .notification-icon:hover {
@@ -135,9 +253,10 @@ onMounted(async () => {
   transform: scale(1.1);
 }
 
-.notification-icon svg {
-  width: 24px;
-  height: 24px;
+.notification-icon i {
+  width: 30px;
+  height: 30px;
+  font-size: 30px !important;
 }
 
 .notification-badge {
@@ -194,6 +313,75 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+}
+
+.user-arrow {
+  font-size: 20px !important;
+  color: var(--text-secondary);
+  transition: transform 0.3s ease;
+}
+
+.user-info:hover .user-arrow,
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+.user-info:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 下拉菜单样式 */
+.user-dropdown {
+  position: absolute;
+  top: 49px;
+  right: 24px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 110px;
+  z-index: 1001;
+  animation: dropdown-fade-in 0.3s ease;
+  text-align: center;
+}
+
+@keyframes dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  padding: 10px 16px;
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dropdown-item i {
+  font-size: 14px !important;
+}
+
+.dropdown-item:hover {
+  background: var(--primary-light);
+}
+
+.dropdown-item:first-child {
+  border-radius: 4px 4px 0 0;
+}
+
+.dropdown-item:last-child {
+  border-radius: 0 0 4px 4px;
 }
 
 /* 响应式设计 */
