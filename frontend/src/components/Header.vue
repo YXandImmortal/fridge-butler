@@ -50,8 +50,8 @@
                tabindex="0"
                role="menuitem">个人中心<i class="iconfont icon-user" /></div>
           <div class="dropdown-item" 
-               @click="logout"
-               @keydown.enter="logout"
+               @click="showLogoutConfirm"
+               @keydown.enter="showLogoutConfirm"
                tabindex="0"
                role="menuitem" style="color: var(--danger-color)">退出登录<i class="iconfont icon-logout" /></div>
         </div>
@@ -75,6 +75,9 @@ const { systemName, getSystemInfo } = systemStore;
 const showUserMenu = ref(false);
 const dropdownRef = ref(null);
 let hideTimer = null;
+
+// 定义事件
+const emit = defineEmits(['show-logout-dialog']);
 
 // 初始化用户信息和系统信息
 onMounted(async () => {
@@ -153,11 +156,11 @@ const goToProfile = () => {
   showUserMenu.value = false;
 }
 
-// 退出登录
-const logout = () => {
-  console.log('退出登录');
-  // 这里可以添加退出登录的逻辑
+// 显示登出确认对话框
+const showLogoutConfirm = () => {
   showUserMenu.value = false;
+  // 触发事件，通知父组件显示登出确认对话框
+  emit('show-logout-dialog');
 }
 </script>
 

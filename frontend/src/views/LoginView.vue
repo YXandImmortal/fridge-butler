@@ -137,4 +137,37 @@ const handleRegister = () => {
 
 <style scoped>
 @import '@/assets/theme.css';
+
+/* 认证表单 */
+.auth-form {
+    margin-top: 10px;
+}
+
+.auth-form :deep(.el-form-item) {
+    margin-bottom: 20px;
+}
+
+/* 记住我选项 */
+.remember-me-item {
+    margin-bottom: 24px !important;
+}
+
+.remember-me-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 提示图标 */
+.tips-icon {
+    color: var(--primary-color);
+    font-size: 20px !important;
+    cursor: help;
+    transition: all 0.3s ease;
+}
+
+.tips-icon:hover {
+    color: var(--primary-dark);
+    transform: scale(1.1);
+}
 </style>

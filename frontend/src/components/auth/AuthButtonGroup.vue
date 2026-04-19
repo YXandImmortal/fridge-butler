@@ -59,17 +59,52 @@ const secondaryAction = () => {
 <style scoped>
 @import '@/assets/theme.css';
 
+/* 按钮组 */
+.button-group {
+    margin-bottom: 0 !important;
+    display: flex;
+    gap: 12px;
+}
+
+/* 主要按钮（登录/注册） */
+.auth-primary-btn {
+    flex: 1;
+    background: radial-gradient(ellipse, var(--primary-color), var(--primary-dark));
+    border: none;
+}
+
+/* 次要按钮（返回/跳转） */
+.auth-secondary-btn {
+    flex: 1;
+    background: var(--card-bg);
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.auth-secondary-btn:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-dark);
+    color: var(--primary-dark);
+}
+
 .auth-loading-icon {
-  margin-right: 8px;
-  animation: spin 1s linear infinite;
+    margin-right: 8px;
+    animation: spin 2s linear infinite;
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .button-group {
+        flex-direction: column;
+    }
 }
 </style>

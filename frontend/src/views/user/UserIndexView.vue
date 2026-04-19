@@ -1,7 +1,9 @@
 <template>
   <div class="index-container">
     <!-- 头部组件 -->
-    <Header />
+    <Header 
+      @show-logout-dialog="showLogoutDialog = true"
+    />
 
     <!-- 主体内容区域 -->
     <div class="main-content-wrapper">
@@ -16,23 +18,50 @@
 
     <!-- 底部版权信息 -->
     <CopyrightFooter />
+    
+    <!-- 登出确认对话框 -->
+    <ConfirmDialog
+      v-model:visible="showLogoutDialog"
+      title="退出登录"
+      message="您确定要退出登录吗？"
+      confirm-text="确定"
+      cancel-text="取消"
+      @confirm="handleLogout"
+    />
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import Header from '@/components/Header.vue';
 import Sidebar from '@/components/Sidebar.vue';
 import CopyrightFooter from '@/components/CopyrightFooter.vue';
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import showMessage from '@/utils/message'
 import { useSystemStore } from '@/stores/system';
+import { useUserStore } from '@/stores/user';
+import router from "@/router/index.js";
 
 const systemStore = useSystemStore();
+const userStore = useUserStore();
 const { getSystemInfo } = systemStore;
+const { logout } = userStore;
+
+// 控制登出确认对话框显示/隐藏
+const showLogoutDialog = ref(false);
 
 // 初始化系统信息
 onMounted(async () => {
   await getSystemInfo();
 });
+
+// 处理退出登录
+const handleLogout = () => {
+  logout();
+  showLogoutDialog.value = false;
+  router.push('/login');
+  showMessage.info("已退出登录")
+};
 </script>
 
 <style scoped>

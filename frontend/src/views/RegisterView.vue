@@ -162,4 +162,13 @@ const handleBackToLogin = () => {
 
 <style scoped>
 @import '@/assets/theme.css';
+
+/* 认证表单 */
+.auth-form {
+    margin-top: 10px;
+}
+
+.auth-form :deep(.el-form-item) {
+    margin-bottom: 20px;
+}
 </style>
