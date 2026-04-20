@@ -1,5 +1,6 @@
 package com.yx.fridgebutler.service.impl;
 
+import com.yx.fridgebutler.dto.UpdateRequest;
 import com.yx.fridgebutler.dto.UserInfoDTO;
 import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.entity.SysUser;
@@ -32,15 +33,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserInfoDTO getUserInfo() {
         // 从SecurityContextHolder中获取当前用户名
-        String username = null;
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            username = authentication.getName();
-        }
-        if (username == null) {
-            throw BusinessException.notFound();
-        }
-        log.info("获取用户信息，用户名：{}", username);
+        String username = getUsernameFromToken();
 
         // 查询用户信息
         SysUser user = userRepository.findByUsername(username)
@@ -60,5 +53,36 @@ public class UserServiceImpl implements UserService {
                         .atZone(ZONE_ID_SHANGHAI)
                         .format(DATE_TIME_FORMATTER))
                 .build();
+    }
+
+    @Override
+    public void updateUser(UpdateRequest request) {
+        // 从SecurityContextHolder中获取当前用户名
+        String currentUsername = getUsernameFromToken();
+
+        // 查询用户信息
+        SysUser user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(BusinessException::notFound);
+
+        // 更新用户信息
+        user.setUsername(request.getUsername());
+        user.setMobile(request.getMobile());
+
+        // 保存更新
+        userRepository.save(user);
+        log.info("用户信息更新成功，用户名：{}，手机号：{}", request.getUsername(), request.getMobile());
+    }
+
+    private static String getUsernameFromToken() {
+        String username = null;
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            username = authentication.getName();
+        }
+        if (username == null) {
+            throw BusinessException.notFound();
+        }
+        log.info("获取用户信息，用户名：{}", username);
+        return username;
     }
 }

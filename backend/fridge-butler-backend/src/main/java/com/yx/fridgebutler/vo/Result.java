@@ -43,8 +43,8 @@ public class Result<T> {
     }
 
 
-    public static <T> Result<T> error(Integer code, String message) {
-        return Result.<T>builder()
+    public static Result<Void> error(Integer code, String message) {
+        return Result.<Void>builder()
                 .code(code)
                 .message(message)
                 .data(null)

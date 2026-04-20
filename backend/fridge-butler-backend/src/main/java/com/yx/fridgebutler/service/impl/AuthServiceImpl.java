@@ -10,7 +10,9 @@ import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.SysRoleRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.service.AuthService;
+import com.yx.fridgebutler.util.CaptchaManager;
 import com.yx.fridgebutler.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Long NORMAL_USER_ROLE_ID = 2L;
+    private static final String DEFAULT_AVATAR_ID = "bot";
 
     @Autowired
     private SysUserRepository userRepository;
@@ -38,6 +41,9 @@ public class AuthServiceImpl implements AuthService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
+    private CaptchaManager captchaManager;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
     @Value("${jwt.expiration}")
@@ -47,8 +53,14 @@ public class AuthServiceImpl implements AuthService {
     private Long rememberMeExpiration;
 
     @Override
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         log.info("用户登录请求，账号：{}", request.getAccount());
+
+        // 验证验证码
+        if (request.getCaptchaId() == null || !captchaManager.verifyCaptcha(request.getCaptchaId(), request.getCaptcha())) {
+            log.error("登陆失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
+            throw BusinessException.loginCaptchaError();
+        }
 
         SysUser user = userRepository.findByUsernameOrMobile(
                         request.getAccount() == null ? "" : request.getAccount().trim(),
@@ -103,8 +115,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void registerUser(RegisterRequest request) {
+    public void registerUser(RegisterRequest request, HttpServletRequest httpRequest) {
         log.info("普通用户注册请求，用户名：{}", request.getUsername());
+
+        if (request.getCaptchaId() == null || !captchaManager.verifyCaptcha(request.getCaptchaId(), request.getCaptcha())) {
+            log.error("注册失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
+            throw BusinessException.loginCaptchaError();
+        }
 
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             log.error("普通用户注册失败，用户名：{}两次密码不一致", request.getUsername());
@@ -141,6 +158,7 @@ public class AuthServiceImpl implements AuthService {
         user.setRoleId(NORMAL_USER_ROLE_ID);
         user.setCreateTime(Instant.now());
         user.setUpdateTime(Instant.now());
+        user.setAvatar(DEFAULT_AVATAR_ID);
         user.setIsDeleted(false);
 
         userRepository.save(user);

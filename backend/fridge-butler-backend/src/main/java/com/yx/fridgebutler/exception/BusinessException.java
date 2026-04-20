@@ -41,6 +41,10 @@ public class BusinessException extends RuntimeException {
         return new BusinessException(ResultCode.LOGIN_FAILED_ROLE_NOT_FOUND);
     }
 
+    public static BusinessException loginCaptchaError() {
+        return new BusinessException(ResultCode.LOGIN_FAILED_CAPTCHA_ERROR);
+    }
+
     public static BusinessException registerUserExist() {
         return new BusinessException(ResultCode.REGISTER_FAILED_USER_EXIST);
     }

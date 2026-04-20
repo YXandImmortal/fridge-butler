@@ -22,6 +22,7 @@ public enum ResultCode {
     LOGIN_FAILED_USER_INFO_WRONG(401, "用户名或密码错误"),
     LOGIN_FAILED_ACCOUNT_DISABLED(403, "账号已被禁用"),
     LOGIN_FAILED_ROLE_NOT_FOUND(404, "角色不存在"),
+    LOGIN_FAILED_CAPTCHA_ERROR(400, "验证码错误"),
 
     /**
      * 注册状态码

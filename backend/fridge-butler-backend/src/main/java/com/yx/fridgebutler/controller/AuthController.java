@@ -6,6 +6,7 @@ import com.yx.fridgebutler.dto.RegisterRequest;
 import com.yx.fridgebutler.enums.ResultCode;
 import com.yx.fridgebutler.service.AuthService;
 import com.yx.fridgebutler.vo.Result;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,14 +22,14 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public Result<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse response = authService.login(request);
+    public Result<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        LoginResponse response = authService.login(request, httpRequest);
         return Result.success(ResultCode.LOGIN_SUCCESS, response);
     }
 
     @PostMapping("/register/user")
-    public Result<Void> registerUser(@Valid @RequestBody RegisterRequest request) {
-        authService.registerUser(request);
+    public Result<Void> registerUser(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+        authService.registerUser(request, httpRequest);
         return Result.success(ResultCode.REGISTER_SUCCESS, null);
     }
 }

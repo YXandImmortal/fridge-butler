@@ -13,7 +13,7 @@ import java.util.List;
 @RequestMapping("/system")
 public class SystemController {
     public static final String SYSTEM_NAME = "智鲜·引擎";
-    public static final String SYSTEM_VERSION = "alpha 0.0.3";
+    public static final String SYSTEM_VERSION = "alpha 0.0.4";
     public static final List<SidebarFeature> USER_INDEX_FEATURES;
 
     static {
