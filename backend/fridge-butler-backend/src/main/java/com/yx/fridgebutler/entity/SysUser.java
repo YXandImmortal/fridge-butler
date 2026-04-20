@@ -53,5 +53,10 @@ public class SysUser {
     @ColumnDefault("0")
     @Column(name = "is_deleted")
     private Boolean isDeleted;
+    @Size(max = 20)
+    @NotNull
+    @ColumnDefault("'bot'")
+    @Column(name = "avatar", nullable = false, length = 20)
+    private String avatar;
 
 }

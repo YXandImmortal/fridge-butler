@@ -18,10 +18,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
+    private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Long NORMAL_USER_ROLE_ID = 2L;
 
     @Autowired
@@ -85,10 +89,15 @@ public class AuthServiceImpl implements AuthService {
         return LoginResponse.builder()
                 .token(token)
                 .username(user.getUsername())
+                .mobile(user.getMobile())
                 .roleName(role.getRoleName())
+                .createTime(user.getCreateTime()
+                        .atZone(ZONE_ID_SHANGHAI)
+                        .format(DATE_TIME_FORMATTER))
                 .roleId(user.getRoleId())
                 .userId(user.getId())
                 .rememberMe(rememberMe)
+                .avatar(user.getAvatar())
                 .expireTime(expireTime)
                 .build();
     }
