@@ -33,7 +33,7 @@
            role="button"
            :aria-expanded="showUserMenu">
         <div class="user-avatar">
-          <i class="iconfont icon-avatar" />
+          <Avatar :avatar-id="avatar" size="small" />
         </div>
         <span class="user-name">{{ username }}</span>
         <i class="iconfont icon-chevron-down user-arrow" :class="{ 'rotate-180': showUserMenu }" />
@@ -45,8 +45,8 @@
              @mouseenter="clearHideTimer"
              @mouseleave="startHideTimer">
           <div class="dropdown-item" 
-               @click="goToProfile"
-               @keydown.enter="goToProfile"
+               @click="goToUserCenter"
+               @keydown.enter="goToUserCenter"
                tabindex="0"
                role="menuitem">个人中心<i class="iconfont icon-user" /></div>
           <div class="dropdown-item" 
@@ -65,10 +65,12 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { useUserStore } from "@/stores/user.js"
 import { useSystemStore } from "@/stores/system.js"
 import Logo from './Logo.vue'
+import Avatar from './Avatar.vue'
+import router from "@/router/index.js";
 
 const userStore = useUserStore()
 const systemStore = useSystemStore()
-const { username, initUser } = userStore;
+const { username, avatar, initUser } = userStore;
 const { systemName, getSystemInfo } = systemStore;
 
 // 控制下拉菜单显示/隐藏
@@ -150,9 +152,8 @@ const handleKeydown = (event) => {
 }
 
 // 个人中心
-const goToProfile = () => {
-  console.log('跳转到个人中心');
-  // 这里可以添加跳转到个人中心页面的逻辑
+const goToUserCenter = () => {
+  router.push('/user/center');
   showUserMenu.value = false;
 }
 
@@ -293,23 +294,10 @@ const showLogoutConfirm = () => {
 .user-avatar {
   width: 36px;
   height: 36px;
-  background: var(--primary-light);
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary-color);
   transition: all 0.3s ease;
-}
-
-.user-info:hover .user-avatar {
-  background: var(--primary-color);
-  color: white;
-}
-
-.user-avatar svg {
-  width: 20px;
-  height: 20px;
 }
 
 .user-name {

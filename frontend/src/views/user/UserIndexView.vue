@@ -81,7 +81,6 @@ const handleLogout = () => {
 .main-content {
   flex: 1;
   margin-left: 240px; /* 与侧边栏宽度一致 */
-  padding: 24px;
   background: var(--page-bg);
   min-height: calc(100vh - 64px - 80px); /* 视口高度减去头部和底部高度 */
   transition: all 0.3s ease;

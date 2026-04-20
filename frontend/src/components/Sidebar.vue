@@ -42,7 +42,7 @@ onMounted(async () => {
 
 <style scoped>
 .app-sidebar {
-  width: 200px;
+  width: 240px;
   height: calc(100vh - 64px);
   background: var(--glass-bg);
   backdrop-filter: blur(10px);

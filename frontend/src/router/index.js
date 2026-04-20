@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import UserIndexView from "@/views/user/UserIndexView.vue";
 import SuperAdminIndex from "@/views/super-admin/SuperAdminIndex.vue";
+import UserCenterView from "@/views/user/UserCenterView.vue";
 
 const LoginView = () => import('@/views/LoginView.vue')
 const RegisterView = () => import('@/views/RegisterView.vue')
@@ -13,6 +14,15 @@ const router = createRouter({
       path: '/user/index',
       name: 'user-index',
       component: UserIndexView,
+      meta: {
+        requiresAuth: true,
+        roles: [2] // 普通用户 roleId=2
+      }
+    },
+    {
+      path: '/user/center',
+      name: 'user-center',
+      component: UserCenterView,
       meta: {
         requiresAuth: true,
         roles: [2] // 普通用户 roleId=2

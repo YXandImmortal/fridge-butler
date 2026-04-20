@@ -1,15 +1,18 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import {defineStore} from 'pinia'
+import {ref} from 'vue'
 import request from '@/utils/request'
 
 export const useUserStore = defineStore('user', () => {
     // 状态变量（对应后端LoginResponse的字段）
     const token = ref('')
     const username = ref('')
+    const mobile = ref('')
+    const createTime = ref('')
     const roleName = ref('')
     const roleId = ref('')
     const userId = ref('')
     const rememberMe = ref(false)
+    const avatar = ref('')
     const expireTime = ref(0)
 
     // 初始化：从localStorage加载状态（页面刷新后保留登录状态）
@@ -27,10 +30,13 @@ export const useUserStore = defineStore('user', () => {
         if (info) {
             token.value = info.token
             username.value = info.username
+            mobile.value = info.mobile
+            createTime.value = info.createTime
             roleName.value = info.roleName
             roleId.value = info.roleId
             userId.value = info.userId
             rememberMe.value = info.rememberMe || false
+            avatar.value = info.avatar
             expireTime.value = info.expireTime || 0
 
             // 检查token是否过期
@@ -61,26 +67,34 @@ export const useUserStore = defineStore('user', () => {
             const {
                 token: resToken,
                 username: resName,
+                mobile: resMobile,
+                createTime: resCreateTime,
                 roleName: resRole,
                 roleId: resRoleId,
                 userId: resId,
                 rememberMe: resRememberMe,
+                avatar: resAvatar,
                 expireTime: resExpireTime
             } = res.data
 
             // 更新状态
             token.value = resToken
             username.value = resName
+            mobile.value = resMobile
+            createTime.value = resCreateTime
             roleName.value = resRole
             roleId.value = resRoleId
             userId.value = resId
             rememberMe.value = resRememberMe || false
+            avatar.value = resAvatar
             expireTime.value = resExpireTime || 0
 
             // 构建用户信息对象
             const userInfo = {
                 token: resToken,
                 username: resName,
+                mobile: resMobile,
+                createTime: resCreateTime,
                 roleName: resRole,
                 roleId: resRoleId,
                 userId: resId,
@@ -109,14 +123,67 @@ export const useUserStore = defineStore('user', () => {
     const logout = () => {
         token.value = ''
         username.value = ''
+        mobile.value = ''
+        createTime.value = ''
         roleName.value = ''
         roleId.value = ''
         userId.value = ''
         rememberMe.value = false
+        avatar.value = ''
         expireTime.value = 0
         localStorage.removeItem('userInfo')
         sessionStorage.removeItem('userInfo')
     }
 
-    return { token, username, roleName, roleId, userId, rememberMe, expireTime, initUser, login, logout }
+    // 获取用户信息
+    const getUserInfo = async () => {
+        try {
+            // 先从本地存储获取用户信息
+            const userInfo = localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo');
+            if (userInfo) {
+                const parsedInfo = JSON.parse(userInfo);
+                // 检查token是否过期
+                if (parsedInfo.expireTime && Date.now() > parsedInfo.expireTime) {
+                    // token已过期，清除存储并请求后端
+                    logout();
+                } else {
+                    // 返回本地存储的用户信息
+                    return parsedInfo;
+                }
+            }
+
+            // 本地存储没有或token过期，请求后端
+            const res = await request({
+                url: '/user/info',
+                method: 'get'
+            });
+
+            if (res.code === 200 && res.data) {
+                return res.data;
+            }
+            return null;
+        } catch (error) {
+            console.error('获取用户信息失败:', error);
+            return null;
+        }
+    }
+
+    // 更新用户信息
+    const updateUserInfo = async (userInfo) => {
+        try {
+            return await request({
+                url: '/user/update',
+                method: 'post',
+                data: {
+                    username: userInfo.username,
+                    mobile: userInfo.mobile
+                }
+            });
+        } catch (error) {
+            console.error('更新用户信息失败:', error);
+            throw error;
+        }
+    }
+
+    return { token, username, mobile, createTime, roleName, roleId, userId, rememberMe, avatar, expireTime, initUser, login, logout, getUserInfo, updateUserInfo }
 })

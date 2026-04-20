@@ -46,6 +46,9 @@ onMounted(async () => {
   border-top: 1px solid rgba(100, 181, 246, 0.15);
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
   position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   box-sizing: border-box;
 }
 

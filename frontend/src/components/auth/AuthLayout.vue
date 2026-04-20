@@ -36,7 +36,10 @@ const props = defineProps({
 /* 认证页面容器 */
 .auth-page {
     min-height: 100vh;
-    background: var(--page-bg);
+    background-image: url("@/assets/images/auth-bg.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+  background-position: center;
     display: flex;
     flex-direction: column;
     align-items: center;
