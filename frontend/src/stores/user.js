@@ -171,14 +171,53 @@ export const useUserStore = defineStore('user', () => {
     // 更新用户信息
     const updateUserInfo = async (userInfo) => {
         try {
-            return await request({
+            const res = await request({
                 url: '/user/update',
-                method: 'post',
+                method: 'patch',
                 data: {
                     username: userInfo.username,
                     mobile: userInfo.mobile
                 }
             });
+
+            // 后端更新成功后，更新本地存储和状态
+            if (res.code === 200) {
+                // 更新状态变量
+                username.value = userInfo.username;
+                mobile.value = userInfo.mobile;
+
+                // 检查并更新本地存储
+                let storageInfo = null;
+                let storageType = null;
+
+                // 先检查localStorage
+                const localInfo = localStorage.getItem('userInfo');
+                if (localInfo) {
+                    storageInfo = JSON.parse(localInfo);
+                    storageType = 'local';
+                } else {
+                    // 再检查sessionStorage
+                    const sessionInfo = sessionStorage.getItem('userInfo');
+                    if (sessionInfo) {
+                        storageInfo = JSON.parse(sessionInfo);
+                        storageType = 'session';
+                    }
+                }
+
+                // 如果存在存储的用户信息，则更新
+                if (storageInfo) {
+                    storageInfo.username = userInfo.username;
+                    storageInfo.mobile = userInfo.mobile;
+                    
+                    if (storageType === 'local') {
+                        localStorage.setItem('userInfo', JSON.stringify(storageInfo));
+                    } else if (storageType === 'session') {
+                        sessionStorage.setItem('userInfo', JSON.stringify(storageInfo));
+                    }
+                }
+            }
+
+            return res;
         } catch (error) {
             console.error('更新用户信息失败:', error);
             throw error;

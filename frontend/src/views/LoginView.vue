@@ -64,7 +64,7 @@ import { useSystemStore } from '@/stores/system'
 import showMessage from '@/utils/message'
 import AuthLayout from "@/components/auth/AuthLayout.vue";
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue";
-import EnhancedInput from "@/components/EnhancedInput.vue";
+import EnhancedInput from "@/components/auth/EnhancedInput.vue";
 
 const router = useRouter()
 const userStore = useUserStore()

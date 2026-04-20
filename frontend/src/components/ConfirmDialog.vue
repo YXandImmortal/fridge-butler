@@ -3,7 +3,10 @@
     <div v-if="visible" class="confirm-dialog-overlay" @click.self="handleCancel">
       <div class="confirm-dialog">
         <div class="dialog-header">
-          <h3 class="dialog-title">{{ title }}</h3>
+          <div class="dialog-title-container">
+            <i class="iconfont icon-alert dialog-icon"></i>
+            <h3 class="dialog-title">{{ title }}</h3>
+          </div>
           <i class="iconfont icon-close dialog-close" @click="handleCancel"></i>
         </div>
         <div class="dialog-content">
@@ -85,6 +88,17 @@ const handleCancel = () => {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px 0;
+}
+
+.dialog-title-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dialog-icon {
+  font-size: 24px;
+  color: #f59e0b;
 }
 
 .dialog-title {
@@ -188,6 +202,14 @@ const handleCancel = () => {
 
   .dialog-header {
     padding: 16px 20px 0;
+  }
+
+  .dialog-icon {
+    font-size: 20px;
+  }
+
+  .dialog-title {
+    font-size: 18px;
   }
 
   .dialog-content {

@@ -16,7 +16,12 @@
           <div class="profile-card">
             <h2 class="profile-title">个人中心</h2>
             <div class="profile-avatar">
-              <Avatar size="x-large" :avatar-id="userForm.avatar" />
+              <div class="avatar-wrapper" @click="handleChangeAvatar">
+                <Avatar size="x-large" :avatar-id="userForm.avatar" />
+                <div class="avatar-edit-icon">
+                  <i class="iconfont icon-edit"></i>
+                </div>
+              </div>
             </div>
             <el-form :model="userForm" label-position="top" class="profile-form">
               <el-form-item label="用户名">
@@ -131,6 +136,12 @@ const handleChangePassword = () => {
   showMessage.info('修改密码功能待实现');
 };
 
+// 修改头像（暂时留空）
+const handleChangeAvatar = () => {
+  // 暂时留空，后续实现
+  showMessage.info('修改头像功能待实现');
+};
+
 // 处理退出登录
 const handleLogout = () => {
   logout();
@@ -187,14 +198,46 @@ const handleLogout = () => {
   animation: fadeIn 0.8s ease-out;
 }
 
-.profile-avatar :deep(.el-avatar) {
+.avatar-wrapper {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.avatar-wrapper:hover {
+  transform: scale(1.05);
+}
+
+.avatar-wrapper :deep(.el-avatar) {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
 }
 
-.profile-avatar :deep(.el-avatar:hover) {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+.avatar-edit-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: var(--primary-color);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  border: 2px solid white;
+}
+
+.avatar-edit-icon:hover {
+  background: var(--primary-dark);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.avatar-edit-icon .iconfont {
+  font-size: 16px;
 }
 
 .profile-card {
