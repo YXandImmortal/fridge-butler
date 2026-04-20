@@ -46,6 +46,26 @@
         />
       </el-form-item>
 
+      <el-form-item prop="captcha">
+        <div class="captcha-container">
+          <EnhancedInput
+              v-model="registerForm.captcha"
+              placeholder="请输入验证码"
+              icon="icon-captcha"
+              style="width: 60%"
+          />
+          <div class="captcha-image-container">
+            <img
+                :src="captchaUrl"
+                alt="验证码"
+                class="captcha-image"
+                @click="refreshCaptcha"
+                title="点击刷新验证码"
+            />
+          </div>
+        </div>
+      </el-form-item>
+
       <AuthButtonGroup
           primary-text="注 册"
           secondary-text="返 回"
@@ -63,6 +83,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import request from '@/utils/request'
 import showMessage from '@/utils/message'
+import axios from 'axios'
 import { useSystemStore } from '@/stores/system'
 import AuthLayout from "@/components/auth/AuthLayout.vue";
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue";
@@ -74,9 +95,16 @@ const { systemName, getSystemInfo } = systemStore;
 const registerFormRef = ref()
 const loading = ref(false)
 
+// 验证码图片URL
+const captchaUrl = ref('/captcha/generate')
+// 验证码ID
+const captchaId = ref('')
+
 // 初始化系统信息
 onMounted(async () => {
   await getSystemInfo()
+  // 初始化验证码
+  await refreshCaptcha()
 })
 
 // 注册表单数据
@@ -84,7 +112,8 @@ const registerForm = reactive({
   username: '',
   password: '',
   confirmPassword: '',
-  mobile: ''
+  mobile: '',
+  captcha: ''
 })
 
 // 自定义验证规则：确认密码
@@ -112,7 +141,32 @@ const registerRules = {
   ],
   mobile: [
     { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }
+  ],
+  captcha: [
+    { required: true, message: '验证码不能为空', trigger: 'blur' },
+    { min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur' }
   ]
+}
+
+// 刷新验证码
+const refreshCaptcha = async () => {
+  try {
+    // 使用axios直接请求验证码，获取响应头中的X-Captcha-Id
+    const response = await axios({
+      url: `/captcha/generate?timestamp=${Date.now()}`,
+      method: 'get',
+      responseType: 'blob',
+      baseURL: import.meta.env.VITE_API_BASE_URL
+    })
+
+    // 从响应头中获取captchaId
+    captchaId.value = response.headers['x-captcha-id'] || ''
+    
+    // 创建图片URL
+    captchaUrl.value = URL.createObjectURL(response.data)
+  } catch (error) {
+    console.error('刷新验证码失败:', error)
+  }
 }
 
 // 注册方法
@@ -124,15 +178,16 @@ const handleRegister = async () => {
 
     loading.value = true
 
+    // 传递captchaId到注册请求
+    const registerData = {
+      ...registerForm,
+      captchaId: captchaId.value
+    }
+
     const res = await request({
       url: '/auth/register/user',
       method: 'post',
-      data: {
-        username: registerForm.username,
-        password: registerForm.password,
-        confirmPassword: registerForm.confirmPassword,
-        mobile: registerForm.mobile
-      }
+      data: registerData
     })
 
     if (res.code === 200) {
@@ -142,12 +197,16 @@ const handleRegister = async () => {
       }, 1500)
     } else {
       showMessage.error(res.message || '注册失败')
+      // 注册失败时刷新验证码
+      await refreshCaptcha()
     }
   } catch (error) {
     if (error?.message) {
       console.log('表单验证失败')
     } else {
       console.error('注册失败:', error)
+      // 异常时刷新验证码
+      refreshCaptcha()
     }
   } finally {
     loading.value = false
@@ -170,5 +229,33 @@ const handleBackToLogin = () => {
 
 .auth-form :deep(.el-form-item) {
     margin-bottom: 20px;
+}
+
+/* 验证码容器 */
+.captcha-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.captcha-image-container {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.captcha-image {
+    width: 130px;
+    height: 50px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px var(--primary-10);
+}
+
+.captcha-image:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px var(--primary-20);
 }
 </style>
