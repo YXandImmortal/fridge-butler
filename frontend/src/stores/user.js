@@ -58,6 +58,8 @@ export const useUserStore = defineStore('user', () => {
             data: {
                 account: loginForm.account,
                 password: loginForm.password,
+                captcha: loginForm.captcha,
+                captchaId: loginForm.captchaId,
                 rememberMe: loginForm.rememberMe
             }
         })
@@ -118,6 +120,7 @@ export const useUserStore = defineStore('user', () => {
 
         return res
     }
+
 
     // 退出登录：清空状态和本地存储
     const logout = () => {

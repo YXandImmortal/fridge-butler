@@ -28,6 +28,26 @@
         />
       </el-form-item>
 
+      <el-form-item prop="captcha">
+        <div class="captcha-container">
+          <EnhancedInput
+              v-model="loginForm.captcha"
+              placeholder="请输入验证码"
+              icon="icon-captcha"
+              style="width: 60%"
+          />
+          <div class="captcha-image-container">
+            <img
+                :src="captchaUrl"
+                alt="验证码"
+                class="captcha-image"
+                @click="refreshCaptcha"
+                title="点击刷新验证码"
+            />
+          </div>
+        </div>
+      </el-form-item>
+
       <el-form-item class="remember-me-item">
         <div class="remember-me-wrapper">
           <el-checkbox v-model="loginForm.rememberMe" class="custom-checkbox">
@@ -62,8 +82,9 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useSystemStore } from '@/stores/system'
 import showMessage from '@/utils/message'
-import AuthLayout from "@/components/auth/AuthLayout.vue";
-import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue";
+import axios from 'axios'
+import AuthLayout from "@/components/auth/AuthLayout.vue"
+import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
 import EnhancedInput from "@/components/auth/EnhancedInput.vue";
 
 const router = useRouter()
@@ -76,12 +97,20 @@ const loading = ref(false)
 // 初始化系统信息
 onMounted(async () => {
   await getSystemInfo()
+  // 初始化验证码
+  await refreshCaptcha()
 })
+
+// 验证码图片URL
+const captchaUrl = ref('/captcha/generate')
+// 验证码ID
+const captchaId = ref('')
 
 // 登录表单数据
 const loginForm = ref({
   account: '',
   password: '',
+  captcha: '',
   rememberMe: false
 })
 
@@ -92,7 +121,32 @@ const loginRules = {
   ],
   password: [
     { required: true, message: '密码不能为空', trigger: 'blur' }
+  ],
+  captcha: [
+    { required: true, message: '验证码不能为空', trigger: 'blur' },
+    { min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur' }
   ]
+}
+
+// 刷新验证码
+const refreshCaptcha = async () => {
+  try {
+    // 使用axios直接请求验证码，获取响应头中的X-Captcha-Id
+    const response = await axios({
+      url: `/captcha/generate?timestamp=${Date.now()}`,
+      method: 'get',
+      responseType: 'blob',
+      baseURL: import.meta.env.VITE_API_BASE_URL
+    })
+
+    // 从响应头中获取captchaId
+    captchaId.value = response.headers['x-captcha-id'] || ''
+    
+    // 创建图片URL
+    captchaUrl.value = URL.createObjectURL(response.data)
+  } catch (error) {
+    console.error('刷新验证码失败:', error)
+  }
 }
 
 // 登录方法
@@ -104,7 +158,12 @@ const handleLogin = async () => {
 
     loading.value = true
 
-    const res = await userStore.login(loginForm.value)
+    // 传递captchaId到登录请求
+    const loginData = {
+      ...loginForm.value,
+      captchaId: captchaId.value
+    }
+    const res = await userStore.login(loginData)
 
     // 校验后端返回的code是否为200
     if (res.code === 200) {
@@ -116,6 +175,8 @@ const handleLogin = async () => {
       await router.push('/user/index')
     } else {
       showMessage.error(res.message || '登录失败')
+      // 登录失败时刷新验证码
+      await refreshCaptcha()
     }
   } catch (error) {
     if (error?.message) {
@@ -123,6 +184,8 @@ const handleLogin = async () => {
     } else {
       // 网络错误等异常情况
       console.error('登录失败:', error)
+      // 异常时刷新验证码
+      refreshCaptcha()
     }
   } finally {
     loading.value = false
@@ -169,5 +232,33 @@ const handleRegister = () => {
 .tips-icon:hover {
     color: var(--primary-dark);
     transform: scale(1.1);
+}
+
+/* 验证码容器 */
+.captcha-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.captcha-image-container {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.captcha-image {
+    width: 130px;
+    height: 50px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px var(--primary-10);
+}
+
+.captcha-image:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px var(--primary-20);
 }
 </style>
