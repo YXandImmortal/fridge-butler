@@ -7,7 +7,7 @@
       :type="type"
       :show-password="showPassword"
       :clearable="clearable"
-      size="large"
+      size="default"
   >
     <template #prefix>
       <i class="iconfont" :class="icon" />
@@ -52,4 +52,24 @@ const emit = defineEmits(['update:modelValue'])
 
 <style scoped>
 @import '@/assets/theme.css';
+
+/* 输入框增强样式 */
+.enhanced-input .iconfont {
+    font-size: 20px !important;
+}
+
+.enhanced-input :deep(.el-input__wrapper) {
+    border-radius: 12px;
+    padding: 10px 16px;
+    box-shadow: 0 2px 8px var(--primary-10);
+    transition: all 0.3s ease;
+}
+
+.enhanced-input :deep(.el-input__wrapper:hover) {
+    box-shadow: 0 4px 12px var(--primary-20);
+}
+
+.enhanced-input :deep(.el-input__wrapper.is-focus) {
+    box-shadow: 0 4px 16px var(--primary-30);
+}
 </style>

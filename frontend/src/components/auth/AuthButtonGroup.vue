@@ -59,6 +59,20 @@ const secondaryAction = () => {
 <style scoped>
 @import '@/assets/theme.css';
 
+/* 按钮增强样式 */
+.enhanced-button {
+  border-radius: 12px;
+  padding: 20px 32px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.enhanced-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--primary-40);
+}
+
 /* 按钮组 */
 .button-group {
     margin-bottom: 0 !important;
