@@ -25,7 +25,7 @@ public class SysUser {
 
     @Size(max = 50)
     @NotNull
-    @Column(name = "username", nullable = false, length = 50)
+    @Column(name = "username", nullable = false, unique = true, length = 50)
     private String username;
 
     @Size(max = 60)
@@ -34,7 +34,7 @@ public class SysUser {
     private String password;
 
     @Size(max = 11)
-    @Column(name = "mobile", length = 11)
+    @Column(name = "mobile", unique = true, length = 11)
     private String mobile;
 
     @NotNull

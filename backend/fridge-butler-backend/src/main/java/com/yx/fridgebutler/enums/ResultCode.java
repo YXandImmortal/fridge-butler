@@ -44,7 +44,8 @@ public enum ResultCode {
      * 修改密码状态码
      * <p>修改密码模块使用</p>
      */
-    CHANGE_PASSWORD_FAILD_NOT_MATCH(400, "两次密码不一致");
+    CHANGE_PASSWORD_FAILD_NOT_MATCH(400, "两次密码不一致"),
+    CHANGE_PASSWORD_FAILD_ORIGINAL_WRONG(400, "原密码错误");
 
     private final Integer code;
     private final String message;

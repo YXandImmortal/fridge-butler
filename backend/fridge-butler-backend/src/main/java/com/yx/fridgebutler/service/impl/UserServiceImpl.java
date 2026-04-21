@@ -74,13 +74,33 @@ public class UserServiceImpl implements UserService {
         SysUser user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(BusinessException::notFound);
 
+        // 如果用户名发生变化，校验新用户名是否已被其他用户占用
+        String newUsername = request.getUsername();
+        if (!currentUsername.equals(newUsername)) {
+            userRepository.findByUsername(newUsername).ifPresent(existingUser -> {
+                if (!existingUser.getId().equals(user.getId())) {
+                    throw BusinessException.registerUserExist();
+                }
+            });
+        }
+
+        // 如果手机号发生变化，校验新手机号是否已被其他用户占用
+        String newMobile = request.getMobile();
+        if (newMobile != null && !newMobile.equals(user.getMobile())) {
+            userRepository.findByUsernameOrMobile(newMobile, newMobile).ifPresent(existingUser -> {
+                if (!existingUser.getId().equals(user.getId())) {
+                    throw BusinessException.registerPhoneExist();
+                }
+            });
+        }
+
         // 更新用户信息
-        user.setUsername(request.getUsername());
-        user.setMobile(request.getMobile());
+        user.setUsername(newUsername);
+        user.setMobile(newMobile);
 
         // 保存更新
         userRepository.save(user);
-        log.info("用户信息更新成功，用户名：{}，手机号：{}", request.getUsername(), request.getMobile());
+        log.info("用户信息更新成功，用户名：{}，手机号：{}", newUsername, request.getMobile());
     }
 
     @Override
@@ -99,6 +119,11 @@ public class UserServiceImpl implements UserService {
 
         SysUser user =  userRepository.findByUsername(username)
                 .orElseThrow(BusinessException::notFound);
+
+        if (!passwordEncoder.matches(request.getOriginalPassword(), user.getPassword())) {
+            log.error("修改密码失败，用户名：{}，原密码错误", username);
+            throw BusinessException.changePasswordOriginalWrong();
+        }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
