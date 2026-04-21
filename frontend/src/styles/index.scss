@@ -1,0 +1,11 @@
+/* =========================================================
+ * 样式统一入口
+ * 按顺序引入：变量 -> Mixins -> 动画 -> Element覆盖 -> 全局 -> 业务公共
+ * ========================================================= */
+
+@import './variables.scss';
+@import './animations.scss';
+@import './mixins.scss';
+@import './element-overrides.scss';
+@import './global.scss';
+@import './auth-common.scss';

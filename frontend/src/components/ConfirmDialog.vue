@@ -76,7 +76,7 @@ const handleCancel = () => {
 
 .confirm-dialog {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   max-width: 300px;
   width: 90%;
@@ -87,18 +87,18 @@ const handleCancel = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px 0;
+  padding: var(--space-5) var(--space-6) 0;
 }
 
 .dialog-title-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2) var(--space-3);
 }
 
 .dialog-icon {
   font-size: 24px;
-  color: #f59e0b;
+  color: var(--warn-color);
 }
 
 .dialog-title {
@@ -109,19 +109,19 @@ const handleCancel = () => {
 }
 
 .dialog-close {
-  font-size: 20px !important;
-  color: #a0aec0;
+  font-size: var(--space-5);
+  color: var(--text-tertiary);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .dialog-close:hover {
-  color: #64B5F6;
+  color: var(--primary-color);
   transform: scale(1.1);
 }
 
 .dialog-content {
-  padding: 24px;
+  padding: var(--space-6);
 }
 
 .dialog-content p {
@@ -135,13 +135,13 @@ const handleCancel = () => {
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  padding: 0 24px 24px;
+  gap: var(--space-3);
+  padding: 0 var(--space-6) var(--space-6);
 }
 
 .dialog-btn {
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -200,7 +200,7 @@ const handleCancel = () => {
   }
 
   .dialog-header {
-    padding: 16px 20px 0;
+    padding: var(--space-4) var(--space-5) 0;
   }
 
   .dialog-icon {
@@ -212,11 +212,11 @@ const handleCancel = () => {
   }
 
   .dialog-content {
-    padding: 20px;
+    padding: var(--space-5);
   }
 
   .dialog-footer {
-    padding: 0 20px 20px;
+    padding: 0 var(--space-5) var(--space-5);
   }
 }
 </style>

@@ -42,20 +42,20 @@ onMounted(async () => {
 
 <style scoped>
 .app-sidebar {
-  width: 240px;
-  height: calc(100vh - 64px);
+  width: var(--sidebar-width);
+  height: calc(100vh - var(--header-height));
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   position: fixed;
-  top: 64px;
+  top: var(--header-height);
   left: 0;
   transition: all 0.3s ease;
   overflow-y: auto;
 }
 
-.iconfont {
-  font-size: 22px !important;
+.nav-icon .iconfont {
+  font-size: 22px;
 }
 
 .sidebar-nav {
@@ -131,7 +131,7 @@ onMounted(async () => {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .app-sidebar {
-    width: 200px;
+    width: var(--sidebar-width-md);
   }
 
   .nav-link {

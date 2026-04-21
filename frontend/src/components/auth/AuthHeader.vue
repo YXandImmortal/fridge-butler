@@ -25,8 +25,6 @@ const props = defineProps({
 </script>
 
 <style scoped>
-@import '@/assets/theme.css';
-
 /* 认证头部 */
 .auth-header {
     text-align: center;
@@ -39,7 +37,7 @@ const props = defineProps({
     font-weight: 700;
     background-color: var(--text-primary);
     margin: 4px 0 8px 0;
-    animation: fadeInDown 0.6s ease-out;
+    animation: fade-in-down 0.6s ease-out;
     transform: translateZ(0);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

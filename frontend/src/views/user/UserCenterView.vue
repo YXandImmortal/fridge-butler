@@ -66,7 +66,7 @@
           </div>
 
           <!-- 编辑信息区域 -->
-          <Transition name="slide">
+          <Transition name="slide-left">
             <div class="edit-card" v-show="showEditCard">
               <div class="edit-content">
                 <!-- 编辑内容将根据编辑类型动态显示 -->
@@ -445,18 +445,18 @@ const handleLogout = (msg) => {
 }
 
 .main-content-wrapper {
-  margin-top: 64px; /* 与头部高度一致 */
+  margin-top: var(--header-height);
 }
 
 .main-content {
-  margin-left: 240px; /* 与侧边栏宽度一致 */
+  margin-left: var(--sidebar-width);
   transition: all 0.3s ease;
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - var(--header-height) - var(--footer-height));
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--main-content-bg);
-  padding: 20px;
+  padding: var(--space-5);
 }
 
 .profile-container {
@@ -466,7 +466,7 @@ const handleLogout = (msg) => {
   justify-content: center;
   align-items: flex-start;
   gap: 32px;
-  animation: fadeInUp 0.6s ease-out;
+  animation: fade-in-up 0.6s ease-out;
   flex-wrap: wrap;
 }
 
@@ -476,7 +476,7 @@ const handleLogout = (msg) => {
   margin-bottom: 12px;
   text-align: center;
   color: var(--text-primary);
-  animation: fadeInDown 0.6s ease-out;
+  animation: fade-in-down 0.6s ease-out;
 }
 
 .edit-title {
@@ -536,63 +536,7 @@ const handleLogout = (msg) => {
   font-size: 16px;
 }
 
-.slide-enter-active {
-  animation: slide-in 0.7s;
-}
 
-.slide-leave-active {
-  animation: slide-out 0.7s;
-}
-
-@keyframes slide-in {
-  0% {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  70% {
-    transform: translateX(15%);
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slide-out {
-  0% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  30% {
-    transform: translateX(15%);
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-}
-
-.switch-enter-active,
-.switch-leave-active {
-  transition: all 0.8s ease;
-
-}
-
-.switch-enter-from {
-  opacity: 0;
-  transform: translateX(50%);
-}
-
-.switch-leave-to {
-  position: fixed;
-  left: 0;
-  top: 0;
-  opacity: 0;
-  transform: translateX(-50%);
-  scale: 0.1;
-}
 
 .profile-card {
   max-width: 600px;
@@ -835,14 +779,14 @@ const handleLogout = (msg) => {
   }
 
   .edit-card {
-    animation: fadeInUp 0.6s ease-out;
+    animation: fade-in-up 0.6s ease-out;
   }
 }
 
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 200px;
-    padding: 16px;
+    margin-left: var(--sidebar-width-md);
+    padding: var(--space-4);
   }
 
   .profile-card,
@@ -873,7 +817,7 @@ const handleLogout = (msg) => {
 @media (max-width: 480px) {
   .main-content {
     margin-left: 0;
-    padding: 12px;
+    padding: var(--space-3);
   }
 
   .profile-card {

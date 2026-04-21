@@ -7,7 +7,7 @@ import router from './router'
 import { useUserStore } from "@/stores/user.js";
 import { setRouter } from '@/utils/navigate'
 
-import './assets/theme.css'
+import './styles/index.scss'
 import '@/assets/iconfont/iconfont.css'
 
 const app = createApp(App)

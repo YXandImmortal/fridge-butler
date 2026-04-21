@@ -1,0 +1,48 @@
+/* =========================================================
+ * 认证页面公共样式
+ * 登录、注册等认证页面共享的样式
+ * ========================================================= */
+
+/* 认证表单基础 */
+.auth-form {
+  margin-top: 10px;
+}
+
+.auth-form .el-form-item {
+  margin-bottom: var(--space-5);
+}
+
+/* 验证码区域 */
+.captcha-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.captcha-image-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.captcha-image {
+  width: 130px;
+  height: 50px;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+
+  &:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px var(--primary-20);
+  }
+}
+
+/* 记住我选项 */
+.remember-me-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}

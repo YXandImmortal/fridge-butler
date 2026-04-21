@@ -58,7 +58,7 @@ const handleClose = () => {
 <style scoped>
 .custom-message {
   position: fixed;
-  top: 20px;
+  top: var(--space-5);
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
@@ -70,53 +70,53 @@ const handleClose = () => {
 .message-content {
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   border: 1px solid rgba(100, 181, 246, 0.2);
 }
 
 .message-icon {
-  font-size: 20px !important;
+  font-size: var(--space-5);
   flex-shrink: 0;
 }
 
 .icon-checkbox {
-  color: #81D4FA;
+  color: var(--success-color);
 }
 
 .icon-close-box {
-  color: #F87171;
+  color: var(--danger-color);
 }
 
 .icon-warning-box {
-  color: #FFB74D;
+  color: var(--warn-color);
 }
 
 .icon-info-box {
-  color: #64B5F6;
+  color: var(--primary-color);
 }
 
 .message-text {
   flex: 1;
   font-size: 14px;
-  color: #2d3748;
+  color: var(--text-primary);
   line-height: 1.5;
 }
 
 .message-close {
-  font-size: 16px !important;
-  color: #a0aec0;
+  font-size: var(--space-4);
+  color: var(--text-tertiary);
   cursor: pointer;
   transition: all 0.3s ease;
   flex-shrink: 0;
 }
 
 .message-close:hover {
-  color: #64B5F6;
+  color: var(--primary-color);
   transform: scale(1.1);
 }
 
@@ -153,7 +153,7 @@ const handleClose = () => {
   }
 
   .message-content {
-    padding: 14px 16px;
+    padding: 14px var(--space-4);
   }
 
   .message-text {

@@ -57,8 +57,6 @@ const secondaryAction = () => {
 </script>
 
 <style scoped>
-@import '@/assets/theme.css';
-
 /* 按钮增强样式 */
 .enhanced-button {
   border-radius: 12px;
@@ -74,10 +72,10 @@ const secondaryAction = () => {
 }
 
 /* 按钮组 */
-.button-group {
-    margin-bottom: 0 !important;
+.button-group.el-form-item {
+    margin-bottom: 0;
     display: flex;
-    gap: 12px;
+    gap: var(--space-3);
 }
 
 /* 主要按钮（登录/注册） */

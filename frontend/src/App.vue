@@ -9,14 +9,5 @@
 </script>
 
 <style>
-/* 全局样式（可选，比如重置默认样式） */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-:root {
-  --page-bg: #f5f5f5;
-}
+/* 全局样式已迁移至 src/styles/global.scss */
 </style>

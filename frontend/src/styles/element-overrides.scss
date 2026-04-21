@@ -1,0 +1,66 @@
+/* =========================================================
+ * Element Plus 全局样式覆盖
+ * 统一在这里管理，避免分散在组件中用 :deep()
+ * ========================================================= */
+
+/* 表单项目默认间距 */
+.el-form-item {
+  margin-bottom: var(--space-5);
+}
+
+/* 输入框增强 */
+.el-input__wrapper {
+  border-radius: var(--radius-md);
+  padding: 4px var(--space-4);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px var(--primary-20);
+  }
+
+  &.is-focus {
+    box-shadow: 0 4px 16px var(--primary-30);
+  }
+}
+
+/* 按钮统一圆角与过渡 */
+.el-button {
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* 复选框 */
+.custom-checkbox .el-checkbox__label {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.custom-checkbox .el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* 禁用输入框背景 */
+.el-input.is-disabled .el-input__wrapper {
+  background-color: var(--white-60);
+  opacity: 0.9;
+}
+
+/* 头像阴影 */
+.avatar-wrapper .el-avatar {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+/* 下拉菜单项圆角修复 */
+.el-dropdown-menu__item:first-child {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.el-dropdown-menu__item:last-child {
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}

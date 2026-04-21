@@ -72,25 +72,25 @@ const handleLogout = () => {
 }
 
 .main-content-wrapper {
-  margin-top: 64px; /* 与头部高度一致 */
+  margin-top: var(--header-height);
 }
 
 .main-content {
-  margin-left: 240px; /* 与侧边栏宽度一致 */
+  margin-left: var(--sidebar-width);
   transition: all 0.3s ease;
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - var(--header-height) - var(--footer-height));
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--main-content-bg);
-  padding: 20px;
+  padding: var(--space-5);
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 200px; /* 与侧边栏宽度一致 */
-    padding: 16px;
+    margin-left: var(--sidebar-width-md);
+    padding: var(--space-4);
   }
 }
 
@@ -98,7 +98,7 @@ const handleLogout = () => {
 @media (max-width: 480px) {
   .main-content {
     margin-left: 0;
-    padding: 12px;
+    padding: var(--space-3);
   }
 }
 </style>

@@ -1,0 +1,149 @@
+/* =========================================================
+ * 全局动画
+ * 所有关键帧与 Vue Transition 的统一定义
+ * ========================================================= */
+
+/* ---------------------------------------------------------
+ * 关键帧动画
+ * --------------------------------------------------------- */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  70% {
+    transform: translateX(15%);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-right {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  30% {
+    transform: translateX(15%);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------------------------------------------------------
+ * Vue Transition 统一类
+ * --------------------------------------------------------- */
+
+/* 淡入淡出 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 向上滑入 */
+.slide-up-enter-active {
+  transition: all 0.4s ease;
+}
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* 向下滑入 */
+.slide-down-enter-active {
+  transition: all 0.4s ease;
+}
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* 从左侧滑入 */
+.slide-left-enter-active {
+  animation: slide-in-right 0.7s ease;
+}
+.slide-left-leave-active {
+  animation: slide-out-right 0.7s ease;
+}
+
+/* 内容切换 */
+.switch-enter-active,
+.switch-leave-active {
+  transition: all 0.8s ease;
+}
+.switch-enter-from {
+  opacity: 0;
+  transform: translateX(50%);
+}
+.switch-leave-to {
+  position: fixed;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  transform: translateX(-50%) scale(0.1);
+}

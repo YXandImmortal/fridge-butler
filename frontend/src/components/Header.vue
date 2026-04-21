@@ -174,7 +174,7 @@ const showLogoutConfirm = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 64px;
+  height: var(--header-height);
   padding: 0 24px;
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
@@ -196,10 +196,6 @@ const showLogoutConfirm = () => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.iconfont.icon-avatar {
-  font-size: 28px !important;
 }
 
 .logo-icon {
@@ -261,10 +257,10 @@ const showLogoutConfirm = () => {
   transform: scale(1.1);
 }
 
-.notification-icon i {
+.notification-icon .iconfont {
   width: 30px;
   height: 30px;
-  font-size: 30px !important;
+  font-size: 30px;
 }
 
 .notification-badge {
@@ -311,7 +307,7 @@ const showLogoutConfirm = () => {
 }
 
 .user-arrow {
-  font-size: 20px !important;
+  font-size: var(--space-5);
   color: var(--text-secondary);
   transition: transform 0.3s ease;
 }
@@ -330,7 +326,7 @@ const showLogoutConfirm = () => {
 /* 下拉菜单样式 */
 .user-dropdown {
   position: absolute;
-  top: 49px;
+  top: calc(var(--header-height) - 15px);
   right: 24px;
   background: white;
   border-radius: 4px;
@@ -363,8 +359,8 @@ const showLogoutConfirm = () => {
   justify-content: space-between;
 }
 
-.dropdown-item i {
-  font-size: 14px !important;
+.dropdown-item .iconfont {
+  font-size: 14px;
 }
 
 .dropdown-item:hover {

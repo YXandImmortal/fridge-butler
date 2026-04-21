@@ -16,11 +16,11 @@
 }
 
 h1 {
-  color: #333;
-  margin-bottom: 20px;
+  color: var(--text-primary);
+  margin-bottom: var(--space-5);
 }
 
 p {
-  color: #666;
+  color: var(--text-secondary);
 }
 </style>

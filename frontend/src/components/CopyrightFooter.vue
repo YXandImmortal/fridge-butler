@@ -64,24 +64,24 @@ onMounted(async () => {
 
 .copyright-text {
   font-size: 14px;
-  color: #4a5568;
+  color: var(--text-primary);
   font-weight: 500;
   letter-spacing: 0.3px;
 }
 
 .divider {
-  color: #cbd5e0;
+  color: var(--text-tertiary);
   font-size: 14px;
   user-select: none;
 }
 
 .font-info {
   font-size: 14px;
-  color: #718096;
+  color: var(--text-secondary);
 }
 
 .font-link {
-  color: #64B5F6;
+  color: var(--primary-color);
   text-decoration: none;
   font-weight: 500;
   transition: all 0.3s ease;
@@ -96,13 +96,13 @@ onMounted(async () => {
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #64B5F6, #81D4FA);
+  background: linear-gradient(90deg, var(--primary-color), var(--success-color));
   transition: width 0.3s ease;
   border-radius: 1px;
 }
 
 .font-link:hover {
-  color: #42A5F5;
+  color: var(--primary-dark);
 }
 
 .font-link:hover::after {

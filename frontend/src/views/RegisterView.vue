@@ -220,42 +220,5 @@ const handleBackToLogin = () => {
 </script>
 
 <style scoped>
-@import '@/assets/theme.css';
-
-/* 认证表单 */
-.auth-form {
-    margin-top: 10px;
-}
-
-.auth-form :deep(.el-form-item) {
-    margin-bottom: 20px;
-}
-
-/* 验证码容器 */
-.captcha-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.captcha-image-container {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-}
-
-.captcha-image {
-    width: 130px;
-    height: 50px;
-    cursor: pointer;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px var(--primary-10);
-}
-
-.captcha-image:hover {
-    opacity: 0.9;
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px var(--primary-20);
-}
+/* 注册页特有样式（公共样式已提取至 auth-common.scss） */
 </style>

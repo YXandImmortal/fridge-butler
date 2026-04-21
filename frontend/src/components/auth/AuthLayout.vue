@@ -31,8 +31,6 @@ const props = defineProps({
 </script>
 
 <style scoped>
-@import '@/assets/theme.css';
-
 /* 认证页面容器 */
 .auth-page {
     min-height: 100vh;
@@ -64,7 +62,7 @@ const props = defineProps({
 .auth-wrapper {
     width: 100%;
     max-width: 480px;
-    animation: fadeInUp 0.6s ease-out;
+    animation: fade-in-up 0.6s ease-out;
     transform: translateZ(0);
     position: relative;
     z-index: 1;
