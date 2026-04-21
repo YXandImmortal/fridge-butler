@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia'
-import {ref} from 'vue'
+import {computed, ref} from 'vue'
 import request from '@/utils/request'
 
 export const useUserStore = defineStore('user', () => {
@@ -14,6 +14,9 @@ export const useUserStore = defineStore('user', () => {
     const rememberMe = ref(false)
     const avatar = ref('')
     const expireTime = ref(0)
+
+    // 计算属性：是否已登录
+    const isLoggedIn = computed(() => !!token.value)
 
     // 初始化：从localStorage加载状态（页面刷新后保留登录状态）
     const initUser = () => {
@@ -289,5 +292,5 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
-    return { token, username, mobile, createTime, roleName, roleId, userId, rememberMe, avatar, expireTime, initUser, login, logout, getUserInfo, updateUserInfo, changePassword, updateUserAvatar }
+    return { token, username, mobile, createTime, roleName, roleId, userId, rememberMe, avatar, expireTime, initUser, login, logout, getUserInfo, updateUserInfo, changePassword, updateUserAvatar, isLoggedIn }
 })

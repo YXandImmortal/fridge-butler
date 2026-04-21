@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useUserStore } from '@/stores/user'
 import showMessage from '@/utils/message'
+import { replaceToLogin } from '@/utils/navigate'
 
 // 创建axios实例
 const service = axios.create({
@@ -18,8 +19,8 @@ service.interceptors.request.use(
             if (userStore.expireTime && Date.now() > userStore.expireTime) {
                 showMessage.warning('登录已过期，请重新登录')
                 userStore.logout()
-                // 可以选择跳转到登录页
-                window.location.href = '/login'
+                // 跳转到登录页
+                replaceToLogin()
                 return Promise.reject(new Error('Token expired'))
             }
             config.headers['Authorization'] = `Bearer ${userStore.token}`
@@ -43,7 +44,7 @@ service.interceptors.response.use(
             const userStore = useUserStore()
             userStore.logout()
             showMessage.error('登录已过期，请重新登录')
-            window.location.href = '/login'
+            replaceToLogin()
         } else {
             showMessage.error(error.message || '服务器错误')
         }

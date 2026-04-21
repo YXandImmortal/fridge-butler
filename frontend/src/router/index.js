@@ -56,21 +56,20 @@ const router = createRouter({
 })
 
 // 路由守卫：验证登录状态和权限
+// 注意：用户状态已在 main.js 中通过 initUser() 初始化，此处直接读取即可
 router.beforeEach((to, from) => {
   const userStore = useUserStore()
-  // 初始化用户状态（从localStorage加载）
-  const isLoggedIn = userStore.initUser()
-  
+
   // 检查路由是否需要认证
   if (to.meta?.requiresAuth) {
     // 用户未登录，重定向到登录页
-    if (!isLoggedIn) {
+    if (!userStore.isLoggedIn) {
       return {
         name: 'login',
         query: { redirect: to.fullPath } // 保存目标路由，登录后跳转
       }
     }
-    
+
     // 检查用户角色权限
     if (to.meta?.roles && to.meta.roles.length > 0) {
       const userRoleId = userStore.roleId
@@ -87,9 +86,9 @@ router.beforeEach((to, from) => {
       }
     }
   }
-  
+
   // 已登录用户访问登录/注册页，重定向到对应首页
-  if (isLoggedIn && (to.name === 'login' || to.name === 'register')) {
+  if (userStore.isLoggedIn && (to.name === 'login' || to.name === 'register')) {
     const userRoleId = userStore.roleId
     if (userRoleId === 1) {
       return { name: 'super-admin-index' }
