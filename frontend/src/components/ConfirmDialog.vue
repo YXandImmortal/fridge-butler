@@ -13,8 +13,8 @@
           <p>{{ message }}</p>
         </div>
         <div class="dialog-footer">
-          <button class="dialog-btn dialog-btn-cancel" @click="handleCancel">{{ cancelText }}</button>
-          <button class="dialog-btn dialog-btn-confirm" @click="handleConfirm">{{ confirmText }}</button>
+          <el-button type="danger" class="dialog-btn dialog-btn-cancel" @click="handleCancel">{{ cancelText }}</el-button>
+          <el-button type="primary" class="dialog-btn dialog-btn-confirm" @click="handleConfirm">{{ confirmText }}</el-button>
         </div>
       </div>
     </div>
@@ -150,14 +150,13 @@ const handleCancel = () => {
 }
 
 .dialog-btn-cancel {
-  background: #f7fafc;
-  color: var(--text-secondary);
-  border-color: #e2e8f0;
+  background: var(--danger-color);
+  color: white;
 }
 
 .dialog-btn-cancel:hover {
-  background: #edf2f7;
-  transform: translateY(-1px);
+  box-shadow: 0 6px 20px var(--danger-40);
+  transform: translateY(-2px);
 }
 
 .dialog-btn-confirm {
@@ -166,8 +165,8 @@ const handleCancel = () => {
 }
 
 .dialog-btn-confirm:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
+  box-shadow: 0 6px 20px var(--primary-40);
+  transform: translateY(-2px);
 }
 
 @keyframes dialog-slide-in {
