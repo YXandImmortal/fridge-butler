@@ -278,13 +278,11 @@ export const useUserStore = defineStore('user', () => {
     // 修改密码
     const changePassword = async (passwordData) => {
         try {
-            const res = await request({
+            return await request({
                 url: '/user/change-password',
                 method: 'patch',
                 data: passwordData
             });
-
-            return res;
         } catch (error) {
             console.error('修改密码失败:', error);
             throw error;
