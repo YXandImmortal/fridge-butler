@@ -42,7 +42,7 @@ public class BusinessException extends RuntimeException {
     }
 
     public static BusinessException loginCaptchaError() {
-        return new BusinessException(ResultCode.LOGIN_FAILED_CAPTCHA_ERROR);
+        return new BusinessException(ResultCode.CAPTCHA_ERROR);
     }
 
     public static BusinessException registerUserExist() {
@@ -63,5 +63,9 @@ public class BusinessException extends RuntimeException {
 
     public static BusinessException registerPhoneExist() {
         return new BusinessException(ResultCode.REGISTER_FAILED_PHONE_EXIST);
+    }
+
+    public static BusinessException changePasswordNotMatch() {
+        return new BusinessException(ResultCode.CHANGE_PASSWORD_FAILD_NOT_MATCH);
     }
 }

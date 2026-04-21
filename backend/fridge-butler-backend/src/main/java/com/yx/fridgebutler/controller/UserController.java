@@ -1,5 +1,7 @@
 package com.yx.fridgebutler.controller;
 
+import com.yx.fridgebutler.dto.ChangePasswordRequest;
+import com.yx.fridgebutler.dto.UpdateAvatarRequest;
 import com.yx.fridgebutler.dto.UpdateRequest;
 import com.yx.fridgebutler.dto.UserInfoDTO;
 import com.yx.fridgebutler.service.UserService;
@@ -22,9 +24,21 @@ public class UserController {
         return Result.success(userService.getUserInfo());
     }
 
-    @PatchMapping("/update")
+    @PatchMapping("/update-info")
     public Result<Void> updateUser(@Valid @RequestBody UpdateRequest request) {
         userService.updateUser(request);
+        return Result.success(null);
+    }
+
+    @PatchMapping("/change-password")
+    public Result<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(request);
+        return Result.success(null);
+    }
+
+    @PatchMapping("/update-avatar")
+    public Result<Void> updateAvatar(@Valid @RequestBody UpdateAvatarRequest request) {
+        userService.updateAvatar(request);
         return Result.success(null);
     }
 }

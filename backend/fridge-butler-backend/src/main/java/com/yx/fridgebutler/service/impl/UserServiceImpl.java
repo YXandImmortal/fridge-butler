@@ -1,5 +1,7 @@
 package com.yx.fridgebutler.service.impl;
 
+import com.yx.fridgebutler.dto.ChangePasswordRequest;
+import com.yx.fridgebutler.dto.UpdateAvatarRequest;
 import com.yx.fridgebutler.dto.UpdateRequest;
 import com.yx.fridgebutler.dto.UserInfoDTO;
 import com.yx.fridgebutler.entity.SysRole;
@@ -8,9 +10,11 @@ import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.SysRoleRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.service.UserService;
+import com.yx.fridgebutler.util.CaptchaManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
@@ -29,6 +33,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private SysRoleRepository roleRepository;
+
+    @Autowired
+    private CaptchaManager captchaManager;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Override
     public UserInfoDTO getUserInfo() {
@@ -71,6 +81,39 @@ public class UserServiceImpl implements UserService {
         // 保存更新
         userRepository.save(user);
         log.info("用户信息更新成功，用户名：{}，手机号：{}", request.getUsername(), request.getMobile());
+    }
+
+    @Override
+    public void changePassword(ChangePasswordRequest request) {
+        if (request.getCaptchaId() == null || !captchaManager.verifyCaptcha(request.getCaptchaId(), request.getCaptcha())) {
+            log.error("修改密码失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
+            throw BusinessException.loginCaptchaError();
+        }
+
+        String username = getUsernameFromToken();
+
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+            log.error("修改密码失败，用户名：{}两次密码不一致", username);
+            throw BusinessException.changePasswordNotMatch();
+        }
+
+        SysUser user =  userRepository.findByUsername(username)
+                .orElseThrow(BusinessException::notFound);
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        log.info("密码修改成功，用户名：{}，新密码：{}", username, request.getNewPassword());
+    }
+
+    @Override
+    public void updateAvatar(UpdateAvatarRequest request) {
+        String username = getUsernameFromToken();
+        SysUser user = userRepository.findByUsername(username)
+                .orElseThrow(BusinessException::notFound);
+        user.setAvatar(request.getAvatar());
+        userRepository.save(user);
+        log.info("头像修改成功，用户名：{}，新头像Id：{}", username, request.getAvatar());
     }
 
     private static String getUsernameFromToken() {

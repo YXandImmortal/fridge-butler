@@ -22,7 +22,6 @@ public enum ResultCode {
     LOGIN_FAILED_USER_INFO_WRONG(401, "用户名或密码错误"),
     LOGIN_FAILED_ACCOUNT_DISABLED(403, "账号已被禁用"),
     LOGIN_FAILED_ROLE_NOT_FOUND(404, "角色不存在"),
-    LOGIN_FAILED_CAPTCHA_ERROR(400, "验证码错误"),
 
     /**
      * 注册状态码
@@ -33,7 +32,19 @@ public enum ResultCode {
     REGISTER_FAILED_PASSWORD_NOT_MATCH(400, "两次密码不一致"),
     REGISTER_FAILED_ROLE_NOT_FOUND(404, "注册角色不存在"),
     REGISTER_FAILED_PHONE_FORMAT_ERROR(400, "手机号格式不正确"),
-    REGISTER_FAILED_PHONE_EXIST(400, "手机号已被注册");
+    REGISTER_FAILED_PHONE_EXIST(400, "手机号已被注册"),
+
+    /**
+     * 验证码状态码
+     * <p>验证码模块使用</p>
+     */
+    CAPTCHA_ERROR(400, "验证码错误"),
+
+    /**
+     * 修改密码状态码
+     * <p>修改密码模块使用</p>
+     */
+    CHANGE_PASSWORD_FAILD_NOT_MATCH(400, "两次密码不一致");
 
     private final Integer code;
     private final String message;
