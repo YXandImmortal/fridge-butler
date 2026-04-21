@@ -97,8 +97,8 @@
                       </el-form-item>
                       <el-form-item label="验证码" prop="captcha">
                         <div class="captcha-container">
-                          <el-input 
-                            v-model="passwordForm.captcha" 
+                          <el-input
+                            v-model="passwordForm.captcha"
                             placeholder="请输入验证码"
                             style="max-width: 150px"
                           >
@@ -124,8 +124,8 @@
                     <div class="avatar-upload-section">
                       <Avatar size="x-large" :avatar-id="selectedAvatar"/>
                       <div class="avatar-grid">
-                        <div 
-                          v-for="avatarId in systemAvatars" 
+                        <div
+                          v-for="avatarId in systemAvatars"
                           :key="avatarId"
                           class="avatar-item"
                           :class="{ 'selected': selectedAvatar === avatarId }"
@@ -139,10 +139,10 @@
                 </Transition>
               </div>
               <div class="edit-actions">
-                <el-button 
-                  type="primary" 
-                  @click="editType === 'password' ? handleChangePasswordSubmit() : handleChangeAvatarSubmit()" 
-                  :loading="editType === 'password' ? loadingChangePassword : loadingChangeAvatar" 
+                <el-button
+                  type="primary"
+                  @click="editType === 'password' ? handleChangePasswordSubmit() : handleChangeAvatarSubmit()"
+                  :loading="editType === 'password' ? loadingChangePassword : loadingChangeAvatar"
                   loading-text="修改中..."
                 >
                   确认
@@ -442,7 +442,6 @@ const handleLogout = (msg) => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--page-bg);
 }
 
 .main-content-wrapper {
@@ -641,7 +640,7 @@ const handleLogout = (msg) => {
 .profile-form :deep(.el-input__wrapper) {
   border-radius: 12px;
   padding: 4px 16px;
-  box-shadow: 0 2px 8px var(--primary-10);
+  box-shadow: 0 2px 8px var(--gray-40);
   transition: all 0.3s ease;
   border: 1px solid transparent;
   background: var(--input-bg);
@@ -658,8 +657,8 @@ const handleLogout = (msg) => {
 }
 
 .profile-form :deep(.el-input.is-disabled .el-input__wrapper) {
-  background-color: var(--primary-light);
-  opacity: 0.7;
+  background-color: var(--white-60);
+  opacity: 0.9;
 }
 
 .profile-actions {

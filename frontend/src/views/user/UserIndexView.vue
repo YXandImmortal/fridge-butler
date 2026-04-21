@@ -69,21 +69,21 @@ const handleLogout = () => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--page-bg);
 }
 
 .main-content-wrapper {
-  display: flex;
-  flex: 1;
   margin-top: 64px; /* 与头部高度一致 */
 }
 
 .main-content {
-  flex: 1;
   margin-left: 240px; /* 与侧边栏宽度一致 */
-  background: var(--page-bg);
-  min-height: calc(100vh - 64px - 80px); /* 视口高度减去头部和底部高度 */
   transition: all 0.3s ease;
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--main-content-bg);
+  padding: 20px;
 }
 
 /* 响应式设计 */
