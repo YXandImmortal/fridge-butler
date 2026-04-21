@@ -1,7 +1,7 @@
 <template>
   <div class="index-container">
     <!-- 头部组件 -->
-    <Header 
+    <Header
       @show-logout-dialog="showLogoutDialog = true"
     />
 

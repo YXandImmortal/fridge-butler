@@ -14,6 +14,7 @@
     --auth-subtitle-color: #718096;
 
     /* 背景颜色 */
+    --input-bg: #f4f4f4;
     --page-bg: #aeaeae;
     --main-content-bg: #fafafa;
     --card-bg: #ffffff;
@@ -23,6 +24,7 @@
     /* 透明度变体 */
     --white-10: rgba(255, 255, 255, 0.1);
     --white-20: rgba(255, 255, 255, 0.2);
+    --gray-40: rgba(200, 200, 200, 0.4);
     --white-85: rgba(255, 255, 255, 0.85);
     --primary-10: rgba(100, 181, 246, 0.1);
     --primary-20: rgba(100, 181, 246, 0.2);
@@ -30,6 +32,7 @@
     --primary-40: rgba(100, 181, 246, 0.4);
     --purple-30: rgba(102, 126, 234, 0.3);
     --purple-40: rgba(102, 126, 234, 0.4);
+    --danger-40: rgba(248, 113, 113, 0.4);
 
     /* 覆盖 ElementPlus 主色调（按钮、输入框、菜单全部生效） */
     --el-color-primary: #64B5F6;

@@ -3,12 +3,13 @@
     <!-- 头部组件 -->
     <Header
         @show-logout-dialog="showLogoutDialog = true"
+        ref="headerRef"
     />
 
     <!-- 主体内容区域 -->
     <div class="main-content-wrapper">
       <!-- 左侧导航栏 -->
-      <Sidebar />
+      <Sidebar/>
 
       <!-- 主内容区域 -->
       <main class="main-content">
@@ -17,7 +18,7 @@
             <h2 class="profile-title">个人中心</h2>
             <div class="profile-avatar">
               <div class="avatar-wrapper" @click="handleChangeAvatar">
-                <Avatar size="x-large" :avatar-id="userForm.avatar" />
+                <Avatar size="x-large" :avatar-id="userForm.avatar"/>
                 <div class="avatar-edit-icon">
                   <i class="iconfont icon-edit"></i>
                 </div>
@@ -25,34 +26,137 @@
             </div>
             <el-form :model="userForm" label-position="top" class="profile-form">
               <el-form-item label="用户名">
-                <el-input v-model="userForm.username" placeholder="请输入用户名" />
+                <el-input v-model="userForm.username" placeholder="请输入用户名">
+                  <template #prefix>
+                    <i class="iconfont icon-contact"/>
+                  </template>
+                </el-input>
               </el-form-item>
 
               <el-form-item label="手机号">
-                <el-input v-model="userForm.mobile" placeholder="请输入手机号" />
+                <el-input v-model="userForm.mobile" placeholder="请输入手机号">
+                  <template #prefix>
+                    <i class="iconfont icon-device-phone"/>
+                  </template>
+                </el-input>
               </el-form-item>
 
               <el-form-item label="注册时间">
-                <el-input v-model="userForm.createTime" disabled />
+                <el-input v-model="userForm.createTime" disabled>
+                  <template #prefix>
+                    <i class="iconfont icon-calendar"/>
+                  </template>
+                </el-input>
               </el-form-item>
 
               <el-form-item label="角色">
-                <el-input v-model="userForm.roleName" disabled />
+                <el-input v-model="userForm.roleName" disabled>
+                  <template #prefix>
+                    <i class="iconfont icon-user"/>
+                  </template>
+                </el-input>
               </el-form-item>
             </el-form>
 
             <div class="profile-actions">
-              <el-button type="primary" @click="handleSave">保存修改</el-button>
+              <el-button type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">保存修改</el-button>
               <el-button @click="handleChangePassword">修改密码</el-button>
               <el-button type="danger" @click="showLogoutDialog = true">退出登录</el-button>
             </div>
           </div>
+
+          <!-- 编辑信息区域 -->
+          <Transition name="slide">
+            <div class="edit-card" v-show="showEditCard">
+              <div class="edit-content">
+                <!-- 编辑内容将根据编辑类型动态显示 -->
+                <Transition name="switch">
+                  <div v-if="editType === 'password'">
+                    <h2 class="profile-title">修改密码</h2>
+                    <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-position="top" class="profile-form">
+                      <el-form-item label="原密码" prop="originalPassword">
+                        <el-input type="password" v-model="passwordForm.originalPassword" placeholder="请输入原密码">
+                          <template #prefix>
+                            <i class="iconfont icon-lock"/>
+                          </template>
+                        </el-input>
+                      </el-form-item>
+                      <el-form-item label="新密码" prop="newPassword">
+                        <el-input type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码">
+                          <template #prefix>
+                            <i class="iconfont icon-lock"/>
+                          </template>
+                        </el-input>
+                      </el-form-item>
+                      <el-form-item label="确认新密码" prop="confirmNewPassword">
+                        <el-input type="password" v-model="passwordForm.confirmNewPassword" placeholder="请确认新密码">
+                          <template #prefix>
+                            <i class="iconfont icon-lock"/>
+                          </template>
+                        </el-input>
+                      </el-form-item>
+                      <el-form-item label="验证码" prop="captcha">
+                        <div class="captcha-container">
+                          <el-input 
+                            v-model="passwordForm.captcha" 
+                            placeholder="请输入验证码"
+                            style="max-width: 150px"
+                          >
+                            <template #prefix>
+                              <i class="iconfont icon-captcha"/>
+                            </template>
+                          </el-input>
+                          <div class="captcha-image-container">
+                            <img
+                              :src="captchaUrl"
+                              alt="验证码"
+                              class="captcha-image"
+                              @click="refreshCaptcha"
+                              title="点击刷新验证码"
+                            />
+                          </div>
+                        </div>
+                      </el-form-item>
+                    </el-form>
+                  </div>
+                  <div v-else-if="editType === 'avatar'">
+                    <h2 class="profile-title">选择头像</h2>
+                    <div class="avatar-upload-section">
+                      <Avatar size="x-large" :avatar-id="selectedAvatar"/>
+                      <div class="avatar-grid">
+                        <div 
+                          v-for="avatarId in systemAvatars" 
+                          :key="avatarId"
+                          class="avatar-item"
+                          :class="{ 'selected': selectedAvatar === avatarId }"
+                          @click="handleSelectAvatar(avatarId)"
+                        >
+                          <Avatar size="large" :avatar-id="avatarId"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Transition>
+              </div>
+              <div class="edit-actions">
+                <el-button 
+                  type="primary" 
+                  @click="editType === 'password' ? handleChangePasswordSubmit() : handleChangeAvatarSubmit()" 
+                  :loading="editType === 'password' ? loadingChangePassword : loadingChangeAvatar" 
+                  loading-text="修改中..."
+                >
+                  确认
+                </el-button>
+                <el-button @click="showEditCard = false" type="danger">取消</el-button>
+              </div>
+            </div>
+          </Transition>
         </div>
       </main>
     </div>
 
     <!-- 底部版权信息 -->
-    <CopyrightFooter />
+    <CopyrightFooter/>
 
     <!-- 登出确认对话框 -->
     <ConfirmDialog
@@ -61,30 +165,97 @@
         message="您确定要退出登录吗？"
         confirm-text="确定"
         cancel-text="取消"
-        @confirm="handleLogout"
+        @confirm="handleLogout('已退出登录')"
+    />
+
+    <!-- 确认保存修改对话框 -->
+    <ConfirmDialog
+        v-model:visible="showConfirmSave"
+        title="确定保存"
+        message="您确定要保存吗？保存成功后需要重新登录"
+        confirm-text="确定"
+        cancel-text="取消"
+        @confirm="handleSave"
     />
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import {onMounted, ref} from 'vue';
 import Header from '@/components/Header.vue';
 import Sidebar from '@/components/Sidebar.vue';
 import CopyrightFooter from '@/components/CopyrightFooter.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import showMessage from '@/utils/message'
-import { useSystemStore } from '@/stores/system';
-import { useUserStore } from '@/stores/user';
+import {useSystemStore} from '@/stores/system';
+import {useUserStore} from '@/stores/user';
 import router from "@/router/index.js";
 import Avatar from "@/components/Avatar.vue";
+import axios from 'axios';
+import {getSystemAvatarIds} from '@/utils/avatarManager';
 
 const systemStore = useSystemStore();
 const userStore = useUserStore();
-const { getSystemInfo } = systemStore;
-const { logout, getUserInfo, updateUserInfo } = userStore;
+const {getSystemInfo} = systemStore;
+const {logout, getUserInfo, updateUserInfo, changePassword, updateUserAvatar} = userStore;
 
 // 控制登出确认对话框显示/隐藏
 const showLogoutDialog = ref(false);
+
+const showConfirmSave = ref(false);
+
+// 控制编辑卡片显示/隐藏
+const showEditCard = ref(false);
+
+// 编辑类型：password 或 avatar
+const editType = ref('');
+
+// 头像相关
+const systemAvatars = ref([]);
+const selectedAvatar = ref('');
+const loadingChangeAvatar = ref(false);
+
+// 加载状态
+const loadingSave = ref(false);
+const loadingChangePassword = ref(false);
+
+// 验证码相关
+const captchaUrl = ref('/captcha/generate');
+const captchaId = ref('');
+const passwordFormRef = ref();
+
+// 密码修改表单
+const passwordForm = ref({
+  originalPassword: '',
+  newPassword: '',
+  confirmNewPassword: '',
+  captcha: ''
+});
+
+// 密码修改表单验证规则
+const passwordRules = {
+  originalPassword: [
+    { required: true, message: '原密码不能为空', trigger: 'blur' }
+  ],
+  newPassword: [
+    { required: true, message: '新密码不能为空', trigger: 'blur' },
+    { min: 6, message: '新密码长度至少为6位', trigger: 'blur' }
+  ],
+  confirmNewPassword: [
+    { required: true, message: '确认新密码不能为空', trigger: 'blur' },
+    { validator: (rule, value, callback) => {
+        if (value !== passwordForm.value.newPassword) {
+          callback(new Error('两次输入的密码不一致'));
+        } else {
+          callback();
+        }
+      }, trigger: 'blur' }
+  ],
+  captcha: [
+    { required: true, message: '验证码不能为空', trigger: 'blur' },
+    { min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur' }
+  ]
+};
 
 // 用户信息表单
 const userForm = ref({
@@ -110,44 +281,159 @@ onMounted(async () => {
   } else {
     showMessage.error('获取用户信息失败');
   }
+  
+  // 加载系统预设头像
+  loadSystemAvatars();
 });
 
+// 加载系统预设头像
+const loadSystemAvatars = () => {
+  systemAvatars.value = getSystemAvatarIds();
+};
 
 
 // 保存修改
 const handleSave = async () => {
+  if (loadingSave.value) return;
+
   try {
+    loadingSave.value = true;
     const res = await updateUserInfo(userForm.value);
 
     if (res.code === 200) {
       showMessage.success('保存成功');
+      handleLogout('保存成功，请重新登录')
     } else {
       showMessage.error('保存失败: ' + (res.message || '未知错误'));
     }
   } catch (error) {
     showMessage.error('保存失败');
     console.error('保存失败:', error);
+  } finally {
+    loadingSave.value = false;
   }
 };
 
-// 修改密码（暂时留空）
-const handleChangePassword = () => {
-  // 暂时留空，后续实现
-  showMessage.info('修改密码功能待实现');
+// 修改密码
+const handleChangePassword = async () => {
+  editType.value = 'password';
+  showEditCard.value = true;
+  // 初始化验证码
+  await refreshCaptcha();
 };
 
-// 修改头像（暂时留空）
+// 刷新验证码
+const refreshCaptcha = async () => {
+  try {
+    // 使用axios直接请求验证码，获取响应头中的X-Captcha-Id
+    const response = await axios({
+      url: `/captcha/generate?timestamp=${Date.now()}`,
+      method: 'get',
+      responseType: 'blob',
+      baseURL: import.meta.env.VITE_API_BASE_URL
+    });
+
+    // 从响应头中获取captchaId
+    captchaId.value = response.headers['x-captcha-id'] || '';
+    
+    // 创建图片URL
+    captchaUrl.value = URL.createObjectURL(response.data);
+  } catch (error) {
+    console.error('刷新验证码失败:', error);
+  }
+};
+
+// 提交修改密码
+const handleChangePasswordSubmit = async () => {
+  if (loadingChangePassword.value) return;
+
+  try {
+    await passwordFormRef.value.validate();
+
+    loadingChangePassword.value = true;
+
+    // 传递captchaId到修改密码请求
+    const changePasswordData = {
+      ...passwordForm.value,
+      captchaId: captchaId.value
+    };
+
+    console.log(changePasswordData);
+
+    // 调用修改密码接口
+    const res = await changePassword(changePasswordData);
+
+    if (res.code === 200) {
+      showMessage.success('密码修改成功');
+      showEditCard.value = false;
+      // 重置表单
+      passwordForm.value = {
+        originalPassword: '',
+        newPassword: '',
+        confirmNewPassword: '',
+        captcha: ''
+      };
+    } else {
+      showMessage.error(res.message || '密码修改失败');
+      // 失败时刷新验证码
+      await refreshCaptcha();
+    }
+  } catch (error) {
+    if (error?.message) {
+      console.log('表单验证失败');
+    } else {
+      // 网络错误等异常情况
+      console.error('修改密码失败:', error);
+      showMessage.error('修改密码失败');
+      // 异常时刷新验证码
+      await refreshCaptcha();
+    }
+  } finally {
+    loadingChangePassword.value = false;
+  }
+};
+
+// 修改头像
 const handleChangeAvatar = () => {
-  // 暂时留空，后续实现
-  showMessage.info('修改头像功能待实现');
+  editType.value = 'avatar';
+  selectedAvatar.value = userForm.value.avatar;
+  showEditCard.value = true;
+};
+
+// 选择头像
+const handleSelectAvatar = (avatarId) => {
+  selectedAvatar.value = avatarId;
+};
+
+// 提交修改头像
+const handleChangeAvatarSubmit = async () => {
+  if (loadingChangeAvatar.value) return;
+  try {
+    loadingChangeAvatar.value = true;
+    const res = await updateUserAvatar(selectedAvatar.value);
+    
+    if (res.code === 200) {
+      showMessage.success('头像修改成功');
+      userForm.value.avatar = selectedAvatar.value;
+      showEditCard.value = false;
+    } else {
+      showMessage.error('头像修改失败: ' + (res.message || '未知错误'));
+    }
+  } catch (error) {
+    showMessage.error('头像修改失败');
+    console.error('头像修改失败:', error);
+  } finally {
+    loadingChangeAvatar.value = false;
+  }
 };
 
 // 处理退出登录
-const handleLogout = () => {
+const handleLogout = (msg) => {
   logout();
   showLogoutDialog.value = false;
+  showConfirmSave.value = false;
   router.push('/login');
-  showMessage.info("已退出登录")
+  showMessage.info(msg)
 };
 </script>
 
@@ -177,9 +463,12 @@ const handleLogout = () => {
 .profile-container {
   width: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 32px;
   animation: fadeInUp 0.6s ease-out;
+  flex-wrap: wrap;
 }
 
 .profile-title {
@@ -240,6 +529,64 @@ const handleLogout = () => {
   font-size: 16px;
 }
 
+.slide-enter-active {
+  animation: slide-in 0.7s;
+}
+
+.slide-leave-active {
+  animation: slide-out 0.7s;
+}
+
+@keyframes slide-in {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  70% {
+    transform: translateX(15%);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  30% {
+    transform: translateX(15%);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.switch-enter-active,
+.switch-leave-active {
+  transition: all 0.8s ease;
+
+}
+
+.switch-enter-from {
+  opacity: 0;
+  transform: translateX(50%);
+}
+
+.switch-leave-to {
+  position: fixed;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  transform: translateX(-50%);
+  scale: 0.1;
+}
+
 .profile-card {
   max-width: 600px;
   width: 100%;
@@ -250,6 +597,7 @@ const handleLogout = () => {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
+  z-index: 10;
 }
 
 .profile-card:hover {
@@ -288,7 +636,7 @@ const handleLogout = () => {
   box-shadow: 0 2px 8px var(--primary-10);
   transition: all 0.3s ease;
   border: 1px solid transparent;
-  background: var(--card-bg);
+  background: var(--input-bg);
 }
 
 .profile-form :deep(.el-input__wrapper:hover) {
@@ -326,27 +674,172 @@ const handleLogout = () => {
 
 .profile-actions :deep(.el-button:hover) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--primary-40);
+  box-shadow: 0 6px 20px var(--gray-40);
 }
 
 .profile-actions :deep(.el-button--primary) {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  background: var(--primary-color);
   border: none;
+}
+
+.profile-actions :deep(.el-button--primary:hover) {
+  box-shadow: 0 6px 20px var(--primary-40);
 }
 
 .profile-actions :deep(.el-button--danger) {
-  background: linear-gradient(135deg, var(--danger-color), #EF4444);
+  background: var(--danger-color);
   border: none;
 }
 
+.profile-actions :deep(.el-button--danger:hover) {
+  box-shadow: 0 6px 20px var(--danger-40);
+}
+
+/* 验证码容器 */
+.captcha-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.captcha-image-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.captcha-image {
+  height: 40px;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px var(--primary-10);
+}
+
+.captcha-image:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px var(--primary-20);
+}
+
+/* 编辑卡片样式 */
+.edit-card {
+  max-width: 600px;
+  padding: 40px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.edit-card:hover {
+  box-shadow: 0 12px 60px var(--glass-lavender-25);
+  transform: translateY(-2px);
+}
+
+.avatar-upload-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.avatar-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.avatar-item:hover {
+  background-color: var(--primary-light);
+  transform: scale(1.05);
+}
+
+.avatar-item.selected {
+  background-color: var(--primary-20);
+  border: 2px solid var(--primary-color);
+}
+
+.avatar-item :deep(.el-avatar) {
+  transition: all 0.3s ease;
+}
+
+.avatar-item:hover :deep(.el-avatar) {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.edit-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.edit-actions :deep(.el-button) {
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.edit-actions :deep(.el-button--primary) {
+  background: var(--primary-color);
+  border: none;
+}
+
+.edit-actions :deep(.el-button--primary:hover) {
+  box-shadow: 0 6px 20px var(--primary-40);
+}
+
+.edit-actions :deep(.el-button--danger) {
+  background: var(--danger-color);
+  border: none;
+}
+
+.edit-actions :deep(.el-button--danger:hover) {
+  box-shadow: 0 6px 20px var(--danger-40);
+}
+
 /* 响应式设计 */
+@media (max-width: 1280px) {
+  .profile-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .edit-card {
+    animation: fadeInUp 0.6s ease-out;
+  }
+}
+
 @media (max-width: 768px) {
   .main-content {
     margin-left: 200px;
     padding: 16px;
   }
 
-  .profile-card {
+  .profile-card,
+  .edit-card {
     padding: 32px 24px;
     max-width: 90%;
   }
@@ -356,12 +849,14 @@ const handleLogout = () => {
     margin-bottom: 24px;
   }
 
-  .profile-actions {
+  .profile-actions,
+  .edit-actions {
     flex-direction: column;
     gap: 12px;
   }
 
-  .profile-actions :deep(.el-button) {
+  .profile-actions :deep(.el-button),
+  .edit-actions :deep(.el-button) {
     width: 100%;
     min-width: auto;
   }

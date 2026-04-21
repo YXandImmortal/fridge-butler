@@ -171,11 +171,59 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
+    // 更新用户头像
+    const updateUserAvatar = async (avatarData) => {
+        try {
+            const res = await request({
+                url: '/user/update-avatar',
+                method: 'patch',
+                data: { avatar: avatarData }
+            });
+
+            if (res.code === 200) {
+                avatar.value = avatarData;
+
+                // 检查并更新本地存储
+                let storageInfo = null;
+                let storageType = null;
+
+                // 先检查localStorage
+                const localInfo = localStorage.getItem('userInfo');
+                if (localInfo) {
+                    storageInfo = JSON.parse(localInfo);
+                    storageType = 'local';
+                } else {
+                    // 再检查sessionStorage
+                    const sessionInfo = sessionStorage.getItem('userInfo');
+                    if (sessionInfo) {
+                        storageInfo = JSON.parse(sessionInfo);
+                        storageType = 'session';
+                    }
+                }
+
+                // 如果存在存储的用户信息，则更新
+                if (storageInfo) {
+                    storageInfo.avatar = avatarData;
+
+                    if (storageType === 'local') {
+                        localStorage.setItem('userInfo', JSON.stringify(storageInfo));
+                    } else if (storageType === 'session') {
+                        sessionStorage.setItem('userInfo', JSON.stringify(storageInfo));
+                    }
+                }
+            }
+            return res;
+        } catch (error) {
+            console.error('更新用户头像失败:', error);
+            throw error;
+        }
+    }
+
     // 更新用户信息
     const updateUserInfo = async (userInfo) => {
         try {
             const res = await request({
-                url: '/user/update',
+                url: '/user/update-info',
                 method: 'patch',
                 data: {
                     username: userInfo.username,
@@ -227,5 +275,21 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
-    return { token, username, mobile, createTime, roleName, roleId, userId, rememberMe, avatar, expireTime, initUser, login, logout, getUserInfo, updateUserInfo }
+    // 修改密码
+    const changePassword = async (passwordData) => {
+        try {
+            const res = await request({
+                url: '/user/change-password',
+                method: 'patch',
+                data: passwordData
+            });
+
+            return res;
+        } catch (error) {
+            console.error('修改密码失败:', error);
+            throw error;
+        }
+    }
+
+    return { token, username, mobile, createTime, roleName, roleId, userId, rememberMe, avatar, expireTime, initUser, login, logout, getUserInfo, updateUserInfo, changePassword, updateUserAvatar }
 })

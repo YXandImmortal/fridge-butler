@@ -33,7 +33,7 @@
            role="button"
            :aria-expanded="showUserMenu">
         <div class="user-avatar">
-          <Avatar :avatar-id="avatar" size="small" />
+          <Avatar :avatar-id="currentAvatar" size="small" />
         </div>
         <span class="user-name">{{ username }}</span>
         <i class="iconfont icon-chevron-down user-arrow" :class="{ 'rotate-180': showUserMenu }" />
@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 import { useUserStore } from "@/stores/user.js"
 import { useSystemStore } from "@/stores/system.js"
 import Logo from './Logo.vue'
@@ -70,8 +70,11 @@ import router from "@/router/index.js";
 
 const userStore = useUserStore()
 const systemStore = useSystemStore()
-const { username, avatar, initUser } = userStore;
+const { username, initUser } = userStore;
 const { systemName, getSystemInfo } = systemStore;
+
+// 使用computed确保头像响应式更新，直接从userStore访问avatar状态
+const currentAvatar = computed(() => userStore.avatar);
 
 // 控制下拉菜单显示/隐藏
 const showUserMenu = ref(false);
@@ -163,6 +166,7 @@ const showLogoutConfirm = () => {
   // 触发事件，通知父组件显示登出确认对话框
   emit('show-logout-dialog');
 }
+
 </script>
 
 <style scoped>
