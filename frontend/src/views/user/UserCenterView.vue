@@ -72,7 +72,7 @@
                 <!-- 编辑内容将根据编辑类型动态显示 -->
                 <Transition name="switch">
                   <div v-if="editType === 'password'">
-                    <h2 class="profile-title">修改密码</h2>
+                    <h2 class="edit-title">修改密码</h2>
                     <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-position="top" class="profile-form">
                       <el-form-item label="原密码" prop="originalPassword">
                         <el-input type="password" v-model="passwordForm.originalPassword" placeholder="请输入原密码">
@@ -120,7 +120,7 @@
                     </el-form>
                   </div>
                   <div v-else-if="editType === 'avatar'">
-                    <h2 class="profile-title">选择头像</h2>
+                    <h2 class="edit-title">选择头像</h2>
                     <div class="avatar-upload-section">
                       <Avatar size="x-large" :avatar-id="selectedAvatar"/>
                       <div class="avatar-grid">
@@ -478,6 +478,14 @@ const handleLogout = (msg) => {
   text-align: center;
   color: var(--text-primary);
   animation: fadeInDown 0.6s ease-out;
+}
+
+.edit-title {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+  color: var(--text-primary);
 }
 
 .profile-avatar {
