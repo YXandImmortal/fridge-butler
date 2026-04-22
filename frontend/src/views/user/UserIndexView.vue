@@ -12,7 +12,7 @@
 
       <!-- 主内容区域 -->
       <main class="main-content">
-        <!-- 这里将填充具体内容 -->
+        <router-view />
       </main>
     </div>
 
@@ -79,9 +79,6 @@ const handleLogout = () => {
   margin-left: var(--sidebar-width);
   transition: all 0.3s ease;
   min-height: calc(100vh - var(--header-height) - var(--footer-height));
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: var(--main-content-bg);
   padding: var(--space-5);
 }

@@ -582,21 +582,21 @@ const handleLogout = (msg) => {
 
 /* 输入框增强样式 */
 .profile-form :deep(.el-input__wrapper) {
-  border-radius: 12px;
-  padding: 4px 16px;
-  box-shadow: 0 2px 8px var(--gray-40);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-4);
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
-  border: 1px solid transparent;
-  background: var(--input-bg);
 }
 
 .profile-form :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 4px 12px var(--primary-20);
-  border-color: var(--primary-light);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .profile-form :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 4px 16px var(--primary-30);
+  box-shadow: 0 4px 16px var(--primary-30), 0 0 0 3px rgba(100, 181, 246, 0.15);
   border-color: var(--primary-color);
 }
 

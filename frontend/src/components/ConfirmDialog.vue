@@ -1,19 +1,20 @@
 <template>
   <transition name="dialog-fade">
-    <div v-if="visible" class="confirm-dialog-overlay" @click.self="handleCancel">
-      <div class="confirm-dialog">
+    <div v-if="visible" class="confirm-dialog-overlay" @click.self="handleOverlayClick">
+      <div class="confirm-dialog" :style="{ maxWidth: width }">
         <div class="dialog-header">
           <div class="dialog-title-container">
             <i class="iconfont icon-alert dialog-icon"></i>
             <h3 class="dialog-title">{{ title }}</h3>
           </div>
-          <i class="iconfont icon-close dialog-close" @click="handleCancel"></i>
+          <i v-if="showClose" class="iconfont icon-close dialog-close" @click="handleCancel"></i>
         </div>
         <div class="dialog-content">
           <p>{{ message }}</p>
+          <slot />
         </div>
         <div class="dialog-footer">
-          <el-button type="danger" class="dialog-btn dialog-btn-cancel" @click="handleCancel">{{ cancelText }}</el-button>
+          <el-button v-if="showCancel" type="danger" class="dialog-btn dialog-btn-cancel" @click="handleCancel">{{ cancelText }}</el-button>
           <el-button type="primary" class="dialog-btn dialog-btn-confirm" @click="handleConfirm">{{ confirmText }}</el-button>
         </div>
       </div>
@@ -43,6 +44,22 @@ const props = defineProps({
   cancelText: {
     type: String,
     default: '取消'
+  },
+  persistent: {
+    type: Boolean,
+    default: false
+  },
+  showClose: {
+    type: Boolean,
+    default: true
+  },
+  showCancel: {
+    type: Boolean,
+    default: true
+  },
+  width: {
+    type: String,
+    default: '300px'
   }
 })
 
@@ -53,7 +70,18 @@ const handleConfirm = () => {
   emit('update:visible', false)
 }
 
+const handleOverlayClick = () => {
+  if (props.persistent) {
+    return
+  }
+  handleCancel()
+}
+
 const handleCancel = () => {
+  if (props.persistent) {
+    emit('cancel')
+    return
+  }
   emit('cancel')
   emit('update:visible', false)
 }
@@ -78,7 +106,7 @@ const handleCancel = () => {
   background: white;
   border-radius: var(--radius-md);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  max-width: 300px;
+  max-width: 500px;
   width: 90%;
   animation: dialog-slide-in 0.3s ease-out;
 }
