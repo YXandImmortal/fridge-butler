@@ -3,11 +3,13 @@ package com.yx.fridgebutler.service.impl;
 import com.yx.fridgebutler.dto.FridgeCreateRequest;
 import com.yx.fridgebutler.dto.FridgeQueryRequest;
 import com.yx.fridgebutler.dto.FridgeDTO;
+import com.yx.fridgebutler.dto.FridgeUpdateRequest;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.SysUser;
 import com.yx.fridgebutler.enums.ResultCode;
 import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.BizFridgeRepository;
+import com.yx.fridgebutler.repository.BizFridgeItemRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.service.FridgeService;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,9 @@ public class FridgeServiceImpl implements FridgeService {
 
     @Autowired
     private SysUserRepository userRepository;
+
+    @Autowired
+    private BizFridgeItemRepository itemRepository;
 
     @Override
     public List<FridgeDTO> listMyFridges(FridgeQueryRequest request) {
@@ -91,6 +96,41 @@ public class FridgeServiceImpl implements FridgeService {
 
     @Override
     @Transactional
+    public void updateFridge(Long id, FridgeUpdateRequest request) {
+        Long currentUserId = getCurrentUserId();
+        log.info("更新冰箱，冰箱ID：{}，用户ID：{}", id, currentUserId);
+
+        BizFridge fridge = fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, currentUserId)
+                .orElseThrow(BusinessException::notFound);
+
+        // 校验名称是否与其他冰箱重复
+        if (!fridge.getFridgeName().equals(request.getFridgeName())
+                && fridgeRepository.existsByFridgeNameAndOwnerIdAndIsDeletedFalse(request.getFridgeName(), currentUserId)) {
+            log.error("更新冰箱失败，冰箱名称已存在：{}，用户ID：{}", request.getFridgeName(), currentUserId);
+            throw new BusinessException(ResultCode.CREATE_FRIDGE_FAILED_FRIDGE_EXISTS);
+        }
+
+        // 如果设置为默认冰箱，取消其他默认冰箱
+        if (Boolean.TRUE.equals(request.getIsDefault()) && !Boolean.TRUE.equals(fridge.getIsDefault())) {
+            fridgeRepository.unsetDefaultByOwnerId(currentUserId);
+        }
+
+        fridge.setFridgeName(request.getFridgeName());
+        fridge.setFridgeAddress(request.getFridgeAddress());
+        fridge.setRemark(request.getRemark());
+        fridge.setTotalCapacity(request.getTotalCapacity());
+        fridge.setIsDefault(request.getIsDefault());
+        if (request.getStatus() != null) {
+            fridge.setStatus(request.getStatus());
+        }
+        fridge.setUpdateTime(Instant.now());
+
+        fridgeRepository.save(fridge);
+        log.info("冰箱更新成功，冰箱ID：{}", id);
+    }
+
+    @Override
+    @Transactional
     public void deleteFridge(Long id) {
         Long currentUserId = getCurrentUserId();
         log.info("删除冰箱，冰箱ID：{}，用户ID：{}", id, currentUserId);
@@ -143,6 +183,7 @@ public class FridgeServiceImpl implements FridgeService {
                 .remark(fridge.getRemark())
                 .fridgeAddress(fridge.getFridgeAddress())
                 .totalCapacity(fridge.getTotalCapacity())
+                .itemCount((int) itemRepository.countByFridgeIdAndIsDeletedFalse(fridge.getId()))
                 .createTime(formatInstant(fridge.getCreateTime()))
                 .updateTime(formatInstant(fridge.getUpdateTime()))
                 .build();

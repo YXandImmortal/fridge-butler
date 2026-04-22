@@ -3,6 +3,7 @@ package com.yx.fridgebutler.controller;
 import com.yx.fridgebutler.dto.FridgeCreateRequest;
 import com.yx.fridgebutler.dto.FridgeQueryRequest;
 import com.yx.fridgebutler.dto.FridgeDTO;
+import com.yx.fridgebutler.dto.FridgeUpdateRequest;
 import com.yx.fridgebutler.service.FridgeService;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
@@ -43,6 +44,15 @@ public class FridgeController {
     public Result<Long> createFridge(@Valid @RequestBody FridgeCreateRequest request) {
         Long fridgeId = fridgeService.createFridge(request);
         return Result.success(fridgeId);
+    }
+
+    /**
+     * 更新冰箱
+     */
+    @PutMapping("/update/{id}")
+    public Result<Void> updateFridge(@PathVariable Long id, @Valid @RequestBody FridgeUpdateRequest request) {
+        fridgeService.updateFridge(id, request);
+        return Result.success(null);
     }
 
     /**
