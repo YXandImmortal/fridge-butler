@@ -3,30 +3,73 @@ import { useUserStore } from '@/stores/user'
 import UserIndexView from "@/views/user/UserIndexView.vue";
 import SuperAdminIndex from "@/views/super-admin/SuperAdminIndex.vue";
 import UserCenterView from "@/views/user/UserCenterView.vue";
+import FridgeListView from "@/views/fridge/FridgeListView.vue";
+import FridgeDetailView from "@/views/fridge/FridgeDetailView.vue";
+import FridgeCreateView from "@/views/fridge/FridgeCreateView.vue";
 
 const LoginView = () => import('@/views/LoginView.vue')
 const RegisterView = () => import('@/views/RegisterView.vue')
+
+const SUPER_ADMIN_PERMISSION = 1
+const USER_PERMISSION = 2
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/user/index',
-      name: 'user-index',
-      component: UserIndexView,
-      meta: {
-        requiresAuth: true,
-        roles: [2] // 普通用户 roleId=2
-      }
+      path: '/user',
+      children: [
+        {
+          path: 'index',
+          name: 'user-index',
+          component: UserIndexView,
+          meta: {
+            requiresAuth: true,
+            roles: [USER_PERMISSION]
+          }
+        },
+        {
+          path: 'center',
+          name: 'user-center',
+          component: UserCenterView,
+          meta: {
+            requiresAuth: true,
+            roles: [USER_PERMISSION]
+          }
+        }
+      ]
     },
     {
-      path: '/user/center',
-      name: 'user-center',
-      component: UserCenterView,
-      meta: {
-        requiresAuth: true,
-        roles: [2] // 普通用户 roleId=2
-      }
+      path: '/fridge',
+      children: [
+        {
+          path: 'list',
+          name: 'fridge-list',
+          component: FridgeListView,
+          meta: {
+            requiresAuth: true,
+            roles: [USER_PERMISSION]
+          }
+        },
+        {
+          path: 'create',
+          name: 'fridge-create',
+          component: FridgeCreateView,
+          meta: {
+            requiresAuth: true,
+            roles: [USER_PERMISSION]
+          }
+        },
+        {
+          path: 'detail/:id?',
+          name: 'fridge-detail',
+          component: FridgeDetailView,
+          meta: {
+            requiresAuth: true,
+            roles: [USER_PERMISSION]
+          }
+        }
+      ]
     },
     {
       path: '/super-admin/index',
@@ -34,7 +77,7 @@ const router = createRouter({
       component: SuperAdminIndex,
       meta: {
         requiresAuth: true,
-        roles: [1] // 超级管理员 roleId=1
+        roles: [SUPER_ADMIN_PERMISSION] // 超级管理员 roleId=1
       }
     },
     {
