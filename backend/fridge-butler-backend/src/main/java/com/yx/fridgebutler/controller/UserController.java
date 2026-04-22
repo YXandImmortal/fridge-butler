@@ -1,8 +1,8 @@
 package com.yx.fridgebutler.controller;
 
-import com.yx.fridgebutler.dto.ChangePasswordRequest;
-import com.yx.fridgebutler.dto.UpdateAvatarRequest;
-import com.yx.fridgebutler.dto.UpdateRequest;
+import com.yx.fridgebutler.dto.UserChangePasswordRequest;
+import com.yx.fridgebutler.dto.UserUpdateAvatarRequest;
+import com.yx.fridgebutler.dto.UserUpdateRequest;
 import com.yx.fridgebutler.dto.UserInfoDTO;
 import com.yx.fridgebutler.service.UserService;
 import com.yx.fridgebutler.vo.Result;
@@ -25,19 +25,19 @@ public class UserController {
     }
 
     @PatchMapping("/update-info")
-    public Result<Void> updateUser(@Valid @RequestBody UpdateRequest request) {
+    public Result<Void> updateUser(@Valid @RequestBody UserUpdateRequest request) {
         userService.updateUser(request);
         return Result.success(null);
     }
 
     @PatchMapping("/change-password")
-    public Result<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+    public Result<Void> changePassword(@Valid @RequestBody UserChangePasswordRequest request) {
         userService.changePassword(request);
         return Result.success(null);
     }
 
     @PatchMapping("/update-avatar")
-    public Result<Void> updateAvatar(@Valid @RequestBody UpdateAvatarRequest request) {
+    public Result<Void> updateAvatar(@Valid @RequestBody UserUpdateAvatarRequest request) {
         userService.updateAvatar(request);
         return Result.success(null);
     }

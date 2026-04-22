@@ -1,8 +1,8 @@
 package com.yx.fridgebutler.service.impl;
 
-import com.yx.fridgebutler.dto.ChangePasswordRequest;
-import com.yx.fridgebutler.dto.UpdateAvatarRequest;
-import com.yx.fridgebutler.dto.UpdateRequest;
+import com.yx.fridgebutler.dto.UserChangePasswordRequest;
+import com.yx.fridgebutler.dto.UserUpdateAvatarRequest;
+import com.yx.fridgebutler.dto.UserUpdateRequest;
 import com.yx.fridgebutler.dto.UserInfoDTO;
 import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.entity.SysUser;
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(UpdateRequest request) {
+    public void updateUser(UserUpdateRequest request) {
         // 从SecurityContextHolder中获取当前用户名
         String currentUsername = getUsernameFromToken();
 
@@ -104,7 +104,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void changePassword(ChangePasswordRequest request) {
+    public void changePassword(UserChangePasswordRequest request) {
         if (request.getCaptchaId() == null || !captchaManager.verifyCaptcha(request.getCaptchaId(), request.getCaptcha())) {
             log.error("修改密码失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
             throw BusinessException.loginCaptchaError();
@@ -132,7 +132,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateAvatar(UpdateAvatarRequest request) {
+    public void updateAvatar(UserUpdateAvatarRequest request) {
         String username = getUsernameFromToken();
         SysUser user = userRepository.findByUsername(username)
                 .orElseThrow(BusinessException::notFound);

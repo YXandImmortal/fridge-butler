@@ -26,4 +26,6 @@ public class FridgeDTO {
     private String createTime;
 
     private String updateTime;
+
+    private Integer itemCount;
 }

@@ -1,16 +1,16 @@
 package com.yx.fridgebutler.service;
 
-import com.yx.fridgebutler.dto.ChangePasswordRequest;
-import com.yx.fridgebutler.dto.UpdateAvatarRequest;
-import com.yx.fridgebutler.dto.UpdateRequest;
+import com.yx.fridgebutler.dto.UserChangePasswordRequest;
+import com.yx.fridgebutler.dto.UserUpdateAvatarRequest;
+import com.yx.fridgebutler.dto.UserUpdateRequest;
 import com.yx.fridgebutler.dto.UserInfoDTO;
 
 public interface UserService {
     UserInfoDTO getUserInfo();
 
-    void updateUser(UpdateRequest request);
+    void updateUser(UserUpdateRequest request);
 
-    void changePassword(ChangePasswordRequest request);
+    void changePassword(UserChangePasswordRequest request);
 
-    void updateAvatar(UpdateAvatarRequest request);
+    void updateAvatar(UserUpdateAvatarRequest request);
 }

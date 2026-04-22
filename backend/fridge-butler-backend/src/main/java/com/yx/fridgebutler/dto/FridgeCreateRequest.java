@@ -18,7 +18,7 @@ public class FridgeCreateRequest {
     @Size(max = 200, message = "地址长度不能超过200")
     private String fridgeAddress;
 
-    @Size(max = 200, message = "地址长度不能超过200")
+    @Size(max = 200, message = "备注长度不能超过200")
     private String remark;
 
 

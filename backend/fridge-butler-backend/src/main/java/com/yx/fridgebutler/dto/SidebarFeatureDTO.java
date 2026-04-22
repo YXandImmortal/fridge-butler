@@ -11,10 +11,10 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SidebarFeature {
+public class SidebarFeatureDTO {
     private Integer id;
     private String name;
     private String path;
     private String icon;
-    private List<SidebarFeature> children;
+    private List<SidebarFeatureDTO> children;
 }

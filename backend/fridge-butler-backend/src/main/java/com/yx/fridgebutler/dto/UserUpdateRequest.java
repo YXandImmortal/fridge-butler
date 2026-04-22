@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateRequest {
+public class UserUpdateRequest {
     @NotBlank(message = "用户名不能为空")
     @Size(max = 50, message = "用户名长度不能超过50")
     private String username;
