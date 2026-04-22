@@ -15,4 +15,6 @@ public interface FridgeService {
     Long createFridge(FridgeCreateRequest request);
 
     void deleteFridge(Long id);
+
+    List<FridgeDTO> searchFridges(String keyword);
 }

@@ -60,6 +60,9 @@ public class BizFridge {
     @ColumnDefault("0")
     @Column(name = "is_deleted")
     private Boolean isDeleted;
+    @Size(max = 255)
+    @Column(name = "remark")
+    private String remark;
 
 
 }

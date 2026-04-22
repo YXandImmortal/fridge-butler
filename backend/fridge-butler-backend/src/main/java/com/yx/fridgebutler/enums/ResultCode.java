@@ -44,8 +44,15 @@ public enum ResultCode {
      * 修改密码状态码
      * <p>修改密码模块使用</p>
      */
-    CHANGE_PASSWORD_FAILD_NOT_MATCH(400, "两次密码不一致"),
-    CHANGE_PASSWORD_FAILD_ORIGINAL_WRONG(400, "原密码错误");
+    CHANGE_PASSWORD_FAILED_NOT_MATCH(400, "两次密码不一致"),
+    CHANGE_PASSWORD_FAILED_ORIGINAL_WRONG(400, "原密码错误"),
+
+    /**
+     * 冰箱管理状态码
+     * <p>冰箱管理模块使用</p>
+     */
+    CREATE_FRIDGE_FAILED_FRIDGE_EXISTS(400, "冰箱已经存在"),
+    SORT_FAILED_UNKNOW_SORT_FIELD(400, "未知排序字段");
 
     private final Integer code;
     private final String message;
@@ -55,12 +62,4 @@ public enum ResultCode {
         this.message = message;
     }
 
-    public static ResultCode getByCode(Integer code) {
-        for (ResultCode rc : values()) {
-            if (rc.getCode().equals(code)) {
-                return rc;
-            }
-        }
-        throw new IllegalArgumentException("无效的状态码：" + code);
-    }
 }

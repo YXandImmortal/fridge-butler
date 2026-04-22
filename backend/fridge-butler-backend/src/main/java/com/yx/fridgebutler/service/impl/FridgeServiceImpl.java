@@ -5,6 +5,7 @@ import com.yx.fridgebutler.dto.FridgeQueryRequest;
 import com.yx.fridgebutler.dto.FridgeDTO;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.SysUser;
+import com.yx.fridgebutler.enums.ResultCode;
 import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.BizFridgeRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
@@ -67,19 +68,15 @@ public class FridgeServiceImpl implements FridgeService {
 
         if (fridgeRepository.existsByFridgeNameAndOwnerIdAndIsDeletedFalse(request.getFridgeName(), currentUserId)) {
             log.error("创建冰箱失败，冰箱名称已存在：{}，用户ID：{}", request.getFridgeName(), currentUserId);
-            throw new BusinessException(400, "冰箱名称已存在");
-        }
-
-        if (Boolean.TRUE.equals(request.getIsDefault())) {
-            fridgeRepository.unsetDefaultByOwnerId(currentUserId);
+            throw new BusinessException(ResultCode.CREATE_FRIDGE_FAILED_FRIDGE_EXISTS);
         }
 
         BizFridge fridge = new BizFridge();
         fridge.setFridgeName(request.getFridgeName());
         fridge.setFridgeAddress(request.getFridgeAddress());
-        fridge.setTotalCapacity(request.getTotalCapacity());
-        fridge.setIsDefault(request.getIsDefault());
+        fridge.setRemark(request.getRemark());
         fridge.setOwnerId(currentUserId);
+        fridge.setIsDefault(false);
         fridge.setStatus(true);
         fridge.setIsDeleted(false);
 
@@ -108,15 +105,27 @@ public class FridgeServiceImpl implements FridgeService {
         log.info("冰箱删除成功，冰箱ID：{}", id);
     }
 
+    @Override
+    public List<FridgeDTO> searchFridges(String keyword) {
+        Long currentUserId = getCurrentUserId();
+        log.info("搜索冰箱，用户ID：{}，关键词：{}", currentUserId, keyword);
+
+        String likeKeyword = (keyword == null || keyword.isBlank()) ? "" : "%" + keyword + "%";
+        List<BizFridge> fridges = fridgeRepository.searchByKeyword(currentUserId, likeKeyword);
+
+        return fridges.stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
     private static Sort buildSort(String sortField, String sortOrder) {
         if (sortField == null) sortField = "createTime";
 
         String field = switch (sortField) {
             case "name" -> "fridgeName";
             case "totalCapacity" -> "totalCapacity";
-            default -> throw new BusinessException(400,
-                    "未知的排序字段：" + sortField
-            );
+            case "createTime" -> "createTime";
+            default -> throw new BusinessException(ResultCode.SORT_FAILED_UNKNOW_SORT_FIELD);
         };
 
         Sort.Direction direction = "asc".equalsIgnoreCase(sortOrder)
@@ -131,6 +140,7 @@ public class FridgeServiceImpl implements FridgeService {
                 .id(fridge.getId())
                 .fridgeName(fridge.getFridgeName())
                 .isDefault(fridge.getIsDefault())
+                .remark(fridge.getRemark())
                 .fridgeAddress(fridge.getFridgeAddress())
                 .totalCapacity(fridge.getTotalCapacity())
                 .createTime(formatInstant(fridge.getCreateTime()))

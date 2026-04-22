@@ -22,7 +22,7 @@ public class CaptchaController {
     @GetMapping("/generate")
     public void generateCaptcha(HttpServletResponse response) throws IOException {
         // 创建数字验证码，4位数字
-        Captcha captcha = new SpecCaptcha(130, 50, 4);
+        Captcha captcha = new SpecCaptcha(130, 44, 4);
         captcha.setCharType(SpecCaptcha.TYPE_ONLY_NUMBER);
         
         // 生成验证码

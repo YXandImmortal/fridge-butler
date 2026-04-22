@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -14,4 +16,5 @@ public class SidebarFeature {
     private String name;
     private String path;
     private String icon;
+    private List<SidebarFeature> children;
 }

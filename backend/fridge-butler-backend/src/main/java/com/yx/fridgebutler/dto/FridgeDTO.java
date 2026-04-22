@@ -19,6 +19,8 @@ public class FridgeDTO {
 
     private String fridgeAddress;
 
+    private String remark;
+
     private Integer totalCapacity;
 
     private String createTime;

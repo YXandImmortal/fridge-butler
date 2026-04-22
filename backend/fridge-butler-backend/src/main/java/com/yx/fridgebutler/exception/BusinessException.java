@@ -66,10 +66,10 @@ public class BusinessException extends RuntimeException {
     }
 
     public static BusinessException changePasswordNotMatch() {
-        return new BusinessException(ResultCode.CHANGE_PASSWORD_FAILD_NOT_MATCH);
+        return new BusinessException(ResultCode.CHANGE_PASSWORD_FAILED_NOT_MATCH);
     }
 
     public static BusinessException changePasswordOriginalWrong() {
-        return new BusinessException(ResultCode.CHANGE_PASSWORD_FAILD_ORIGINAL_WRONG);
+        return new BusinessException(ResultCode.CHANGE_PASSWORD_FAILED_ORIGINAL_WRONG);
     }
 }

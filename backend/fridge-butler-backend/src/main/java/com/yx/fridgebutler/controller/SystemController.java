@@ -7,13 +7,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
 @RequestMapping("/system")
 public class SystemController {
     public static final String SYSTEM_NAME = "智鲜·引擎";
-    public static final String SYSTEM_VERSION = "alpha 0.0.4";
+    public static final String SYSTEM_VERSION = "alpha 0.0.5";
     public static final List<SidebarFeature> USER_INDEX_FEATURES;
 
     static {
@@ -27,8 +28,25 @@ public class SystemController {
                 SidebarFeature.builder()
                         .id(2)
                         .name("冰箱管理")
-                        .path("/user/fridge-management")
+                        .path("/fridge")
                         .icon("icon-fridge-line")
+                        .children(Arrays.asList(
+                                SidebarFeature.builder()
+                                        .id(21)
+                                        .name("冰箱一览")
+                                        .path("/fridge/list")
+                                        .build(),
+                                SidebarFeature.builder()
+                                        .id(22)
+                                        .name("创建冰箱")
+                                        .path("/fridge/create")
+                                        .build(),
+                                SidebarFeature.builder()
+                                        .id(23)
+                                        .name("详细信息")
+                                        .path("/fridge/detail")
+                                        .build()
+                        ))
                         .build(),
                 SidebarFeature.builder()
                         .id(3)
