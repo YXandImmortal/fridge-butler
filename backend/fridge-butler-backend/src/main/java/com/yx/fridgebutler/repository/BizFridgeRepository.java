@@ -39,4 +39,15 @@ public interface BizFridgeRepository extends JpaRepository<BizFridge, Long> {
                 f.createTime DESC
             """)
     List<BizFridge> searchByKeyword(@Param("ownerId") Long ownerId, @Param("keyword") String keyword);
+
+    @Query("""
+            SELECT f FROM BizFridge f
+            WHERE f.ownerId = :ownerId
+              AND f.isDeleted = false
+              AND (:keyword IS NULL OR :keyword = ''
+                   OR f.fridgeName LIKE :keyword
+                   OR f.fridgeAddress LIKE :keyword
+                   OR f.remark LIKE :keyword)
+            """)
+    List<BizFridge> searchByKeyword(@Param("ownerId") Long ownerId, @Param("keyword") String keyword, Sort sort);
 }

@@ -23,6 +23,8 @@ public class FridgeDTO {
 
     private Integer totalCapacity;
 
+    private Boolean status;
+
     private String createTime;
 
     private String updateTime;

@@ -1,8 +1,8 @@
 package com.yx.fridgebutler.service.impl;
 
 import com.yx.fridgebutler.dto.FridgeCreateRequest;
-import com.yx.fridgebutler.dto.FridgeQueryRequest;
 import com.yx.fridgebutler.dto.FridgeDTO;
+import com.yx.fridgebutler.dto.FridgeSearchRequest;
 import com.yx.fridgebutler.dto.FridgeUpdateRequest;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.SysUser;
@@ -41,12 +41,12 @@ public class FridgeServiceImpl implements FridgeService {
     private BizFridgeItemRepository itemRepository;
 
     @Override
-    public List<FridgeDTO> listMyFridges(FridgeQueryRequest request) {
+    public List<FridgeDTO> listMyFridges() {
         Long currentUserId = getCurrentUserId();
-        log.info("查询用户冰箱列表，用户ID：{}，排序字段：{}，排序方向：{}",
-                currentUserId, request.getSortField(), request.getSortOrder());
+        log.info("查询用户冰箱列表，用户ID：{}，排序字段：createTime，排序方向：asc",
+                currentUserId);
 
-        Sort sort = buildSort(request.getSortField(), request.getSortOrder());
+        Sort sort = buildSort("createTime", "asc");
         List<BizFridge> fridges = fridgeRepository.findByOwnerIdAndIsDeletedFalse(currentUserId, sort);
 
         return fridges.stream()
@@ -146,12 +146,15 @@ public class FridgeServiceImpl implements FridgeService {
     }
 
     @Override
-    public List<FridgeDTO> searchFridges(String keyword) {
+    public List<FridgeDTO> searchFridges(FridgeSearchRequest request) {
         Long currentUserId = getCurrentUserId();
+        String keyword = request.getKeyword();
         log.info("搜索冰箱，用户ID：{}，关键词：{}", currentUserId, keyword);
 
         String likeKeyword = (keyword == null || keyword.isBlank()) ? "" : "%" + keyword + "%";
-        List<BizFridge> fridges = fridgeRepository.searchByKeyword(currentUserId, likeKeyword);
+        Sort sort = buildSort(request.getSortField(), request.getSortOrder());
+
+        List<BizFridge> fridges = fridgeRepository.searchByKeyword(currentUserId, likeKeyword, sort);
 
         return fridges.stream()
                 .map(this::convertToDTO)
@@ -182,6 +185,7 @@ public class FridgeServiceImpl implements FridgeService {
                 .isDefault(fridge.getIsDefault())
                 .remark(fridge.getRemark())
                 .fridgeAddress(fridge.getFridgeAddress())
+                .status(fridge.getStatus())
                 .totalCapacity(fridge.getTotalCapacity())
                 .itemCount((int) itemRepository.countByFridgeIdAndIsDeletedFalse(fridge.getId()))
                 .createTime(formatInstant(fridge.getCreateTime()))

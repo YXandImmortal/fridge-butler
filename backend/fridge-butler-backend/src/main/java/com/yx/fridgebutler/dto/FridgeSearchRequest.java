@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FridgeQueryRequest {
+public class FridgeSearchRequest {
+    private String keyword;
 
     /**
      * 排序字段：createTime（创建时间）、name（名称）、totalCapacity（总容量）
