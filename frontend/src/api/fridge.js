@@ -14,11 +14,12 @@ export function listMyFridges() {
     })
 }
 
-export function searchFridges(params = '') {
+export function searchFridges(params = {}) {
+    console.log(params)
     return request({
         url: '/fridge/search',
-        method: 'get',
-        params
+        method: 'post',
+        data: params
     })
 }
 
@@ -28,7 +29,7 @@ export function searchFridges(params = '') {
  */
 export function getFridgeDetail(id) {
     return request({
-        url: `/fridge/${id}`,
+        url: `/fridge/detail/${id}`,
         method: 'get'
     })
 }
@@ -43,6 +44,25 @@ export function createFridge(data) {
     return request({
         url: '/fridge/create',
         method: 'post',
+        data
+    })
+}
+
+/**
+ * 更新冰箱信息
+ * @param {Object} data - 更新参数
+ * @param {number} data.id - 冰箱ID
+ * @param {string} data.fridgeName - 冰箱名称
+ * @param {boolean} data.isDefault - 是否为默认冰箱
+ * @param {string} [data.fridgeAddress] - 地址
+ * @param {string} [data.remark] - 备注
+ * @param {number} [data.totalCapacity] - 总容量
+ * @param {boolean} [data.status] - 状态
+ */
+export function updateFridge(data) {
+    return request({
+        url: `/fridge/update/${data.id}`,
+        method: 'patch',
         data
     })
 }

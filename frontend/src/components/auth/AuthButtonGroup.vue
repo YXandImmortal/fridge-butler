@@ -1,10 +1,10 @@
 <template>
   <el-form-item class="button-group">
-    <el-button
+    <CustomButton
         type="primary"
         @click="primaryAction"
         class="enhanced-button auth-primary-btn"
-        :loading="false"
+        :loading="loading"
     >
       <template v-if="loading">
         <i class="iconfont icon-loader auth-loading-icon"></i>
@@ -13,18 +13,19 @@
       <template v-else>
         {{ primaryText }}
       </template>
-    </el-button>
-    <el-button
+    </CustomButton>
+    <CustomButton
         @click="secondaryAction"
         class="enhanced-button auth-secondary-btn"
     >
       {{ secondaryText }}
-    </el-button>
+    </CustomButton>
   </el-form-item>
 </template>
 
 <script setup>
 import { defineProps, defineEmits } from 'vue'
+import CustomButton from "@/components/CustomButton.vue";
 
 const props = defineProps({
   primaryText: {
@@ -57,43 +58,52 @@ const secondaryAction = () => {
 </script>
 
 <style scoped>
+/* 按钮组 */
+.button-group {
+  margin-bottom: 0;
+}
+
+.button-group :deep(.el-form-item__content) {
+  display: flex;
+  gap: var(--space-6);
+}
+
 /* 按钮增强样式 */
-.enhanced-button {
+:deep(button.custom-button.enhanced-button) {
+  font-size: 16px;
   border-radius: 12px;
-  padding: 20px 32px;
-  font-weight: 600;
+  padding: 14px 24px;
+  font-weight: 400;
   letter-spacing: 1px;
   transition: all 0.3s ease;
 }
 
-.enhanced-button:hover {
+:deep(button.custom-button.enhanced-button:hover:not(:disabled)) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--primary-40);
 }
 
-/* 按钮组 */
-.button-group.el-form-item {
-    margin-bottom: 0;
-    display: flex;
-    gap: var(--space-3);
-}
-
 /* 主要按钮（登录/注册） */
-.auth-primary-btn {
+:deep(button.custom-button.auth-primary-btn) {
     flex: 1;
     background: radial-gradient(ellipse, var(--primary-color), var(--primary-dark));
     border: none;
 }
 
+:deep(button.custom-button.auth-primary-btn:hover:not(:disabled)) {
+    background: radial-gradient(ellipse, var(--primary-color), var(--primary-dark));
+    filter: brightness(1.05);
+}
+
 /* 次要按钮（返回/跳转） */
-.auth-secondary-btn {
+:deep(button.custom-button.auth-secondary-btn) {
     flex: 1;
     background: var(--card-bg);
     border: 2px solid var(--primary-color);
     color: var(--primary-color);
 }
 
-.auth-secondary-btn:hover {
+:deep(button.custom-button.auth-secondary-btn:hover:not(:disabled)) {
     background: var(--primary-light);
     border-color: var(--primary-dark);
     color: var(--primary-dark);
@@ -115,7 +125,7 @@ const secondaryAction = () => {
 
 /* 响应式设计 */
 @media (max-width: 480px) {
-    .button-group {
+    .button-group :deep(.el-form-item__content) {
         flex-direction: column;
     }
 }

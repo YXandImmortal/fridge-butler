@@ -29,23 +29,10 @@
       </el-form-item>
 
       <el-form-item prop="captcha">
-        <div class="captcha-container">
-          <EnhancedInput
-              v-model="loginForm.captcha"
-              placeholder="请输入验证码"
-              icon="icon-captcha"
-              style="width: 60%"
-          />
-          <div class="captcha-image-container">
-            <img
-                :src="captchaUrl"
-                alt="验证码"
-                class="captcha-image"
-                @click="refreshCaptcha"
-                title="点击刷新验证码"
-            />
-          </div>
-        </div>
+        <CaptchaInput
+            v-model="loginForm.captcha"
+            ref="captchaInputRef"
+        />
       </el-form-item>
 
       <el-form-item class="remember-me-item">
@@ -82,29 +69,23 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useSystemStore } from '@/stores/system'
 import showMessage from '@/utils/message'
-import axios from 'axios'
 import AuthLayout from "@/components/auth/AuthLayout.vue"
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
-import EnhancedInput from "@/components/auth/EnhancedInput.vue";
+import EnhancedInput from "@/components/EnhancedInput.vue"
+import CaptchaInput from "@/components/CaptchaInput.vue"
 
 const router = useRouter()
 const userStore = useUserStore()
 const systemStore = useSystemStore()
 const { systemName, getSystemInfo } = systemStore
 const loginFormRef = ref()
+const captchaInputRef = ref()
 const loading = ref(false)
 
 // 初始化系统信息
 onMounted(async () => {
   await getSystemInfo()
-  // 初始化验证码
-  await refreshCaptcha()
 })
-
-// 验证码图片URL
-const captchaUrl = ref('/captcha/generate')
-// 验证码ID
-const captchaId = ref('')
 
 // 登录表单数据
 const loginForm = ref({
@@ -128,27 +109,6 @@ const loginRules = {
   ]
 }
 
-// 刷新验证码
-const refreshCaptcha = async () => {
-  try {
-    // 使用axios直接请求验证码，获取响应头中的X-Captcha-Id
-    const response = await axios({
-      url: `/captcha/generate?timestamp=${Date.now()}`,
-      method: 'get',
-      responseType: 'blob',
-      baseURL: import.meta.env.VITE_API_BASE_URL
-    })
-
-    // 从响应头中获取captchaId
-    captchaId.value = response.headers['x-captcha-id'] || ''
-    
-    // 创建图片URL
-    captchaUrl.value = URL.createObjectURL(response.data)
-  } catch (error) {
-    console.error('刷新验证码失败:', error)
-  }
-}
-
 // 登录方法
 const handleLogin = async () => {
   if (loading.value) return
@@ -161,7 +121,7 @@ const handleLogin = async () => {
     // 传递captchaId到登录请求
     const loginData = {
       ...loginForm.value,
-      captchaId: captchaId.value
+      captchaId: captchaInputRef.value?.captchaId || ''
     }
     const res = await userStore.login(loginData)
 
@@ -176,7 +136,7 @@ const handleLogin = async () => {
     } else {
       showMessage.error(res.message || '登录失败')
       // 登录失败时刷新验证码
-      await refreshCaptcha()
+      await captchaInputRef.value?.refreshCaptcha()
     }
   } catch (error) {
     if (error?.message) {
@@ -185,7 +145,7 @@ const handleLogin = async () => {
       // 网络错误等异常情况
       console.error('登录失败:', error)
       // 异常时刷新验证码
-      refreshCaptcha()
+      captchaInputRef.value?.refreshCaptcha()
     }
   } finally {
     loading.value = false

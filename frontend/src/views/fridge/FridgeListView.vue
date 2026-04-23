@@ -14,27 +14,26 @@
           <!-- 页面标题栏 -->
           <div class="page-header">
             <h2 class="page-title">我的冰箱</h2>
-            <el-button type="primary" @click="handleCreate" class="create-btn">
-              <i class="iconfont icon-add-box" />
+            <CustomButton type="primary" @click="handleCreate" class="create-btn">
               新建冰箱
-            </el-button>
+            </CustomButton>
           </div>
 
           <!-- 搜索栏 -->
-          <div class="search-bar">
-            <el-input
-              v-model="searchForm.name"
-              placeholder="搜索冰箱名称"
-              clearable
-              @keyup.enter="handleSearch"
-              @clear="handleSearch"
-            >
-              <template #prefix>
-                <i class="iconfont icon-search" />
-              </template>
-            </el-input>
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-          </div>
+          <SearchBar
+            v-model="searchForm.keyword"
+            placeholder="请输入搜索内容"
+            @search="handleSearch"
+            @clear="handleSearch"
+            class="search-bar"
+          >
+            <SortControl
+              v-model:field="searchForm.sortField"
+              v-model:order="searchForm.sortOrder"
+              :field-options="sortFieldOptions"
+              @change="handleSearch"
+            />
+          </SearchBar>
 
           <!-- 冰箱列表 -->
           <div v-loading="loading" class="fridge-list-wrapper">
@@ -43,7 +42,7 @@
               v-if="!loading && fridgeList.length === 0"
               description="暂无冰箱，快去创建一个吧"
             >
-              <el-button type="primary" @click="handleCreate">立即创建</el-button>
+              <CustomButton type="primary" @click="handleCreate">立即创建</CustomButton>
             </el-empty>
 
             <!-- 卡片列表 -->
@@ -56,37 +55,30 @@
               >
                 <div class="card-header">
                   <div class="fridge-icon">
-                    <i class="iconfont icon-refrigerator" />
+                    <i class="iconfont icon-fridge-line" />
                   </div>
-                  <div class="fridge-actions" @click.stop>
-                    <el-button
-                      link
-                      type="primary"
-                      size="small"
-                      @click="handleViewDetail(fridge.id)"
-                    >
-                      详情
-                    </el-button>
-                    <el-button
-                      link
-                      type="danger"
-                      size="small"
-                      @click="handleDelete(fridge)"
-                    >
-                      删除
-                    </el-button>
+                  <div class="fridge-basic-info">
+                    <h3 class="fridge-name">{{ fridge.fridgeName }}</h3>
+                    <p class="fridge-desc">{{ fridge.remark || '暂无描述' }}</p>
                   </div>
                 </div>
-                <h3 class="fridge-name">{{ fridge.name }}</h3>
-                <p class="fridge-desc">{{ fridge.description || '暂无描述' }}</p>
+
+                <div class="fridge-meta">
+                  <span v-if="fridge.itemCount !== undefined" class="meta-item">
+                    <i class="iconfont icon-item" />
+                    {{ fridge.itemCount }} 件物品
+                  </span>
+                </div>
                 <div class="fridge-meta">
                   <span class="meta-item">
                     <i class="iconfont icon-calendar" />
                     {{ formatDate(fridge.createTime) }}
                   </span>
-                  <span v-if="fridge.itemCount !== undefined" class="meta-item">
-                    <i class="iconfont icon-goods" />
-                    {{ fridge.itemCount }} 件物品
+                  <span v-if="fridge.totalCapacity === null" class="meta-item">
+                    未设置容量
+                  </span>
+                  <span v-else class="meta-item">
+                    容量 {{fridge.totalCapacity}} L
                   </span>
                 </div>
               </div>
@@ -113,7 +105,7 @@
     <ConfirmDialog
       v-model:visible="showDeleteDialog"
       title="删除冰箱"
-      :message="`确定要删除冰箱「${selectedFridge?.name || ''}」吗？删除后可在后台恢复。`"
+      :message="`确定要删除冰箱「${selectedFridge?.fridgeName || ''}」吗？删除后可在后台恢复。`"
       confirm-text="确定删除"
       cancel-text="取消"
       @confirm="confirmDelete"
@@ -122,7 +114,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import {computed, onMounted, reactive, ref} from 'vue'
 import { useRouter } from 'vue-router'
 import Header from '@/components/Header.vue'
 import Sidebar from '@/components/Sidebar.vue'
@@ -131,6 +123,9 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
 import { useUserStore } from '@/stores/user'
 import {listMyFridges, deleteFridge, searchFridges} from '@/api/fridge'
+import CustomButton from "@/components/CustomButton.vue";
+import SearchBar from "@/components/SearchBar.vue";
+import SortControl from "@/components/SortControl.vue";
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -144,8 +139,22 @@ const fridgeList = ref([])
 
 // 搜索表单
 const searchForm = reactive({
-  name: ''
+  keyword: '',
+  sortField: 'createTime',
+  sortOrder: 'asc'
 })
+
+// 排序选项
+const sortFieldOptions = [
+  { label: '创建日期', value: 'createTime' },
+  { label: '冰箱名称', value: 'name' },
+  { label: '容量大小', value: 'totalCapacity' }
+]
+
+const sortOrderOptions = [
+  { label: '升序', value: 'asc' },
+  { label: '降序', value: 'desc' }
+]
 
 // 对话框控制
 const showLogoutDialog = ref(false)
@@ -171,8 +180,13 @@ const fetchFridgeList = async () => {
 }
 
 // 搜索
-const handleSearch = async (params) => {
+const handleSearch = async () => {
   try {
+    const params = {
+      keyword: searchForm.keyword,
+      sortField: searchForm.sortField,
+      sortOrder: searchForm.sortOrder
+    }
     const res = await searchFridges(params)
     if (res.code === 200 && Array.isArray(res.data)) {
       fridgeList.value = res.data
@@ -187,12 +201,19 @@ const handleSearch = async (params) => {
 
 // 查看详情
 const handleViewDetail = (id) => {
-  router.push(`/fridge/${id}`)
+  router.push({
+    name: 'fridge-detail',
+    params: {
+      id: id
+    }
+  })
 }
 
 // 创建冰箱
 const handleCreate = () => {
-  router.push('/fridge/create')
+  router.push({
+    name: 'fridge-create',
+  })
 }
 
 // 删除确认
@@ -290,7 +311,7 @@ onMounted(() => {
 .create-btn {
   border-radius: 12px;
   padding: 10px 20px;
-  font-weight: 600;
+  font-weight: 200;
 }
 
 .create-btn :deep(.iconfont) {
@@ -299,20 +320,8 @@ onMounted(() => {
 }
 
 .search-bar {
-  display: flex;
-  gap: 12px;
   margin-bottom: 24px;
-  max-width: 500px;
-  align-items: center;
-}
-
-.search-bar .el-input {
-  flex: 1;
-}
-
-.search-bar .el-input,
-.search-bar .el-button {
-  height: 40px;
+  max-width: 700px;
 }
 
 .fridge-list-wrapper {
@@ -322,7 +331,7 @@ onMounted(() => {
 
 .fridge-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 20px;
 }
 
@@ -344,14 +353,14 @@ onMounted(() => {
 
 .card-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  gap: 16px;
 }
 
 .fridge-icon {
-  width: 48px;
-  height: 48px;
+  min-width: 53px;
+  min-height: 53px;
   background: var(--primary-light);
   border-radius: 12px;
   display: flex;
@@ -369,11 +378,16 @@ onMounted(() => {
   gap: 8px;
 }
 
+.fridge-basic-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .fridge-name {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 8px 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -382,7 +396,6 @@ onMounted(() => {
 .fridge-desc {
   font-size: 14px;
   color: var(--text-secondary);
-  margin: 0 0 16px 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -393,6 +406,7 @@ onMounted(() => {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .meta-item {
@@ -438,10 +452,14 @@ onMounted(() => {
 
   .search-bar {
     max-width: 100%;
-    flex-direction: column;
   }
 
-  .search-bar .el-button {
+  .search-bar :deep(.search-bar-wrapper) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-bar :deep(.search-input-group) {
     width: 100%;
   }
 }

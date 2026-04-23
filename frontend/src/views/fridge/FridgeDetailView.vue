@@ -13,14 +13,14 @@
         <div class="fridge-detail-container">
           <!-- 返回按钮 -->
           <div class="back-bar">
-            <el-button link @click="handleBack">
+            <CustomButton type="link" @click="handleBack">
               <i class="iconfont icon-arrow-left" />
               返回列表
-            </el-button>
-            <el-button link type="primary" @click="openSelectFridgeDialog">
+            </CustomButton>
+            <CustomButton type="link" @click="openSelectFridgeDialog">
               <i class="iconfont icon-switch" />
               切换冰箱
-            </el-button>
+            </CustomButton>
           </div>
 
           <!-- 加载状态 -->
@@ -29,46 +29,73 @@
           </div>
 
           <!-- 详情内容 -->
-          <div v-else-if="fridge" class="detail-card">
+          <div v-else-if="fridgeForm" class="detail-card">
             <div class="detail-header">
               <div class="detail-icon">
-                <i class="iconfont icon-refrigerator" />
+                <i class="iconfont icon-fridge-line" />
               </div>
               <div class="detail-info">
-                <h2 class="detail-name">{{ fridge.name }}</h2>
-                <p class="detail-desc">{{ fridge.description || '暂无描述' }}</p>
+                <h2 class="detail-name">{{ fridgeForm.fridgeName }}</h2>
+                <p class="detail-desc">{{ fridgeForm.remark || '暂无描述' }}</p>
+              </div>
+              <div class="item-management-wrapper">
+                <CustomButton class="item-management">
+                  <div class="item-management-inner">
+                    <i class="iconfont icon-inbox-full" />
+                    <span>物品管理</span>
+                  </div>
+                </CustomButton>
+              </div>
+              <div class="detail-actions">
+                <CustomButton type="primary" :loading="saving" @click="handleSave">
+                  保存信息
+                </CustomButton>
+                <CustomButton type="danger" @click="handleDelete">
+                  删除冰箱
+                </CustomButton>
               </div>
             </div>
 
-            <el-divider />
+            <el-divider/>
 
-            <div class="detail-body">
-              <div class="info-row">
-                <span class="info-label">冰箱ID</span>
-                <span class="info-value">{{ fridge.id }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">创建时间</span>
-                <span class="info-value">{{ formatDateTime(fridge.createTime) }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">更新时间</span>
-                <span class="info-value">{{ formatDateTime(fridge.updateTime) }}</span>
-              </div>
-              <div v-if="fridge.itemCount !== undefined" class="info-row">
-                <span class="info-label">物品数量</span>
-                <span class="info-value">{{ fridge.itemCount }} 件</span>
-              </div>
-            </div>
+            <el-form :model="fridgeForm" label-width="100px" class="detail-form">
 
-            <el-divider />
+              <!-- 可编辑字段 -->
+              <el-form-item label="冰箱名称" required>
+                <EnhancedInput v-model="fridgeForm.fridgeName" placeholder="请输入冰箱名称" maxlength="30" show-word-limit />
+              </el-form-item>
 
-            <div class="detail-actions">
-              <el-button type="danger" @click="handleDelete">
-                <i class="iconfont icon-delete" />
-                删除冰箱
-              </el-button>
-            </div>
+              <el-form-item label="默认冰箱" required>
+                <el-switch v-model="fridgeForm.isDefault" active-text="是" inactive-text="否" />
+              </el-form-item>
+
+              <el-form-item label="冰箱地址">
+                <EnhancedInput v-model="fridgeForm.fridgeAddress" placeholder="请输入冰箱地址" maxlength="200" show-word-limit />
+              </el-form-item>
+
+              <el-form-item label="总容量">
+                <el-input-number v-model="fridgeForm.totalCapacity" :min="0" :precision="0" placeholder="请输入总容量（L）" style="width: 100%;" />
+              </el-form-item>
+
+              <el-form-item label="状态">
+                <el-switch v-model="fridgeForm.status" :active-value="true" :inactive-value="false" active-text="启用" inactive-text="停用" />
+              </el-form-item>
+
+              <el-form-item label="备注">
+                <EnhancedInput v-model="fridgeForm.remark" type="textarea" :rows="3" placeholder="请输入备注" maxlength="200" show-word-limit />
+              </el-form-item>
+
+              <!-- 不可编辑字段 -->
+              <el-form-item label="物品数量">
+                <EnhancedInput :model-value="fridgeForm.itemCount + ' 件'" disabled />
+              </el-form-item>
+              <el-form-item label="创建时间">
+                <EnhancedInput :model-value="formatDateTime(fridgeForm.createTime)" disabled />
+              </el-form-item>
+              <el-form-item label="更新时间">
+                <EnhancedInput :model-value="formatDateTime(fridgeForm.updateTime)" disabled />
+              </el-form-item>
+            </el-form>
           </div>
 
           <!-- 未找到 -->
@@ -94,7 +121,7 @@
     <ConfirmDialog
       v-model:visible="showDeleteDialog"
       title="删除冰箱"
-      :message="`确定要删除冰箱「${fridge?.name || ''}」吗？删除后可在后台恢复。`"
+      :message="`确定要删除冰箱「${fridgeForm?.fridgeName || ''}」吗？删除后可在后台恢复。`"
       confirm-text="确定删除"
       cancel-text="取消"
       @confirm="confirmDelete"
@@ -103,38 +130,28 @@
     <!-- 选择冰箱对话框 -->
     <ConfirmDialog
       v-model:visible="showSelectFridgeDialog"
+      v-model:select-value="selectedFridgeId"
       title="选择冰箱"
-      message="请选择一个冰箱查看详情："
+      message="请选择一个冰箱："
       confirm-text="确定"
       cancel-text="取消"
+      type="select"
       :persistent="true"
       :show-close="false"
       width="420px"
+      :options="fridgeList"
+      option-label="fridgeName"
+      option-value="id"
+      select-placeholder="请选择冰箱"
+      :select-loading="fridgeListLoading"
       @confirm="handleSelectFridgeConfirm"
       @cancel="handleSelectFridgeCancel"
-    >
-      <div class="select-fridge-content">
-        <el-select
-          v-model="selectedFridgeId"
-          placeholder="请选择冰箱"
-          clearable
-          :loading="fridgeListLoading"
-          style="width: 100%"
-        >
-          <el-option
-            v-for="item in fridgeList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
-        </el-select>
-      </div>
-    </ConfirmDialog>
+    />
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Header from '@/components/Header.vue'
 import Sidebar from '@/components/Sidebar.vue'
@@ -142,7 +159,9 @@ import CopyrightFooter from '@/components/CopyrightFooter.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
 import { useUserStore } from '@/stores/user'
-import { getFridgeDetail, deleteFridge, listMyFridges } from '@/api/fridge'
+import { getFridgeDetail, deleteFridge, listMyFridges, updateFridge } from '@/api/fridge'
+import CustomButton from "@/components/CustomButton.vue";
+import EnhancedInput from "@/components/EnhancedInput.vue";
 
 const route = useRoute()
 const router = useRouter()
@@ -151,7 +170,9 @@ const { logout } = userStore
 
 // 冰箱数据
 const fridge = ref(null)
+const fridgeForm = ref(null)
 const loading = ref(false)
+const saving = ref(false)
 
 // 对话框
 const showLogoutDialog = ref(false)
@@ -169,7 +190,7 @@ const openSelectFridgeDialog = async () => {
   try {
     const res = await listMyFridges()
     if (res.code === 200 && res.data) {
-      fridgeList.value = res.data.list || res.data || []
+      fridgeList.value = res.data || []
     } else {
       fridgeList.value = []
     }
@@ -187,7 +208,11 @@ const openSelectFridgeDialog = async () => {
 const handleSelectFridgeConfirm = () => {
   if (selectedFridgeId.value) {
     showSelectFridgeDialog.value = false
-    router.push(`/fridge/${selectedFridgeId.value}`)
+    console.log(selectedFridgeId.value)
+    router.push({
+      name: 'fridge-detail',
+      params: { id: selectedFridgeId.value },
+    })
   } else {
     showMessage.warning('请选择一个冰箱')
   }
@@ -212,16 +237,55 @@ const fetchFridgeDetail = async () => {
     const res = await getFridgeDetail(id)
     if (res.code === 200 && res.data) {
       fridge.value = res.data
+      fridgeForm.value = { ...res.data }
     } else {
       showMessage.error(res.message || '获取冰箱详情失败')
       fridge.value = null
+      fridgeForm.value = null
     }
   } catch (error) {
     console.error('获取冰箱详情失败:', error)
     showMessage.error('获取冰箱详情失败')
     fridge.value = null
+    fridgeForm.value = null
   } finally {
     loading.value = false
+  }
+}
+
+// 保存冰箱信息
+const handleSave = async () => {
+  if (!fridgeForm.value.fridgeName || fridgeForm.value.fridgeName.trim() === '') {
+    showMessage.warning('冰箱名称不能为空')
+    return
+  }
+  if (fridgeForm.value.isDefault === null || fridgeForm.value.isDefault === undefined) {
+    showMessage.warning('请设置是否为默认冰箱')
+    return
+  }
+
+  saving.value = true
+  try {
+    const res = await updateFridge({
+      id: fridgeForm.value.id,
+      fridgeName: fridgeForm.value.fridgeName,
+      isDefault: fridgeForm.value.isDefault,
+      fridgeAddress: fridgeForm.value.fridgeAddress,
+      remark: fridgeForm.value.remark,
+      totalCapacity: fridgeForm.value.totalCapacity,
+      status: fridgeForm.value.status,
+    })
+    if (res.code === 200) {
+      showMessage.success('保存成功')
+      await fetchFridgeDetail()
+    } else {
+      showMessage.error(res.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存冰箱信息失败:', error)
+    showMessage.error('保存失败')
+  } finally {
+    saving.value = false
   }
 }
 
@@ -279,6 +343,16 @@ const formatDateTime = (dateStr) => {
 onMounted(() => {
   fetchFridgeDetail()
 })
+
+// 监听路由参数变化，切换冰箱时重新获取详情
+watch(
+  () => route.params.id,
+  (newId, oldId) => {
+    if (newId && newId !== oldId) {
+      fetchFridgeDetail()
+    }
+  }
+)
 </script>
 
 <style scoped>
@@ -301,17 +375,18 @@ onMounted(() => {
 }
 
 .fridge-detail-container {
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
   width: 100%;
   animation: fade-in-up 0.6s ease-out;
 }
 
 .back-bar {
+  display: flex;
   margin-bottom: 20px;
 }
 
-.back-bar :deep(.el-button) {
+.back-bar .custom-button {
   font-size: 14px;
   color: var(--text-secondary);
 }
@@ -336,12 +411,14 @@ onMounted(() => {
   padding: 32px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
 }
 
 .detail-header {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
 }
 
 .detail-icon {
@@ -356,6 +433,7 @@ onMounted(() => {
 }
 
 .detail-icon .iconfont {
+  font-weight: 100;
   font-size: 32px;
   color: var(--primary-color);
 }
@@ -375,6 +453,10 @@ onMounted(() => {
   white-space: nowrap;
 }
 
+.el-divider {
+  margin: 16px 0;
+}
+
 .detail-desc {
   font-size: 14px;
   color: var(--text-secondary);
@@ -384,48 +466,89 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-.detail-body {
-  padding: 8px 0;
+.detail-form {
+  align-self: center;
+  max-width: 400px;
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.info-row:last-child {
-  border-bottom: none;
-}
-
-.info-label {
-  font-size: 14px;
+.detail-form :deep(.el-form-item__label) {
   color: var(--text-secondary);
   font-weight: 500;
 }
 
-.info-value {
-  font-size: 14px;
-  color: var(--text-primary);
+.item-management-wrapper {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+.item-management {
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.item-management:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--gray-40);
+}
+
+.item-management :deep(.custom-button__content) {
+  padding: 0;
+  height: 100%;
+}
+
+.item-management-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 100%;
+
+}
+
+.item-management-inner .iconfont {
+  font-size: 34px;
+  font-weight: 200;
+}
+
+.item-management-inner span {
+  font-size: 16px;
 }
 
 .detail-actions {
   display: flex;
-  justify-content: flex-end;
-  padding-top: 8px;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
-.detail-actions :deep(.el-button) {
+.detail-actions .custom-button {
   border-radius: 12px;
   padding: 10px 20px;
-  font-weight: 600;
+  font-weight: 200;
+  margin: 0;
 }
 
-.detail-actions :deep(.el-button--danger) {
+.detail-actions .custom-button--primary {
+  background: var(--primary-color);
+  border: none;
+}
+
+.detail-actions .custom-button--primary:hover:not(:disabled) {
+  box-shadow: 0 6px 20px var(--primary-40);
+}
+
+.detail-actions .custom-button--danger {
   background: var(--danger-color);
   border: none;
+}
+
+.detail-actions .custom-button--danger:hover:not(:disabled) {
+  box-shadow: 0 6px 20px var(--danger-40);
 }
 
 /* 响应式设计 */
@@ -445,10 +568,27 @@ onMounted(() => {
     font-size: 20px;
   }
 
-  .info-row {
+  .detail-form :deep(.el-form-item) {
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+  }
+
+  .detail-form :deep(.el-form-item__label) {
+    width: 100% !important;
+    text-align: left;
+    margin-bottom: 4px;
+  }
+
+  .detail-form :deep(.el-form-item__content) {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+
+  .detail-actions {
+    flex-direction: column;
+    align-items: stretch;
+    margin-left: 0;
+    width: 100%;
   }
 }
 

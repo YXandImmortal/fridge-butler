@@ -11,11 +11,20 @@
         </div>
         <div class="dialog-content">
           <p>{{ message }}</p>
+          <div v-if="type === 'select'" class="dialog-select-wrapper">
+            <CustomSelect
+              :model-value="selectValue"
+              :placeholder="selectPlaceholder"
+              style="width: 100%"
+              :options="mappedOptions"
+              @update:model-value="handleSelectChange"
+            />
+          </div>
           <slot />
         </div>
         <div class="dialog-footer">
-          <el-button v-if="showCancel" type="danger" class="dialog-btn dialog-btn-cancel" @click="handleCancel">{{ cancelText }}</el-button>
-          <el-button type="primary" class="dialog-btn dialog-btn-confirm" @click="handleConfirm">{{ confirmText }}</el-button>
+          <CustomButton v-if="showCancel" type="danger" class="dialog-btn dialog-btn-cancel" @click="handleCancel">{{ cancelText }}</CustomButton>
+          <CustomButton type="primary" class="dialog-btn dialog-btn-confirm" @click="handleConfirm">{{ confirmText }}</CustomButton>
         </div>
       </div>
     </div>
@@ -23,6 +32,8 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import CustomSelect from './CustomSelect.vue'
 
 const props = defineProps({
   visible: {
@@ -60,14 +71,59 @@ const props = defineProps({
   width: {
     type: String,
     default: '300px'
+  },
+  type: {
+    type: String,
+    default: 'confirm'
+  },
+  selectValue: {
+    type: [String, Number],
+    default: null
+  },
+  options: {
+    type: Array,
+    default: () => []
+  },
+  optionLabel: {
+    type: String,
+    default: 'label'
+  },
+  optionValue: {
+    type: String,
+    default: 'value'
+  },
+  selectPlaceholder: {
+    type: String,
+    default: '请选择'
+  },
+  selectLoading: {
+    type: Boolean,
+    default: false
+  },
+  selectClearable: {
+    type: Boolean,
+    default: true
   }
 })
 
-const emit = defineEmits(['update:visible', 'confirm', 'cancel'])
+const emit = defineEmits(['update:visible', 'confirm', 'cancel', 'update:selectValue'])
 
 const handleConfirm = () => {
   emit('confirm')
-  emit('update:visible', false)
+  if (props.type !== 'select') {
+    emit('update:visible', false)
+  }
+}
+
+const mappedOptions = computed(() => {
+  return props.options.map(item => ({
+    label: item[props.optionLabel],
+    value: item[props.optionValue]
+  }))
+})
+
+const handleSelectChange = (val) => {
+  emit('update:selectValue', val)
 }
 
 const handleOverlayClick = () => {
@@ -99,7 +155,7 @@ const handleCancel = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: 100;
 }
 
 .confirm-dialog {
@@ -158,6 +214,10 @@ const handleCancel = () => {
   color: var(--text-secondary);
   line-height: 1.5;
   text-align: center;
+}
+
+.dialog-select-wrapper {
+  margin-top: var(--space-4);
 }
 
 .dialog-footer {

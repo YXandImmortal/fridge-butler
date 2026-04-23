@@ -13,10 +13,10 @@
         <div class="fridge-create-container">
           <!-- 返回按钮 -->
           <div class="back-bar">
-            <el-button link @click="handleBack">
+            <CustomButton type="link" @click="handleBack">
               <i class="iconfont icon-arrow-left" />
               返回列表
-            </el-button>
+            </CustomButton>
           </div>
 
           <div class="create-card">
@@ -30,20 +30,17 @@
               class="create-form"
             >
               <el-form-item label="冰箱名称" prop="name">
-                <el-input
+                <EnhancedInput
                   v-model="form.name"
                   placeholder="请输入冰箱名称，如：家用冰箱、办公室冰箱"
                   maxlength="50"
                   show-word-limit
-                >
-                  <template #prefix>
-                    <i class="iconfont icon-refrigerator" />
-                  </template>
-                </el-input>
+                  icon="icon-refrigerator"
+                />
               </el-form-item>
 
               <el-form-item label="冰箱描述" prop="description">
-                <el-input
+                <EnhancedInput
                   v-model="form.description"
                   type="textarea"
                   :rows="4"
@@ -54,29 +51,26 @@
               </el-form-item>
 
               <el-form-item label="地址" prop="address">
-                <el-input
+                <EnhancedInput
                   v-model="form.address"
                   placeholder="请输入冰箱地址（选填）"
                   maxlength="100"
                   show-word-limit
-                >
-                  <template #prefix>
-                    <i class="iconfont icon-location" />
-                  </template>
-                </el-input>
+                  icon="icon-location"
+                />
               </el-form-item>
             </el-form>
 
             <div class="form-actions">
-              <el-button
+              <CustomButton
                 type="primary"
                 size="large"
                 :loading="submitting"
                 @click="handleSubmit"
               >
                 {{ submitting ? '创建中...' : '创建冰箱' }}
-              </el-button>
-              <el-button size="large" @click="handleBack">取消</el-button>
+              </CustomButton>
+              <CustomButton size="large" @click="handleBack" type="danger">取消</CustomButton>
             </div>
           </div>
         </div>
@@ -108,6 +102,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
 import { useUserStore } from '@/stores/user'
 import { createFridge } from '@/api/fridge'
+import EnhancedInput from "@/components/EnhancedInput.vue";
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -224,7 +219,7 @@ const handleLogout = () => {
   margin-bottom: 20px;
 }
 
-.back-bar :deep(.el-button) {
+.back-bar .custom-button {
   font-size: 14px;
   color: var(--text-secondary);
 }
@@ -268,45 +263,6 @@ const handleLogout = () => {
   font-size: 15px;
 }
 
-.create-form :deep(.el-input__wrapper) {
-  border-radius: var(--radius-md);
-  padding: var(--space-1) var(--space-4);
-  background-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-}
-
-.create-form :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.create-form :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 4px 16px var(--primary-30), 0 0 0 3px rgba(100, 181, 246, 0.15);
-  border-color: var(--primary-color);
-}
-
-.create-form :deep(.el-textarea__inner) {
-  border-radius: var(--radius-md);
-  padding: 12px var(--space-4);
-  background-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-  resize: none;
-}
-
-.create-form :deep(.el-textarea__inner:hover) {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.create-form :deep(.el-textarea__inner:focus) {
-  box-shadow: 0 4px 16px var(--primary-30), 0 0 0 3px rgba(100, 181, 246, 0.15);
-  border-color: var(--primary-color);
-}
-
 .form-actions {
   display: flex;
   gap: 16px;
@@ -314,23 +270,31 @@ const handleLogout = () => {
   padding-top: 8px;
 }
 
-.form-actions :deep(.el-button) {
+.form-actions .custom-button {
   border-radius: 12px;
   padding: 12px 32px;
-  font-weight: 600;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
   min-width: 140px;
 }
 
-.form-actions :deep(.el-button--primary) {
+.form-actions .custom-button--primary {
   background: var(--primary-color);
   border: none;
 }
 
-.form-actions :deep(.el-button--primary:hover) {
+.form-actions .custom-button--primary:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--primary-40);
+}
+
+.form-actions .custom-button--danger {
+  background: var(--danger-color);
+  border: none;
+}
+
+.form-actions .custom-button--danger:hover:not(:disabled) {
+  box-shadow: 0 6px 20px var(--danger-40);
 }
 
 /* 响应式设计 */
@@ -369,7 +333,7 @@ const handleLogout = () => {
     flex-direction: column;
   }
 
-  .form-actions :deep(.el-button) {
+  .form-actions .custom-button {
     width: 100%;
   }
 }

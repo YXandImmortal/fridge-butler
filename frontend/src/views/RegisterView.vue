@@ -47,23 +47,10 @@
       </el-form-item>
 
       <el-form-item prop="captcha">
-        <div class="captcha-container">
-          <EnhancedInput
-              v-model="registerForm.captcha"
-              placeholder="请输入验证码"
-              icon="icon-captcha"
-              style="width: 60%"
-          />
-          <div class="captcha-image-container">
-            <img
-                :src="captchaUrl"
-                alt="验证码"
-                class="captcha-image"
-                @click="refreshCaptcha"
-                title="点击刷新验证码"
-            />
-          </div>
-        </div>
+        <CaptchaInput
+            v-model="registerForm.captcha"
+            ref="captchaInputRef"
+        />
       </el-form-item>
 
       <AuthButtonGroup
@@ -83,28 +70,22 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import request from '@/utils/request'
 import showMessage from '@/utils/message'
-import axios from 'axios'
 import { useSystemStore } from '@/stores/system'
-import AuthLayout from "@/components/auth/AuthLayout.vue";
-import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue";
-import EnhancedInput from "@/components/auth/EnhancedInput.vue";
+import AuthLayout from "@/components/auth/AuthLayout.vue"
+import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
+import EnhancedInput from "@/components/EnhancedInput.vue"
+import CaptchaInput from "@/components/CaptchaInput.vue"
 
 const router = useRouter()
 const systemStore = useSystemStore()
 const { systemName, getSystemInfo } = systemStore;
 const registerFormRef = ref()
+const captchaInputRef = ref()
 const loading = ref(false)
-
-// 验证码图片URL
-const captchaUrl = ref('/captcha/generate')
-// 验证码ID
-const captchaId = ref('')
 
 // 初始化系统信息
 onMounted(async () => {
   await getSystemInfo()
-  // 初始化验证码
-  await refreshCaptcha()
 })
 
 // 注册表单数据
@@ -148,27 +129,6 @@ const registerRules = {
   ]
 }
 
-// 刷新验证码
-const refreshCaptcha = async () => {
-  try {
-    // 使用axios直接请求验证码，获取响应头中的X-Captcha-Id
-    const response = await axios({
-      url: `/captcha/generate?timestamp=${Date.now()}`,
-      method: 'get',
-      responseType: 'blob',
-      baseURL: import.meta.env.VITE_API_BASE_URL
-    })
-
-    // 从响应头中获取captchaId
-    captchaId.value = response.headers['x-captcha-id'] || ''
-    
-    // 创建图片URL
-    captchaUrl.value = URL.createObjectURL(response.data)
-  } catch (error) {
-    console.error('刷新验证码失败:', error)
-  }
-}
-
 // 注册方法
 const handleRegister = async () => {
   if (loading.value) return
@@ -181,7 +141,7 @@ const handleRegister = async () => {
     // 传递captchaId到注册请求
     const registerData = {
       ...registerForm,
-      captchaId: captchaId.value
+      captchaId: captchaInputRef.value?.captchaId || ''
     }
 
     const res = await request({
@@ -198,7 +158,7 @@ const handleRegister = async () => {
     } else {
       showMessage.error(res.message || '注册失败')
       // 注册失败时刷新验证码
-      await refreshCaptcha()
+      await captchaInputRef.value?.refreshCaptcha()
     }
   } catch (error) {
     if (error?.message) {
@@ -206,7 +166,7 @@ const handleRegister = async () => {
     } else {
       console.error('注册失败:', error)
       // 异常时刷新验证码
-      refreshCaptcha()
+      captchaInputRef.value?.refreshCaptcha()
     }
   } finally {
     loading.value = false

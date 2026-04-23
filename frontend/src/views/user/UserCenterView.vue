@@ -26,42 +26,26 @@
             </div>
             <el-form :model="userForm" label-position="top" class="profile-form">
               <el-form-item label="用户名">
-                <el-input v-model="userForm.username" placeholder="请输入用户名">
-                  <template #prefix>
-                    <i class="iconfont icon-contact"/>
-                  </template>
-                </el-input>
+                <EnhancedInput v-model="userForm.username" placeholder="请输入用户名" icon="icon-contact" />
               </el-form-item>
 
               <el-form-item label="手机号">
-                <el-input v-model="userForm.mobile" placeholder="请输入手机号">
-                  <template #prefix>
-                    <i class="iconfont icon-device-phone"/>
-                  </template>
-                </el-input>
+                <EnhancedInput v-model="userForm.mobile" placeholder="请输入手机号" icon="icon-device-phone" />
               </el-form-item>
 
               <el-form-item label="注册时间">
-                <el-input v-model="userForm.createTime" disabled>
-                  <template #prefix>
-                    <i class="iconfont icon-calendar"/>
-                  </template>
-                </el-input>
+                <EnhancedInput v-model="userForm.createTime" disabled icon="icon-calendar" />
               </el-form-item>
 
               <el-form-item label="角色">
-                <el-input v-model="userForm.roleName" disabled>
-                  <template #prefix>
-                    <i class="iconfont icon-user"/>
-                  </template>
-                </el-input>
+                <EnhancedInput v-model="userForm.roleName" disabled icon="icon-user" />
               </el-form-item>
             </el-form>
 
             <div class="profile-actions">
-              <el-button type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">保存修改</el-button>
-              <el-button @click="handleChangePassword">修改密码</el-button>
-              <el-button type="danger" @click="showLogoutDialog = true">退出登录</el-button>
+              <CustomButton type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">保存修改</CustomButton>
+              <CustomButton @click="handleChangePassword">修改密码</CustomButton>
+              <CustomButton type="danger" @click="showLogoutDialog = true">退出登录</CustomButton>
             </div>
           </div>
 
@@ -73,49 +57,23 @@
                 <Transition name="switch">
                   <div v-if="editType === 'password'">
                     <h2 class="edit-title">修改密码</h2>
-                    <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-position="top" class="profile-form">
+                    <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-position="top" class="profile-form edit-form">
                       <el-form-item label="原密码" prop="originalPassword">
-                        <el-input type="password" v-model="passwordForm.originalPassword" placeholder="请输入原密码">
-                          <template #prefix>
-                            <i class="iconfont icon-lock"/>
-                          </template>
-                        </el-input>
+                        <EnhancedInput type="password" v-model="passwordForm.originalPassword" placeholder="请输入原密码" icon="icon-lock" />
                       </el-form-item>
                       <el-form-item label="新密码" prop="newPassword">
-                        <el-input type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码">
-                          <template #prefix>
-                            <i class="iconfont icon-lock"/>
-                          </template>
-                        </el-input>
+                        <EnhancedInput type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码" icon="icon-lock" />
                       </el-form-item>
                       <el-form-item label="确认新密码" prop="confirmNewPassword">
-                        <el-input type="password" v-model="passwordForm.confirmNewPassword" placeholder="请确认新密码">
-                          <template #prefix>
-                            <i class="iconfont icon-lock"/>
-                          </template>
-                        </el-input>
+                        <EnhancedInput type="password" v-model="passwordForm.confirmNewPassword" placeholder="请确认新密码" icon="icon-lock" />
                       </el-form-item>
                       <el-form-item label="验证码" prop="captcha">
-                        <div class="captcha-container">
-                          <el-input
+                        <CaptchaInput
                             v-model="passwordForm.captcha"
-                            placeholder="请输入验证码"
-                            style="max-width: 150px"
-                          >
-                            <template #prefix>
-                              <i class="iconfont icon-captcha"/>
-                            </template>
-                          </el-input>
-                          <div class="captcha-image-container">
-                            <img
-                              :src="captchaUrl"
-                              alt="验证码"
-                              class="captcha-image"
-                              @click="refreshCaptcha"
-                              title="点击刷新验证码"
-                            />
-                          </div>
-                        </div>
+                            ref="captchaInputRef"
+                            :height="40"
+                            input-width="150px"
+                        />
                       </el-form-item>
                     </el-form>
                   </div>
@@ -139,15 +97,15 @@
                 </Transition>
               </div>
               <div class="edit-actions">
-                <el-button
+                <CustomButton
                   type="primary"
                   @click="editType === 'password' ? handleChangePasswordSubmit() : handleChangeAvatarSubmit()"
                   :loading="editType === 'password' ? loadingChangePassword : loadingChangeAvatar"
                   loading-text="修改中..."
                 >
                   确认
-                </el-button>
-                <el-button @click="showEditCard = false" type="danger">取消</el-button>
+                </CustomButton>
+                <CustomButton @click="showEditCard = false" type="danger">取消</CustomButton>
               </div>
             </div>
           </Transition>
@@ -191,7 +149,8 @@ import {useSystemStore} from '@/stores/system';
 import {useUserStore} from '@/stores/user';
 import router from "@/router/index.js";
 import Avatar from "@/components/Avatar.vue";
-import axios from 'axios';
+import EnhancedInput from "@/components/EnhancedInput.vue";
+import CaptchaInput from "@/components/CaptchaInput.vue";
 import {getSystemAvatarIds} from '@/utils/avatarManager';
 
 const systemStore = useSystemStore();
@@ -219,9 +178,7 @@ const loadingChangeAvatar = ref(false);
 const loadingSave = ref(false);
 const loadingChangePassword = ref(false);
 
-// 验证码相关
-const captchaUrl = ref('/captcha/generate');
-const captchaId = ref('');
+const captchaInputRef = ref();
 const passwordFormRef = ref();
 
 // 密码修改表单
@@ -319,28 +276,7 @@ const handleChangePassword = async () => {
   editType.value = 'password';
   showEditCard.value = true;
   // 初始化验证码
-  await refreshCaptcha();
-};
-
-// 刷新验证码
-const refreshCaptcha = async () => {
-  try {
-    // 使用axios直接请求验证码，获取响应头中的X-Captcha-Id
-    const response = await axios({
-      url: `/captcha/generate?timestamp=${Date.now()}`,
-      method: 'get',
-      responseType: 'blob',
-      baseURL: import.meta.env.VITE_API_BASE_URL
-    });
-
-    // 从响应头中获取captchaId
-    captchaId.value = response.headers['x-captcha-id'] || '';
-    
-    // 创建图片URL
-    captchaUrl.value = URL.createObjectURL(response.data);
-  } catch (error) {
-    console.error('刷新验证码失败:', error);
-  }
+  await captchaInputRef.value?.refreshCaptcha();
 };
 
 // 提交修改密码
@@ -355,7 +291,7 @@ const handleChangePasswordSubmit = async () => {
     // 传递captchaId到修改密码请求
     const changePasswordData = {
       ...passwordForm.value,
-      captchaId: captchaId.value
+      captchaId: captchaInputRef.value?.captchaId || ''
     };
 
     console.log(changePasswordData);
@@ -376,7 +312,7 @@ const handleChangePasswordSubmit = async () => {
     } else {
       showMessage.error(res.message || '密码修改失败');
       // 失败时刷新验证码
-      await refreshCaptcha();
+      await captchaInputRef.value?.refreshCaptcha();
     }
   } catch (error) {
     if (error?.message) {
@@ -386,7 +322,7 @@ const handleChangePasswordSubmit = async () => {
       console.error('修改密码失败:', error);
       showMessage.error('修改密码失败');
       // 异常时刷新验证码
-      await refreshCaptcha();
+      await captchaInputRef.value?.refreshCaptcha();
     }
   } finally {
     loadingChangePassword.value = false;
@@ -548,7 +484,7 @@ const handleLogout = (msg) => {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
-  z-index: 10;
+  z-index: 2;
 }
 
 .profile-card:hover {
@@ -564,11 +500,11 @@ const handleLogout = (msg) => {
 
 /* 表单项目样式优化 */
 .profile-form .el-form-item {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   margin-bottom: 24px;
+}
+
+.profile-form.edit-form .el-form-item {
+  width: 100%;
 }
 
 .profile-form .el-form-item__label {
@@ -580,31 +516,6 @@ const handleLogout = (msg) => {
   font-size: 16px;
 }
 
-/* 输入框增强样式 */
-.profile-form :deep(.el-input__wrapper) {
-  border-radius: var(--radius-md);
-  padding: var(--space-1) var(--space-4);
-  background-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-}
-
-.profile-form :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.profile-form :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 4px 16px var(--primary-30), 0 0 0 3px rgba(100, 181, 246, 0.15);
-  border-color: var(--primary-color);
-}
-
-.profile-form :deep(.el-input.is-disabled .el-input__wrapper) {
-  background-color: var(--white-60);
-  opacity: 0.9;
-}
-
 .profile-actions {
   display: flex;
   gap: 16px;
@@ -614,64 +525,34 @@ const handleLogout = (msg) => {
 }
 
 /* 按钮增强样式 */
-.profile-actions :deep(.el-button) {
+.profile-actions .custom-button {
   border-radius: 12px;
   padding: 12px 24px;
-  font-weight: 600;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
-  min-width: 120px;
 }
 
-.profile-actions :deep(.el-button:hover) {
+.profile-actions .custom-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--gray-40);
 }
 
-.profile-actions :deep(.el-button--primary) {
+.profile-actions .custom-button--primary {
   background: var(--primary-color);
   border: none;
 }
 
-.profile-actions :deep(.el-button--primary:hover) {
+.profile-actions .custom-button--primary:hover:not(:disabled) {
   box-shadow: 0 6px 20px var(--primary-40);
 }
 
-.profile-actions :deep(.el-button--danger) {
+.profile-actions .custom-button--danger {
   background: var(--danger-color);
   border: none;
 }
 
-.profile-actions :deep(.el-button--danger:hover) {
+.profile-actions .custom-button--danger:hover:not(:disabled) {
   box-shadow: 0 6px 20px var(--danger-40);
-}
-
-/* 验证码容器 */
-.captcha-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.captcha-image-container {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.captcha-image {
-  height: 40px;
-  cursor: pointer;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px var(--primary-10);
-}
-
-.captcha-image:hover {
-  opacity: 0.9;
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px var(--primary-20);
 }
 
 /* 编辑卡片样式 */
@@ -744,30 +625,29 @@ const handleLogout = (msg) => {
   border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.edit-actions :deep(.el-button) {
+.edit-actions .custom-button {
   border-radius: 12px;
   padding: 12px 24px;
-  font-weight: 600;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
   min-width: 120px;
 }
 
-.edit-actions :deep(.el-button--primary) {
+.edit-actions .custom-button--primary {
   background: var(--primary-color);
   border: none;
 }
 
-.edit-actions :deep(.el-button--primary:hover) {
+.edit-actions .custom-button--primary:hover:not(:disabled) {
   box-shadow: 0 6px 20px var(--primary-40);
 }
 
-.edit-actions :deep(.el-button--danger) {
+.edit-actions .custom-button--danger {
   background: var(--danger-color);
   border: none;
 }
 
-.edit-actions :deep(.el-button--danger:hover) {
+.edit-actions .custom-button--danger:hover:not(:disabled) {
   box-shadow: 0 6px 20px var(--danger-40);
 }
 
@@ -806,8 +686,8 @@ const handleLogout = (msg) => {
     gap: 12px;
   }
 
-  .profile-actions :deep(.el-button),
-  .edit-actions :deep(.el-button) {
+  .profile-actions .custom-button,
+  .edit-actions .custom-button {
     width: 100%;
     min-width: auto;
   }
