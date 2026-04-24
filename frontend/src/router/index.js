@@ -6,6 +6,7 @@ import UserCenterView from "@/views/user/UserCenterView.vue";
 import FridgeListView from "@/views/fridge/FridgeListView.vue";
 import FridgeDetailView from "@/views/fridge/FridgeDetailView.vue";
 import FridgeCreateView from "@/views/fridge/FridgeCreateView.vue";
+import AboutView from "@/views/AboutView.vue";
 
 const LoginView = () => import('@/views/LoginView.vue')
 const RegisterView = () => import('@/views/RegisterView.vue')
@@ -32,6 +33,15 @@ const router = createRouter({
           path: 'center',
           name: 'user-center',
           component: UserCenterView,
+          meta: {
+            requiresAuth: true,
+            roles: [USER_PERMISSION]
+          }
+        },
+        {
+          path: 'about',
+          name: 'user-about',
+          component: AboutView,
           meta: {
             requiresAuth: true,
             roles: [USER_PERMISSION]

@@ -387,12 +387,11 @@ const handleLogout = (msg) => {
 .main-content {
   margin-left: var(--sidebar-width);
   transition: all 0.3s ease;
+  max-height: calc(100vh - var(--header-height) - var(--footer-height));
   min-height: calc(100vh - var(--header-height) - var(--footer-height));
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: var(--main-content-bg);
   padding: var(--space-5);
+  overflow-y: scroll;
 }
 
 .profile-container {
