@@ -14,5 +14,9 @@ import java.util.List;
 public class SystemInfoDTO {
     private String systemName;
     private String systemVersion;
+    private String slogan;
     private List<SidebarFeatureDTO> userIndexFeatures;
+    private List<FeatureDTO> features;
+    private List<UpdateLogDTO> updates;
+    private List<AboutItemDTO> about;
 }

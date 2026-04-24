@@ -1,7 +1,10 @@
 package com.yx.fridgebutler.controller;
 
+import com.yx.fridgebutler.dto.AboutItemDTO;
+import com.yx.fridgebutler.dto.FeatureDTO;
 import com.yx.fridgebutler.dto.SidebarFeatureDTO;
 import com.yx.fridgebutler.dto.SystemInfoDTO;
+import com.yx.fridgebutler.dto.UpdateLogDTO;
 import com.yx.fridgebutler.vo.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,8 +17,12 @@ import java.util.List;
 @RequestMapping("/system")
 public class SystemController {
     public static final String SYSTEM_NAME = "智鲜·引擎";
-    public static final String SYSTEM_VERSION = "alpha 0.0.5";
+    public static final String SYSTEM_VERSION = "alpha 0.0.6";
+    public static final String SYSTEM_SLOGAN = "智能管理您的冰箱，让食材更新鲜";
     public static final List<SidebarFeatureDTO> USER_INDEX_FEATURES;
+    public static final List<FeatureDTO> SYSTEM_FEATURES;
+    public static final List<UpdateLogDTO> SYSTEM_UPDATES;
+    public static final List<AboutItemDTO> SYSTEM_ABOUT;
 
     static {
         USER_INDEX_FEATURES = List.of(
@@ -69,8 +76,85 @@ public class SystemController {
                 SidebarFeatureDTO.builder()
                         .id(6)
                         .name("关于系统")
-                        .path("/system/about")
+                        .path("/user/about")
                         .icon("icon-info-box")
+                        .build()
+        );
+
+        SYSTEM_FEATURES = List.of(
+                FeatureDTO.builder()
+                        .title("冰箱管理")
+                        .description("轻松管理多台冰箱，实时掌握冰箱状态，让食材存储井然有序")
+                        .icon("icon-fridge-line")
+                        .build(),
+                FeatureDTO.builder()
+                        .title("物品分类")
+                        .description("自定义物品分类体系，支持多级分类，让食材归类更清晰")
+                        .icon("icon-inbox-full")
+                        .build(),
+                FeatureDTO.builder()
+                        .title("过期提醒")
+                        .description("智能识别食材保质期，及时提醒即将过期的食材，有效减少浪费")
+                        .icon("icon-notification")
+                        .build(),
+                FeatureDTO.builder()
+                        .title("数据统计")
+                        .description("可视化数据报表，直观了解食材消耗情况，助您科学管理家庭饮食")
+                        .icon("icon-chart-bar")
+                        .build()
+        );
+
+        SYSTEM_UPDATES = List.of(
+                UpdateLogDTO.builder()
+                        .version("alpha 0.0.6")
+                        .date("2026-04-20")
+                        .changes(Arrays.asList(
+                                "新增系统颜色主题切换功能，预设“浅色”与“深色”主题",
+                                "优化冰箱详情页交互体验",
+                                "修复若干已知问题，提升系统稳定性",
+                                "新增关于系统页面，介绍系统信息与功能"
+                        ))
+                        .build(),
+                UpdateLogDTO.builder()
+                        .version("alpha 0.0.5")
+                        .date("2026-04-15")
+                        .changes(Arrays.asList(
+                                "新增冰箱搜索功能，支持多条件筛选",
+                                "支持用户头像上传与修改",
+                                "优化系统性能，提升页面加载速度"
+                        ))
+                        .build(),
+                UpdateLogDTO.builder()
+                        .version("alpha 0.0.4")
+                        .date("2026-04-10")
+                        .changes(Arrays.asList(
+                                "新增用户个人中心页面",
+                                "支持修改密码功能",
+                                "优化登录页面视觉设计"
+                        ))
+                        .build()
+        );
+
+        SYSTEM_ABOUT = List.of(
+                AboutItemDTO.builder()
+                        .label("技术支持")
+                        .value("support@fridgebutler.com")
+                        .type("email")
+                        .build(),
+                AboutItemDTO.builder()
+                        .label("官方网站")
+                        .value("https://fridgebutler.example.com")
+                        .type("url")
+                        .build(),
+                AboutItemDTO.builder()
+                        .label("版权所有")
+                        .value("© 2026 智鲜引擎团队 版权所有")
+                        .type("text")
+                        .build(),
+                AboutItemDTO.builder()
+                        .label("开源协议")
+                        .value("MIT License")
+                        .type("text")
                         .build()
         );
     }
@@ -80,7 +164,11 @@ public class SystemController {
         return Result.success(SystemInfoDTO.builder()
                 .systemName(SYSTEM_NAME)
                 .systemVersion(SYSTEM_VERSION)
+                .slogan(SYSTEM_SLOGAN)
                 .userIndexFeatures(USER_INDEX_FEATURES)
+                .features(SYSTEM_FEATURES)
+                .updates(SYSTEM_UPDATES)
+                .about(SYSTEM_ABOUT)
                 .build());
     }
 }
