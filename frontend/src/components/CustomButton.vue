@@ -105,7 +105,7 @@ const handleClick = (event) => {
 
 .custom-button--primary {
   background: var(--primary-color);
-  color: #ffffff;
+  color: var(--text-inverse);
   border: none;
 }
 
@@ -117,7 +117,7 @@ const handleClick = (event) => {
 
 .custom-button--danger {
   background: var(--danger-color);
-  color: #ffffff;
+  color: var(--text-inverse);
   border: none;
 }
 

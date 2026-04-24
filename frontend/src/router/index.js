@@ -90,6 +90,10 @@ const router = createRouter({
       name: 'register',
       component: RegisterView
     },
+    {
+      path: '/',
+      redirect: { name: 'login' }
+    },
     // 404路由
     {
       path: '/:pathMatch(.*)*',

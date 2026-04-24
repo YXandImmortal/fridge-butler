@@ -5,6 +5,7 @@ import 'element-plus/dist/index.css'
 import App from './App.vue'
 import router from './router'
 import { useUserStore } from "@/stores/user.js";
+import { useThemeStore } from "@/stores/theme.js";
 import { setRouter } from '@/utils/navigate'
 
 import './styles/index.scss'
@@ -22,5 +23,9 @@ setRouter(router)
 
 const userStore = useUserStore()
 userStore.initUser()
+
+// 初始化主题（在挂载前应用，避免闪烁）
+const themeStore = useThemeStore()
+themeStore.loadTheme()
 
 app.mount('#app')

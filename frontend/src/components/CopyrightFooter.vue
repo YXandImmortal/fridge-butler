@@ -41,10 +41,10 @@ onMounted(async () => {
 .copyright-footer {
   z-index: 1000;
   padding: 20px 24px;
-  background: radial-gradient(ellipse, rgba(255, 255, 255, 1) 0%, rgba(248, 250, 252, 0.85) 80%, rgba(248, 250, 252, 0.6) 100%);
+  background: var(--gradient-footer);
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(100, 181, 246, 0.15);
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--shadow-footer);
   position: fixed;
   bottom: 0;
   left: 0;

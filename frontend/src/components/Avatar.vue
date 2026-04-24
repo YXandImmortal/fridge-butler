@@ -88,7 +88,7 @@ const shapeClass = computed(() => `avatar--${props.shape}`)
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: #f5f5f5;
+  background-color: var(--input-bg);
   overflow: hidden;
   font-family: inherit;
 }
@@ -138,7 +138,7 @@ const shapeClass = computed(() => `avatar--${props.shape}`)
 }
 
 .avatar-placeholder {
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 500;
   display: flex;
   align-items: center;

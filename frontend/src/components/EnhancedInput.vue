@@ -67,9 +67,9 @@ const inputStyle = computed(() => {
 .enhanced-default :deep(.el-input__wrapper) {
   border-radius: var(--radius-md);
   padding: var(--space-1) var(--space-4);
-  background-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-input);
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
 }
 
@@ -80,13 +80,13 @@ const inputStyle = computed(() => {
 
 /* 统一的 hover 样式 */
 .enhanced-default :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-input-hover);
+  border-color: var(--border-color);
 }
 
 /* 统一的 focus 样式 */
 .enhanced-default :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 4px 16px var(--primary-30), 0 0 0 3px rgba(100, 181, 246, 0.15);
+  box-shadow: var(--shadow-input-focus);
   border-color: var(--primary-color);
 }
 
@@ -96,7 +96,7 @@ const inputStyle = computed(() => {
   border-right: none;
   box-shadow: 0 0 0 1px var(--gray-40) inset;
   padding: var(--space-1) var(--space-4);
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   transition: all 0.3s ease;
 }
 
@@ -118,16 +118,16 @@ const inputStyle = computed(() => {
 .enhanced-textarea :deep(.el-textarea__inner) {
   border-radius: var(--radius-md);
   padding: 12px var(--space-4);
-  background-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-input);
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
   resize: none;
 }
 
 .enhanced-textarea :deep(.el-textarea__inner:hover) {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-input-hover);
+  border-color: var(--border-color);
 }
 
 .enhanced-textarea :deep(.el-textarea__inner:focus) {
@@ -137,15 +137,15 @@ const inputStyle = computed(() => {
 
 /* ========== 统一的禁用样式 ========== */
 .enhanced-input.is-disabled :deep(.el-input__wrapper) {
-  background-color: var(--primary-light) !important;
-  border: 1px dashed var(--color-primary-200) !important;
+  background-color: var(--disabled-bg) !important;
+  border: var(--disabled-border) !important;
   box-shadow: none !important;
   cursor: default;
 }
 
 .enhanced-input.is-disabled :deep(.el-input__wrapper:hover) {
   box-shadow: none !important;
-  border-color: var(--color-primary-200) !important;
+  border-color: var(--primary-color) !important;
 }
 
 .enhanced-input.is-disabled :deep(.el-input__inner) {

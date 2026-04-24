@@ -1,5 +1,8 @@
 <template>
   <div class="auth-page">
+    <div class="auth-theme-toggle">
+      <ThemeToggle />
+    </div>
     <div class="auth-wrapper">
       <el-card class="auth-card glass-card">
         <AuthHeader
@@ -17,6 +20,7 @@
 import { defineProps } from 'vue'
 import AuthHeader from './AuthHeader.vue'
 import CopyrightFooter from '../CopyrightFooter.vue'
+import ThemeToggle from '../ThemeToggle.vue'
 
 const props = defineProps({
   title: {
@@ -31,6 +35,14 @@ const props = defineProps({
 </script>
 
 <style scoped>
+/* 主题切换按钮定位 */
+.auth-theme-toggle {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 10;
+}
+
 /* 认证页面容器 */
 .auth-page {
     min-height: 100vh;
@@ -54,7 +66,7 @@ const props = defineProps({
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, var(--white-10) 0%, rgba(255,255,255,0) 70%);
+    background: radial-gradient(circle, var(--white-10) 0%, transparent 70%);
     animation: pulse 8s ease-in-out infinite;
 }
 

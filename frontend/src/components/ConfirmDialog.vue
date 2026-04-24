@@ -150,7 +150,7 @@ const handleCancel = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay-bg);
   backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
@@ -159,9 +159,9 @@ const handleCancel = () => {
 }
 
 .confirm-dialog {
-  background: white;
+  background: var(--card-bg);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
   max-width: 500px;
   width: 90%;
   animation: dialog-slide-in 0.3s ease-out;
@@ -239,7 +239,7 @@ const handleCancel = () => {
 
 .dialog-btn-cancel {
   background: var(--danger-color);
-  color: white;
+  color: var(--text-inverse);
 }
 
 .dialog-btn-cancel:hover {
@@ -249,7 +249,7 @@ const handleCancel = () => {
 
 .dialog-btn-confirm {
   background: var(--primary-color);
-  color: white;
+  color: var(--text-inverse);
 }
 
 .dialog-btn-confirm:hover {

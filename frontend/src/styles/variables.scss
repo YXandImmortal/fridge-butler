@@ -3,10 +3,10 @@
  * 项目所有颜色、间距、尺寸的统一源头
  * ========================================================= */
 
+/* ---------------------------------------------------------
+ * 品牌色板 — 不随主题变化的基础色
+ * --------------------------------------------------------- */
 :root {
-  /* ---------------------------------------------------------
-   * 品牌色板 — 淡蓝主题
-   * --------------------------------------------------------- */
   --color-primary-50: #E3F2FD;
   --color-primary-100: #BBDEFB;
   --color-primary-200: #90CAF9;
@@ -14,49 +14,9 @@
   --color-primary-400: #42A5F5;
   --color-primary-500: #2196F3;
 
-  /* 语义化别名 */
-  --primary-color: var(--color-primary-300);
-  --primary-dark: var(--color-primary-400);
-  --primary-light: var(--color-primary-50);
-
   --success-color: #81D4FA;
   --warn-color: #FFB74D;
   --danger-color: #F87171;
-
-  /* ---------------------------------------------------------
-   * 文本颜色
-   * --------------------------------------------------------- */
-  --text-primary: #2d3748;
-  --text-secondary: #606266;
-  --text-tertiary: #718096;
-
-  /* ---------------------------------------------------------
-   * 背景颜色
-   * --------------------------------------------------------- */
-  --page-bg: #f2f2f2;
-  --main-content-bg: #fafafa;
-  --card-bg: #ffffff;
-  --input-bg: #f0f0f0;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-lavender-25: rgba(224, 224, 242, 0.25);
-
-  /* ---------------------------------------------------------
-   * 透明度变体（用于阴影、遮罩）
-   * --------------------------------------------------------- */
-  --white-10: rgba(255, 255, 255, 0.1);
-  --white-20: rgba(255, 255, 255, 0.2);
-  --white-60: rgba(255, 255, 255, 0.60);
-  --white-85: rgba(255, 255, 255, 0.85);
-  --gray-40: rgba(120, 120, 120, 0.4);
-  --gray-50: rgba(120, 120, 120, 0.5);
-  --gray-85: rgba(120, 120, 120, 0.85);
-  --primary-10: rgba(100, 181, 246, 0.1);
-  --primary-20: rgba(100, 181, 246, 0.2);
-  --primary-30: rgba(100, 181, 246, 0.3);
-  --primary-40: rgba(100, 181, 246, 0.4);
-  --purple-30: rgba(102, 126, 234, 0.3);
-  --purple-40: rgba(102, 126, 234, 0.4);
-  --danger-40: rgba(248, 113, 113, 0.4);
 
   /* ---------------------------------------------------------
    * 布局尺寸 — 消除魔法数字
@@ -85,21 +45,189 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 20px;
+}
 
-  /* ---------------------------------------------------------
-   * 阴影
-   * --------------------------------------------------------- */
+/* ---------------------------------------------------------
+ * 浅色主题（默认）
+ * --------------------------------------------------------- */
+:root,
+html[data-theme="light"] {
+  /* 语义化品牌色 */
+  --primary-color: var(--color-primary-300);
+  --primary-dark: var(--color-primary-400);
+  --primary-light: var(--color-primary-50);
+
+  /* 文本颜色 */
+  --text-primary: #2d3748;
+  --text-secondary: #606266;
+  --text-tertiary: #718096;
+  --text-inverse: #ffffff;
+
+  /* 背景颜色 */
+  --page-bg: #f2f2f2;
+  --main-content-bg: #fafafa;
+  --card-bg: #ffffff;
+  --input-bg: #f0f0f0;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-lavender-25: rgba(224, 224, 242, 0.25);
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+  --dropdown-bg: #ffffff;
+
+  /* 边框与分隔线 */
+  --border-color: rgba(0, 0, 0, 0.06);
+  --border-light: rgba(100, 181, 246, 0.15);
+  --divider-color: rgba(0, 0, 0, 0.1);
+
+  /* 阴影 */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 12px 60px var(--glass-lavender-25);
+  --shadow-header: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-sidebar: 2px 0 8px rgba(0, 0, 0, 0.1);
+  --shadow-dropdown: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-input: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --shadow-input-hover: 0 4px 14px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --shadow-input-focus: 0 4px 16px var(--primary-30), 0 0 0 3px rgba(100, 181, 246, 0.15);
+  --shadow-footer: 0 -2px 10px rgba(0, 0, 0, 0.03);
 
-  /* ---------------------------------------------------------
-   * Element Plus 主题覆盖
-   * --------------------------------------------------------- */
+  /* 透明度变体（用于阴影、遮罩） */
+  --white-10: rgba(255, 255, 255, 0.1);
+  --white-20: rgba(255, 255, 255, 0.2);
+  --white-60: rgba(255, 255, 255, 0.60);
+  --white-85: rgba(255, 255, 255, 0.85);
+  --gray-40: rgba(120, 120, 120, 0.4);
+  --gray-50: rgba(120, 120, 120, 0.5);
+  --gray-85: rgba(120, 120, 120, 0.85);
+  --primary-10: rgba(100, 181, 246, 0.1);
+  --primary-20: rgba(100, 181, 246, 0.2);
+  --primary-30: rgba(100, 181, 246, 0.3);
+  --primary-40: rgba(100, 181, 246, 0.4);
+  --purple-30: rgba(102, 126, 234, 0.3);
+  --purple-40: rgba(102, 126, 234, 0.4);
+  --danger-40: rgba(248, 113, 113, 0.4);
+
+  /* 禁用状态 */
+  --disabled-bg: var(--primary-light);
+  --disabled-border: 1px dashed var(--color-primary-200);
+  --disabled-text: var(--text-secondary);
+
+  /* 渐变 */
+  --gradient-page: linear-gradient(135deg, #f2f2f2 0%, #e3f2fd 100%);
+  --gradient-footer: radial-gradient(ellipse, rgba(255, 255, 255, 1) 0%, rgba(248, 250, 252, 0.85) 80%, rgba(248, 250, 252, 0.6) 100%);
+  --gradient-text: linear-gradient(90deg, var(--primary-color), var(--success-color));
+  --gradient-btn: linear-gradient(90deg, var(--primary-color), var(--success-color));
+
+  /* 滚动条 */
+  --scrollbar-track: var(--primary-10);
+  --scrollbar-thumb: var(--primary-30);
+  --scrollbar-thumb-hover: var(--primary-40);
+
+  /* Element Plus 主题覆盖 */
   --el-color-primary: var(--color-primary-300);
   --el-color-primary-light-3: var(--color-primary-200);
   --el-color-primary-light-5: var(--color-primary-100);
   --el-color-primary-light-7: var(--color-primary-50);
   --el-color-primary-dark-2: var(--color-primary-400);
+  --el-bg-color: var(--card-bg);
+  --el-bg-color-page: var(--page-bg);
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-secondary);
+  --el-text-color-secondary: var(--text-tertiary);
+  --el-border-color: var(--border-color);
+  --el-fill-color-blank: var(--card-bg);
+  --el-fill-color-light: var(--input-bg);
+  --el-font-family: 'MiSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* ---------------------------------------------------------
+ * 深色主题
+ * --------------------------------------------------------- */
+html[data-theme="dark"] {
+  /* 语义化品牌色 */
+  --primary-color: var(--color-primary-300);
+  --primary-dark: var(--color-primary-200);
+  --primary-light: rgba(100, 181, 246, 0.15);
+
+  /* 文本颜色 */
+  --text-primary: #e2e8f0;
+  --text-secondary: #a0aec0;
+  --text-tertiary: #718096;
+  --text-inverse: #1a202c;
+
+  /* 背景颜色 */
+  --page-bg: #0f172a;
+  --main-content-bg: #1e293b;
+  --card-bg: #1e293b;
+  --input-bg: #334155;
+  --glass-bg: rgba(30, 41, 59, 0.85);
+  --glass-lavender-25: rgba(100, 181, 246, 0.15);
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+  --dropdown-bg: #1e293b;
+
+  /* 边框与分隔线 */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(100, 181, 246, 0.2);
+  --divider-color: rgba(255, 255, 255, 0.1);
+
+  /* 阴影 — 深色模式下更柔和的阴影 */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 60px rgba(0, 0, 0, 0.5);
+  --shadow-header: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-sidebar: 2px 0 8px rgba(0, 0, 0, 0.4);
+  --shadow-dropdown: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-input: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-input-hover: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-input-focus: 0 4px 16px var(--primary-30), 0 0 0 3px rgba(100, 181, 246, 0.2);
+  --shadow-footer: 0 -2px 10px rgba(0, 0, 0, 0.3);
+
+  /* 透明度变体 */
+  --white-10: rgba(255, 255, 255, 0.05);
+  --white-20: rgba(255, 255, 255, 0.1);
+  --white-60: rgba(255, 255, 255, 0.4);
+  --white-85: rgba(255, 255, 255, 0.15);
+  --gray-40: rgba(160, 174, 192, 0.4);
+  --gray-50: rgba(160, 174, 192, 0.5);
+  --gray-85: rgba(160, 174, 192, 0.85);
+  --primary-10: rgba(100, 181, 246, 0.1);
+  --primary-20: rgba(100, 181, 246, 0.2);
+  --primary-30: rgba(100, 181, 246, 0.3);
+  --primary-40: rgba(100, 181, 246, 0.4);
+  --purple-30: rgba(102, 126, 234, 0.3);
+  --purple-40: rgba(102, 126, 234, 0.4);
+  --danger-40: rgba(248, 113, 113, 0.4);
+
+  /* 禁用状态 */
+  --disabled-bg: rgba(100, 181, 246, 0.1);
+  --disabled-border: 1px dashed rgba(100, 181, 246, 0.3);
+  --disabled-text: var(--text-tertiary);
+
+  /* 渐变 */
+  --gradient-page: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  --gradient-footer: radial-gradient(ellipse, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 0.95) 80%, rgba(15, 23, 42, 0.8) 100%);
+  --gradient-text: linear-gradient(90deg, var(--primary-color), var(--success-color));
+  --gradient-btn: linear-gradient(90deg, var(--primary-color), var(--success-color));
+
+  /* 滚动条 */
+  --scrollbar-track: rgba(100, 181, 246, 0.05);
+  --scrollbar-thumb: rgba(100, 181, 246, 0.2);
+  --scrollbar-thumb-hover: rgba(100, 181, 246, 0.35);
+
+  /* Element Plus 主题覆盖 */
+  --el-color-primary: var(--color-primary-300);
+  --el-color-primary-light-3: var(--color-primary-200);
+  --el-color-primary-light-5: var(--color-primary-100);
+  --el-color-primary-light-7: rgba(100, 181, 246, 0.15);
+  --el-color-primary-dark-2: var(--color-primary-400);
+  --el-bg-color: var(--card-bg);
+  --el-bg-color-page: var(--page-bg);
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-secondary);
+  --el-text-color-secondary: var(--text-tertiary);
+  --el-border-color: var(--border-color);
+  --el-fill-color-blank: var(--card-bg);
+  --el-fill-color-light: var(--input-bg);
   --el-font-family: 'MiSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }

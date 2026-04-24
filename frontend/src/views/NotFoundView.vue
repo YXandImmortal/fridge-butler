@@ -91,7 +91,7 @@ const goBack = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f2f2f2 0%, #e3f2fd 100%);
+  background: var(--gradient-page);
   position: relative;
   overflow: hidden;
   font-family: 'MiSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -113,7 +113,7 @@ const goBack = () => {
   top: -20px;
   width: 8px;
   height: 8px;
-  background: #bbdefb;
+  background: var(--primary-light);
   border-radius: 50%;
   opacity: 0.5;
   animation: snowfall linear infinite;
@@ -232,7 +232,7 @@ const goBack = () => {
 
 .home-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(100, 181, 246, 0.35);
+  box-shadow: 0 8px 24px var(--primary-30);
 }
 
 .back-btn {
@@ -245,7 +245,7 @@ const goBack = () => {
 
 .back-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 /* 响应式 */

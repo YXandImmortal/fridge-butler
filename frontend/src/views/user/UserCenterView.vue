@@ -450,22 +450,22 @@ const handleLogout = (msg) => {
   bottom: 0;
   right: 0;
   background: var(--primary-color);
-  color: white;
+  color: var(--text-inverse);
   width: 32px;
   height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
-  border: 2px solid white;
+  border: 2px solid var(--card-bg);
 }
 
 .avatar-edit-icon:hover {
   background: var(--primary-dark);
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .avatar-edit-icon .iconfont {
@@ -481,8 +481,8 @@ const handleLogout = (msg) => {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
   z-index: 2;
 }
@@ -521,7 +521,7 @@ const handleLogout = (msg) => {
   gap: 16px;
   justify-content: center;
   padding-top: 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--divider-color);
 }
 
 /* 按钮增强样式 */
@@ -562,8 +562,8 @@ const handleLogout = (msg) => {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
   z-index: 1;
 }
@@ -615,6 +615,8 @@ const handleLogout = (msg) => {
 
 .avatar-item:hover :deep(.el-avatar) {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .edit-actions {
@@ -622,7 +624,7 @@ const handleLogout = (msg) => {
   gap: 16px;
   justify-content: center;
   padding-top: 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--divider-color);
 }
 
 .edit-actions .custom-button {

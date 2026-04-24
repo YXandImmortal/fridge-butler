@@ -17,6 +17,9 @@
 
     <!-- 右侧用户信息和操作 -->
     <div class="header-right">
+      <!-- 主题切换 -->
+      <ThemeToggle />
+
       <!-- 通知图标 -->
       <div class="notification-icon">
         <i class="iconfont icon-notification" />
@@ -66,6 +69,7 @@ import { useUserStore } from "@/stores/user.js"
 import { useSystemStore } from "@/stores/system.js"
 import Logo from './Logo.vue'
 import Avatar from './Avatar.vue'
+import ThemeToggle from './ThemeToggle.vue'
 import router from "@/router/index.js";
 
 const userStore = useUserStore()
@@ -178,7 +182,7 @@ const showLogoutConfirm = () => {
   padding: 0 24px;
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-header);
   position: fixed;
   top: 0;
   left: 0;
@@ -268,7 +272,7 @@ const showLogoutConfirm = () => {
   top: -8px;
   right: -8px;
   background: var(--danger-color);
-  color: white;
+  color: var(--text-inverse);
   font-size: 12px;
   font-weight: 600;
   width: 18px;
@@ -328,9 +332,9 @@ const showLogoutConfirm = () => {
   position: absolute;
   top: calc(var(--header-height) - 15px);
   right: 24px;
-  background: white;
+  background: var(--dropdown-bg);
   border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-dropdown);
   min-width: 110px;
   z-index: 1001;
   animation: dropdown-fade-in 0.3s ease;

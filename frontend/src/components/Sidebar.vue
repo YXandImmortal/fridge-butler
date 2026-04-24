@@ -147,7 +147,7 @@ onMounted(async () => {
   height: calc(100vh - var(--header-height));
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sidebar);
   position: fixed;
   top: var(--header-height);
   left: 0;

@@ -44,8 +44,8 @@
 }
 
 .el-input.is-disabled .el-input__wrapper {
-  background-color: var(--primary-light);
-  border: 1px dashed var(--color-primary-200);
+  background-color: var(--disabled-bg);
+  border: var(--disabled-border);
   box-shadow: none !important;
   cursor: default;
 }
@@ -63,6 +63,8 @@
 /* 头像阴影 */
 .avatar-wrapper .el-avatar {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  transition: all 0.3s ease;
   transition: all 0.3s ease;
 }
 

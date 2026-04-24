@@ -340,7 +340,7 @@ onMounted(() => {
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
   border: 1px solid var(--gray-40);
   cursor: pointer;
   transition: all 0.3s ease;
@@ -348,7 +348,7 @@ onMounted(() => {
 
 .fridge-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .card-header {

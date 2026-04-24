@@ -69,7 +69,7 @@ const props = defineProps({
 .icon-container svg {
     width: 40px;
     height: 40px;
-    fill: white;
+    fill: var(--text-inverse);
 }
 
 /* 响应式设计 */

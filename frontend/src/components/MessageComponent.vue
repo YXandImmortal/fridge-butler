@@ -68,15 +68,15 @@ const handleClose = () => {
 }
 
 .message-content {
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   border-radius: var(--radius-md);
   padding: var(--space-4) var(--space-5);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-md);
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  border: 1px solid rgba(100, 181, 246, 0.2);
+  border: 1px solid var(--border-light);
 }
 
 .message-icon {
