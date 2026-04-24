@@ -37,7 +37,7 @@ const props = defineProps({
     background-image: url("@/assets/images/auth-bg.png");
     background-repeat: no-repeat;
     background-size: cover;
-  background-position: center;
+    background-position: center;
     display: flex;
     flex-direction: column;
     align-items: center;
