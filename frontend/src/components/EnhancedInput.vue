@@ -114,6 +114,12 @@ const inputStyle = computed(() => {
   border-right: none;
 }
 
+/* 验证错误时的 focus 样式 */
+.enhanced-search :deep(.el-input__wrapper.is-error.is-focus) {
+  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+  border-right: none;
+}
+
 /* ========== 文本域 ========== */
 .enhanced-textarea :deep(.el-textarea__inner) {
   border-radius: var(--radius-md);
@@ -133,6 +139,12 @@ const inputStyle = computed(() => {
 .enhanced-textarea :deep(.el-textarea__inner:focus) {
   box-shadow: 0 4px 16px var(--primary-30), 0 0 0 3px rgba(100, 181, 246, 0.15);
   border-color: var(--primary-color);
+}
+
+/* 验证错误时的 focus 样式 */
+.enhanced-textarea :deep(.el-textarea__inner.is-error:focus) {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
+  border-color: var(--el-color-danger);
 }
 
 /* ========== 统一的禁用样式 ========== */

@@ -5,14 +5,9 @@
         @click="primaryAction"
         class="enhanced-button auth-primary-btn"
         :loading="loading"
+        :loading-text="loadingText"
     >
-      <template v-if="loading">
-        <i class="iconfont icon-loader auth-loading-icon"></i>
-        {{ loadingText }}
-      </template>
-      <template v-else>
-        {{ primaryText }}
-      </template>
+      {{ primaryText }}
     </CustomButton>
     <CustomButton
         @click="secondaryAction"
@@ -107,20 +102,6 @@ const secondaryAction = () => {
     background: var(--primary-light);
     border-color: var(--primary-dark);
     color: var(--primary-dark);
-}
-
-.auth-loading-icon {
-    margin-right: 8px;
-    animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
 }
 
 /* 响应式设计 */

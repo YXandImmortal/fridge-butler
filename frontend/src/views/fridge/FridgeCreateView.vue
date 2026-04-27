@@ -230,6 +230,12 @@ const handleLogout = () => {
   font-size: 12px;
 }
 
+/* 验证错误时的 focus 样式 */
+.el-form-item.is-error :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+  border-color: var(--el-color-danger);
+}
+
 .create-card {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
