@@ -21,9 +21,9 @@ public class ItemSearchRequest {
     private Long categoryId;
 
     /**
-     * 单位类型ID筛选
+     * 单位ID筛选
      */
-    private Long unitTypeId;
+    private Long unitId;
 
     /**
      * 冰箱ID筛选
@@ -31,10 +31,10 @@ public class ItemSearchRequest {
     private Long fridgeId;
 
     /**
-     * 排序字段：itemNum（数量）、createTime（创建时间）、storedDate（入库时间）
+     * 排序字段：itemNum（数量）、storedDate（入库时间）
      */
-    @Pattern(regexp = "itemNum|createTime|storedDate", message = "排序字段只能是 itemNum、createTime 或 storedDate")
-    private String sortField = "createTime";
+    @Pattern(regexp = "itemNum|storedDate", message = "排序字段只能是 itemNum 或 storedDate")
+    private String sortField = "storedDate";
 
     /**
      * 排序方向：asc（升序）、desc（降序）

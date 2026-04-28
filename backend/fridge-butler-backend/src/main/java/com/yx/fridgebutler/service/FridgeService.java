@@ -20,4 +20,6 @@ public interface FridgeService {
     void deleteFridge(Long id);
 
     List<FridgeDTO> searchFridges(FridgeSearchRequest request);
+
+    FridgeDTO getDefaultFridge();
 }

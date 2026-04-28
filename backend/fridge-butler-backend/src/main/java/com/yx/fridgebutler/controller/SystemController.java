@@ -52,6 +52,11 @@ public class SystemController {
                                         .id(23)
                                         .name("详细信息")
                                         .path("/fridge/detail")
+                                        .build(),
+                                SidebarFeatureDTO.builder()
+                                        .id(24)
+                                        .name("物品管理")
+                                        .path("/fridge/items")
                                         .build()
                         ))
                         .build(),

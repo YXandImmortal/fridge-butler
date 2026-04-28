@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -51,6 +52,7 @@ public class FridgeServiceImpl implements FridgeService {
 
         return fridges.stream()
                 .map(this::convertToDTO)
+                .sorted(Comparator.comparing(FridgeDTO::getIsDefault, Comparator.reverseOrder()))
                 .toList();
     }
 
@@ -146,6 +148,16 @@ public class FridgeServiceImpl implements FridgeService {
     }
 
     @Override
+    public FridgeDTO getDefaultFridge() {
+        Long currentUserId = getCurrentUserId();
+        log.info("查询用户默认冰箱，用户ID：{}", currentUserId);
+
+        return fridgeRepository.findByOwnerIdAndIsDefaultTrueAndIsDeletedFalse(currentUserId)
+                .map(this::convertToDTO)
+                .orElse(null);
+    }
+
+    @Override
     public List<FridgeDTO> searchFridges(FridgeSearchRequest request) {
         Long currentUserId = getCurrentUserId();
         String keyword = request.getKeyword();
@@ -158,6 +170,7 @@ public class FridgeServiceImpl implements FridgeService {
 
         return fridges.stream()
                 .map(this::convertToDTO)
+                .sorted(Comparator.comparing(FridgeDTO::getIsDefault, Comparator.reverseOrder()))
                 .toList();
     }
 

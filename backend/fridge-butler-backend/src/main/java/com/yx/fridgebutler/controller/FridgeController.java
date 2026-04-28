@@ -80,4 +80,12 @@ public class FridgeController {
     public Result<List<FridgeDTO>> searchFridges(@Valid @RequestBody FridgeSearchRequest request) {
         return Result.success(fridgeService.searchFridges(request));
     }
+
+    /**
+     * 获取当前用户的默认冰箱
+     */
+    @GetMapping("/default")
+    public Result<FridgeDTO> getDefaultFridge() {
+        return Result.success(fridgeService.getDefaultFridge());
+    }
 }

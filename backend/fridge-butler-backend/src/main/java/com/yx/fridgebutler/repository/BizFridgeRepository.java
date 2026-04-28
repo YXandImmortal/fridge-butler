@@ -50,4 +50,6 @@ public interface BizFridgeRepository extends JpaRepository<BizFridge, Long> {
                    OR f.remark LIKE :keyword)
             """)
     List<BizFridge> searchByKeyword(@Param("ownerId") Long ownerId, @Param("keyword") String keyword, Sort sort);
+
+    Optional<BizFridge> findByOwnerIdAndIsDefaultTrueAndIsDeletedFalse(Long ownerId);
 }

@@ -1,7 +1,11 @@
 package com.yx.fridgebutler.service.impl;
 
+import com.yx.fridgebutler.dto.ItemCategoryDTO;
+import com.yx.fridgebutler.dto.ItemCreateRequest;
 import com.yx.fridgebutler.dto.ItemDTO;
 import com.yx.fridgebutler.dto.ItemSearchRequest;
+import com.yx.fridgebutler.dto.ItemUnitDTO;
+import com.yx.fridgebutler.dto.UnitTypeDTO;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.BizFridgeItem;
 import com.yx.fridgebutler.entity.BizItemCategory;
@@ -59,11 +63,110 @@ public class ItemServiceImpl implements ItemService {
     private BizUnitTypeRepository unitTypeRepository;
 
     @Override
+    public List<ItemCategoryDTO> listItemCategories() {
+        Long currentUserId = getCurrentUserId();
+        log.info("查询物品分类列表，用户ID：{}", currentUserId);
+
+        List<BizItemCategory> categories = categoryRepository.findAllByOwnerIdOrSystemDefault(currentUserId);
+
+        return categories.stream()
+                .map(c -> ItemCategoryDTO.builder()
+                        .id(c.getId())
+                        .categoryName(c.getCategoryName())
+                        .isSystemDefault(c.getIsSystemDefault())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public List<ItemUnitDTO> listItemUnits() {
+        Long currentUserId = getCurrentUserId();
+        log.info("查询物品单位列表，用户ID：{}", currentUserId);
+
+        List<BizItemUnit> units = unitRepository.findAllByOwnerIdOrSystemDefault(currentUserId);
+
+        Set<Long> unitTypeIds = units.stream()
+                .map(BizItemUnit::getUnitTypeId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, String> unitTypeMap = unitTypeRepository.findAllById(unitTypeIds).stream()
+                .collect(Collectors.toMap(BizUnitType::getId, BizUnitType::getUnitTypeName));
+
+        return units.stream()
+                .map(u -> ItemUnitDTO.builder()
+                        .id(u.getId())
+                        .unitName(u.getUnitName())
+                        .unitTypeId(u.getUnitTypeId())
+                        .unitTypeName(unitTypeMap.get(u.getUnitTypeId()))
+                        .isSystemDefault(u.getIsSystemDefault())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public List<UnitTypeDTO> listUnitTypes() {
+        Long currentUserId = getCurrentUserId();
+        log.info("查询单位类型列表，用户ID：{}", currentUserId);
+
+        List<BizUnitType> unitTypes = unitTypeRepository.findAllByOwnerIdOrSystemDefault(currentUserId);
+
+        return unitTypes.stream()
+                .map(t -> UnitTypeDTO.builder()
+                        .id(t.getId())
+                        .unitTypeName(t.getUnitTypeName())
+                        .isSystemDefault(t.getIsSystemDefault())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public Long createItem(ItemCreateRequest request) {
+        Long currentUserId = getCurrentUserId();
+        log.info("新增物品，用户ID：{}，冰箱ID：{}，物品名称：{}", currentUserId, request.getFridgeId(), request.getItemName());
+
+        // 校验冰箱是否属于当前用户
+        fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(request.getFridgeId(), currentUserId)
+                .orElseThrow(BusinessException::notFound);
+
+        // 校验分类是否存在（如果传了分类ID）
+        if (request.getCategoryId() != null) {
+            categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(BusinessException::notFound);
+        }
+
+        // 校验单位是否存在（如果传了单位ID）
+        if (request.getItemUnitId() != null) {
+            unitRepository.findById(request.getItemUnitId())
+                    .orElseThrow(BusinessException::notFound);
+        }
+
+        BizFridgeItem item = new BizFridgeItem();
+        item.setFridgeId(request.getFridgeId());
+        item.setItemName(request.getItemName());
+        item.setItemUnitId(request.getItemUnitId());
+        item.setStoredDate(request.getStoredDate());
+        item.setProductionDate(request.getProductionDate());
+        item.setShelfLifeDays(request.getShelfLifeDays());
+        item.setCategoryId(request.getCategoryId());
+        item.setItemNum(request.getItemNum());
+        item.setRemark(request.getRemark());
+        item.setOperatorId(currentUserId);
+        item.setIsDeleted(false);
+
+        Instant now = Instant.now();
+        item.setCreateTime(now);
+        item.setUpdateTime(now);
+
+        BizFridgeItem saved = itemRepository.save(item);
+        return saved.getId();
+    }
+
+    @Override
     public List<ItemDTO> searchItems(ItemSearchRequest request) {
         Long currentUserId = getCurrentUserId();
-        log.info("搜索物品，用户ID：{}，冰箱ID：{}，关键字：{}，分类ID：{}，单位类型ID：{}，排序：{} {}",
+        log.info("搜索物品，用户ID：{}，冰箱ID：{}，关键字：{}，分类ID：{}，单位ID：{}，排序：{} {}",
                 currentUserId, request.getFridgeId(), request.getKeyword(), request.getCategoryId(),
-                request.getUnitTypeId(), request.getSortField(), request.getSortOrder());
+                request.getUnitId(), request.getSortField(), request.getSortOrder());
 
         String likeKeyword = (request.getKeyword() == null || request.getKeyword().isBlank())
                 ? "" : "%" + request.getKeyword() + "%";
@@ -76,7 +179,7 @@ public class ItemServiceImpl implements ItemService {
             fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(request.getFridgeId(), currentUserId)
                     .orElseThrow(BusinessException::notFound);
             items = itemRepository.searchItemsByFridgeId(
-                    request.getFridgeId(), likeKeyword, request.getCategoryId(), request.getUnitTypeId(), sort);
+                    request.getFridgeId(), likeKeyword, request.getCategoryId(), request.getUnitId(), sort);
         } else {
             List<Long> fridgeIds = fridgeRepository.findByOwnerIdAndIsDeletedFalse(currentUserId, Sort.unsorted())
                     .stream()
@@ -88,7 +191,7 @@ public class ItemServiceImpl implements ItemService {
             }
 
             items = itemRepository.searchItems(
-                    fridgeIds, likeKeyword, request.getCategoryId(), request.getUnitTypeId(), sort);
+                    fridgeIds, likeKeyword, request.getCategoryId(), request.getUnitId(), sort);
         }
 
         return convertToDTOList(items);
@@ -96,12 +199,11 @@ public class ItemServiceImpl implements ItemService {
 
     private static Sort buildSort(String sortField, String sortOrder) {
         if (sortField == null) {
-            sortField = "createTime";
+            sortField = "storedDate";
         }
 
         String field = switch (sortField) {
             case "itemNum" -> "itemNum";
-            case "createTime" -> "createTime";
             case "storedDate" -> "storedDate";
             default -> throw new BusinessException(ResultCode.SORT_FAILED_UNKNOW_SORT_FIELD);
         };
