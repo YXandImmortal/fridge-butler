@@ -68,6 +68,16 @@ export function updateFridge(data) {
 }
 
 /**
+ * 获取当前用户的默认冰箱
+ */
+export function getDefaultFridge() {
+    return request({
+        url: '/fridge/default',
+        method: 'get'
+    })
+}
+
+/**
  * 删除冰箱（软删除）
  * @param {number} id - 冰箱ID
  */

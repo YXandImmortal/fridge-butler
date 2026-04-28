@@ -39,7 +39,7 @@
                 <p class="detail-desc">{{ fridgeForm.remark || '暂无描述' }}</p>
               </div>
               <div class="item-management-wrapper">
-                <CustomButton class="item-management">
+                <CustomButton class="item-management" @click="handleItemManage">
                   <div class="item-management-inner">
                     <i class="iconfont icon-inbox-full" />
                     <span>物品管理</span>
@@ -159,7 +159,7 @@ import CopyrightFooter from '@/components/CopyrightFooter.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
 import { useUserStore } from '@/stores/user'
-import { getFridgeDetail, deleteFridge, listMyFridges, updateFridge } from '@/api/fridge'
+import { getFridgeDetail, deleteFridge, listMyFridges, updateFridge, getDefaultFridge } from '@/api/fridge'
 import CustomButton from "@/components/CustomButton.vue";
 import EnhancedInput from "@/components/EnhancedInput.vue";
 
@@ -226,8 +226,21 @@ const handleSelectFridgeCancel = () => {
 
 // 获取冰箱详情
 const fetchFridgeDetail = async () => {
-  const id = route.params.id
+  let id = route.params.id
   if (!id) {
+    try {
+      const res = await getDefaultFridge()
+      if (res.code === 200 && res.data) {
+        id = res.data.id
+        await router.replace({
+          name: 'fridge-detail',
+          params: { id }
+        })
+        return
+      }
+    } catch (error) {
+      console.error('获取默认冰箱失败:', error)
+    }
     await openSelectFridgeDialog()
     return
   }
@@ -292,6 +305,14 @@ const handleSave = async () => {
 // 返回列表
 const handleBack = () => {
   router.push('/fridge/list')
+}
+
+// 跳转到物品管理
+const handleItemManage = () => {
+  router.push({
+    name: 'fridge-items',
+    query: { fridgeId: fridge.value?.id }
+  })
 }
 
 // 删除确认

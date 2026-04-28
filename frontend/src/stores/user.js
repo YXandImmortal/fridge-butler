@@ -1,6 +1,12 @@
 import {defineStore} from 'pinia'
 import {computed, ref} from 'vue'
-import request from '@/utils/request'
+import {
+    login as loginApi,
+    getUserInfo as getUserInfoApi,
+    updateUserAvatar as updateUserAvatarApi,
+    updateUserInfo as updateUserInfoApi,
+    changePassword as changePasswordApi
+} from '@/api/user'
 
 export const useUserStore = defineStore('user', () => {
     // 状态变量（对应后端LoginResponse的字段）
@@ -55,17 +61,7 @@ export const useUserStore = defineStore('user', () => {
 
     // 登录方法：调用后端/auth/login接口
     const login = async (loginForm) => {
-        const res = await request({
-            url: '/auth/login',
-            method: 'post',
-            data: {
-                account: loginForm.account,
-                password: loginForm.password,
-                captcha: loginForm.captcha,
-                captchaId: loginForm.captchaId,
-                rememberMe: loginForm.rememberMe
-            }
-        })
+        const res = await loginApi(loginForm)
 
         // 只有当code为200时才更新用户状态
         if (res.code === 200 && res.data) {
@@ -159,10 +155,7 @@ export const useUserStore = defineStore('user', () => {
             }
 
             // 本地存储没有或token过期，请求后端
-            const res = await request({
-                url: '/user/info',
-                method: 'get'
-            });
+            const res = await getUserInfoApi();
 
             if (res.code === 200 && res.data) {
                 return res.data;
@@ -177,11 +170,7 @@ export const useUserStore = defineStore('user', () => {
     // 更新用户头像
     const updateUserAvatar = async (avatarData) => {
         try {
-            const res = await request({
-                url: '/user/update-avatar',
-                method: 'patch',
-                data: { avatar: avatarData }
-            });
+            const res = await updateUserAvatarApi(avatarData);
 
             if (res.code === 200) {
                 avatar.value = avatarData;
@@ -225,13 +214,9 @@ export const useUserStore = defineStore('user', () => {
     // 更新用户信息
     const updateUserInfo = async (userInfo) => {
         try {
-            const res = await request({
-                url: '/user/update-info',
-                method: 'patch',
-                data: {
-                    username: userInfo.username,
-                    mobile: userInfo.mobile
-                }
+            const res = await updateUserInfoApi({
+                username: userInfo.username,
+                mobile: userInfo.mobile
             });
 
             // 后端更新成功后，更新本地存储和状态
@@ -281,11 +266,7 @@ export const useUserStore = defineStore('user', () => {
     // 修改密码
     const changePassword = async (passwordData) => {
         try {
-            return await request({
-                url: '/user/change-password',
-                method: 'patch',
-                data: passwordData
-            });
+            return await changePasswordApi(passwordData);
         } catch (error) {
             console.error('修改密码失败:', error);
             throw error;
