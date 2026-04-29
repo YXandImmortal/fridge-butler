@@ -120,7 +120,7 @@
                                 v-if="row.categoryName"
                                 size="small"
                                 :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
-                                color="var(--primary-light)"
+                                :color="themeStore.theme === 'dark' ? 'var(--primary-light)' : ''"
                                 type="info"
                                 class="item-category-tag">
                               {{ row.categoryName }}
