@@ -18,35 +18,41 @@ public interface BizFridgeItemRepository extends JpaRepository<BizFridgeItem, Lo
 
     @Query("""
             SELECT i FROM BizFridgeItem i
+            LEFT JOIN BizItemUnit u ON i.itemUnitId = u.id
             WHERE i.fridgeId IN :fridgeIds
               AND i.isDeleted = false
               AND (:keyword IS NULL OR :keyword = ''
                    OR i.itemName LIKE :keyword)
               AND (:categoryId IS NULL OR i.categoryId = :categoryId)
               AND (:unitId IS NULL OR i.itemUnitId = :unitId)
+              AND (:unitTypeId IS NULL OR u.unitTypeId = :unitTypeId)
             """)
     List<BizFridgeItem> searchItems(
             @Param("fridgeIds") List<Long> fridgeIds,
             @Param("keyword") String keyword,
             @Param("categoryId") Long categoryId,
             @Param("unitId") Long unitId,
+            @Param("unitTypeId") Long unitTypeId,
             Sort sort
     );
 
     @Query("""
             SELECT i FROM BizFridgeItem i
+            LEFT JOIN BizItemUnit u ON i.itemUnitId = u.id
             WHERE i.fridgeId = :fridgeId
               AND i.isDeleted = false
               AND (:keyword IS NULL OR :keyword = ''
                    OR i.itemName LIKE :keyword)
               AND (:categoryId IS NULL OR i.categoryId = :categoryId)
               AND (:unitId IS NULL OR i.itemUnitId = :unitId)
+              AND (:unitTypeId IS NULL OR u.unitTypeId = :unitTypeId)
             """)
     List<BizFridgeItem> searchItemsByFridgeId(
             @Param("fridgeId") Long fridgeId,
             @Param("keyword") String keyword,
             @Param("categoryId") Long categoryId,
             @Param("unitId") Long unitId,
+            @Param("unitTypeId") Long unitTypeId,
             Sort sort
     );
 }

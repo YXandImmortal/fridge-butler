@@ -26,6 +26,11 @@ public class ItemSearchRequest {
     private Long unitId;
 
     /**
+     * 单位类型ID筛选
+     */
+    private Long unitTypeId;
+
+    /**
      * 冰箱ID筛选
      */
     private Long fridgeId;

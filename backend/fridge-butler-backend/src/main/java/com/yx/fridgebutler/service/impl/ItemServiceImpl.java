@@ -164,9 +164,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDTO> searchItems(ItemSearchRequest request) {
         Long currentUserId = getCurrentUserId();
-        log.info("搜索物品，用户ID：{}，冰箱ID：{}，关键字：{}，分类ID：{}，单位ID：{}，排序：{} {}",
+        log.info("搜索物品，用户ID：{}，冰箱ID：{}，关键字：{}，分类ID：{}，单位ID：{}，单位类型ID：{}，排序：{} {}",
                 currentUserId, request.getFridgeId(), request.getKeyword(), request.getCategoryId(),
-                request.getUnitId(), request.getSortField(), request.getSortOrder());
+                request.getUnitId(), request.getUnitTypeId(), request.getSortField(), request.getSortOrder());
 
         String likeKeyword = (request.getKeyword() == null || request.getKeyword().isBlank())
                 ? "" : "%" + request.getKeyword() + "%";
@@ -179,7 +179,7 @@ public class ItemServiceImpl implements ItemService {
             fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(request.getFridgeId(), currentUserId)
                     .orElseThrow(BusinessException::notFound);
             items = itemRepository.searchItemsByFridgeId(
-                    request.getFridgeId(), likeKeyword, request.getCategoryId(), request.getUnitId(), sort);
+                    request.getFridgeId(), likeKeyword, request.getCategoryId(), request.getUnitId(), request.getUnitTypeId(), sort);
         } else {
             List<Long> fridgeIds = fridgeRepository.findByOwnerIdAndIsDeletedFalse(currentUserId, Sort.unsorted())
                     .stream()
@@ -191,7 +191,7 @@ public class ItemServiceImpl implements ItemService {
             }
 
             items = itemRepository.searchItems(
-                    fridgeIds, likeKeyword, request.getCategoryId(), request.getUnitId(), sort);
+                    fridgeIds, likeKeyword, request.getCategoryId(), request.getUnitId(), request.getUnitTypeId(), sort);
         }
 
         return convertToDTOList(items);
