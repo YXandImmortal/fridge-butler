@@ -24,6 +24,11 @@ export default defineConfig({
     }
   },
   css: {
-    transformer: 'postcss'
+    transformer: 'postcss',
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@use "@/styles/variables.scss" as *; @use "@/styles/mixins.scss" as *;`
+      }
+    }
   }
 })

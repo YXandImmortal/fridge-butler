@@ -394,7 +394,7 @@ watch(
   min-height: calc(100vh - var(--header-height) - var(--footer-height));
   background: var(--main-content-bg);
   padding: var(--space-5);
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .fridge-detail-container {
@@ -412,7 +412,7 @@ watch(
 
 .back-bar {
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .back-bar .custom-button {
@@ -428,15 +428,15 @@ watch(
 .loading-wrapper {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 32px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
   box-shadow: var(--shadow-sm);
 }
 
 .detail-card {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 32px;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
@@ -447,7 +447,7 @@ watch(
 .detail-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .detail-icon {
@@ -476,14 +476,14 @@ watch(
   font-size: 24px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--space-2) 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .el-divider {
-  margin: 16px 0;
+  margin: var(--space-4) 0;
 }
 
 .detail-desc {
@@ -512,7 +512,7 @@ watch(
 }
 
 .item-management {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
   height: 100%;
@@ -551,13 +551,13 @@ watch(
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   flex-shrink: 0;
 }
 
 .detail-actions .custom-button {
-  border-radius: 12px;
-  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  padding: 10px var(--space-5);
   font-weight: 200;
   margin: 0;
 }

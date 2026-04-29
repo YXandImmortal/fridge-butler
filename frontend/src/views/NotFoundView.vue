@@ -9,30 +9,30 @@
       <div class="fridge-illustration">
         <svg viewBox="0 0 200 280" class="fridge-svg">
           <!-- 冰箱主体 -->
-          <rect x="30" y="20" width="140" height="240" rx="12" fill="#e8f4fd" stroke="#64B5F6" stroke-width="3" />
+          <rect x="30" y="20" width="140" height="240" rx="12" fill="var(--color-primary-50)" stroke="var(--color-primary-300)" stroke-width="3" />
           <!-- 上门 -->
-          <rect x="30" y="20" width="140" height="100" rx="12" fill="#f5fbff" stroke="#64B5F6" stroke-width="2" />
-          <line x1="30" y1="120" x2="170" y2="120" stroke="#64B5F6" stroke-width="2" />
+          <rect x="30" y="20" width="140" height="100" rx="12" fill="var(--color-primary-50)" stroke="var(--color-primary-300)" stroke-width="2" />
+          <line x1="30" y1="120" x2="170" y2="120" stroke="var(--color-primary-300)" stroke-width="2" />
           <!-- 下门 -->
-          <rect x="30" y="120" width="140" height="140" rx="12" fill="#f5fbff" stroke="#64B5F6" stroke-width="2" />
+          <rect x="30" y="120" width="140" height="140" rx="12" fill="var(--color-primary-50)" stroke="var(--color-primary-300)" stroke-width="2" />
           <!-- 把手 -->
-          <rect x="145" y="55" width="8" height="30" rx="4" fill="#90CAF9" />
-          <rect x="145" y="155" width="8" height="30" rx="4" fill="#90CAF9" />
+          <rect x="145" y="55" width="8" height="30" rx="4" fill="var(--color-primary-200)" />
+          <rect x="145" y="155" width="8" height="30" rx="4" fill="var(--color-primary-200)" />
           <!-- 内部空的状态 — 显示一点冷气 -->
-          <circle cx="70" cy="80" r="4" fill="#BBDEFB" opacity="0.6">
+          <circle cx="70" cy="80" r="4" fill="var(--color-primary-100)" opacity="0.6">
             <animate attributeName="cy" values="80;70;80" dur="3s" repeatCount="indefinite" />
             <animate attributeName="opacity" values="0.6;0;0.6" dur="3s" repeatCount="indefinite" />
           </circle>
-          <circle cx="100" cy="90" r="3" fill="#BBDEFB" opacity="0.5">
+          <circle cx="100" cy="90" r="3" fill="var(--color-primary-100)" opacity="0.5">
             <animate attributeName="cy" values="90;75;90" dur="2.5s" repeatCount="indefinite" />
             <animate attributeName="opacity" values="0.5;0;0.5" dur="2.5s" repeatCount="indefinite" />
           </circle>
-          <circle cx="55" cy="170" r="3.5" fill="#BBDEFB" opacity="0.4">
+          <circle cx="55" cy="170" r="3.5" fill="var(--color-primary-100)" opacity="0.4">
             <animate attributeName="cy" values="170;155;170" dur="2.8s" repeatCount="indefinite" />
             <animate attributeName="opacity" values="0.4;0;0.4" dur="2.8s" repeatCount="indefinite" />
           </circle>
           <!-- 问号 -->
-          <text x="95" y="210" font-size="36" fill="#64B5F6" font-family="MiSans, sans-serif" font-weight="bold" text-anchor="middle">?</text>
+          <text x="95" y="210" font-size="36" fill="var(--color-primary-300)" font-family="MiSans, sans-serif" font-weight="bold" text-anchor="middle">?</text>
         </svg>
       </div>
 
@@ -94,7 +94,7 @@ const goBack = () => {
   background: var(--gradient-page);
   position: relative;
   overflow: hidden;
-  font-family: 'MiSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
 }
 
 /* 雪花背景 */

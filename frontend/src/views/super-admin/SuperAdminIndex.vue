@@ -414,7 +414,7 @@ onMounted(async () => {
   height: 100%;
   background: var(--main-content-bg);
   padding: var(--space-5);
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 /* 系统管理容器 */
@@ -486,13 +486,13 @@ onMounted(async () => {
 
 .stat-icon .iconfont {
   font-size: 26px;
-  color: #fff;
+  color: var(--text-inverse);
 }
 
-.stat-icon.blue { background: linear-gradient(135deg, #64B5F6, #42A5F5); }
-.stat-icon.green { background: linear-gradient(135deg, #81D4FA, #4FC3F7); }
-.stat-icon.orange { background: linear-gradient(135deg, #FFB74D, #FFA726); }
-.stat-icon.purple { background: linear-gradient(135deg, #B39DDB, #9575CD); }
+.stat-icon.blue { background: linear-gradient(135deg, var(--color-primary-300), var(--color-primary-400)); }
+.stat-icon.green { background: linear-gradient(135deg, var(--color-green-400), var(--color-green-500)); }
+.stat-icon.orange { background: linear-gradient(135deg, var(--color-orange-400), var(--color-orange-500)); }
+.stat-icon.purple { background: linear-gradient(135deg, var(--color-purple-400), var(--color-purple-500)); }
 
 .stat-info {
   display: flex;
@@ -610,9 +610,9 @@ onMounted(async () => {
   transition: width 1s ease;
 }
 
-.progress-fill.normal { background: linear-gradient(90deg, #81D4FA, #4FC3F7); }
-.progress-fill.warning { background: linear-gradient(90deg, #FFB74D, #FFA726); }
-.progress-fill.danger { background: linear-gradient(90deg, #F87171, #EF5350); }
+.progress-fill.normal { background: linear-gradient(90deg, var(--color-green-400), var(--color-green-500)); }
+.progress-fill.warning { background: linear-gradient(90deg, var(--color-orange-400), var(--color-orange-500)); }
+.progress-fill.danger { background: linear-gradient(90deg, var(--danger-color), var(--danger-dark)); }
 
 .monitor-detail {
   font-size: 12px;
@@ -656,15 +656,15 @@ onMounted(async () => {
 
 .action-icon .iconfont {
   font-size: 22px;
-  color: #fff;
+  color: var(--text-inverse);
 }
 
-.action-icon.blue { background: linear-gradient(135deg, #64B5F6, #42A5F5); }
-.action-icon.green { background: linear-gradient(135deg, #81D4FA, #4FC3F7); }
-.action-icon.purple { background: linear-gradient(135deg, #B39DDB, #9575CD); }
-.action-icon.orange { background: linear-gradient(135deg, #FFB74D, #FFA726); }
-.action-icon.cyan { background: linear-gradient(135deg, #80DEEA, #4DD0E1); }
-.action-icon.pink { background: linear-gradient(135deg, #F48FB1, #EC407A); }
+.action-icon.blue { background: linear-gradient(135deg, var(--color-primary-300), var(--color-primary-400)); }
+.action-icon.green { background: linear-gradient(135deg, var(--color-green-400), var(--color-green-500)); }
+.action-icon.purple { background: linear-gradient(135deg, var(--color-purple-400), var(--color-purple-500)); }
+.action-icon.orange { background: linear-gradient(135deg, var(--color-orange-400), var(--color-orange-500)); }
+.action-icon.cyan { background: linear-gradient(135deg, var(--color-cyan-400), var(--color-cyan-500)); }
+.action-icon.pink { background: linear-gradient(135deg, var(--color-pink-400), var(--color-pink-500)); }
 
 .action-name {
   font-size: 13px;
@@ -738,7 +738,7 @@ onMounted(async () => {
 }
 
 .log-dot.info { background: var(--primary-color); }
-.log-dot.success { background: #81C784; }
+.log-dot.success { background: var(--color-emerald); }
 .log-dot.warning { background: var(--warn-color); }
 .log-dot.error { background: var(--danger-color); }
 

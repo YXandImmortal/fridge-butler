@@ -63,6 +63,16 @@
                     grid
                     class="filter-select"
                     :options="categoryOptions"
+                    @change="handleSortChange"
+                  />
+                  <CustomSelect
+                    v-model="searchForm.unitTypeId"
+                    placeholder="全部单位类型"
+                    clearable
+                    grid
+                    class="filter-select"
+                    :options="unitTypeOptions"
+                    @change="handleSortChange"
                   />
                   <CustomSelect
                     v-model="searchForm.unitId"
@@ -71,7 +81,9 @@
                     grid
                     dropdown-align="right"
                     class="filter-select"
+                    :disabled="!searchForm.unitTypeId"
                     :options="unitOptions"
+                    @change="handleSortChange"
                   />
                   <CustomButton @click="handleReset">
                     重置
@@ -91,8 +103,8 @@
                 <!-- 物品表格列表 -->
                 <div v-else class="item-table-wrapper">
                   <el-table
+                      max-height="520px"
                     :data="itemList"
-                    stripe
                     class="item-table"
                     :header-cell-style="{ background: 'var(--gray-20)', color: 'var(--text-primary)', fontWeight: 600 }"
                   >
@@ -104,7 +116,13 @@
                           </div>
                           <div class="item-name-info">
                             <span class="item-name-text">{{ row.itemName }}</span>
-                            <el-tag v-if="row.categoryName" size="small" type="info" class="item-category-tag">
+                            <el-tag
+                                v-if="row.categoryName"
+                                size="small"
+                                :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
+                                color="var(--primary-light)"
+                                type="info"
+                                class="item-category-tag">
                               {{ row.categoryName }}
                             </el-tag>
                             <span v-else class="item-category-none">未分类</span>
@@ -230,6 +248,7 @@ import CopyrightFooter from '@/components/CopyrightFooter.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
 import { useUserStore } from '@/stores/user'
+import { useThemeStore } from '@/stores/theme'
 import {
   listItemCategories,
   listItemUnits,
@@ -246,6 +265,7 @@ import ItemCreateDialog from '@/components/item/ItemCreateDialog.vue'
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const themeStore = useThemeStore()
 const { logout } = userStore
 
 // ==================== 数据加载状态 ====================
@@ -264,6 +284,7 @@ const itemList = ref([])
 const searchForm = reactive({
   keyword: '',
   categoryId: '',
+  unitTypeId: '',
   unitId: ''
 })
 
@@ -271,8 +292,15 @@ const categoryOptions = computed(() => {
   return categoryList.value.map(cat => ({ label: cat.categoryName, value: cat.id }))
 })
 
+const unitTypeOptions = computed(() => {
+  return unitTypeList.value.map(t => ({ label: t.unitTypeName, value: t.id }))
+})
+
 const unitOptions = computed(() => {
-  return unitList.value.map(u => ({ label: u.unitName, value: u.id }))
+  if (!searchForm.unitTypeId) return []
+  return unitList.value
+    .filter(u => u.unitTypeId === searchForm.unitTypeId)
+    .map(u => ({ label: u.unitName, value: u.id }))
 })
 
 const sortFieldOptions = [
@@ -408,6 +436,7 @@ const fetchItems = async () => {
     const params = {}
     if (searchForm.keyword) params.keyword = searchForm.keyword
     if (searchForm.categoryId) params.categoryId = searchForm.categoryId
+    if (searchForm.unitTypeId) params.unitTypeId = searchForm.unitTypeId
     if (searchForm.unitId) params.unitId = searchForm.unitId
     // 从路由参数获取冰箱ID
     const fridgeId = route.params.id || route.query.fridgeId
@@ -443,6 +472,7 @@ const handleSearch = () => {
 const handleReset = () => {
   searchForm.keyword = ''
   searchForm.categoryId = ''
+  searchForm.unitTypeId = ''
   searchForm.unitId = ''
   sortField.value = ''
   sortOrder.value = 'desc'
@@ -518,6 +548,14 @@ onMounted(async () => {
   fetchItems()
 })
 
+// 监听单位类别变化，清空单位选择
+watch(
+  () => searchForm.unitTypeId,
+  () => {
+    searchForm.unitId = ''
+  }
+)
+
 // 监听路由参数变化，切换冰箱时重新获取物品
 watch(
   () => route.params.id,
@@ -548,7 +586,7 @@ watch(
   min-height: calc(100vh - var(--header-height) - var(--footer-height));
   background: var(--main-content-bg);
   padding: var(--space-5);
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .item-manage-container {
@@ -561,7 +599,7 @@ watch(
 /* 返回栏 */
 .back-bar {
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .back-bar .custom-button {
@@ -578,7 +616,7 @@ watch(
 .cards-wrapper {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: var(--space-6);
   align-items: start;
 }
 
@@ -586,8 +624,8 @@ watch(
 .card {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
 }
@@ -596,8 +634,8 @@ watch(
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-4);
   border-bottom: 1px solid var(--gray-40);
 }
 
@@ -626,7 +664,7 @@ watch(
 
 /* 搜索区域 */
 .search-section {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 /* 列表区域 */
@@ -635,20 +673,20 @@ watch(
 }
 
 .item-empty {
-  padding: 40px 0;
+  padding: var(--space-10) 0;
 }
 
 /* 物品表格 */
 .item-table-wrapper {
-  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--gray-40);
+
 }
 
 .item-table {
   --el-table-border-color: var(--gray-40);
-  --el-table-row-hover-bg-color: var(--primary-5);
+  --el-table-row-hover-bg-color: var(--primary-10);
   width: 100%;
+  border-radius: var(--radius-md);
 }
 
 .item-table :deep(.el-table__cell) {
@@ -660,14 +698,13 @@ watch(
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-left: 8px;
 }
 
 .item-icon-sm {
   width: 32px;
   height: 32px;
   background: var(--primary-light);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -726,10 +763,10 @@ watch(
 /* 保质期标签 */
 .shelf-life-tag {
   font-size: 13px;
-  color: var(--success-color, #67c23a);
+  color: var(--success-color);
   font-weight: 600;
-  background: var(--success-light, #f0f9eb);
-  padding: 2px 8px;
+  background: var(--success-light);
+  padding: 2px var(--space-2);
   border-radius: 4px;
 }
 
@@ -748,16 +785,16 @@ watch(
 }
 
 .action-btns .custom-button {
-  padding: 4px 8px;
+  padding: 4px var(--space-2);
   font-size: 14px;
 }
 
 .action-btns .danger-link {
-  color: var(--danger-color, #f56c6c);
+  color: var(--danger-color);
 }
 
 .action-btns .danger-link:hover {
-  color: var(--danger-dark, #f89898);
+  color: var(--danger-dark);
 }
 
 /* 响应式设计 */

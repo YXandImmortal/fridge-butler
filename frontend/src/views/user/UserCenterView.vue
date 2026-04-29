@@ -391,7 +391,7 @@ const handleLogout = (msg) => {
   min-height: calc(100vh - var(--header-height) - var(--footer-height));
   background: var(--main-content-bg);
   padding: var(--space-5);
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .profile-container {
@@ -440,7 +440,7 @@ const handleLogout = (msg) => {
 }
 
 .avatar-wrapper :deep(.el-avatar) {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-avatar);
   transition: all 0.3s ease;
 }
 
@@ -617,7 +617,7 @@ const handleLogout = (msg) => {
 }
 
 .avatar-item:hover :deep(.el-avatar) {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-avatar);
   transition: all 0.3s ease;
   transition: all 0.3s ease;
 }

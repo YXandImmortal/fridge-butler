@@ -5,7 +5,7 @@
 
 /* 认证表单基础 */
 .auth-form {
-  margin-top: 10px;
+  margin-top: var(--space-2);
 }
 
 .auth-form .el-form-item {

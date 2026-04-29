@@ -86,7 +86,6 @@
             :loading="submitting"
             @click="handleSubmit"
           >
-            <i class="iconfont icon-check" />
             确认添加
           </CustomButton>
         </div>
@@ -370,10 +369,6 @@ const handleSubmit = async () => {
 .dialog-btn-confirm:hover {
   box-shadow: 0 6px 20px var(--primary-40);
   transform: translateY(-2px);
-}
-
-.dialog-btn-confirm :deep(.iconfont) {
-  margin-right: 4px;
 }
 
 @keyframes dialog-slide-in {

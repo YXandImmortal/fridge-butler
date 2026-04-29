@@ -97,7 +97,7 @@ const themeStore = useThemeStore()
 
 .theme-toggle.is-dark .theme-toggle-thumb {
   transform: translateX(24px);
-  background: #e2e8f0;
+  background: var(--text-primary);
 }
 
 .theme-icon {

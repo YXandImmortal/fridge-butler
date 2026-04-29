@@ -220,7 +220,7 @@ onUnmounted(() => {
   width: auto;
   min-width: max(280px, 100%);
   max-width: 360px;
-  max-height: 280px;
+  max-height: 170px;
   overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
@@ -248,7 +248,7 @@ onUnmounted(() => {
 
 .select-dropdown.is-grid .select-option.is-selected {
   background: var(--primary-color);
-  color: #fff;
+  color: var(--text-inverse);
   border-color: var(--primary-color);
   font-weight: 600;
 }

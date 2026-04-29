@@ -217,7 +217,7 @@ const handleLogout = () => {
 }
 
 .back-bar {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .back-bar .custom-button {
@@ -239,8 +239,8 @@ const handleLogout = () => {
 .create-card {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 40px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-10);
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-color);
 }
@@ -248,7 +248,7 @@ const handleLogout = () => {
 .create-title {
   font-size: 28px;
   font-weight: 600;
-  margin-bottom: 32px;
+  margin-bottom: var(--space-8);
   text-align: center;
   color: var(--text-primary);
 }
@@ -261,7 +261,7 @@ const handleLogout = () => {
 
 .create-form :deep(.el-form-item) {
   width: 100%;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .create-form :deep(.el-form-item__label) {
@@ -272,14 +272,14 @@ const handleLogout = () => {
 
 .form-actions {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
   justify-content: center;
-  padding-top: 8px;
+  padding-top: var(--space-2);
 }
 
 .form-actions .custom-button {
   border-radius: 12px;
-  padding: 12px 32px;
+  padding: 12px var(--space-8);
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
   min-width: 140px;

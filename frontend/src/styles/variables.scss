@@ -17,6 +17,21 @@
   --success-color: #81D4FA;
   --warn-color: #FFB74D;
   --danger-color: #F87171;
+  --danger-dark: #EF5350;
+
+  /* 辅助色板 — 图标、徽章、图表等场景 */
+  --color-green-400: #81D4FA;
+  --color-green-500: #4FC3F7;
+  --color-green-600: #29B6F6;
+  --color-emerald: #81C784;
+  --color-orange-400: #FFB74D;
+  --color-orange-500: #FFA726;
+  --color-purple-400: #B39DDB;
+  --color-purple-500: #9575CD;
+  --color-pink-400: #F48FB1;
+  --color-pink-500: #EC407A;
+  --color-cyan-400: #80DEEA;
+  --color-cyan-500: #4DD0E1;
 
   /* ---------------------------------------------------------
    * 布局尺寸 — 消除魔法数字
@@ -90,15 +105,19 @@ html[data-theme="light"] {
   --shadow-input-hover: 0 4px 14px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   --shadow-input-focus: 0 4px 16px var(--primary-30), 0 0 0 3px rgba(100, 181, 246, 0.15);
   --shadow-footer: 0 -2px 10px rgba(0, 0, 0, 0.03);
+  --shadow-avatar: 0 4px 12px rgba(0, 0, 0, 0.15);
 
   /* 透明度变体（用于阴影、遮罩） */
   --white-10: rgba(255, 255, 255, 0.1);
   --white-20: rgba(255, 255, 255, 0.2);
   --white-60: rgba(255, 255, 255, 0.60);
   --white-85: rgba(255, 255, 255, 0.85);
+  --gray-20: rgba(120, 120, 120, 0.2);
+  --gray-30: rgba(120, 120, 120, 0.3);
   --gray-40: rgba(120, 120, 120, 0.4);
   --gray-50: rgba(120, 120, 120, 0.5);
   --gray-85: rgba(120, 120, 120, 0.85);
+  --success-light: rgba(129, 212, 250, 0.15);
   --primary-10: rgba(100, 181, 246, 0.1);
   --primary-20: rgba(100, 181, 246, 0.2);
   --primary-30: rgba(100, 181, 246, 0.3);
@@ -106,6 +125,18 @@ html[data-theme="light"] {
   --purple-30: rgba(102, 126, 234, 0.3);
   --purple-40: rgba(102, 126, 234, 0.4);
   --danger-40: rgba(248, 113, 113, 0.4);
+
+  /* 徽章/强调色（金色） */
+  --badge-gold: #f0c040;
+  --badge-gold-hover: #e6b830;
+  --badge-gold-light: #fff5d6;
+  --badge-gold-accent: #ffeaa7;
+  --badge-gold-bg: rgba(240, 192, 64, 0.08);
+  --badge-gold-shadow: rgba(240, 192, 64, 0.15);
+  --badge-gold-shadow-hover: rgba(240, 192, 64, 0.25);
+  --badge-gold-text: #8a6d0b;
+  --badge-gold-text-dark: #5c4a08;
+  --badge-gold-icon: #d4a017;
 
   /* 禁用状态 */
   --disabled-bg: var(--primary-light);
@@ -182,15 +213,19 @@ html[data-theme="dark"] {
   --shadow-input-hover: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --shadow-input-focus: 0 4px 16px var(--primary-30), 0 0 0 3px rgba(100, 181, 246, 0.2);
   --shadow-footer: 0 -2px 10px rgba(0, 0, 0, 0.3);
+  --shadow-avatar: 0 4px 12px rgba(0, 0, 0, 0.4);
 
   /* 透明度变体 */
   --white-10: rgba(255, 255, 255, 0.05);
   --white-20: rgba(255, 255, 255, 0.1);
   --white-60: rgba(255, 255, 255, 0.4);
   --white-85: rgba(255, 255, 255, 0.15);
+  --gray-20: rgba(160, 174, 192, 0.2);
+  --gray-30: rgba(160, 174, 192, 0.3);
   --gray-40: rgba(160, 174, 192, 0.4);
   --gray-50: rgba(160, 174, 192, 0.5);
   --gray-85: rgba(160, 174, 192, 0.85);
+  --success-light: rgba(129, 212, 250, 0.15);
   --primary-10: rgba(100, 181, 246, 0.1);
   --primary-20: rgba(100, 181, 246, 0.2);
   --primary-30: rgba(100, 181, 246, 0.3);
@@ -198,6 +233,18 @@ html[data-theme="dark"] {
   --purple-30: rgba(102, 126, 234, 0.3);
   --purple-40: rgba(102, 126, 234, 0.4);
   --danger-40: rgba(248, 113, 113, 0.4);
+
+  /* 徽章/强调色（金色 - 深色适配） */
+  --badge-gold: #f0c040;
+  --badge-gold-hover: #f5d76a;
+  --badge-gold-light: rgba(240, 192, 64, 0.15);
+  --badge-gold-accent: rgba(240, 192, 64, 0.25);
+  --badge-gold-bg: rgba(240, 192, 64, 0.1);
+  --badge-gold-shadow: rgba(240, 192, 64, 0.2);
+  --badge-gold-shadow-hover: rgba(240, 192, 64, 0.35);
+  --badge-gold-text: #f0d878;
+  --badge-gold-text-dark: #1a1505;
+  --badge-gold-icon: #e6c85a;
 
   /* 禁用状态 */
   --disabled-bg: rgba(100, 181, 246, 0.1);
@@ -219,7 +266,7 @@ html[data-theme="dark"] {
   --el-color-primary: var(--color-primary-300);
   --el-color-primary-light-3: var(--color-primary-200);
   --el-color-primary-light-5: var(--color-primary-100);
-  --el-color-primary-light-7: rgba(100, 181, 246, 0.15);
+  --el-color-primary-light-7: var(--color-primary-50);
   --el-color-primary-dark-2: var(--color-primary-400);
   --el-bg-color: var(--card-bg);
   --el-bg-color-page: var(--page-bg);

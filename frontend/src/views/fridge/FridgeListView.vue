@@ -51,8 +51,13 @@
                 v-for="fridge in fridgeList"
                 :key="fridge.id"
                 class="fridge-card"
+                :class="{ 'fridge-card--default': fridge.isDefault }"
                 @click="handleViewDetail(fridge.id)"
               >
+                <div v-if="fridge.isDefault" class="default-badge">
+                  <i class="iconfont icon-star-fill" />
+                  默认冰箱
+                </div>
                 <div class="card-header">
                   <div class="fridge-icon">
                     <i class="iconfont icon-fridge-line" />
@@ -286,7 +291,7 @@ onMounted(() => {
   min-height: calc(100vh - var(--header-height) - var(--footer-height));
   background: var(--main-content-bg);
   padding: var(--space-5);
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .fridge-list-container {
@@ -300,7 +305,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .page-title {
@@ -311,8 +316,8 @@ onMounted(() => {
 }
 
 .create-btn {
-  border-radius: 12px;
-  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  padding: 10px var(--space-5);
   font-weight: 200;
 }
 
@@ -322,7 +327,7 @@ onMounted(() => {
 }
 
 .search-bar {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
   max-width: 700px;
 }
 
@@ -334,14 +339,14 @@ onMounted(() => {
 .fridge-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .fridge-card {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--gray-40);
   cursor: pointer;
@@ -353,18 +358,64 @@ onMounted(() => {
   box-shadow: var(--shadow-card-hover);
 }
 
+.fridge-card--default {
+  border: 2px solid var(--badge-gold);
+  background: linear-gradient(135deg, var(--badge-gold-bg) 0%, var(--glass-bg) 60%);
+  box-shadow: 0 4px 20px var(--badge-gold-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.fridge-card--default:hover {
+  box-shadow: 0 8px 28px var(--badge-gold-shadow-hover);
+  border-color: var(--badge-gold-hover);
+}
+
+.fridge-card--default .fridge-icon {
+  background: linear-gradient(135deg, var(--badge-gold-light) 0%, var(--badge-gold-accent) 100%);
+}
+
+.fridge-card--default .fridge-icon .iconfont {
+  color: var(--badge-gold-icon);
+}
+
+.fridge-card--default .fridge-name {
+  color: var(--badge-gold-text);
+}
+
+.default-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: linear-gradient(135deg, var(--badge-gold) 0%, var(--badge-gold-hover) 100%);
+  color: var(--badge-gold-text-dark);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-bottom-left-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 8px var(--badge-gold-shadow);
+  z-index: 1;
+}
+
+.default-badge .iconfont {
+  font-size: 12px;
+}
+
 .card-header {
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
-  gap: 16px;
+  margin-bottom: var(--space-4);
+  gap: var(--space-4);
 }
 
 .fridge-icon {
   min-width: 53px;
   min-height: 53px;
   background: var(--primary-light);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -406,7 +457,7 @@ onMounted(() => {
 
 .fridge-meta {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
   flex-wrap: wrap;
   justify-content: flex-start;
 }

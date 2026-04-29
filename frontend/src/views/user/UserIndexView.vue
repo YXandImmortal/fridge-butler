@@ -82,7 +82,7 @@ const handleLogout = () => {
   min-height: calc(100vh - var(--header-height) - var(--footer-height));
   background: var(--main-content-bg);
   padding: var(--space-5);
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 /* 响应式设计 */

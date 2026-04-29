@@ -15,7 +15,7 @@
           <div class="about-hero-card">
             <div class="about-logo">
               <div class="logo-icon">
-                <i class="iconfont icon-fridge-line" />
+                <Logo />
               </div>
             </div>
             <h1 class="about-title">{{ systemName || '冰箱管理系统' }}</h1>
@@ -103,6 +103,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
 import { useSystemStore } from '@/stores/system'
 import { useUserStore } from '@/stores/user'
+import Logo from "@/components/Logo.vue";
 
 const router = useRouter()
 const systemStore = useSystemStore()
@@ -148,7 +149,7 @@ const handleLogout = () => {
   height: 100%;
   background: var(--main-content-bg);
   padding: var(--space-5);
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .about-container {
@@ -182,20 +183,12 @@ const handleLogout = () => {
 }
 
 .logo-icon {
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   margin: 0 auto;
-  background: var(--primary-light);
-  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
-}
-
-.logo-icon .iconfont {
-  font-size: 40px;
-  color: var(--primary-color);
 }
 
 .about-title {
