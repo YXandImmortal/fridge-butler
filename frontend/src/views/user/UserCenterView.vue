@@ -152,6 +152,7 @@ import Avatar from "@/components/Avatar.vue";
 import EnhancedInput from "@/components/EnhancedInput.vue";
 import CaptchaInput from "@/components/CaptchaInput.vue";
 import {getSystemAvatarIds} from '@/utils/avatarManager';
+import CustomButton from "@/components/CustomButton.vue";
 
 const systemStore = useSystemStore();
 const userStore = useUserStore();
@@ -556,6 +557,11 @@ const handleLogout = (msg) => {
 
 .profile-actions .custom-button--danger:hover:not(:disabled) {
   box-shadow: 0 6px 20px var(--danger-40);
+}
+
+.edit-content {
+  position: relative;
+  width: 100%;
 }
 
 /* 编辑卡片样式 */
