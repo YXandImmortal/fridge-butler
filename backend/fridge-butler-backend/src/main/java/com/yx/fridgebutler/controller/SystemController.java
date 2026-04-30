@@ -17,7 +17,7 @@ import java.util.List;
 @RequestMapping("/system")
 public class SystemController {
     public static final String SYSTEM_NAME = "智鲜·引擎";
-    public static final String SYSTEM_VERSION = "alpha 0.0.6";
+    public static final String SYSTEM_VERSION = "alpha 0.0.7";
     public static final String SYSTEM_SLOGAN = "智能管理您的冰箱，让食材更新鲜";
     public static final List<SidebarFeatureDTO> USER_INDEX_FEATURES;
     public static final List<FeatureDTO> SYSTEM_FEATURES;
@@ -110,6 +110,14 @@ public class SystemController {
         );
 
         SYSTEM_UPDATES = List.of(
+                UpdateLogDTO.builder()
+                        .version("alpha 0.0.7")
+                        .date("2026-4-30")
+                        .changes(Arrays.asList(
+                                "全面优化“浅色”与“深色”主题，界面更美观",
+                                "物品管理功能上线，现在可以浏览与增加物品"
+                        ))
+                        .build(),
                 UpdateLogDTO.builder()
                         .version("alpha 0.0.6")
                         .date("2026-04-20")
