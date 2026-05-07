@@ -1,4 +1,4 @@
-package com.yx.fridgebutler.dto;
+package com.yx.fridgebutler.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateLogDTO {
+public class UpdateLogVO {
     private String version;
     private String date;
     private List<String> changes;

@@ -1,4 +1,4 @@
-package com.yx.fridgebutler.dto;
+package com.yx.fridgebutler.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,12 +11,12 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SystemInfoDTO {
+public class SystemInfoVO {
     private String systemName;
     private String systemVersion;
     private String slogan;
-    private List<SidebarFeatureDTO> userIndexFeatures;
-    private List<FeatureDTO> features;
-    private List<UpdateLogDTO> updates;
-    private List<AboutItemDTO> about;
+    private List<SidebarFeatureVO> userIndexFeatures;
+    private List<FeatureVO> features;
+    private List<UpdateLogVO> updates;
+    private List<AboutItemVO> about;
 }

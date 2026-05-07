@@ -1,7 +1,7 @@
 package com.yx.fridgebutler.service.impl;
 
 import com.yx.fridgebutler.dto.FridgeCreateRequest;
-import com.yx.fridgebutler.dto.FridgeDTO;
+import com.yx.fridgebutler.vo.FridgeVO;
 import com.yx.fridgebutler.dto.FridgeSearchRequest;
 import com.yx.fridgebutler.dto.FridgeUpdateRequest;
 import com.yx.fridgebutler.entity.BizFridge;
@@ -42,7 +42,7 @@ public class FridgeServiceImpl implements FridgeService {
     private BizFridgeItemRepository itemRepository;
 
     @Override
-    public List<FridgeDTO> listMyFridges() {
+    public List<FridgeVO> listMyFridges() {
         Long currentUserId = getCurrentUserId();
         log.info("查询用户冰箱列表，用户ID：{}，排序字段：createTime，排序方向：asc",
                 currentUserId);
@@ -51,20 +51,20 @@ public class FridgeServiceImpl implements FridgeService {
         List<BizFridge> fridges = fridgeRepository.findByOwnerIdAndIsDeletedFalse(currentUserId, sort);
 
         return fridges.stream()
-                .map(this::convertToDTO)
-                .sorted(Comparator.comparing(FridgeDTO::getIsDefault, Comparator.reverseOrder()))
+                .map(this::convertToVO)
+                .sorted(Comparator.comparing(FridgeVO::getIsDefault, Comparator.reverseOrder()))
                 .toList();
     }
 
     @Override
-    public FridgeDTO getFridgeDetail(Long id) {
+    public FridgeVO getFridgeDetail(Long id) {
         Long currentUserId = getCurrentUserId();
         log.info("查询冰箱详情，冰箱ID：{}，用户ID：{}", id, currentUserId);
 
         BizFridge fridge = fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, currentUserId)
                 .orElseThrow(BusinessException::fridgeNotFound);
 
-        return convertToDTO(fridge);
+        return convertToVO(fridge);
     }
 
     @Override
@@ -148,17 +148,17 @@ public class FridgeServiceImpl implements FridgeService {
     }
 
     @Override
-    public FridgeDTO getDefaultFridge() {
+    public FridgeVO getDefaultFridge() {
         Long currentUserId = getCurrentUserId();
         log.info("查询用户默认冰箱，用户ID：{}", currentUserId);
 
         return fridgeRepository.findByOwnerIdAndIsDefaultTrueAndIsDeletedFalse(currentUserId)
-                .map(this::convertToDTO)
+                .map(this::convertToVO)
                 .orElse(null);
     }
 
     @Override
-    public List<FridgeDTO> searchFridges(FridgeSearchRequest request) {
+    public List<FridgeVO> searchFridges(FridgeSearchRequest request) {
         Long currentUserId = getCurrentUserId();
         String keyword = request.getKeyword();
         log.info("搜索冰箱，用户ID：{}，关键词：{}", currentUserId, keyword);
@@ -169,8 +169,8 @@ public class FridgeServiceImpl implements FridgeService {
         List<BizFridge> fridges = fridgeRepository.searchByKeyword(currentUserId, likeKeyword, sort);
 
         return fridges.stream()
-                .map(this::convertToDTO)
-                .sorted(Comparator.comparing(FridgeDTO::getIsDefault, Comparator.reverseOrder()))
+                .map(this::convertToVO)
+                .sorted(Comparator.comparing(FridgeVO::getIsDefault, Comparator.reverseOrder()))
                 .toList();
     }
 
@@ -191,8 +191,8 @@ public class FridgeServiceImpl implements FridgeService {
         return Sort.by(direction, field);
     }
 
-    private FridgeDTO convertToDTO(BizFridge fridge) {
-        return FridgeDTO.builder()
+    private FridgeVO convertToVO(BizFridge fridge) {
+        return FridgeVO.builder()
                 .id(fridge.getId())
                 .fridgeName(fridge.getFridgeName())
                 .isDefault(fridge.getIsDefault())

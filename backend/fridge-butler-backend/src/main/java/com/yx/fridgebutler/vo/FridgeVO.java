@@ -1,4 +1,4 @@
-package com.yx.fridgebutler.dto;
+package com.yx.fridgebutler.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FridgeDTO {
+public class FridgeVO {
 
     private Long id;
 

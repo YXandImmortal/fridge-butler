@@ -1,4 +1,4 @@
-package com.yx.fridgebutler.dto;
+package com.yx.fridgebutler.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,12 +7,27 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class UserInfoDTO {
+@AllArgsConstructor
+public class LoginVO {
+
+    private String token;
+
     private String username;
-    private String avatar;
+
     private String mobile;
+
     private String roleName;
+
     private String createTime;
+
+    private Long roleId;
+
+    private Long userId;
+
+    private Boolean rememberMe;
+
+    private String avatar;
+
+    private Long expireTime;
 }

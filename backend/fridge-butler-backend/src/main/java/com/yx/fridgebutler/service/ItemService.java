@@ -1,13 +1,13 @@
 package com.yx.fridgebutler.service;
 
-import com.yx.fridgebutler.dto.ItemCategoryDTO;
+import com.yx.fridgebutler.vo.ItemCategoryVO;
 import com.yx.fridgebutler.dto.ItemCreateRequest;
-import com.yx.fridgebutler.dto.ItemDTO;
+import com.yx.fridgebutler.vo.ItemVO;
 import com.yx.fridgebutler.dto.ItemSearchRequest;
 import com.yx.fridgebutler.dto.ItemTakeOutRequest;
-import com.yx.fridgebutler.dto.ItemUnitDTO;
+import com.yx.fridgebutler.vo.ItemUnitVO;
 import com.yx.fridgebutler.dto.ItemUpdateRequest;
-import com.yx.fridgebutler.dto.UnitTypeDTO;
+import com.yx.fridgebutler.vo.UnitTypeVO;
 
 import java.util.List;
 
@@ -17,13 +17,13 @@ public interface ItemService {
 
     void updateItem(ItemUpdateRequest request);
 
-    List<ItemDTO> searchItems(ItemSearchRequest request);
+    List<ItemVO> searchItems(ItemSearchRequest request);
 
-    List<ItemCategoryDTO> listItemCategories();
+    List<ItemCategoryVO> listItemCategories();
 
-    List<ItemUnitDTO> listItemUnits();
+    List<ItemUnitVO> listItemUnits();
 
-    List<UnitTypeDTO> listUnitTypes();
+    List<UnitTypeVO> listUnitTypes();
 
     void deleteItem(Long id);
 

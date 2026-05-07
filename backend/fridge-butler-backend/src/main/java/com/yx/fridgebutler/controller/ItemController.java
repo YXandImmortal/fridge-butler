@@ -1,13 +1,13 @@
 package com.yx.fridgebutler.controller;
 
-import com.yx.fridgebutler.dto.ItemCategoryDTO;
+import com.yx.fridgebutler.vo.ItemCategoryVO;
 import com.yx.fridgebutler.dto.ItemCreateRequest;
-import com.yx.fridgebutler.dto.ItemDTO;
+import com.yx.fridgebutler.vo.ItemVO;
 import com.yx.fridgebutler.dto.ItemSearchRequest;
 import com.yx.fridgebutler.dto.ItemTakeOutRequest;
 import com.yx.fridgebutler.dto.ItemUpdateRequest;
-import com.yx.fridgebutler.dto.ItemUnitDTO;
-import com.yx.fridgebutler.dto.UnitTypeDTO;
+import com.yx.fridgebutler.vo.ItemUnitVO;
+import com.yx.fridgebutler.vo.UnitTypeVO;
 import com.yx.fridgebutler.service.ItemService;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
@@ -53,7 +53,7 @@ public class ItemController {
      * 查询物品分类列表（系统默认 + 当前用户创建）
      */
     @GetMapping("/category/list")
-    public Result<List<ItemCategoryDTO>> listItemCategories() {
+    public Result<List<ItemCategoryVO>> listItemCategories() {
         return Result.success(itemService.listItemCategories());
     }
 
@@ -61,7 +61,7 @@ public class ItemController {
      * 查询物品单位列表（系统默认 + 当前用户创建）
      */
     @GetMapping("/unit/list")
-    public Result<List<ItemUnitDTO>> listItemUnits() {
+    public Result<List<ItemUnitVO>> listItemUnits() {
         return Result.success(itemService.listItemUnits());
     }
 
@@ -69,7 +69,7 @@ public class ItemController {
      * 查询单位类型列表（系统默认 + 当前用户创建）
      */
     @GetMapping("/unit-type/list")
-    public Result<List<UnitTypeDTO>> listUnitTypes() {
+    public Result<List<UnitTypeVO>> listUnitTypes() {
         return Result.success(itemService.listUnitTypes());
     }
 
@@ -77,7 +77,7 @@ public class ItemController {
      * 搜索物品（支持关键字模糊搜索、分类筛选、单位类型筛选、数量排序）
      */
     @PostMapping("/search")
-    public Result<List<ItemDTO>> searchItems(@Valid @RequestBody ItemSearchRequest request) {
+    public Result<List<ItemVO>> searchItems(@Valid @RequestBody ItemSearchRequest request) {
         return Result.success(itemService.searchItems(request));
     }
 

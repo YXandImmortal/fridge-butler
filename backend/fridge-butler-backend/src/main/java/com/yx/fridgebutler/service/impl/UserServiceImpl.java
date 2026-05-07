@@ -3,7 +3,7 @@ package com.yx.fridgebutler.service.impl;
 import com.yx.fridgebutler.dto.UserChangePasswordRequest;
 import com.yx.fridgebutler.dto.UserUpdateAvatarRequest;
 import com.yx.fridgebutler.dto.UserUpdateRequest;
-import com.yx.fridgebutler.dto.UserInfoDTO;
+import com.yx.fridgebutler.vo.UserInfoVO;
 import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.entity.SysUser;
 import com.yx.fridgebutler.exception.BusinessException;
@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
     PasswordEncoder passwordEncoder;
 
     @Override
-    public UserInfoDTO getUserInfo() {
+    public UserInfoVO getUserInfo() {
         // 从SecurityContextHolder中获取当前用户名
         String username = getUsernameFromToken();
 
@@ -53,8 +53,8 @@ public class UserServiceImpl implements UserService {
         SysRole role = roleRepository.findById(user.getRoleId())
                 .orElseThrow(BusinessException::roleNotFound);
 
-        // 构建UserInfoDTO
-        return UserInfoDTO.builder()
+        // 构建UserInfoVO
+        return UserInfoVO.builder()
                 .username(user.getUsername())
                 .avatar(user.getAvatar())
                 .mobile(user.getMobile())

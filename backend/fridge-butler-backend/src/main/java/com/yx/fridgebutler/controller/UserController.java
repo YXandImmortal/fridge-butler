@@ -3,7 +3,7 @@ package com.yx.fridgebutler.controller;
 import com.yx.fridgebutler.dto.UserChangePasswordRequest;
 import com.yx.fridgebutler.dto.UserUpdateAvatarRequest;
 import com.yx.fridgebutler.dto.UserUpdateRequest;
-import com.yx.fridgebutler.dto.UserInfoDTO;
+import com.yx.fridgebutler.vo.UserInfoVO;
 import com.yx.fridgebutler.service.UserService;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
@@ -20,7 +20,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/info")
-    public Result<UserInfoDTO> getUserInfo() {
+    public Result<UserInfoVO> getUserInfo() {
         return Result.success(userService.getUserInfo());
     }
 

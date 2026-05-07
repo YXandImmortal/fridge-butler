@@ -2,7 +2,7 @@ package com.yx.fridgebutler.service.impl;
 
 import cn.hutool.core.util.PhoneUtil;
 import com.yx.fridgebutler.dto.LoginRequest;
-import com.yx.fridgebutler.dto.LoginResponse;
+import com.yx.fridgebutler.vo.LoginVO;
 import com.yx.fridgebutler.dto.RegisterRequest;
 import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.entity.SysUser;
@@ -53,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
     private Long rememberMeExpiration;
 
     @Override
-    public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
+    public LoginVO login(LoginRequest request, HttpServletRequest httpRequest) {
         log.info("用户登录请求，账号：{}", request.getAccount());
 
         // 验证验证码
@@ -98,7 +98,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getUsername(), user.getMobile(), rememberMe, token.substring(0, 10) + "****");
 
         Long expireTime = System.currentTimeMillis() + (rememberMe ? rememberMeExpiration : expiration);
-        return LoginResponse.builder()
+        return LoginVO.builder()
                 .token(token)
                 .username(user.getUsername())
                 .mobile(user.getMobile())

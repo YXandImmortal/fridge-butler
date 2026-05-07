@@ -1,7 +1,7 @@
 package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.dto.LoginRequest;
-import com.yx.fridgebutler.dto.LoginResponse;
+import com.yx.fridgebutler.vo.LoginVO;
 import com.yx.fridgebutler.dto.RegisterRequest;
 import com.yx.fridgebutler.enums.ResultCode;
 import com.yx.fridgebutler.service.AuthService;
@@ -22,8 +22,8 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public Result<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
-        LoginResponse response = authService.login(request, httpRequest);
+    public Result<LoginVO> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        LoginVO response = authService.login(request, httpRequest);
         return Result.success(ResultCode.LOGIN_SUCCESS, response);
     }
 

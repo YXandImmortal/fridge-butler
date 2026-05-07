@@ -1,10 +1,10 @@
 package com.yx.fridgebutler.controller;
 
-import com.yx.fridgebutler.dto.AboutItemDTO;
-import com.yx.fridgebutler.dto.FeatureDTO;
-import com.yx.fridgebutler.dto.SidebarFeatureDTO;
-import com.yx.fridgebutler.dto.SystemInfoDTO;
-import com.yx.fridgebutler.dto.UpdateLogDTO;
+import com.yx.fridgebutler.vo.AboutItemVO;
+import com.yx.fridgebutler.vo.FeatureVO;
+import com.yx.fridgebutler.vo.SidebarFeatureVO;
+import com.yx.fridgebutler.vo.SystemInfoVO;
+import com.yx.fridgebutler.vo.UpdateLogVO;
 import com.yx.fridgebutler.vo.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,66 +19,66 @@ public class SystemController {
     public static final String SYSTEM_NAME = "智鲜·引擎";
     public static final String SYSTEM_VERSION = "alpha 0.0.7";
     public static final String SYSTEM_SLOGAN = "智能管理您的冰箱，让食材更新鲜";
-    public static final List<SidebarFeatureDTO> USER_INDEX_FEATURES;
-    public static final List<FeatureDTO> SYSTEM_FEATURES;
-    public static final List<UpdateLogDTO> SYSTEM_UPDATES;
-    public static final List<AboutItemDTO> SYSTEM_ABOUT;
+    public static final List<SidebarFeatureVO> USER_INDEX_FEATURES;
+    public static final List<FeatureVO> SYSTEM_FEATURES;
+    public static final List<UpdateLogVO> SYSTEM_UPDATES;
+    public static final List<AboutItemVO> SYSTEM_ABOUT;
 
     static {
         USER_INDEX_FEATURES = List.of(
-                SidebarFeatureDTO.builder()
+                SidebarFeatureVO.builder()
                         .id(1)
                         .name("首页")
                         .path("/user/index")
                         .icon("icon-home")
                         .build(),
-                SidebarFeatureDTO.builder()
+                SidebarFeatureVO.builder()
                         .id(2)
                         .name("冰箱管理")
                         .path("/fridge")
                         .icon("icon-fridge-line")
                         .children(Arrays.asList(
-                                SidebarFeatureDTO.builder()
+                                SidebarFeatureVO.builder()
                                         .id(21)
                                         .name("冰箱一览")
                                         .path("/fridge/list")
                                         .build(),
-                                SidebarFeatureDTO.builder()
+                                SidebarFeatureVO.builder()
                                         .id(22)
                                         .name("创建冰箱")
                                         .path("/fridge/create")
                                         .build(),
-                                SidebarFeatureDTO.builder()
+                                SidebarFeatureVO.builder()
                                         .id(23)
                                         .name("详细信息")
                                         .path("/fridge/detail")
                                         .build(),
-                                SidebarFeatureDTO.builder()
+                                SidebarFeatureVO.builder()
                                         .id(24)
                                         .name("物品管理")
                                         .path("/fridge/items")
                                         .build()
                         ))
                         .build(),
-                SidebarFeatureDTO.builder()
+                SidebarFeatureVO.builder()
                         .id(3)
                         .name("物品分类")
                         .path("/user/item-category")
                         .icon("icon-inbox-full")
                         .build(),
-                SidebarFeatureDTO.builder()
+                SidebarFeatureVO.builder()
                         .id(4)
                         .name("物品单位")
                         .path("/user/item-unit")
                         .icon("icon-label")
                         .build(),
-                SidebarFeatureDTO.builder()
+                SidebarFeatureVO.builder()
                         .id(5)
                         .name("个人中心")
                         .path("/user/center")
                         .icon("icon-user")
                         .build(),
-                SidebarFeatureDTO.builder()
+                SidebarFeatureVO.builder()
                         .id(6)
                         .name("关于系统")
                         .path("/user/about")
@@ -87,22 +87,22 @@ public class SystemController {
         );
 
         SYSTEM_FEATURES = List.of(
-                FeatureDTO.builder()
+                FeatureVO.builder()
                         .title("冰箱管理")
                         .description("轻松管理多台冰箱，实时掌握冰箱状态，让食材存储井然有序")
                         .icon("icon-fridge-line")
                         .build(),
-                FeatureDTO.builder()
+                FeatureVO.builder()
                         .title("物品分类")
                         .description("自定义物品分类体系，支持多级分类，让食材归类更清晰")
                         .icon("icon-inbox-full")
                         .build(),
-                FeatureDTO.builder()
+                FeatureVO.builder()
                         .title("过期提醒")
                         .description("智能识别食材保质期，及时提醒即将过期的食材，有效减少浪费")
                         .icon("icon-notification")
                         .build(),
-                FeatureDTO.builder()
+                FeatureVO.builder()
                         .title("数据统计")
                         .description("可视化数据报表，直观了解食材消耗情况，助您科学管理家庭饮食")
                         .icon("icon-chart-bar")
@@ -110,7 +110,7 @@ public class SystemController {
         );
 
         SYSTEM_UPDATES = List.of(
-                UpdateLogDTO.builder()
+                UpdateLogVO.builder()
                         .version("alpha 0.0.7")
                         .date("2026-4-30")
                         .changes(Arrays.asList(
@@ -118,7 +118,7 @@ public class SystemController {
                                 "物品管理功能上线，现在可以浏览与增加物品"
                         ))
                         .build(),
-                UpdateLogDTO.builder()
+                UpdateLogVO.builder()
                         .version("alpha 0.0.6")
                         .date("2026-04-20")
                         .changes(Arrays.asList(
@@ -128,7 +128,7 @@ public class SystemController {
                                 "新增关于系统页面，介绍系统信息与功能"
                         ))
                         .build(),
-                UpdateLogDTO.builder()
+                UpdateLogVO.builder()
                         .version("alpha 0.0.5")
                         .date("2026-04-15")
                         .changes(Arrays.asList(
@@ -137,7 +137,7 @@ public class SystemController {
                                 "优化系统性能，提升页面加载速度"
                         ))
                         .build(),
-                UpdateLogDTO.builder()
+                UpdateLogVO.builder()
                         .version("alpha 0.0.4")
                         .date("2026-04-10")
                         .changes(Arrays.asList(
@@ -149,22 +149,22 @@ public class SystemController {
         );
 
         SYSTEM_ABOUT = List.of(
-                AboutItemDTO.builder()
+                AboutItemVO.builder()
                         .label("技术支持")
                         .value("support@fridgebutler.com")
                         .type("email")
                         .build(),
-                AboutItemDTO.builder()
+                AboutItemVO.builder()
                         .label("官方网站")
                         .value("https://fridgebutler.example.com")
                         .type("url")
                         .build(),
-                AboutItemDTO.builder()
+                AboutItemVO.builder()
                         .label("版权所有")
                         .value("© 2026 智鲜引擎团队 版权所有")
                         .type("text")
                         .build(),
-                AboutItemDTO.builder()
+                AboutItemVO.builder()
                         .label("开源协议")
                         .value("MIT License")
                         .type("text")
@@ -173,8 +173,8 @@ public class SystemController {
     }
 
     @GetMapping("/info")
-    public Result<SystemInfoDTO> getSystemInfo() {
-        return Result.success(SystemInfoDTO.builder()
+    public Result<SystemInfoVO> getSystemInfo() {
+        return Result.success(SystemInfoVO.builder()
                 .systemName(SYSTEM_NAME)
                 .systemVersion(SYSTEM_VERSION)
                 .slogan(SYSTEM_SLOGAN)

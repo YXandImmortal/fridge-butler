@@ -1,7 +1,7 @@
 package com.yx.fridgebutler.service;
 
 import com.yx.fridgebutler.dto.FridgeCreateRequest;
-import com.yx.fridgebutler.dto.FridgeDTO;
+import com.yx.fridgebutler.vo.FridgeVO;
 import com.yx.fridgebutler.dto.FridgeSearchRequest;
 import com.yx.fridgebutler.dto.FridgeUpdateRequest;
 
@@ -9,9 +9,9 @@ import java.util.List;
 
 public interface FridgeService {
 
-    List<FridgeDTO> listMyFridges();
+    List<FridgeVO> listMyFridges();
 
-    FridgeDTO getFridgeDetail(Long id);
+    FridgeVO getFridgeDetail(Long id);
 
     Long createFridge(FridgeCreateRequest request);
 
@@ -19,7 +19,7 @@ public interface FridgeService {
 
     void deleteFridge(Long id);
 
-    List<FridgeDTO> searchFridges(FridgeSearchRequest request);
+    List<FridgeVO> searchFridges(FridgeSearchRequest request);
 
-    FridgeDTO getDefaultFridge();
+    FridgeVO getDefaultFridge();
 }

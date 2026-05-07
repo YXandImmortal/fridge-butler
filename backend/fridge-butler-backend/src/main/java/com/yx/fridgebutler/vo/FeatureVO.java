@@ -1,4 +1,4 @@
-package com.yx.fridgebutler.dto;
+package com.yx.fridgebutler.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AboutItemDTO {
-    private String label;
-    private String value;
-    private String type;
+public class FeatureVO {
+    private String title;
+    private String description;
+    private String icon;
 }

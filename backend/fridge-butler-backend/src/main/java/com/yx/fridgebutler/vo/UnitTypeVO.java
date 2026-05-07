@@ -1,4 +1,4 @@
-package com.yx.fridgebutler.dto;
+package com.yx.fridgebutler.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemCategoryDTO {
+public class UnitTypeVO {
 
     private Long id;
 
-    private String categoryName;
+    private String unitTypeName;
 
     private Boolean isSystemDefault;
 }

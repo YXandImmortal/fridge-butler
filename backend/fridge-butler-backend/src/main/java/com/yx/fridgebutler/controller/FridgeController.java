@@ -1,7 +1,7 @@
 package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.dto.FridgeCreateRequest;
-import com.yx.fridgebutler.dto.FridgeDTO;
+import com.yx.fridgebutler.vo.FridgeVO;
 import com.yx.fridgebutler.dto.FridgeSearchRequest;
 import com.yx.fridgebutler.dto.FridgeUpdateRequest;
 import com.yx.fridgebutler.service.FridgeService;
@@ -25,7 +25,7 @@ public class FridgeController {
      * 查询当前用户拥有的冰箱列表
      */
     @GetMapping("/list")
-    public Result<List<FridgeDTO>> listMyFridges() {
+    public Result<List<FridgeVO>> listMyFridges() {
         return Result.success(fridgeService.listMyFridges());
     }
 
@@ -33,7 +33,7 @@ public class FridgeController {
      * 获取冰箱详情
      */
     @GetMapping("/detail/{id}")
-    public Result<FridgeDTO> getFridgeDetail(@PathVariable Long id) {
+    public Result<FridgeVO> getFridgeDetail(@PathVariable Long id) {
         return Result.success(fridgeService.getFridgeDetail(id));
     }
 
@@ -77,7 +77,7 @@ public class FridgeController {
      * 搜索冰箱（优先匹配名称，其次地址，再其次备注）
      */
     @PostMapping("/search")
-    public Result<List<FridgeDTO>> searchFridges(@Valid @RequestBody FridgeSearchRequest request) {
+    public Result<List<FridgeVO>> searchFridges(@Valid @RequestBody FridgeSearchRequest request) {
         return Result.success(fridgeService.searchFridges(request));
     }
 
@@ -85,7 +85,7 @@ public class FridgeController {
      * 获取当前用户的默认冰箱
      */
     @GetMapping("/default")
-    public Result<FridgeDTO> getDefaultFridge() {
+    public Result<FridgeVO> getDefaultFridge() {
         return Result.success(fridgeService.getDefaultFridge());
     }
 }

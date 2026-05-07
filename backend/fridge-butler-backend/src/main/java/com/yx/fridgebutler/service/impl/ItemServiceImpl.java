@@ -1,13 +1,13 @@
 package com.yx.fridgebutler.service.impl;
 
-import com.yx.fridgebutler.dto.ItemCategoryDTO;
+import com.yx.fridgebutler.vo.ItemCategoryVO;
 import com.yx.fridgebutler.dto.ItemCreateRequest;
-import com.yx.fridgebutler.dto.ItemDTO;
+import com.yx.fridgebutler.vo.ItemVO;
 import com.yx.fridgebutler.dto.ItemSearchRequest;
 import com.yx.fridgebutler.dto.ItemTakeOutRequest;
-import com.yx.fridgebutler.dto.ItemUnitDTO;
+import com.yx.fridgebutler.vo.ItemUnitVO;
 import com.yx.fridgebutler.dto.ItemUpdateRequest;
-import com.yx.fridgebutler.dto.UnitTypeDTO;
+import com.yx.fridgebutler.vo.UnitTypeVO;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.BizFridgeItem;
 import com.yx.fridgebutler.entity.BizItemCategory;
@@ -67,14 +67,14 @@ public class ItemServiceImpl implements ItemService {
     private BizUnitTypeRepository unitTypeRepository;
 
     @Override
-    public List<ItemCategoryDTO> listItemCategories() {
+    public List<ItemCategoryVO> listItemCategories() {
         Long currentUserId = getCurrentUserId();
         log.info("查询物品分类列表，用户ID：{}", currentUserId);
 
         List<BizItemCategory> categories = categoryRepository.findAllByOwnerIdOrSystemDefault(currentUserId);
 
         return categories.stream()
-                .map(c -> ItemCategoryDTO.builder()
+                .map(c -> ItemCategoryVO.builder()
                         .id(c.getId())
                         .categoryName(c.getCategoryName())
                         .isSystemDefault(c.getIsSystemDefault())
@@ -83,7 +83,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemUnitDTO> listItemUnits() {
+    public List<ItemUnitVO> listItemUnits() {
         Long currentUserId = getCurrentUserId();
         log.info("查询物品单位列表，用户ID：{}", currentUserId);
 
@@ -97,7 +97,7 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toMap(BizUnitType::getId, BizUnitType::getUnitTypeName));
 
         return units.stream()
-                .map(u -> ItemUnitDTO.builder()
+                .map(u -> ItemUnitVO.builder()
                         .id(u.getId())
                         .unitName(u.getUnitName())
                         .unitTypeId(u.getUnitTypeId())
@@ -108,14 +108,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<UnitTypeDTO> listUnitTypes() {
+    public List<UnitTypeVO> listUnitTypes() {
         Long currentUserId = getCurrentUserId();
         log.info("查询单位类型列表，用户ID：{}", currentUserId);
 
         List<BizUnitType> unitTypes = unitTypeRepository.findAllByOwnerIdOrSystemDefault(currentUserId);
 
         return unitTypes.stream()
-                .map(t -> UnitTypeDTO.builder()
+                .map(t -> UnitTypeVO.builder()
                         .id(t.getId())
                         .unitTypeName(t.getUnitTypeName())
                         .isSystemDefault(t.getIsSystemDefault())
@@ -267,7 +267,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDTO> searchItems(ItemSearchRequest request) {
+    public List<ItemVO> searchItems(ItemSearchRequest request) {
         Long currentUserId = getCurrentUserId();
         log.info("搜索物品，用户ID：{}，冰箱ID：{}，关键字：{}，分类ID：{}，单位ID：{}，单位类型ID：{}，排序：{} {}",
                 currentUserId, request.getFridgeId(), request.getKeyword(), request.getCategoryId(),
@@ -299,7 +299,7 @@ public class ItemServiceImpl implements ItemService {
                     fridgeIds, likeKeyword, request.getCategoryId(), request.getUnitId(), request.getUnitTypeId(), sort);
         }
 
-        return convertToDTOList(items);
+        return convertToVOList(items);
     }
 
     private static Sort buildSort(String sortField, String sortOrder) {
@@ -320,7 +320,7 @@ public class ItemServiceImpl implements ItemService {
         return Sort.by(direction, field);
     }
 
-    private List<ItemDTO> convertToDTOList(List<BizFridgeItem> items) {
+    private List<ItemVO> convertToVOList(List<BizFridgeItem> items) {
         Set<Long> categoryIds = items.stream()
                 .map(BizFridgeItem::getCategoryId)
                 .filter(Objects::nonNull)
@@ -342,11 +342,11 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toMap(BizUnitType::getId, BizUnitType::getUnitTypeName));
 
         return items.stream()
-                .map(item -> convertToDTO(item, categoryMap, unitMap, unitTypeMap))
+                .map(item -> convertToVO(item, categoryMap, unitMap, unitTypeMap))
                 .toList();
     }
 
-    private ItemDTO convertToDTO(BizFridgeItem item,
+    private ItemVO convertToVO(BizFridgeItem item,
                                   Map<Long, String> categoryMap,
                                   Map<Long, BizItemUnit> unitMap,
                                   Map<Long, String> unitTypeMap) {
@@ -354,7 +354,7 @@ public class ItemServiceImpl implements ItemService {
         Long unitTypeId = unit != null ? unit.getUnitTypeId() : null;
         String unitTypeName = unitTypeId != null ? unitTypeMap.get(unitTypeId) : null;
 
-        return ItemDTO.builder()
+        return ItemVO.builder()
                 .id(item.getId())
                 .fridgeId(item.getFridgeId())
                 .itemName(item.getItemName())
