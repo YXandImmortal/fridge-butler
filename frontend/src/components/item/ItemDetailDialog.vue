@@ -4,8 +4,8 @@
       <div class="item-create-dialog">
         <div class="dialog-header">
           <div class="dialog-title-container">
-            <i class="iconfont icon-add-circle dialog-icon" />
-            <h3 class="dialog-title">添加物品</h3>
+            <i class="iconfont dialog-icon" :class="mode === 'edit' ? 'icon-edit' : 'icon-item'" />
+            <h3 class="dialog-title">{{ mode === 'edit' ? '编辑物品' : '添加物品' }}</h3>
           </div>
           <i class="iconfont icon-close dialog-close" @click="handleClose" />
         </div>
@@ -74,6 +74,54 @@
                 class="form-select"
               />
             </el-form-item>
+
+            <el-form-item label="生产日期" prop="productionDate">
+              <el-date-picker
+                v-model="form.productionDate"
+                type="date"
+                placeholder="请选择生产日期"
+                value-format="YYYY-MM-DD"
+                format="YYYY-MM-DD"
+                class="form-date-picker"
+                clearable
+                style="width: 100%"
+                :default-value="new Date()"
+              />
+            </el-form-item>
+
+            <el-form-item label="保质期（天）" prop="shelfLifeDays">
+              <el-input-number
+                v-model="form.shelfLifeDays"
+                :min="1"
+                :precision="0"
+                :step="1"
+                placeholder="请输入保质期天数"
+                class="form-input-number"
+              />
+            </el-form-item>
+
+            <el-form-item v-if="mode === 'edit'" label="入库时间">
+              <el-date-picker
+                v-model="form.storedDate"
+                type="date"
+                placeholder="暂无入库时间"
+                value-format="YYYY-MM-DD"
+                format="YYYY-MM-DD"
+                class="form-date-picker"
+                style="width: 100%"
+              />
+            </el-form-item>
+
+            <el-form-item label="备注" prop="remark">
+              <el-input
+                v-model="form.remark"
+                type="textarea"
+                :rows="3"
+                placeholder="请输入备注信息（选填）"
+                maxlength="200"
+                show-word-limit
+              />
+            </el-form-item>
           </el-form>
         </div>
         <div class="dialog-footer">
@@ -86,7 +134,7 @@
             :loading="submitting"
             @click="handleSubmit"
           >
-            确认添加
+            {{ mode === 'edit' ? '确认修改' : '确认添加' }}
           </CustomButton>
         </div>
       </div>
@@ -99,13 +147,21 @@ import { computed, reactive, ref, watch } from 'vue'
 import CustomButton from '@/components/CustomButton.vue'
 import EnhancedInput from '@/components/EnhancedInput.vue'
 import CustomSelect from '@/components/CustomSelect.vue'
-import { createItem } from '@/api/item'
+import { createItem, updateItem } from '@/api/item'
 import showMessage from '@/utils/message'
 
 const props = defineProps({
   visible: {
     type: Boolean,
     default: false
+  },
+  mode: {
+    type: String,
+    default: 'create' // 'create' | 'edit'
+  },
+  itemData: {
+    type: Object,
+    default: () => null
   },
   categoryList: {
     type: Array,
@@ -135,7 +191,11 @@ const form = reactive({
   categoryId: null,
   itemNum: 1,
   unitTypeId: null,
-  itemUnitId: null
+  itemUnitId: null,
+  productionDate: '',
+  shelfLifeDays: null,
+  storedDate: '',
+  remark: ''
 })
 
 const rules = {
@@ -155,6 +215,12 @@ const rules = {
   ],
   itemUnitId: [
     { required: true, message: '请选择单位', trigger: 'change' }
+  ],
+  productionDate: [
+    { required: false, message: '请选择生产日期', trigger: 'change' }
+  ],
+  shelfLifeDays: [
+    { required: false, type: 'number', min: 1, message: '保质期至少为1天', trigger: 'change' }
   ]
 }
 
@@ -192,14 +258,36 @@ const resetForm = () => {
   form.itemNum = 1
   form.unitTypeId = null
   form.itemUnitId = null
+  form.productionDate = ''
+  form.shelfLifeDays = null
+  form.storedDate = ''
+  form.remark = ''
   if (formRef.value) {
     formRef.value.resetFields()
   }
 }
 
+const initFormFromItemData = () => {
+  if (props.itemData) {
+    form.itemName = props.itemData.itemName || ''
+    form.categoryId = props.itemData.categoryId || null
+    form.itemNum = props.itemData.itemNum || 1
+    form.unitTypeId = props.itemData.unitTypeId || null
+    form.itemUnitId = props.itemData.itemUnitId || null
+    form.productionDate = props.itemData.productionDate || ''
+    form.shelfLifeDays = props.itemData.shelfLifeDays || null
+    form.storedDate = props.itemData.storedDate || ''
+    form.remark = props.itemData.remark || ''
+  }
+}
+
 watch(() => props.visible, (val) => {
   if (val) {
-    resetForm()
+    if (props.mode === 'edit' && props.itemData) {
+      initFormFromItemData()
+    } else {
+      resetForm()
+    }
   }
 })
 
@@ -217,24 +305,42 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
-    const res = await createItem({
-      itemName: form.itemName,
-      categoryId: form.categoryId,
-      itemNum: form.itemNum,
-      itemUnitId: form.itemUnitId,
-      fridgeId: props.fridgeId,
-      storedDate: new Date().toISOString().split('T')[0]
-    })
+    let res
+    if (props.mode === 'edit') {
+      res = await updateItem({
+        id: props.itemData.id,
+        itemName: form.itemName,
+        categoryId: form.categoryId,
+        itemNum: form.itemNum,
+        itemUnitId: form.itemUnitId,
+        storedDate: form.storedDate || null,
+        productionDate: form.productionDate || null,
+        shelfLifeDays: form.shelfLifeDays || null,
+        remark: form.remark || null
+      })
+    } else {
+      res = await createItem({
+        itemName: form.itemName,
+        categoryId: form.categoryId,
+        itemNum: form.itemNum,
+        itemUnitId: form.itemUnitId,
+        fridgeId: props.fridgeId,
+        storedDate: new Date().toISOString().split('T')[0],
+        productionDate: form.productionDate || null,
+        shelfLifeDays: form.shelfLifeDays || null,
+        remark: form.remark || null
+      })
+    }
     if (res.code === 200) {
-      showMessage.success('添加成功')
+      showMessage.success(props.mode === 'edit' ? '修改成功' : '添加成功')
       emit('success')
       handleClose()
     } else {
-      showMessage.error(res.message || '添加失败')
+      showMessage.error(res.message || (props.mode === 'edit' ? '修改失败' : '添加失败'))
     }
   } catch (error) {
-    console.error('添加物品失败:', error)
-    showMessage.error('添加失败')
+    console.error(props.mode === 'edit' ? '修改物品失败:' : '添加物品失败:', error)
+    showMessage.error(props.mode === 'edit' ? '修改失败' : '添加失败')
   } finally {
     submitting.value = false
   }
@@ -262,6 +368,10 @@ const handleSubmit = async () => {
   box-shadow: var(--shadow-md);
   max-width: 480px;
   width: 90%;
+  max-height: 85vh;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
   animation: dialog-slide-in 0.3s ease-out;
 }
 
@@ -304,6 +414,9 @@ const handleSubmit = async () => {
 
 .dialog-content {
   padding: var(--space-5) var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .add-form :deep(.el-form-item__label) {
@@ -338,7 +451,7 @@ const handleSubmit = async () => {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
-  padding: 0 var(--space-6) var(--space-6);
+  padding: var(--space-6);
 }
 
 .dialog-btn {
@@ -399,6 +512,7 @@ const handleSubmit = async () => {
   .item-create-dialog {
     min-width: 280px;
     width: 85%;
+    min-height: auto;
   }
 
   .dialog-header {

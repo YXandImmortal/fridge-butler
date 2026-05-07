@@ -68,3 +68,45 @@ export function createItem(data) {
         data
     })
 }
+
+/**
+ * 更新物品
+ * @param {Object} data - 物品数据
+ * @param {number} data.id - 物品ID
+ * @param {string} [data.itemName] - 物品名称
+ * @param {number} [data.categoryId] - 分类ID
+ * @param {number} [data.itemNum] - 数量
+ * @param {number} [data.itemUnitId] - 单位ID
+ */
+export function updateItem(data) {
+    return request({
+        url: '/item/update',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 删除物品
+ * @param {number} id - 物品ID
+ */
+export function deleteItem(id) {
+    return request({
+        url: `/item/delete/${id}`,
+        method: 'post'
+    })
+}
+
+/**
+ * 取出物品（减少库存）
+ * @param {Object} data - 取出数据
+ * @param {number} data.itemId - 物品ID
+ * @param {number} data.takeOutNum - 取出数量
+ */
+export function takeOutItem(data) {
+    return request({
+        url: '/item/take-out',
+        method: 'post',
+        data
+    })
+}

@@ -147,6 +147,7 @@ const handleClick = (event) => {
 .custom-button--small {
   padding: 6px 12px;
   font-size: 12px;
+  border-radius: var(--radius-sm);
 }
 
 .custom-button.is-loading {

@@ -103,7 +103,7 @@
                 <!-- 物品表格列表 -->
                 <div v-else class="item-table-wrapper">
                   <el-table
-                      max-height="520px"
+                      max-height="62vh"
                     :data="itemList"
                     class="item-table"
                     :header-cell-style="{ background: 'var(--gray-20)', color: 'var(--text-primary)', fontWeight: 600 }"
@@ -153,6 +153,20 @@
                       </template>
                     </el-table-column>
 
+                    <el-table-column label="新鲜度" width="100" align="center">
+                      <template #default="{ row }">
+                        <el-tag
+                          v-if="getFreshnessStatus(row).label !== '-'"
+                          size="small"
+                          :type="getFreshnessStatus(row).type"
+                          :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
+                        >
+                          {{ getFreshnessStatus(row).label }}
+                        </el-tag>
+                        <span v-else class="date-text">-</span>
+                      </template>
+                    </el-table-column>
+
                     <el-table-column label="入库时间" width="120" align="center">
                       <template #default="{ row }">
                         <span class="date-text">{{ row.storedDate || '-' }}</span>
@@ -165,9 +179,21 @@
                       </template>
                     </el-table-column>
 
-                    <el-table-column label="操作" width="120" align="center" fixed="right">
+                    <el-table-column label="操作" width="160" align="center" fixed="right">
                       <template #default="{ row }">
                         <div class="action-btns">
+                          <el-dropdown size="small" @command="(cmd) => handleTakeOutCommand(cmd, row)">
+                            <CustomButton type="primary" size="small">
+                              取出<i class="iconfont icon-arrow-right-box" />
+                            </CustomButton>
+                            <template #dropdown>
+                              <el-dropdown-menu>
+                                <el-dropdown-item command="all">取出全部</el-dropdown-item>
+                                <el-dropdown-item command="half">取出一半</el-dropdown-item>
+                                <el-dropdown-item command="custom">自定义数量...</el-dropdown-item>
+                              </el-dropdown-menu>
+                            </template>
+                          </el-dropdown>
                           <el-tooltip content="编辑" placement="top">
                             <CustomButton type="link" size="small" @click="handleEditItem(row)">
                               <i class="iconfont icon-edit" />
@@ -217,12 +243,30 @@
     />
 
     <!-- 添加物品弹窗 -->
-    <ItemCreateDialog
+    <ItemDetailDialog
       v-model:visible="showCreateDialog"
       :category-list="categoryList"
       :unit-list="unitList"
       :unit-type-list="unitTypeList"
       :fridge-id="currentFridgeId"
+      @success="fetchItems"
+    />
+
+    <!-- 编辑物品弹窗 -->
+    <ItemDetailDialog
+      v-model:visible="showEditDialog"
+      mode="edit"
+      :item-data="currentEditItem"
+      :category-list="categoryList"
+      :unit-list="unitList"
+      :unit-type-list="unitTypeList"
+      @success="fetchItems"
+    />
+
+    <!-- 取出物品弹窗 -->
+    <ItemTakeOutDialog
+      v-model:visible="showTakeOutDialog"
+      :item="currentTakeOutItem"
       @success="fetchItems"
     />
 
@@ -253,14 +297,17 @@ import {
   listItemCategories,
   listItemUnits,
   listUnitTypes,
-  searchItems
+  searchItems,
+  deleteItem,
+  takeOutItem
 } from '@/api/item'
 import { listMyFridges, getDefaultFridge } from '@/api/fridge'
 import CustomButton from '@/components/CustomButton.vue'
 import CustomSelect from '@/components/CustomSelect.vue'
 import SortControl from '@/components/SortControl.vue'
 import SearchBar from '@/components/SearchBar.vue'
-import ItemCreateDialog from '@/components/item/ItemCreateDialog.vue'
+import ItemDetailDialog from '@/components/item/ItemDetailDialog.vue'
+import ItemTakeOutDialog from '@/components/item/ItemTakeOutDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -324,7 +371,11 @@ const currentFridgeId = computed(() => {
 // ==================== 对话框控制 ====================
 const showLogoutDialog = ref(false)
 const showCreateDialog = ref(false)
+const showEditDialog = ref(false)
+const currentEditItem = ref(null)
 const showSelectFridgeDialog = ref(false)
+const showTakeOutDialog = ref(false)
+const currentTakeOutItem = ref(null)
 
 // 冰箱选择列表
 const fridgeList = ref([])
@@ -484,14 +535,83 @@ const handleSortChange = () => {
   fetchItems()
 }
 
+// 取出命令处理
+const handleTakeOutCommand = (command, row) => {
+  if (command === 'all') {
+    handleTakeOutAll(row)
+  } else if (command === 'half') {
+    handleTakeOutHalf(row)
+  } else if (command === 'custom') {
+    handleTakeOutCustom(row)
+  }
+}
+
+// 取出全部
+const handleTakeOutAll = async (row) => {
+  try {
+    const res = await takeOutItem({
+      id: row.id,
+      takeOutNum: row.itemNum
+    })
+    if (res.code === 200) {
+      showMessage.success(`已将 ${row.itemName} 全部取出`)
+      fetchItems()
+    } else {
+      showMessage.error(res.message || '取出失败')
+    }
+  } catch (error) {
+    console.error('取出全部失败:', error)
+    showMessage.error('取出失败')
+  }
+}
+
+// 取出一半
+const handleTakeOutHalf = async (row) => {
+  const halfNum = Math.max(0.01, +(row.itemNum / 2).toFixed(2))
+  try {
+    const res = await takeOutItem({
+      id: row.id,
+      takeOutNum: halfNum
+    })
+    if (res.code === 200) {
+      showMessage.success(`已取出一半 ${row.itemName}（${halfNum} ${row.unitName}）`)
+      fetchItems()
+    } else {
+      showMessage.error(res.message || '取出失败')
+    }
+  } catch (error) {
+    console.error('取出一半失败:', error)
+    showMessage.error('取出失败')
+  }
+}
+
+// 自定义取出（打开对话框）
+const handleTakeOutCustom = (row) => {
+  currentTakeOutItem.value = row
+  showTakeOutDialog.value = true
+}
+
 // 编辑物品
 const handleEditItem = (row) => {
-  showMessage.info(`编辑物品：${row.itemName}（功能开发中）`)
+  currentEditItem.value = row
+  showEditDialog.value = true
 }
 
 // 删除物品
-const handleDeleteItem = (row) => {
-  showMessage.info(`删除物品：${row.itemName}（功能开发中）`)
+const handleDeleteItem = async (row) => {
+  if (!confirm(`确定要删除 ${row.itemName} 吗？`)) return
+  try {
+    const res = await deleteItem(row.id)
+    if (res.code === 200) {
+      showMessage.success('删除成功')
+      fetchItems()
+    } else {
+      showMessage.error(res.message || '删除失败')
+    }
+  } catch (error) {
+    console.error('删除物品失败:', error)
+    showMessage.error('删除失败')
+  }
 }
 
 // 返回冰箱详情
@@ -504,6 +624,36 @@ const handleBack = () => {
     })
   } else {
     router.push({ name: 'fridge-list' })
+  }
+}
+
+// 计算物品新鲜度
+const getFreshnessStatus = (row) => {
+  if (!row.productionDate || !row.shelfLifeDays) {
+    return { label: '-', type: 'info' }
+  }
+
+  const productionDate = new Date(row.productionDate)
+  const now = new Date()
+  const diffTime = now - productionDate
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+  const remainingDays = row.shelfLifeDays - diffDays
+
+  if (remainingDays <= 0) {
+    return { label: '已过期', type: 'danger' }
+  }
+
+  const percent = (remainingDays / row.shelfLifeDays) * 100
+
+  if (percent > 70) {
+    return { label: '新鲜', type: 'success' }
+  } else if (percent > 40) {
+    return { label: '一般', type: 'primary' }
+  } else if (percent > 10) {
+    return { label: '临期', type: 'warning' }
+  } else {
+    return { label: '已过期', type: 'danger' }
   }
 }
 
@@ -677,8 +827,8 @@ watch(
 }
 
 /* 物品表格 */
-.item-table-wrapper {
-  overflow: hidden;
+.item-table-wrapper :deep(.el-table__cell .cell) {
+  overflow: visible;
 
 }
 
@@ -787,6 +937,10 @@ watch(
 .action-btns .custom-button {
   padding: 4px var(--space-2);
   font-size: 14px;
+}
+
+.action-btns .custom-button:first-child {
+  margin-right: var(--space-2);
 }
 
 .action-btns .danger-link {
