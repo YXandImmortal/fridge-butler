@@ -4,7 +4,9 @@ import com.yx.fridgebutler.dto.ItemCategoryDTO;
 import com.yx.fridgebutler.dto.ItemCreateRequest;
 import com.yx.fridgebutler.dto.ItemDTO;
 import com.yx.fridgebutler.dto.ItemSearchRequest;
+import com.yx.fridgebutler.dto.ItemTakeOutRequest;
 import com.yx.fridgebutler.dto.ItemUnitDTO;
+import com.yx.fridgebutler.dto.ItemUpdateRequest;
 import com.yx.fridgebutler.dto.UnitTypeDTO;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.BizFridgeItem;
@@ -26,7 +28,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -126,18 +130,18 @@ public class ItemServiceImpl implements ItemService {
 
         // 校验冰箱是否属于当前用户
         fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(request.getFridgeId(), currentUserId)
-                .orElseThrow(BusinessException::notFound);
+                .orElseThrow(BusinessException::fridgeNotFound);
 
         // 校验分类是否存在（如果传了分类ID）
         if (request.getCategoryId() != null) {
             categoryRepository.findById(request.getCategoryId())
-                    .orElseThrow(BusinessException::notFound);
+                    .orElseThrow(BusinessException::categoryNotFound);
         }
 
         // 校验单位是否存在（如果传了单位ID）
         if (request.getItemUnitId() != null) {
             unitRepository.findById(request.getItemUnitId())
-                    .orElseThrow(BusinessException::notFound);
+                    .orElseThrow(BusinessException::unitNotFound);
         }
 
         BizFridgeItem item = new BizFridgeItem();
@@ -162,6 +166,107 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    public void updateItem(ItemUpdateRequest request) {
+        Long currentUserId = getCurrentUserId();
+        log.info("更新物品，用户ID：{}，物品ID：{}" , currentUserId, request.getId());
+
+        // 校验物品是否存在且未删除
+        BizFridgeItem item = itemRepository.findById(request.getId())
+                .orElseThrow(BusinessException::itemNotFound);
+        if (Boolean.TRUE.equals(item.getIsDeleted())) {
+            throw BusinessException.itemNotFound();
+        }
+
+        // 校验冰箱是否属于当前用户
+        fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(item.getFridgeId(), currentUserId)
+                .orElseThrow(BusinessException::fridgeNotFound);
+
+        // 校验分类是否存在（如果传了分类ID）
+        if (request.getCategoryId() != null) {
+            categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(BusinessException::categoryNotFound);
+        }
+
+        // 校验单位是否存在（如果传了单位ID）
+        if (request.getItemUnitId() != null) {
+            unitRepository.findById(request.getItemUnitId())
+                    .orElseThrow(BusinessException::unitNotFound);
+        }
+
+        item.setItemName(request.getItemName());
+        item.setItemUnitId(request.getItemUnitId());
+        item.setStoredDate(request.getStoredDate());
+        item.setProductionDate(request.getProductionDate());
+        item.setShelfLifeDays(request.getShelfLifeDays());
+        item.setCategoryId(request.getCategoryId());
+        item.setItemNum(request.getItemNum());
+        item.setRemark(request.getRemark());
+        item.setUpdateTime(Instant.now());
+
+        itemRepository.save(item);
+    }
+
+    @Override
+    @Transactional
+    public void deleteItem(Long id) {
+        Long currentUserId = getCurrentUserId();
+        log.info("删除物品，物品ID：{}，用户ID：{}", id, currentUserId);
+
+        // 校验物品是否存在且未删除
+        BizFridgeItem item = itemRepository.findById(id)
+                .orElseThrow(BusinessException::itemNotFound);
+        if (Boolean.TRUE.equals(item.getIsDeleted())) {
+            throw BusinessException.itemNotFound();
+        }
+
+        // 校验冰箱是否属于当前用户
+        fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(item.getFridgeId(), currentUserId)
+                .orElseThrow(BusinessException::fridgeNotFound);
+
+        item.setIsDeleted(true);
+        item.setUpdateTime(Instant.now());
+        itemRepository.save(item);
+    }
+
+    @Override
+    @Transactional
+    public void takeOutItem(ItemTakeOutRequest request) {
+        Long currentUserId = getCurrentUserId();
+        log.info("取出物品，用户ID：{}，物品ID：{}，取出数量：{}", currentUserId, request.getId(), request.getTakeOutNum());
+
+        // 校验物品是否存在且未删除
+        BizFridgeItem item = itemRepository.findById(request.getId())
+                .orElseThrow(BusinessException::itemNotFound);
+        if (Boolean.TRUE.equals(item.getIsDeleted())) {
+            throw BusinessException.itemNotFound();
+        }
+
+        // 校验冰箱是否属于当前用户
+        fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(item.getFridgeId(), currentUserId)
+                .orElseThrow(BusinessException::fridgeNotFound);
+
+        // 校验取出数量不能超过现有数量
+        if (request.getTakeOutNum().compareTo(item.getItemNum()) > 0) {
+            throw BusinessException.takeOutNumExceed();
+        }
+
+        // 计算剩余数量
+        BigDecimal remainingNum = item.getItemNum().subtract(request.getTakeOutNum());
+
+        if (remainingNum.compareTo(BigDecimal.ZERO) <= 0) {
+            // 取出数量大于等于现有数量，软删除该物品
+            item.setIsDeleted(true);
+            log.info("取出物品后数量归零，软删除物品，物品ID：{}", request.getId());
+        } else {
+            // 更新剩余数量
+            item.setItemNum(remainingNum);
+        }
+
+        item.setUpdateTime(Instant.now());
+        itemRepository.save(item);
+    }
+
+    @Override
     public List<ItemDTO> searchItems(ItemSearchRequest request) {
         Long currentUserId = getCurrentUserId();
         log.info("搜索物品，用户ID：{}，冰箱ID：{}，关键字：{}，分类ID：{}，单位ID：{}，单位类型ID：{}，排序：{} {}",
@@ -177,7 +282,7 @@ public class ItemServiceImpl implements ItemService {
         if (request.getFridgeId() != null) {
             // 校验冰箱是否属于当前用户
             fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(request.getFridgeId(), currentUserId)
-                    .orElseThrow(BusinessException::notFound);
+                    .orElseThrow(BusinessException::fridgeNotFound);
             items = itemRepository.searchItemsByFridgeId(
                     request.getFridgeId(), likeKeyword, request.getCategoryId(), request.getUnitId(), request.getUnitTypeId(), sort);
         } else {
@@ -205,7 +310,7 @@ public class ItemServiceImpl implements ItemService {
         String field = switch (sortField) {
             case "itemNum" -> "itemNum";
             case "storedDate" -> "storedDate";
-            default -> throw new BusinessException(ResultCode.SORT_FAILED_UNKNOW_SORT_FIELD);
+            default -> throw BusinessException.unknownSortField();
         };
 
         Sort.Direction direction = "asc".equalsIgnoreCase(sortOrder)
@@ -279,7 +384,7 @@ public class ItemServiceImpl implements ItemService {
     private Long getCurrentUserId() {
         String username = getUsernameFromToken();
         SysUser user = userRepository.findByUsername(username)
-                .orElseThrow(BusinessException::notFound);
+                .orElseThrow(BusinessException::userNotFound);
         return user.getId();
     }
 
