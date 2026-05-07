@@ -270,6 +270,16 @@
       @success="fetchItems"
     />
 
+    <!-- 删除确认对话框 -->
+    <ConfirmDialog
+      v-model:visible="showDeleteDialog"
+      title="删除物品"
+      :message="`确定要删除 ${currentDeleteItem?.itemName || ''} 吗？`"
+      confirm-text="确定"
+      cancel-text="取消"
+      @confirm="handleDeleteConfirm"
+    />
+
     <!-- 登出确认对话框 -->
     <ConfirmDialog
       v-model:visible="showLogoutDialog"
@@ -376,6 +386,8 @@ const currentEditItem = ref(null)
 const showSelectFridgeDialog = ref(false)
 const showTakeOutDialog = ref(false)
 const currentTakeOutItem = ref(null)
+const showDeleteDialog = ref(false)
+const currentDeleteItem = ref(null)
 
 // 冰箱选择列表
 const fridgeList = ref([])
@@ -598,10 +610,16 @@ const handleEditItem = (row) => {
 }
 
 // 删除物品
-const handleDeleteItem = async (row) => {
-  if (!confirm(`确定要删除 ${row.itemName} 吗？`)) return
+const handleDeleteItem = (row) => {
+  currentDeleteItem.value = row
+  showDeleteDialog.value = true
+}
+
+// 确认删除物品
+const handleDeleteConfirm = async () => {
+  if (!currentDeleteItem.value) return
   try {
-    const res = await deleteItem(row.id)
+    const res = await deleteItem(currentDeleteItem.value.id)
     if (res.code === 200) {
       showMessage.success('删除成功')
       fetchItems()
@@ -611,6 +629,9 @@ const handleDeleteItem = async (row) => {
   } catch (error) {
     console.error('删除物品失败:', error)
     showMessage.error('删除失败')
+  } finally {
+    showDeleteDialog.value = false
+    currentDeleteItem.value = null
   }
 }
 

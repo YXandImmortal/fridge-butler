@@ -93,7 +93,7 @@ export function updateItem(data) {
 export function deleteItem(id) {
     return request({
         url: `/item/delete/${id}`,
-        method: 'post'
+        method: 'delete'
     })
 }
 
