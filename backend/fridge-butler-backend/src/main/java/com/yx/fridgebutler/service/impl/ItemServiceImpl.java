@@ -43,6 +43,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * 物品服务实现类，处理物品的创建、更新、查询、删除以及取出等业务逻辑。
+ * <p>
+ * 包含物品分类、单位、单位类型的查询，以及物品取出时的数量校验和取出记录保存。
+ * 所有操作均基于当前登录用户进行权限校验。
+ */
 @Slf4j
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -71,6 +77,11 @@ public class ItemServiceImpl implements ItemService {
     @Autowired
     private BizItemTakeOutRecordRepository takeOutRecordRepository;
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 返回系统默认分类和当前用户自定义分类的合并列表。
+     */
     @Override
     public List<ItemCategoryVO> listItemCategories() {
         Long currentUserId = getCurrentUserId();
@@ -87,6 +98,11 @@ public class ItemServiceImpl implements ItemService {
                 .toList();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 返回系统默认单位和当前用户自定义单位的合并列表，同时填充每个单位对应的单位类型名称。
+     */
     @Override
     public List<ItemUnitVO> listItemUnits() {
         Long currentUserId = getCurrentUserId();
@@ -94,6 +110,7 @@ public class ItemServiceImpl implements ItemService {
 
         List<BizItemUnit> units = unitRepository.findAllByOwnerIdOrSystemDefault(currentUserId);
 
+        // 收集所有单位类型ID，用于批量查询单位类型名称
         Set<Long> unitTypeIds = units.stream()
                 .map(BizItemUnit::getUnitTypeId)
                 .filter(Objects::nonNull)
@@ -112,6 +129,11 @@ public class ItemServiceImpl implements ItemService {
                 .toList();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 返回系统默认单位类型和当前用户自定义单位类型的合并列表。
+     */
     @Override
     public List<UnitTypeVO> listUnitTypes() {
         Long currentUserId = getCurrentUserId();
@@ -128,6 +150,11 @@ public class ItemServiceImpl implements ItemService {
                 .toList();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 创建前会校验冰箱归属权、分类存在性（如传了分类ID）、单位存在性（如传了单位ID）。
+     */
     @Override
     public Long createItem(ItemCreateRequest request) {
         Long currentUserId = getCurrentUserId();
@@ -170,6 +197,11 @@ public class ItemServiceImpl implements ItemService {
         return saved.getId();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 更新前会校验物品存在性、冰箱归属权、分类存在性（如传了分类ID）、单位存在性（如传了单位ID）。
+     */
     @Override
     public void updateItem(ItemUpdateRequest request) {
         Long currentUserId = getCurrentUserId();
@@ -211,6 +243,11 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.save(item);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 采用软删除方式，删除前会校验物品存在性和冰箱归属权。
+     */
     @Override
     @Transactional
     public void deleteItem(Long id) {
@@ -233,6 +270,17 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.save(item);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 取出逻辑：
+     * <ol>
+     *   <li>校验物品存在性和冰箱归属权</li>
+     *   <li>校验取出数量不能超过现有数量</li>
+     *   <li>计算剩余数量：若剩余为零或负数则软删除物品，否则更新数量</li>
+     *   <li>保存取出记录</li>
+     * </ol>
+     */
     @Override
     @Transactional
     public void takeOutItem(ItemTakeOutRequest request) {
@@ -284,6 +332,15 @@ public class ItemServiceImpl implements ItemService {
         log.info("保存取出记录成功，记录ID：{}，物品ID：{}" , record.getId(), item.getId());
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 搜索逻辑：
+     * <ul>
+     *   <li>若指定了冰箱ID，则在该冰箱下搜索，并校验冰箱归属权</li>
+     *   <li>若未指定冰箱ID，则在当前用户所有冰箱下搜索</li>
+     * </ul>
+     */
     @Override
     public List<ItemVO> searchItems(ItemSearchRequest request) {
         Long currentUserId = getCurrentUserId();
@@ -304,6 +361,7 @@ public class ItemServiceImpl implements ItemService {
             items = itemRepository.searchItemsByFridgeId(
                     request.getFridgeId(), likeKeyword, request.getCategoryId(), request.getUnitId(), request.getUnitTypeId(), sort);
         } else {
+            // 获取当前用户所有冰箱ID
             List<Long> fridgeIds = fridgeRepository.findByOwnerIdAndIsDeletedFalse(currentUserId, Sort.unsorted())
                     .stream()
                     .map(BizFridge::getId)
@@ -320,6 +378,13 @@ public class ItemServiceImpl implements ItemService {
         return convertToVOList(items);
     }
 
+    /**
+     * 构建排序对象。
+     *
+     * @param sortField 排序字段（itemNum/storedDate）
+     * @param sortOrder 排序方向（asc/desc）
+     * @return Spring Data的Sort对象
+     */
     private static Sort buildSort(String sortField, String sortOrder) {
         if (sortField == null) {
             sortField = "storedDate";
@@ -338,7 +403,16 @@ public class ItemServiceImpl implements ItemService {
         return Sort.by(direction, field);
     }
 
+    /**
+     * 将物品实体列表转换为视图对象列表。
+     * <p>
+     * 采用批量查询策略，先收集所有分类ID、单位ID、单位类型ID，再统一查询对应名称，减少数据库交互次数。
+     *
+     * @param items 物品实体列表
+     * @return 物品视图对象列表
+     */
     private List<ItemVO> convertToVOList(List<BizFridgeItem> items) {
+        // 批量查询分类名称
         Set<Long> categoryIds = items.stream()
                 .map(BizFridgeItem::getCategoryId)
                 .filter(Objects::nonNull)
@@ -346,6 +420,7 @@ public class ItemServiceImpl implements ItemService {
         Map<Long, String> categoryMap = categoryRepository.findAllById(categoryIds).stream()
                 .collect(Collectors.toMap(BizItemCategory::getId, BizItemCategory::getCategoryName));
 
+        // 批量查询单位信息
         Set<Long> unitIds = items.stream()
                 .map(BizFridgeItem::getItemUnitId)
                 .filter(Objects::nonNull)
@@ -353,6 +428,7 @@ public class ItemServiceImpl implements ItemService {
         Map<Long, BizItemUnit> unitMap = unitRepository.findAllById(unitIds).stream()
                 .collect(Collectors.toMap(BizItemUnit::getId, Function.identity()));
 
+        // 批量查询单位类型名称
         Set<Long> unitTypeIds = unitMap.values().stream()
                 .map(BizItemUnit::getUnitTypeId)
                 .collect(Collectors.toSet());
@@ -364,6 +440,15 @@ public class ItemServiceImpl implements ItemService {
                 .toList();
     }
 
+    /**
+     * 将单个物品实体转换为视图对象。
+     *
+     * @param item        物品实体
+     * @param categoryMap 分类ID到名称的映射
+     * @param unitMap     单位ID到单位实体的映射
+     * @param unitTypeMap 单位类型ID到名称的映射
+     * @return 物品视图对象
+     */
     private ItemVO convertToVO(BizFridgeItem item,
                                   Map<Long, String> categoryMap,
                                   Map<Long, BizItemUnit> unitMap,
@@ -392,6 +477,12 @@ public class ItemServiceImpl implements ItemService {
                 .build();
     }
 
+    /**
+     * 将Instant格式化为上海时区的日期时间字符串。
+     *
+     * @param instant 时间戳
+     * @return 格式化后的字符串，若传入null则返回null
+     */
     private String formatInstant(Instant instant) {
         if (instant == null) {
             return null;
@@ -399,6 +490,12 @@ public class ItemServiceImpl implements ItemService {
         return instant.atZone(ZONE_ID_SHANGHAI).format(DATE_TIME_FORMATTER);
     }
 
+    /**
+     * 获取当前登录用户的ID。
+     *
+     * @return 当前用户ID
+     * @throws BusinessException 如果当前用户不存在则抛出异常
+     */
     private Long getCurrentUserId() {
         String username = getUsernameFromToken();
         SysUser user = userRepository.findByUsername(username)
@@ -406,6 +503,12 @@ public class ItemServiceImpl implements ItemService {
         return user.getId();
     }
 
+    /**
+     * 从Spring Security上下文中获取当前登录用户名。
+     *
+     * @return 当前用户名
+     * @throws BusinessException 如果未获取到认证信息则抛出异常
+     */
     private static String getUsernameFromToken() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getName() == null) {

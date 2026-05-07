@@ -15,6 +15,9 @@ import java.io.IOException;
 
 /**
  * 验证码控制器
+ * <p>
+ * 处理验证码的生成和校验请求，支持无session方式的验证码管理。
+ * </p>
  */
 @Slf4j
 @RestController
@@ -24,6 +27,15 @@ public class CaptchaController {
     @Autowired
     private CaptchaManager captchaManager;
 
+    /**
+     * 生成验证码图片
+     * <p>
+     * 生成一个4位数字验证码图片，并通过响应头返回验证码ID供后续校验使用。
+     * </p>
+     *
+     * @param response HTTP响应对象，用于输出验证码图片
+     * @throws IOException 当输出验证码图片流时发生IO异常
+     */
     @GetMapping("/generate")
     public void generateCaptcha(HttpServletResponse response) throws IOException {
         // 创建数字验证码，4位数字
@@ -50,6 +62,13 @@ public class CaptchaController {
         log.info("验证码生成成功，验证码ID：{}", captchaId);
     }
 
+    /**
+     * 校验验证码
+     *
+     * @param captchaId 验证码ID，通过 generateCaptcha 接口获取
+     * @param captcha   用户输入的验证码内容
+     * @return 验证结果，true表示验证成功，false表示验证失败
+     */
     @GetMapping("/verify")
     public Result<Boolean> verifyCaptcha(String captchaId, String captcha) {
         // 使用无session方式验证验证码

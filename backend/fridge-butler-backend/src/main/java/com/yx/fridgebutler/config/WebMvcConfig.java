@@ -14,6 +14,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private LogInterceptor logInterceptor;
 
+    /**
+     * 注册拦截器
+     * <p>
+     * 将日志拦截器注册到所有请求路径，但排除错误处理路径。
+     * </p>
+     *
+     * @param registry 拦截器注册表
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(logInterceptor)

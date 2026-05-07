@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 物品搜索请求DTO
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

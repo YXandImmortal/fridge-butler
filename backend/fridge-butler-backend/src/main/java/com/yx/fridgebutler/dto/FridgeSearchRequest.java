@@ -5,10 +5,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 冰箱搜索请求DTO
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class FridgeSearchRequest {
+
+    /**
+     * 搜索关键字
+     */
     private String keyword;
 
     /**

@@ -2,6 +2,13 @@ package com.yx.fridgebutler.enums;
 
 import lombok.Getter;
 
+/**
+ * 结果状态码枚举
+ * <p>
+ * 定义系统中所有接口返回的状态码和对应的消息描述。
+ * 按功能模块分组，包括通用、登录、注册、验证码、用户、冰箱、物品等模块。
+ * </p>
+ */
 @Getter
 public enum ResultCode {
     /**
@@ -74,9 +81,22 @@ public enum ResultCode {
     UNIT_NOT_FOUND(404, "物品单位不存在"),
     TAKE_OUT_NUM_EXCEED(400, "取出数量不能大于现有数量");
 
+    /**
+     * 状态码数值
+     */
     private final Integer code;
+
+    /**
+     * 状态码描述信息
+     */
     private final String message;
 
+    /**
+     * 构造结果状态码枚举
+     *
+     * @param code    状态码数值
+     * @param message 状态码描述信息
+     */
     ResultCode(Integer code, String message) {
         this.code = code;
         this.message = message;

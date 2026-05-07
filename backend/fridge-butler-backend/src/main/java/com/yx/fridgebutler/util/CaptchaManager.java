@@ -9,6 +9,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 验证码管理器
+ * <p>
+ * 基于内存缓存的验证码管理工具，支持验证码的生成、校验和自动过期清理。
+ * 使用 {@link ConcurrentHashMap} 保证线程安全，采用无session方式存储验证码。
+ * </p>
+ */
 @Component
 public final class CaptchaManager {
 
@@ -28,6 +35,12 @@ public final class CaptchaManager {
 
     /**
      * 生成验证码ID并存储验证码
+     * <p>
+     * 生成唯一的验证码ID，将验证码存入缓存，并设置定时过期任务。
+     * </p>
+     *
+     * @param captchaCode 待存储的验证码内容
+     * @return 生成的验证码唯一标识ID
      */
     public String generateCaptcha(String captchaCode) {
         String captchaId = UUID.randomUUID().toString();
@@ -42,6 +55,13 @@ public final class CaptchaManager {
 
     /**
      * 验证验证码
+     * <p>
+     * 根据验证码ID和用户输入进行校验，验证码验证成功后会被立即移除（一次性使用）。
+     * </p>
+     *
+     * @param captchaId  验证码ID
+     * @param userInput 用户输入的验证码内容
+     * @return 验证成功返回 true，失败返回 false
      */
     public boolean verifyCaptcha(String captchaId, String userInput) {
         if (captchaId == null || userInput == null) {
@@ -61,6 +81,10 @@ public final class CaptchaManager {
 
     /**
      * 清理过期验证码
+     * <p>
+     * 定时清理任务，当缓存中验证码数量超过阈值时清空缓存。
+     * 实际过期主要由单个定时任务控制，此方法作为兜底清理机制。
+     * </p>
      */
     private void cleanupExpiredCaptcha() {
         // 由于我们使用了定时任务自动删除，这里主要是清理意外残留的验证码
@@ -73,7 +97,9 @@ public final class CaptchaManager {
     }
 
     /**
-     * 获取当前活跃的验证码数量（用于监控）
+     * 获取当前活跃的验证码数量
+     *
+     * @return 缓存中当前存储的验证码数量
      */
     public int getActiveCaptchaCount() {
         return captchaCache.size();

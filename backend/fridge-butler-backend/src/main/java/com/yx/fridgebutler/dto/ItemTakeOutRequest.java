@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+/**
+ * 物品取出请求DTO
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

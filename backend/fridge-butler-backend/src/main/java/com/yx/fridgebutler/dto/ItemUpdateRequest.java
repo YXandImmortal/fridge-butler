@@ -11,6 +11,9 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * 物品更新请求DTO
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

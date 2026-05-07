@@ -25,6 +25,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * 冰箱服务实现类，处理冰箱的查询、创建、更新、删除以及默认冰箱管理等核心业务逻辑。
+ * <p>
+ * 所有操作均基于当前登录用户进行权限校验，确保用户只能访问和管理自己的冰箱数据。
+ */
 @Slf4j
 @Service
 public class FridgeServiceImpl implements FridgeService {
@@ -41,6 +46,11 @@ public class FridgeServiceImpl implements FridgeService {
     @Autowired
     private BizFridgeItemRepository itemRepository;
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 查询结果按默认状态优先排序（默认冰箱排在最前面），同状态下按创建时间升序排列。
+     */
     @Override
     public List<FridgeVO> listMyFridges() {
         Long currentUserId = getCurrentUserId();
@@ -50,12 +60,16 @@ public class FridgeServiceImpl implements FridgeService {
         Sort sort = buildSort("createTime", "asc");
         List<BizFridge> fridges = fridgeRepository.findByOwnerIdAndIsDeletedFalse(currentUserId, sort);
 
+        // 默认冰箱排在前面
         return fridges.stream()
                 .map(this::convertToVO)
                 .sorted(Comparator.comparing(FridgeVO::getIsDefault, Comparator.reverseOrder()))
                 .toList();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public FridgeVO getFridgeDetail(Long id) {
         Long currentUserId = getCurrentUserId();
@@ -67,12 +81,18 @@ public class FridgeServiceImpl implements FridgeService {
         return convertToVO(fridge);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 创建前会校验冰箱名称在当前用户下是否已存在，避免重复。
+     */
     @Override
     @Transactional
     public Long createFridge(FridgeCreateRequest request) {
         Long currentUserId = getCurrentUserId();
         log.info("创建冰箱，用户ID：{}，冰箱名称：{}", currentUserId, request.getFridgeName());
 
+        // 校验冰箱名称是否已存在
         if (fridgeRepository.existsByFridgeNameAndOwnerIdAndIsDeletedFalse(request.getFridgeName(), currentUserId)) {
             log.error("创建冰箱失败，冰箱名称已存在：{}，用户ID：{}", request.getFridgeName(), currentUserId);
             throw BusinessException.fridgeNameExists();
@@ -131,6 +151,11 @@ public class FridgeServiceImpl implements FridgeService {
         log.info("冰箱更新成功，冰箱ID：{}", id);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 采用软删除方式，将冰箱标记为已删除状态。
+     */
     @Override
     @Transactional
     public void deleteFridge(Long id) {
@@ -147,6 +172,9 @@ public class FridgeServiceImpl implements FridgeService {
         log.info("冰箱删除成功，冰箱ID：{}", id);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public FridgeVO getDefaultFridge() {
         Long currentUserId = getCurrentUserId();
@@ -157,6 +185,11 @@ public class FridgeServiceImpl implements FridgeService {
                 .orElse(null);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 支持按关键词模糊搜索冰箱名称，结果按默认状态优先排序。
+     */
     @Override
     public List<FridgeVO> searchFridges(FridgeSearchRequest request) {
         Long currentUserId = getCurrentUserId();
@@ -168,12 +201,20 @@ public class FridgeServiceImpl implements FridgeService {
 
         List<BizFridge> fridges = fridgeRepository.searchByKeyword(currentUserId, likeKeyword, sort);
 
+        // 默认冰箱排在前面
         return fridges.stream()
                 .map(this::convertToVO)
                 .sorted(Comparator.comparing(FridgeVO::getIsDefault, Comparator.reverseOrder()))
                 .toList();
     }
 
+    /**
+     * 构建排序对象。
+     *
+     * @param sortField 排序字段（name/totalCapacity/createTime）
+     * @param sortOrder 排序方向（asc/desc）
+     * @return Spring Data的Sort对象
+     */
     private static Sort buildSort(String sortField, String sortOrder) {
         if (sortField == null) sortField = "createTime";
 
@@ -191,6 +232,12 @@ public class FridgeServiceImpl implements FridgeService {
         return Sort.by(direction, field);
     }
 
+    /**
+     * 将冰箱实体转换为视图对象。
+     *
+     * @param fridge 冰箱实体
+     * @return 冰箱视图对象
+     */
     private FridgeVO convertToVO(BizFridge fridge) {
         return FridgeVO.builder()
                 .id(fridge.getId())
@@ -206,6 +253,12 @@ public class FridgeServiceImpl implements FridgeService {
                 .build();
     }
 
+    /**
+     * 将Instant格式化为上海时区的日期时间字符串。
+     *
+     * @param instant 时间戳
+     * @return 格式化后的字符串，若传入null则返回null
+     */
     private String formatInstant(Instant instant) {
         if (instant == null) {
             return null;
@@ -213,6 +266,12 @@ public class FridgeServiceImpl implements FridgeService {
         return instant.atZone(ZONE_ID_SHANGHAI).format(DATE_TIME_FORMATTER);
     }
 
+    /**
+     * 获取当前登录用户的ID。
+     *
+     * @return 当前用户ID
+     * @throws BusinessException 如果当前用户不存在则抛出异常
+     */
     private Long getCurrentUserId() {
         String username = getUsernameFromToken();
         SysUser user = userRepository.findByUsername(username)
@@ -220,6 +279,12 @@ public class FridgeServiceImpl implements FridgeService {
         return user.getId();
     }
 
+    /**
+     * 从Spring Security上下文中获取当前登录用户名。
+     *
+     * @return 当前用户名
+     * @throws BusinessException 如果未获取到认证信息则抛出异常
+     */
     private static String getUsernameFromToken() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getName() == null) {

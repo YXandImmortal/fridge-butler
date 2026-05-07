@@ -20,12 +20,22 @@ import org.springframework.stereotype.Service;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * 用户服务实现类。
+ * <p>处理用户信息查询、更新、密码修改、头像更新等业务逻辑。</p>
+ */
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
-    // 日期时间格式化常量
+    /**
+     * 上海时区，用于时间格式化。
+     */
     private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
+
+    /**
+     * 日期时间格式化器，格式为 yyyy-MM-dd HH:mm:ss。
+     */
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
@@ -40,20 +50,20 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /**
+     * {@inheritDoc}
+     * <p>从 Security 上下文中获取当前用户名，查询用户及角色信息后组装为 VO 返回。</p>
+     */
     @Override
     public UserInfoVO getUserInfo() {
-        // 从SecurityContextHolder中获取当前用户名
         String username = getUsernameFromToken();
 
-        // 查询用户信息
         SysUser user = userRepository.findByUsername(username)
                 .orElseThrow(BusinessException::userNotFound);
 
-        // 查询角色信息
         SysRole role = roleRepository.findById(user.getRoleId())
                 .orElseThrow(BusinessException::roleNotFound);
 
-        // 构建UserInfoVO
         return UserInfoVO.builder()
                 .username(user.getUsername())
                 .avatar(user.getAvatar())
@@ -65,12 +75,14 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>更新前会校验用户名和手机号是否被其他用户占用。</p>
+     */
     @Override
     public void updateUser(UserUpdateRequest request) {
-        // 从SecurityContextHolder中获取当前用户名
         String currentUsername = getUsernameFromToken();
 
-        // 查询用户信息
         SysUser user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(BusinessException::userNotFound);
 
@@ -94,15 +106,17 @@ public class UserServiceImpl implements UserService {
             });
         }
 
-        // 更新用户信息
         user.setUsername(newUsername);
         user.setMobile(newMobile);
 
-        // 保存更新
         userRepository.save(user);
         log.info("用户信息更新成功，用户名：{}，手机号：{}", newUsername, request.getMobile());
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>修改前会校验验证码、新密码一致性以及原密码正确性。</p>
+     */
     @Override
     public void changePassword(UserChangePasswordRequest request) {
         if (request.getCaptchaId() == null || !captchaManager.verifyCaptcha(request.getCaptchaId(), request.getCaptcha())) {
@@ -117,7 +131,7 @@ public class UserServiceImpl implements UserService {
             throw BusinessException.changePasswordNotMatch();
         }
 
-        SysUser user =  userRepository.findByUsername(username)
+        SysUser user = userRepository.findByUsername(username)
                 .orElseThrow(BusinessException::userNotFound);
 
         if (!passwordEncoder.matches(request.getOriginalPassword(), user.getPassword())) {
@@ -131,6 +145,9 @@ public class UserServiceImpl implements UserService {
         log.info("密码修改成功，用户名：{}", username);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void updateAvatar(UserUpdateAvatarRequest request) {
         String username = getUsernameFromToken();
@@ -141,6 +158,12 @@ public class UserServiceImpl implements UserService {
         log.info("头像修改成功，用户名：{}，新头像Id：{}", username, request.getAvatar());
     }
 
+    /**
+     * 从 Spring Security 上下文中获取当前登录用户名。
+     *
+     * @return 当前用户名
+     * @throws BusinessException 如果未获取到认证信息则抛出异常
+     */
     private static String getUsernameFromToken() {
         String username = null;
         var authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -25,6 +25,11 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    /**
+     * 获取当前登录用户信息
+     *
+     * @return 包含用户详细信息的响应结果
+     */
     @GetMapping("/info")
     public Result<UserInfoVO> getUserInfo() {
         UserInfoVO result = userService.getUserInfo();
@@ -32,6 +37,12 @@ public class UserController {
         return Result.success(result);
     }
 
+    /**
+     * 更新当前登录用户信息
+     *
+     * @param request 用户信息更新请求参数，包含用户名、手机号等可修改字段
+     * @return 更新成功的响应结果
+     */
     @PatchMapping("/update-info")
     public Result<Void> updateUser(@Valid @RequestBody UserUpdateRequest request) {
         userService.updateUser(request);
@@ -39,6 +50,12 @@ public class UserController {
         return Result.success(null);
     }
 
+    /**
+     * 修改当前登录用户密码
+     *
+     * @param request 密码修改请求参数，包含原密码和新密码
+     * @return 密码修改成功的响应结果
+     */
     @PatchMapping("/change-password")
     public Result<Void> changePassword(@Valid @RequestBody UserChangePasswordRequest request) {
         userService.changePassword(request);
@@ -46,6 +63,12 @@ public class UserController {
         return Result.success(null);
     }
 
+    /**
+     * 更新当前登录用户头像
+     *
+     * @param request 头像更新请求参数，包含头像图片的URL或标识
+     * @return 头像更新成功的响应结果
+     */
     @PatchMapping("/update-avatar")
     public Result<Void> updateAvatar(@Valid @RequestBody UserUpdateAvatarRequest request) {
         userService.updateAvatar(request);

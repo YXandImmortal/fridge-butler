@@ -180,6 +180,14 @@ public class SystemController {
         );
     }
 
+    /**
+     * 获取系统信息
+     * <p>
+     * 返回系统的完整信息，包括系统名称、版本、标语、功能特性、侧边栏菜单、更新日志和关于信息。
+     * </p>
+     *
+     * @return 包含系统所有信息的响应结果
+     */
     @GetMapping("/info")
     public Result<SystemInfoVO> getSystemInfo() {
         log.debug("获取系统信息");
