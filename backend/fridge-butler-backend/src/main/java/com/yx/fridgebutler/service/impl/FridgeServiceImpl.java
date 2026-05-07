@@ -62,7 +62,7 @@ public class FridgeServiceImpl implements FridgeService {
         log.info("查询冰箱详情，冰箱ID：{}，用户ID：{}", id, currentUserId);
 
         BizFridge fridge = fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, currentUserId)
-                .orElseThrow(BusinessException::notFound);
+                .orElseThrow(BusinessException::fridgeNotFound);
 
         return convertToDTO(fridge);
     }
@@ -75,7 +75,7 @@ public class FridgeServiceImpl implements FridgeService {
 
         if (fridgeRepository.existsByFridgeNameAndOwnerIdAndIsDeletedFalse(request.getFridgeName(), currentUserId)) {
             log.error("创建冰箱失败，冰箱名称已存在：{}，用户ID：{}", request.getFridgeName(), currentUserId);
-            throw new BusinessException(ResultCode.CREATE_FRIDGE_FAILED_FRIDGE_EXISTS);
+            throw BusinessException.fridgeNameExists();
         }
 
         BizFridge fridge = new BizFridge();
@@ -109,7 +109,7 @@ public class FridgeServiceImpl implements FridgeService {
         if (!fridge.getFridgeName().equals(request.getFridgeName())
                 && fridgeRepository.existsByFridgeNameAndOwnerIdAndIsDeletedFalse(request.getFridgeName(), currentUserId)) {
             log.error("更新冰箱失败，冰箱名称已存在：{}，用户ID：{}", request.getFridgeName(), currentUserId);
-            throw new BusinessException(ResultCode.CREATE_FRIDGE_FAILED_FRIDGE_EXISTS);
+            throw BusinessException.updateFridgeNameExists();
         }
 
         // 如果设置为默认冰箱，取消其他默认冰箱
@@ -181,7 +181,7 @@ public class FridgeServiceImpl implements FridgeService {
             case "name" -> "fridgeName";
             case "totalCapacity" -> "totalCapacity";
             case "createTime" -> "createTime";
-            default -> throw new BusinessException(ResultCode.SORT_FAILED_UNKNOW_SORT_FIELD);
+            default -> throw BusinessException.unknownSortField();
         };
 
         Sort.Direction direction = "asc".equalsIgnoreCase(sortOrder)
@@ -216,7 +216,7 @@ public class FridgeServiceImpl implements FridgeService {
     private Long getCurrentUserId() {
         String username = getUsernameFromToken();
         SysUser user = userRepository.findByUsername(username)
-                .orElseThrow(BusinessException::notFound);
+                .orElseThrow(BusinessException::userNotFound);
         return user.getId();
     }
 

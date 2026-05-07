@@ -47,11 +47,11 @@ public class UserServiceImpl implements UserService {
 
         // 查询用户信息
         SysUser user = userRepository.findByUsername(username)
-                .orElseThrow(BusinessException::notFound);
+                .orElseThrow(BusinessException::userNotFound);
 
         // 查询角色信息
         SysRole role = roleRepository.findById(user.getRoleId())
-                .orElseThrow(BusinessException::notFound);
+                .orElseThrow(BusinessException::roleNotFound);
 
         // 构建UserInfoDTO
         return UserInfoDTO.builder()
@@ -72,14 +72,14 @@ public class UserServiceImpl implements UserService {
 
         // 查询用户信息
         SysUser user = userRepository.findByUsername(currentUsername)
-                .orElseThrow(BusinessException::notFound);
+                .orElseThrow(BusinessException::userNotFound);
 
         // 如果用户名发生变化，校验新用户名是否已被其他用户占用
         String newUsername = request.getUsername();
         if (!currentUsername.equals(newUsername)) {
             userRepository.findByUsername(newUsername).ifPresent(existingUser -> {
                 if (!existingUser.getId().equals(user.getId())) {
-                    throw BusinessException.registerUserExist();
+                    throw BusinessException.updateUserUsernameExist();
                 }
             });
         }
@@ -89,7 +89,7 @@ public class UserServiceImpl implements UserService {
         if (newMobile != null && !newMobile.equals(user.getMobile())) {
             userRepository.findByUsernameOrMobile(newMobile, newMobile).ifPresent(existingUser -> {
                 if (!existingUser.getId().equals(user.getId())) {
-                    throw BusinessException.registerPhoneExist();
+                    throw BusinessException.updateUserPhoneExist();
                 }
             });
         }
@@ -118,7 +118,7 @@ public class UserServiceImpl implements UserService {
         }
 
         SysUser user =  userRepository.findByUsername(username)
-                .orElseThrow(BusinessException::notFound);
+                .orElseThrow(BusinessException::userNotFound);
 
         if (!passwordEncoder.matches(request.getOriginalPassword(), user.getPassword())) {
             log.error("修改密码失败，用户名：{}，原密码错误", username);
@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
     public void updateAvatar(UserUpdateAvatarRequest request) {
         String username = getUsernameFromToken();
         SysUser user = userRepository.findByUsername(username)
-                .orElseThrow(BusinessException::notFound);
+                .orElseThrow(BusinessException::userNotFound);
         user.setAvatar(request.getAvatar());
         userRepository.save(user);
         log.info("头像修改成功，用户名：{}，新头像Id：{}", username, request.getAvatar());

@@ -48,11 +48,31 @@ public enum ResultCode {
     CHANGE_PASSWORD_FAILED_ORIGINAL_WRONG(400, "原密码错误"),
 
     /**
+     * 用户状态码
+     * <p>用户模块使用</p>
+     */
+    USER_NOT_FOUND(404, "用户不存在"),
+    ROLE_NOT_FOUND(404, "角色不存在"),
+    UPDATE_USER_FAILED_USERNAME_EXIST(400, "用户名已被占用"),
+    UPDATE_USER_FAILED_PHONE_EXIST(400, "手机号已被占用"),
+
+    /**
      * 冰箱管理状态码
      * <p>冰箱管理模块使用</p>
      */
+    FRIDGE_NOT_FOUND(404, "冰箱不存在"),
     CREATE_FRIDGE_FAILED_FRIDGE_EXISTS(400, "冰箱已经存在"),
-    SORT_FAILED_UNKNOW_SORT_FIELD(400, "未知排序字段");
+    UPDATE_FRIDGE_FAILED_NAME_EXISTS(400, "冰箱名称已存在"),
+    SORT_FAILED_UNKNOW_SORT_FIELD(400, "未知排序字段"),
+
+    /**
+     * 物品管理状态码
+     * <p>物品管理模块使用</p>
+     */
+    ITEM_NOT_FOUND(404, "物品不存在"),
+    CATEGORY_NOT_FOUND(404, "物品分类不存在"),
+    UNIT_NOT_FOUND(404, "物品单位不存在"),
+    TAKE_OUT_NUM_EXCEED(400, "取出数量不能大于现有数量");
 
     private final Integer code;
     private final String message;
