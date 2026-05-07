@@ -12,6 +12,7 @@ import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.BizFridgeItem;
 import com.yx.fridgebutler.entity.BizItemCategory;
 import com.yx.fridgebutler.entity.BizItemUnit;
+import com.yx.fridgebutler.entity.BizItemTakeOutRecord;
 import com.yx.fridgebutler.entity.BizUnitType;
 import com.yx.fridgebutler.entity.SysUser;
 import com.yx.fridgebutler.enums.ResultCode;
@@ -20,6 +21,7 @@ import com.yx.fridgebutler.repository.BizFridgeItemRepository;
 import com.yx.fridgebutler.repository.BizFridgeRepository;
 import com.yx.fridgebutler.repository.BizItemCategoryRepository;
 import com.yx.fridgebutler.repository.BizItemUnitRepository;
+import com.yx.fridgebutler.repository.BizItemTakeOutRecordRepository;
 import com.yx.fridgebutler.repository.BizUnitTypeRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.service.ItemService;
@@ -65,6 +67,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private BizUnitTypeRepository unitTypeRepository;
+
+    @Autowired
+    private BizItemTakeOutRecordRepository takeOutRecordRepository;
 
     @Override
     public List<ItemCategoryVO> listItemCategories() {
@@ -264,6 +269,19 @@ public class ItemServiceImpl implements ItemService {
 
         item.setUpdateTime(Instant.now());
         itemRepository.save(item);
+
+        // 保存取出记录
+        BizItemTakeOutRecord record = BizItemTakeOutRecord.builder()
+                .itemId(item.getId())
+                .fridgeId(item.getFridgeId())
+                .itemName(item.getItemName())
+                .takeOutNum(request.getTakeOutNum())
+                .remainingNum(remainingNum.compareTo(BigDecimal.ZERO) <= 0 ? BigDecimal.ZERO : remainingNum)
+                .operatorId(currentUserId)
+                .createTime(Instant.now())
+                .build();
+        takeOutRecordRepository.save(record);
+        log.info("保存取出记录成功，记录ID：{}，物品ID：{}" , record.getId(), item.getId());
     }
 
     @Override
