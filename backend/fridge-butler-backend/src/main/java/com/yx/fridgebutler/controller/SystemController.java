@@ -6,6 +6,7 @@ import com.yx.fridgebutler.vo.SidebarFeatureVO;
 import com.yx.fridgebutler.vo.SystemInfoVO;
 import com.yx.fridgebutler.vo.UpdateLogVO;
 import com.yx.fridgebutler.vo.Result;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * 系统信息控制器
+ * <p>
+ * 提供系统基本信息、功能特性、更新日志等静态数据。
+ * </p>
+ */
+@Slf4j
 @RestController
 @RequestMapping("/system")
 public class SystemController {
@@ -114,7 +122,7 @@ public class SystemController {
                         .version("alpha 0.0.7")
                         .date("2026-4-30")
                         .changes(Arrays.asList(
-                                "全面优化“浅色”与“深色”主题，界面更美观",
+                                "全面优化\"浅色\"与\"深色\"主题，界面更美观",
                                 "物品管理功能上线，现在可以浏览与增加物品"
                         ))
                         .build(),
@@ -122,7 +130,7 @@ public class SystemController {
                         .version("alpha 0.0.6")
                         .date("2026-04-20")
                         .changes(Arrays.asList(
-                                "新增系统颜色主题切换功能，预设“浅色”与“深色”主题",
+                                "新增系统颜色主题切换功能，预设\"浅色\"与\"深色\"主题",
                                 "优化冰箱详情页交互体验",
                                 "修复若干已知问题，提升系统稳定性",
                                 "新增关于系统页面，介绍系统信息与功能"
@@ -174,6 +182,7 @@ public class SystemController {
 
     @GetMapping("/info")
     public Result<SystemInfoVO> getSystemInfo() {
+        log.debug("获取系统信息");
         return Result.success(SystemInfoVO.builder()
                 .systemName(SYSTEM_NAME)
                 .systemVersion(SYSTEM_VERSION)

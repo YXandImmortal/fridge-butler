@@ -5,6 +5,7 @@ import com.wf.captcha.base.Captcha;
 import com.yx.fridgebutler.util.CaptchaManager;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
+/**
+ * 验证码控制器
+ */
+@Slf4j
 @RestController
 @RequestMapping("/captcha")
 public class CaptchaController {
@@ -41,13 +46,19 @@ public class CaptchaController {
         
         // 输出验证码图片
         captcha.out(response.getOutputStream());
+
+        log.info("验证码生成成功，验证码ID：{}", captchaId);
     }
 
     @GetMapping("/verify")
     public Result<Boolean> verifyCaptcha(String captchaId, String captcha) {
         // 使用无session方式验证验证码
         boolean result = captchaManager.verifyCaptcha(captchaId, captcha);
+        if (result) {
+            log.info("验证码验证成功，验证码ID：{}", captchaId);
+        } else {
+            log.warn("验证码验证失败，验证码ID：{}", captchaId);
+        }
         return Result.success(result);
     }
-
 }

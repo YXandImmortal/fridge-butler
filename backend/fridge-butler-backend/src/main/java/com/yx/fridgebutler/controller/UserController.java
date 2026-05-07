@@ -11,6 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 用户控制器
+ * <p>
+ * 处理用户信息查询、更新、密码修改、头像更新等操作。
+ * </p>
+ */
 @Slf4j
 @RestController
 @RequestMapping("/user")
@@ -21,24 +27,29 @@ public class UserController {
 
     @GetMapping("/info")
     public Result<UserInfoVO> getUserInfo() {
-        return Result.success(userService.getUserInfo());
+        UserInfoVO result = userService.getUserInfo();
+        log.info("查询用户信息成功，用户名：{}", result.getUsername());
+        return Result.success(result);
     }
 
     @PatchMapping("/update-info")
     public Result<Void> updateUser(@Valid @RequestBody UserUpdateRequest request) {
         userService.updateUser(request);
+        log.info("更新用户信息成功，用户名：{}", request.getUsername());
         return Result.success(null);
     }
 
     @PatchMapping("/change-password")
     public Result<Void> changePassword(@Valid @RequestBody UserChangePasswordRequest request) {
         userService.changePassword(request);
+        log.info("修改密码成功");
         return Result.success(null);
     }
 
     @PatchMapping("/update-avatar")
     public Result<Void> updateAvatar(@Valid @RequestBody UserUpdateAvatarRequest request) {
         userService.updateAvatar(request);
+        log.info("更新头像成功，头像ID：{}", request.getAvatar());
         return Result.success(null);
     }
 }

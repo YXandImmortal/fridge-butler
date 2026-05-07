@@ -3,6 +3,7 @@ package com.yx.fridgebutler.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +19,11 @@ public final class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
+    @Getter
     @Value("${jwt.expiration}")
     private Long expiration;
 
+    @Getter
     @Value("${jwt.remember-me-expiration:2592000000}")
     private Long rememberMeExpiration;
 

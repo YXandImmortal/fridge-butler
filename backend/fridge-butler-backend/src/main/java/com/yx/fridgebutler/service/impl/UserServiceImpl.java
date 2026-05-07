@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
     private CaptchaManager captchaManager;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public UserInfoVO getUserInfo() {
@@ -128,7 +128,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        log.info("密码修改成功，用户名：{}，新密码：{}", username, request.getNewPassword());
+        log.info("密码修改成功，用户名：{}", username);
     }
 
     @Override

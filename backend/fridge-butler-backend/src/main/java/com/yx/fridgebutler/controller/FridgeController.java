@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 冰箱控制器
+ * <p>
+ * 处理冰箱的增删改查等管理操作。
+ * </p>
+ */
 @Slf4j
 @RestController
 @RequestMapping("/fridge")
@@ -26,7 +32,9 @@ public class FridgeController {
      */
     @GetMapping("/list")
     public Result<List<FridgeVO>> listMyFridges() {
-        return Result.success(fridgeService.listMyFridges());
+        List<FridgeVO> result = fridgeService.listMyFridges();
+        log.info("查询冰箱列表成功，数量：{}", result.size());
+        return Result.success(result);
     }
 
     /**
@@ -34,7 +42,9 @@ public class FridgeController {
      */
     @GetMapping("/detail/{id}")
     public Result<FridgeVO> getFridgeDetail(@PathVariable Long id) {
-        return Result.success(fridgeService.getFridgeDetail(id));
+        FridgeVO result = fridgeService.getFridgeDetail(id);
+        log.info("查询冰箱详情成功，冰箱ID：{}，名称：{}", id, result.getFridgeName());
+        return Result.success(result);
     }
 
     /**
@@ -43,6 +53,7 @@ public class FridgeController {
     @PostMapping("/create")
     public Result<Long> createFridge(@Valid @RequestBody FridgeCreateRequest request) {
         Long fridgeId = fridgeService.createFridge(request);
+        log.info("创建冰箱成功，冰箱ID：{}，名称：{}", fridgeId, request.getFridgeName());
         return Result.success(fridgeId);
     }
 
@@ -52,6 +63,7 @@ public class FridgeController {
     @PatchMapping("/update/{id}")
     public Result<Void> updateFridge(@PathVariable Long id, @Valid @RequestBody FridgeUpdateRequest request) {
         fridgeService.updateFridge(id, request);
+        log.info("更新冰箱成功，冰箱ID：{}，名称：{}", id, request.getFridgeName());
         return Result.success(null);
     }
 
@@ -61,6 +73,7 @@ public class FridgeController {
     @DeleteMapping("/delete/{id}")
     public Result<Void> deleteFridge(@PathVariable Long id) {
         fridgeService.deleteFridge(id);
+        log.info("删除冰箱成功，冰箱ID：{}", id);
         return Result.success(null);
     }
 
@@ -78,7 +91,9 @@ public class FridgeController {
      */
     @PostMapping("/search")
     public Result<List<FridgeVO>> searchFridges(@Valid @RequestBody FridgeSearchRequest request) {
-        return Result.success(fridgeService.searchFridges(request));
+        List<FridgeVO> result = fridgeService.searchFridges(request);
+        log.info("搜索冰箱成功，关键词：{}，结果数量：{}", request.getKeyword(), result.size());
+        return Result.success(result);
     }
 
     /**
@@ -86,6 +101,12 @@ public class FridgeController {
      */
     @GetMapping("/default")
     public Result<FridgeVO> getDefaultFridge() {
-        return Result.success(fridgeService.getDefaultFridge());
+        FridgeVO result = fridgeService.getDefaultFridge();
+        if (result != null) {
+            log.info("查询默认冰箱成功，冰箱ID：{}，名称：{}", result.getId(), result.getFridgeName());
+        } else {
+            log.info("查询默认冰箱成功，用户未设置默认冰箱");
+        }
+        return Result.success(result);
     }
 }

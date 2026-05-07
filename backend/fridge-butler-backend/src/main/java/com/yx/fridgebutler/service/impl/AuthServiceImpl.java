@@ -15,7 +15,6 @@ import com.yx.fridgebutler.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -46,12 +45,6 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Value("${jwt.expiration}")
-    private Long expiration;
-
-    @Value("${jwt.remember-me-expiration:2592000000}")
-    private Long rememberMeExpiration;
-
     @Override
     public LoginVO login(LoginRequest request, HttpServletRequest httpRequest) {
         log.info("用户登录请求，账号：{}", request.getAccount());
@@ -72,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
                 });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            log.error("登陆失败，账号：{}密码：{}错误", request.getAccount(), request.getPassword());
+            log.error("登陆失败，账号：{}密码错误", request.getAccount());
             throw BusinessException.loginAuthFailed();
         }
 
@@ -97,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("用户{}（手机号：{}）登录成功，记住我：{}，生成token（部分脱敏）：{}",
                 user.getUsername(), user.getMobile(), rememberMe, token.substring(0, 10) + "****");
 
-        Long expireTime = System.currentTimeMillis() + (rememberMe ? rememberMeExpiration : expiration);
+        Long expireTime = System.currentTimeMillis() + (rememberMe ? jwtUtil.getRememberMeExpiration() : jwtUtil.getExpiration());
         return LoginVO.builder()
                 .token(token)
                 .username(user.getUsername())
