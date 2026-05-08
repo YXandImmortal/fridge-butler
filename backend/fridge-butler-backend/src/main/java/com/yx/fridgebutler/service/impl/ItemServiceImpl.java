@@ -1,6 +1,8 @@
 package com.yx.fridgebutler.service.impl;
 
 import com.yx.fridgebutler.vo.ItemCategoryVO;
+import com.yx.fridgebutler.dto.ItemCategoryCreateRequest;
+import com.yx.fridgebutler.dto.ItemCategoryUpdateRequest;
 import com.yx.fridgebutler.dto.ItemCreateRequest;
 import com.yx.fridgebutler.vo.ItemVO;
 import com.yx.fridgebutler.dto.ItemSearchRequest;
@@ -12,15 +14,18 @@ import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.BizFridgeItem;
 import com.yx.fridgebutler.entity.BizItemCategory;
 import com.yx.fridgebutler.entity.BizItemUnit;
+import com.yx.fridgebutler.entity.BizItemAddRecord;
+import com.yx.fridgebutler.entity.BizItemChangeRecord;
 import com.yx.fridgebutler.entity.BizItemTakeOutRecord;
 import com.yx.fridgebutler.entity.BizUnitType;
 import com.yx.fridgebutler.entity.SysUser;
-import com.yx.fridgebutler.enums.ResultCode;
 import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.BizFridgeItemRepository;
 import com.yx.fridgebutler.repository.BizFridgeRepository;
 import com.yx.fridgebutler.repository.BizItemCategoryRepository;
 import com.yx.fridgebutler.repository.BizItemUnitRepository;
+import com.yx.fridgebutler.repository.BizItemAddRecordRepository;
+import com.yx.fridgebutler.repository.BizItemChangeRecordRepository;
 import com.yx.fridgebutler.repository.BizItemTakeOutRecordRepository;
 import com.yx.fridgebutler.repository.BizUnitTypeRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
@@ -77,6 +82,12 @@ public class ItemServiceImpl implements ItemService {
     @Autowired
     private BizItemTakeOutRecordRepository takeOutRecordRepository;
 
+    @Autowired
+    private BizItemAddRecordRepository addRecordRepository;
+
+    @Autowired
+    private BizItemChangeRecordRepository changeRecordRepository;
+
     /**
      * {@inheritDoc}
      * <p>
@@ -96,6 +107,120 @@ public class ItemServiceImpl implements ItemService {
                         .isSystemDefault(c.getIsSystemDefault())
                         .build())
                 .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 查询指定用户可用的分类详情，只能查看系统默认分类或自己创建的分类。
+     */
+    @Override
+    public ItemCategoryVO getItemCategory(Long id) {
+        Long currentUserId = getCurrentUserId();
+        log.info("查询物品分类详情，分类ID：{}，用户ID：{}", id, currentUserId);
+
+        BizItemCategory category = categoryRepository.findById(id)
+                .orElseThrow(BusinessException::categoryNotFound);
+
+        if (Boolean.TRUE.equals(category.getIsDeleted())) {
+            throw BusinessException.categoryNotFound();
+        }
+
+        // 只能查看系统默认分类或自己创建的分类
+        if (Boolean.FALSE.equals(category.getIsSystemDefault()) && !category.getOwnerId().equals(currentUserId)) {
+            throw BusinessException.categoryNotFound();
+        }
+
+        return ItemCategoryVO.builder()
+                .id(category.getId())
+                .categoryName(category.getCategoryName())
+                .isSystemDefault(category.getIsSystemDefault())
+                .build();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 创建用户自定义分类，同一用户下分类名称不能重复。
+     */
+    @Override
+    public Long createItemCategory(ItemCategoryCreateRequest request) {
+        Long currentUserId = getCurrentUserId();
+        log.info("创建物品分类，用户ID：{}，分类名称：{}", currentUserId, request.getCategoryName());
+
+        // 校验同一用户下是否已存在相同名称的未删除分类
+        if (categoryRepository.existsByCategoryNameAndOwnerIdAndIsDeletedFalse(request.getCategoryName(), currentUserId)) {
+            throw BusinessException.categoryNameExists();
+        }
+
+        BizItemCategory category = new BizItemCategory();
+        category.setCategoryName(request.getCategoryName());
+        category.setOwnerId(currentUserId);
+        category.setIsSystemDefault(false);
+        category.setIsDeleted(false);
+        Instant now = Instant.now();
+        category.setCreateTime(now);
+        category.setUpdateTime(now);
+
+        BizItemCategory saved = categoryRepository.save(category);
+        return saved.getId();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 只能更新自己创建的自定义分类，系统默认分类不允许编辑。
+     */
+    @Override
+    public void updateItemCategory(ItemCategoryUpdateRequest request) {
+        Long currentUserId = getCurrentUserId();
+        log.info("更新物品分类，用户ID：{}，分类ID：{}", currentUserId, request.getId());
+
+        BizItemCategory category = categoryRepository.findByIdAndOwnerIdAndIsDeletedFalse(request.getId(), currentUserId)
+                .orElseThrow(BusinessException::categoryNotFound);
+
+        if (Boolean.TRUE.equals(category.getIsSystemDefault())) {
+            throw BusinessException.categoryNotEditable();
+        }
+
+        // 校验新名称是否与该用户下的其他分类重名
+        if (!category.getCategoryName().equals(request.getCategoryName()) &&
+                categoryRepository.existsByCategoryNameAndOwnerIdAndIsDeletedFalse(request.getCategoryName(), currentUserId)) {
+            throw BusinessException.categoryNameExists();
+        }
+
+        category.setCategoryName(request.getCategoryName());
+        category.setUpdateTime(Instant.now());
+        categoryRepository.save(category);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 只能删除自己创建的自定义分类，若分类下仍存在物品则不允许删除。
+     */
+    @Override
+    @Transactional
+    public void deleteItemCategory(Long id) {
+        Long currentUserId = getCurrentUserId();
+        log.info("删除物品分类，分类ID：{}，用户ID：{}", id, currentUserId);
+
+        BizItemCategory category = categoryRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, currentUserId)
+                .orElseThrow(BusinessException::categoryNotFound);
+
+        if (Boolean.TRUE.equals(category.getIsSystemDefault())) {
+            throw BusinessException.categoryNotEditable();
+        }
+
+        // 检查该分类下是否还有未删除的物品
+        long itemCount = itemRepository.countByCategoryIdAndIsDeletedFalse(id);
+        if (itemCount > 0) {
+            throw BusinessException.categoryInUse();
+        }
+
+        category.setIsDeleted(true);
+        category.setUpdateTime(Instant.now());
+        categoryRepository.save(category);
     }
 
     /**
@@ -194,6 +319,20 @@ public class ItemServiceImpl implements ItemService {
         item.setUpdateTime(now);
 
         BizFridgeItem saved = itemRepository.save(item);
+
+        // 保存添加记录
+        BizItemAddRecord addRecord = BizItemAddRecord.builder()
+                .itemId(saved.getId())
+                .fridgeId(saved.getFridgeId())
+                .itemName(saved.getItemName())
+                .addNum(saved.getItemNum())
+                .remainingNum(saved.getItemNum())
+                .operatorId(currentUserId)
+                .createTime(Instant.now())
+                .build();
+        addRecordRepository.save(addRecord);
+        log.info("保存添加记录成功，记录ID：{}，物品ID：{}", addRecord.getId(), saved.getId());
+
         return saved.getId();
     }
 
@@ -230,6 +369,20 @@ public class ItemServiceImpl implements ItemService {
                     .orElseThrow(BusinessException::unitNotFound);
         }
 
+        // 记录变更前的值，用于生成变更记录
+        Long itemId = item.getId();
+        Long fridgeId = item.getFridgeId();
+        Instant now = Instant.now();
+
+        saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_NAME", "item_name", item.getItemName(), request.getItemName());
+        saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_UNIT", "item_unit_id", item.getItemUnitId(), request.getItemUnitId());
+        saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_STORED_DATE", "stored_date", item.getStoredDate(), request.getStoredDate());
+        saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_PRODUCTION_DATE", "production_date", item.getProductionDate(), request.getProductionDate());
+        saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_SHELF_LIFE", "shelf_life_days", item.getShelfLifeDays(), request.getShelfLifeDays());
+        saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_CATEGORY", "category_id", item.getCategoryId(), request.getCategoryId());
+        saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_NUM", "item_num", item.getItemNum(), request.getItemNum());
+        saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_REMARK", "remark", item.getRemark(), request.getRemark());
+
         item.setItemName(request.getItemName());
         item.setItemUnitId(request.getItemUnitId());
         item.setStoredDate(request.getStoredDate());
@@ -238,7 +391,7 @@ public class ItemServiceImpl implements ItemService {
         item.setCategoryId(request.getCategoryId());
         item.setItemNum(request.getItemNum());
         item.setRemark(request.getRemark());
-        item.setUpdateTime(Instant.now());
+        item.setUpdateTime(now);
 
         itemRepository.save(item);
     }
@@ -475,6 +628,38 @@ public class ItemServiceImpl implements ItemService {
                 .createTime(formatInstant(item.getCreateTime()))
                 .updateTime(formatInstant(item.getUpdateTime()))
                 .build();
+    }
+
+    /**
+     * 如果字段值发生变化，则保存变更记录。
+     *
+     * @param itemId     物品ID
+     * @param fridgeId   冰箱ID
+     * @param operatorId 操作人ID
+     * @param changeType 变更类型
+     * @param fieldName  变更字段名
+     * @param oldValue   变更前值
+     * @param newValue   变更后值
+     */
+    private void saveChangeRecordIfDifferent(Long itemId, Long fridgeId, Long operatorId,
+                                             String changeType, String fieldName,
+                                             Object oldValue, Object newValue) {
+        String oldStr = oldValue == null ? null : oldValue.toString();
+        String newStr = newValue == null ? null : newValue.toString();
+        if (!Objects.equals(oldStr, newStr)) {
+            BizItemChangeRecord record = BizItemChangeRecord.builder()
+                    .itemId(itemId)
+                    .fridgeId(fridgeId)
+                    .changeType(changeType)
+                    .fieldName(fieldName)
+                    .oldValue(oldStr)
+                    .newValue(newStr)
+                    .operatorId(operatorId)
+                    .createTime(Instant.now())
+                    .build();
+            changeRecordRepository.save(record);
+            log.info("保存变更记录成功，物品ID：{}，字段：{}，旧值：{}，新值：{}", itemId, fieldName, oldStr, newStr);
+        }
     }
 
     /**

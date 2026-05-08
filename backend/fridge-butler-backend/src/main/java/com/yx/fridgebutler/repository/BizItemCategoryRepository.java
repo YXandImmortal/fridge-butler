@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 物品分类数据访问层。
@@ -23,4 +24,22 @@ public interface BizItemCategoryRepository extends JpaRepository<BizItemCategory
      */
     @Query("SELECT c FROM BizItemCategory c WHERE c.isDeleted = false AND (c.isSystemDefault = true OR c.ownerId = :ownerId)")
     List<BizItemCategory> findAllByOwnerIdOrSystemDefault(@Param("ownerId") Long ownerId);
+
+    /**
+     * 根据分类ID、所有者ID查询未删除的分类。
+     *
+     * @param id      分类ID
+     * @param ownerId 所有者ID
+     * @return 符合条件的分类
+     */
+    Optional<BizItemCategory> findByIdAndOwnerIdAndIsDeletedFalse(Long id, Long ownerId);
+
+    /**
+     * 检查指定用户下是否已存在相同名称且未删除的分类。
+     *
+     * @param categoryName 分类名称
+     * @param ownerId      所有者ID
+     * @return 若存在则返回true
+     */
+    boolean existsByCategoryNameAndOwnerIdAndIsDeletedFalse(String categoryName, Long ownerId);
 }

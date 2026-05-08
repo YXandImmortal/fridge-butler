@@ -79,7 +79,10 @@ public enum ResultCode {
     ITEM_NOT_FOUND(404, "物品不存在"),
     CATEGORY_NOT_FOUND(404, "物品分类不存在"),
     UNIT_NOT_FOUND(404, "物品单位不存在"),
-    TAKE_OUT_NUM_EXCEED(400, "取出数量不能大于现有数量");
+    TAKE_OUT_NUM_EXCEED(400, "取出数量不能大于现有数量"),
+    CATEGORY_NAME_EXISTS(400, "分类名称已存在"),
+    CATEGORY_NOT_EDITABLE(403, "系统默认分类不允许编辑"),
+    CATEGORY_IN_USE(400, "该分类下存在物品，无法删除");
 
     /**
      * 状态码数值

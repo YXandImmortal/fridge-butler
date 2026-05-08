@@ -1,6 +1,8 @@
 package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.vo.ItemCategoryVO;
+import com.yx.fridgebutler.dto.ItemCategoryCreateRequest;
+import com.yx.fridgebutler.dto.ItemCategoryUpdateRequest;
 import com.yx.fridgebutler.dto.ItemCreateRequest;
 import com.yx.fridgebutler.vo.ItemVO;
 import com.yx.fridgebutler.dto.ItemSearchRequest;
@@ -65,6 +67,46 @@ public class ItemController {
         List<ItemCategoryVO> result = itemService.listItemCategories();
         log.info("查询物品分类列表成功，数量：{}", result.size());
         return Result.success(result);
+    }
+
+    /**
+     * 查询物品分类详情
+     */
+    @GetMapping("/category/detail/{id}")
+    public Result<ItemCategoryVO> getItemCategory(@PathVariable Long id) {
+        ItemCategoryVO result = itemService.getItemCategory(id);
+        log.info("查询物品分类详情成功，分类ID：{}，名称：{}", id, result.getCategoryName());
+        return Result.success(result);
+    }
+
+    /**
+     * 创建物品分类（用户自定义）
+     */
+    @PostMapping("/category/create")
+    public Result<Long> createItemCategory(@Valid @RequestBody ItemCategoryCreateRequest request) {
+        Long categoryId = itemService.createItemCategory(request);
+        log.info("创建物品分类成功，分类ID：{}，名称：{}", categoryId, request.getCategoryName());
+        return Result.success(categoryId);
+    }
+
+    /**
+     * 更新物品分类（用户自定义）
+     */
+    @PostMapping("/category/update")
+    public Result<Void> updateItemCategory(@Valid @RequestBody ItemCategoryUpdateRequest request) {
+        itemService.updateItemCategory(request);
+        log.info("更新物品分类成功，分类ID：{}，名称：{}", request.getId(), request.getCategoryName());
+        return Result.success(null);
+    }
+
+    /**
+     * 删除物品分类（用户自定义，软删除）
+     */
+    @DeleteMapping("/category/delete/{id}")
+    public Result<Void> deleteItemCategory(@PathVariable Long id) {
+        itemService.deleteItemCategory(id);
+        log.info("删除物品分类成功，分类ID：{}", id);
+        return Result.success(null);
     }
 
     /**

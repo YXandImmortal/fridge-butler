@@ -95,4 +95,12 @@ public interface BizFridgeItemRepository extends JpaRepository<BizFridgeItem, Lo
             @Param("unitTypeId") Long unitTypeId,
             Sort sort
     );
+
+    /**
+     * 根据分类ID统计未删除的物品数量。
+     *
+     * @param categoryId 分类ID
+     * @return 该分类下未删除的物品数量
+     */
+    long countByCategoryIdAndIsDeletedFalse(Long categoryId);
 }

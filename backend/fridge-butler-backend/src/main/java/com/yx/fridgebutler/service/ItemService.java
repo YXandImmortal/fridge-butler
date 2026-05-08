@@ -1,6 +1,8 @@
 package com.yx.fridgebutler.service;
 
 import com.yx.fridgebutler.vo.ItemCategoryVO;
+import com.yx.fridgebutler.dto.ItemCategoryCreateRequest;
+import com.yx.fridgebutler.dto.ItemCategoryUpdateRequest;
 import com.yx.fridgebutler.dto.ItemCreateRequest;
 import com.yx.fridgebutler.vo.ItemVO;
 import com.yx.fridgebutler.dto.ItemSearchRequest;
@@ -46,6 +48,36 @@ public interface ItemService {
      * @return 物品分类列表
      */
     List<ItemCategoryVO> listItemCategories();
+
+    /**
+     * 查询物品分类详情。
+     *
+     * @param id 分类ID
+     * @return 物品分类详情
+     */
+    ItemCategoryVO getItemCategory(Long id);
+
+    /**
+     * 创建物品分类（用户自定义）。
+     *
+     * @param request 分类创建请求参数
+     * @return 新创建分类的ID
+     */
+    Long createItemCategory(ItemCategoryCreateRequest request);
+
+    /**
+     * 更新物品分类（用户自定义）。
+     *
+     * @param request 分类更新请求参数
+     */
+    void updateItemCategory(ItemCategoryUpdateRequest request);
+
+    /**
+     * 删除物品分类（用户自定义，软删除）。
+     *
+     * @param id 分类ID
+     */
+    void deleteItemCategory(Long id);
 
     /**
      * 查询物品单位列表（系统默认 + 当前用户自定义）。

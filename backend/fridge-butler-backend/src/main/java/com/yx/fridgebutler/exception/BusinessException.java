@@ -289,4 +289,31 @@ public class BusinessException extends RuntimeException {
         return new BusinessException(ResultCode.TAKE_OUT_NUM_EXCEED);
     }
 
+    /**
+     * 创建分类名称已存在异常
+     *
+     * @return 分类名称已存在业务异常
+     */
+    public static BusinessException categoryNameExists() {
+        return new BusinessException(ResultCode.CATEGORY_NAME_EXISTS);
+    }
+
+    /**
+     * 创建分类不可编辑异常（系统默认分类）
+     *
+     * @return 系统默认分类不允许编辑业务异常
+     */
+    public static BusinessException categoryNotEditable() {
+        return new BusinessException(ResultCode.CATEGORY_NOT_EDITABLE);
+    }
+
+    /**
+     * 创建分类正在使用中异常
+     *
+     * @return 该分类下存在物品，无法删除业务异常
+     */
+    public static BusinessException categoryInUse() {
+        return new BusinessException(ResultCode.CATEGORY_IN_USE);
+    }
+
 }
