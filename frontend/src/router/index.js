@@ -1,13 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import UserIndexView from "@/views/user/UserIndexView.vue";
-import SuperAdminIndex from "@/views/super-admin/SuperAdminIndex.vue";
-import UserCenterView from "@/views/user/UserCenterView.vue";
-import FridgeListView from "@/views/fridge/FridgeListView.vue";
-import FridgeDetailView from "@/views/fridge/FridgeDetailView.vue";
-import FridgeCreateView from "@/views/fridge/FridgeCreateView.vue";
-import ItemManageView from "@/views/fridge/ItemManageView.vue";
-import AboutView from "@/views/AboutView.vue";
+import { MainLayout } from '@/layouts'
+
+const UserIndexView = () => import('@/views/user/UserIndexView.vue')
+const SuperAdminIndex = () => import('@/views/super-admin/SuperAdminIndex.vue')
+const UserCenterView = () => import('@/views/user/UserCenterView.vue')
+const FridgeListView = () => import('@/views/fridge/FridgeListView.vue')
+const FridgeDetailView = () => import('@/views/fridge/FridgeDetailView.vue')
+const FridgeCreateView = () => import('@/views/fridge/FridgeCreateView.vue')
+const ItemManageView = () => import('@/views/fridge/ItemManageView.vue')
+const AboutView = () => import('@/views/AboutView.vue')
 
 const LoginView = () => import('@/views/LoginView.vue')
 const RegisterView = () => import('@/views/RegisterView.vue')
@@ -19,14 +21,20 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: '/',
+      redirect: { name: 'login' }
+    },
+    // 用户端路由（使用主布局）
+    {
       path: '/user',
+      component: MainLayout,
+      meta: { requiresAuth: true },
       children: [
         {
           path: 'index',
           name: 'user-index',
           component: UserIndexView,
           meta: {
-            requiresAuth: true,
             roles: [USER_PERMISSION]
           }
         },
@@ -35,7 +43,6 @@ const router = createRouter({
           name: 'user-center',
           component: UserCenterView,
           meta: {
-            requiresAuth: true,
             roles: [USER_PERMISSION]
           }
         },
@@ -44,21 +51,22 @@ const router = createRouter({
           name: 'user-about',
           component: AboutView,
           meta: {
-            requiresAuth: true,
             roles: [USER_PERMISSION]
           }
         }
       ]
     },
+    // 冰箱管理路由（使用主布局）
     {
       path: '/fridge',
+      component: MainLayout,
+      meta: { requiresAuth: true },
       children: [
         {
           path: 'list',
           name: 'fridge-list',
           component: FridgeListView,
           meta: {
-            requiresAuth: true,
             roles: [USER_PERMISSION]
           }
         },
@@ -67,7 +75,6 @@ const router = createRouter({
           name: 'fridge-create',
           component: FridgeCreateView,
           meta: {
-            requiresAuth: true,
             roles: [USER_PERMISSION]
           }
         },
@@ -76,7 +83,6 @@ const router = createRouter({
           name: 'fridge-detail',
           component: FridgeDetailView,
           meta: {
-            requiresAuth: true,
             roles: [USER_PERMISSION]
           }
         },
@@ -85,21 +91,28 @@ const router = createRouter({
           name: 'fridge-items',
           component: ItemManageView,
           meta: {
-            requiresAuth: true,
             roles: [USER_PERMISSION]
           }
         }
       ]
     },
+    // 超级管理员路由（使用主布局）
     {
-      path: '/super-admin/index',
-      name: 'super-admin-index',
-      component: SuperAdminIndex,
-      meta: {
-        requiresAuth: true,
-        roles: [SUPER_ADMIN_PERMISSION] // 超级管理员 roleId=1
-      }
+      path: '/super-admin',
+      component: MainLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'index',
+          name: 'super-admin-index',
+          component: SuperAdminIndex,
+          meta: {
+            roles: [SUPER_ADMIN_PERMISSION]
+          }
+        }
+      ]
     },
+    // 公开路由（不使用主布局）
     {
       path: '/login',
       name: 'login',
@@ -110,15 +123,27 @@ const router = createRouter({
       name: 'register',
       component: RegisterView
     },
+    // 错误页面路由
     {
-      path: '/',
-      redirect: { name: 'login' }
+      path: '/403',
+      name: 'forbidden',
+      component: () => import('@/views/error/ForbiddenView.vue')
     },
-    // 404路由
+    {
+      path: '/500',
+      name: 'server-error',
+      component: () => import('@/views/error/ServerErrorView.vue')
+    },
+    {
+      path: '/503',
+      name: 'service-unavailable',
+      component: () => import('@/views/error/ServiceUnavailableView.vue')
+    },
+    // 404路由（放在最后）
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
-      component: () => import('@/views/NotFoundView.vue')
+      component: () => import('@/views/error/NotFoundView.vue')
     }
   ]
 })
@@ -128,8 +153,10 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   const userStore = useUserStore()
 
-  // 检查路由是否需要认证
-  if (to.meta?.requiresAuth) {
+  // 检查路由是否需要认证（包括父路由）
+  const requiresAuth = to.matched.some(record => record.meta?.requiresAuth)
+
+  if (requiresAuth) {
     // 用户未登录，重定向到登录页
     if (!userStore.isLoggedIn) {
       return {
@@ -139,9 +166,10 @@ router.beforeEach((to, from) => {
     }
 
     // 检查用户角色权限
-    if (to.meta?.roles && to.meta.roles.length > 0) {
+    const requiredRoles = to.meta?.roles
+    if (requiredRoles && requiredRoles.length > 0) {
       const userRoleId = userStore.roleId
-      if (!to.meta.roles.includes(userRoleId)) {
+      if (!requiredRoles.includes(userRoleId)) {
         // 权限不足，根据用户角色重定向到对应首页
         if (userRoleId === 1) {
           return { name: 'super-admin-index' }

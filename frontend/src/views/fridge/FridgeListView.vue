@@ -1,110 +1,83 @@
 <template>
-  <div class="index-container">
-    <!-- 头部组件 -->
-    <Header @show-logout-dialog="showLogoutDialog = true" />
-
-    <!-- 主体内容区域 -->
-    <div class="main-content-wrapper">
-      <!-- 左侧导航栏 -->
-      <Sidebar />
-
-      <!-- 主内容区域 -->
-      <main class="main-content">
-        <div class="fridge-list-container">
-          <!-- 页面标题栏 -->
-          <div class="page-header">
-            <h2 class="page-title">我的冰箱</h2>
-            <CustomButton type="primary" @click="handleCreate" class="create-btn">
-              新建冰箱
-            </CustomButton>
-          </div>
-
-          <!-- 搜索栏 -->
-          <SearchBar
-            v-model="searchForm.keyword"
-            placeholder="请输入搜索内容"
-            @search="handleSearch"
-            @clear="handleSearch"
-            class="search-bar"
-          >
-            <SortControl
-              v-model:field="searchForm.sortField"
-              v-model:order="searchForm.sortOrder"
-              :field-options="sortFieldOptions"
-              @change="handleSearch"
-            />
-          </SearchBar>
-
-          <!-- 冰箱列表 -->
-          <div v-loading="loading" class="fridge-list-wrapper">
-            <!-- 空状态 -->
-            <el-empty
-              v-if="!loading && fridgeList.length === 0"
-              description="暂无冰箱，快去创建一个吧"
-            >
-              <CustomButton type="primary" @click="handleCreate">立即创建</CustomButton>
-            </el-empty>
-
-            <!-- 卡片列表 -->
-            <div v-else class="fridge-grid">
-              <div
-                v-for="fridge in fridgeList"
-                :key="fridge.id"
-                class="fridge-card"
-                :class="{ 'fridge-card--default': fridge.isDefault }"
-                @click="handleViewDetail(fridge.id)"
-              >
-                <div v-if="fridge.isDefault" class="default-badge">
-                  <i class="iconfont icon-star-fill" />
-                  默认冰箱
-                </div>
-                <div class="card-header">
-                  <div class="fridge-icon">
-                    <i class="iconfont icon-fridge-line" />
-                  </div>
-                  <div class="fridge-basic-info">
-                    <h3 class="fridge-name">{{ fridge.fridgeName }}</h3>
-                    <p class="fridge-desc">{{ fridge.remark || '暂无描述' }}</p>
-                  </div>
-                </div>
-
-                <div class="fridge-meta">
-                  <span v-if="fridge.itemCount !== undefined" class="meta-item">
-                    <i class="iconfont icon-item" />
-                    {{ fridge.itemCount }} 件物品
-                  </span>
-                </div>
-                <div class="fridge-meta">
-                  <span class="meta-item">
-                    <i class="iconfont icon-calendar" />
-                    {{ formatDate(fridge.createTime) }}
-                  </span>
-                  <span v-if="fridge.totalCapacity === null" class="meta-item">
-                    未设置容量
-                  </span>
-                  <span v-else class="meta-item">
-                    容量 {{fridge.totalCapacity}} L
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
+  <div class="fridge-list-container">
+    <!-- 页面标题栏 -->
+    <div class="page-header">
+      <h2 class="page-title">我的冰箱</h2>
+      <CustomButton type="primary" @click="handleCreate" class="create-btn">
+        新建冰箱
+      </CustomButton>
     </div>
 
-    <!-- 底部版权信息 -->
-    <CopyrightFooter />
+    <!-- 搜索栏 -->
+    <SearchBar
+      v-model="searchForm.keyword"
+      placeholder="请输入搜索内容"
+      @search="handleSearch"
+      @clear="handleSearch"
+      class="search-bar"
+    >
+      <SortControl
+        v-model:field="searchForm.sortField"
+        v-model:order="searchForm.sortOrder"
+        :field-options="sortFieldOptions"
+        @change="handleSearch"
+      />
+    </SearchBar>
 
-    <!-- 登出确认对话框 -->
-    <ConfirmDialog
-      v-model:visible="showLogoutDialog"
-      title="退出登录"
-      message="您确定要退出登录吗？"
-      confirm-text="确定"
-      cancel-text="取消"
-      @confirm="handleLogout"
-    />
+    <!-- 冰箱列表 -->
+    <div v-loading="loading" class="fridge-list-wrapper">
+      <!-- 空状态 -->
+      <el-empty
+        v-if="!loading && fridgeList.length === 0"
+        description="暂无冰箱，快去创建一个吧"
+      >
+        <CustomButton type="primary" @click="handleCreate">立即创建</CustomButton>
+      </el-empty>
+
+      <!-- 卡片列表 -->
+      <div v-else class="fridge-grid">
+        <div
+          v-for="fridge in fridgeList"
+          :key="fridge.id"
+          class="fridge-card"
+          :class="{ 'fridge-card--default': fridge.isDefault }"
+          @click="handleViewDetail(fridge.id)"
+        >
+          <div v-if="fridge.isDefault" class="default-badge">
+            <i class="iconfont icon-star-fill" />
+            默认冰箱
+          </div>
+          <div class="card-header">
+            <div class="fridge-icon">
+              <i class="iconfont icon-fridge-line" />
+            </div>
+            <div class="fridge-basic-info">
+              <h3 class="fridge-name">{{ fridge.fridgeName }}</h3>
+              <p class="fridge-desc">{{ fridge.remark || '暂无描述' }}</p>
+            </div>
+          </div>
+
+          <div class="fridge-meta">
+            <span v-if="fridge.itemCount !== undefined" class="meta-item">
+              <i class="iconfont icon-item" />
+              {{ fridge.itemCount }} 件物品
+            </span>
+          </div>
+          <div class="fridge-meta">
+            <span class="meta-item">
+              <i class="iconfont icon-calendar" />
+              {{ formatDate(fridge.createTime) }}
+            </span>
+            <span v-if="fridge.totalCapacity === null" class="meta-item">
+              未设置容量
+            </span>
+            <span v-else class="meta-item">
+              容量 {{ fridge.totalCapacity }} L
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- 删除确认对话框 -->
     <ConfirmDialog
@@ -119,22 +92,16 @@
 </template>
 
 <script setup>
-import {computed, onMounted, reactive, ref} from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import Header from '@/components/Header.vue'
-import Sidebar from '@/components/Sidebar.vue'
-import CopyrightFooter from '@/components/CopyrightFooter.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
-import { useUserStore } from '@/stores/user'
-import {listMyFridges, deleteFridge, searchFridges} from '@/api/fridge'
+import { listMyFridges, deleteFridge, searchFridges } from '@/api/fridge'
 import CustomButton from "@/components/CustomButton.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import SortControl from "@/components/SortControl.vue";
 
 const router = useRouter()
-const userStore = useUserStore()
-const { logout } = userStore
 
 // 加载状态
 const loading = ref(false)
@@ -162,7 +129,6 @@ const sortOrderOptions = [
 ]
 
 // 对话框控制
-const showLogoutDialog = ref(false)
 const showDeleteDialog = ref(false)
 const selectedFridge = ref(null)
 
@@ -247,14 +213,6 @@ const confirmDelete = async () => {
   }
 }
 
-// 处理退出登录
-const handleLogout = () => {
-  logout()
-  showLogoutDialog.value = false
-  router.push('/login')
-  showMessage.info('已退出登录')
-}
-
 // 格式化日期
 const formatDate = (dateStr) => {
   if (!dateStr) return '-'
@@ -273,27 +231,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.index-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content-wrapper {
-  margin-top: var(--header-height);
-  flex: 1;
-}
-
-.main-content {
-  margin-left: var(--sidebar-width);
-  transition: all 0.3s ease;
-  max-height: calc(100vh - var(--header-height) - var(--footer-height));
-  min-height: calc(100vh - var(--header-height) - var(--footer-height));
-  background: var(--main-content-bg);
-  padding: var(--space-5);
-  overflow-y: auto;
-}
-
 .fridge-list-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -476,11 +413,6 @@ onMounted(() => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .main-content {
-    margin-left: var(--sidebar-width-md);
-    padding: var(--space-4);
-  }
-
   .page-title {
     font-size: 22px;
   }
@@ -492,11 +424,6 @@ onMounted(() => {
 
 /* 小屏幕适配 */
 @media (max-width: 480px) {
-  .main-content {
-    margin-left: 0;
-    padding: var(--space-3);
-  }
-
   .page-header {
     flex-direction: column;
     gap: 12px;

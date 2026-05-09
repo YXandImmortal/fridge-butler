@@ -1,130 +1,100 @@
 <template>
-  <div class="index-container">
-    <!-- 头部组件 -->
-    <Header
-        @show-logout-dialog="showLogoutDialog = true"
-        ref="headerRef"
-    />
-
-    <!-- 主体内容区域 -->
-    <div class="main-content-wrapper">
-      <!-- 左侧导航栏 -->
-      <Sidebar/>
-
-      <!-- 主内容区域 -->
-      <main class="main-content">
-        <div class="profile-container">
-          <div class="profile-card">
-            <h2 class="profile-title">个人中心</h2>
-            <div class="profile-avatar">
-              <div class="avatar-wrapper" @click="handleChangeAvatar">
-                <Avatar size="x-large" :avatar-id="userForm.avatar"/>
-                <div class="avatar-edit-icon">
-                  <i class="iconfont icon-edit"></i>
-                </div>
-              </div>
-            </div>
-            <el-form :model="userForm" label-position="top" class="profile-form">
-              <el-form-item label="用户名">
-                <EnhancedInput v-model="userForm.username" placeholder="请输入用户名" icon="icon-contact" />
-              </el-form-item>
-
-              <el-form-item label="手机号">
-                <EnhancedInput v-model="userForm.mobile" placeholder="请输入手机号" icon="icon-device-phone" />
-              </el-form-item>
-
-              <el-form-item label="注册时间">
-                <EnhancedInput v-model="userForm.createTime" disabled icon="icon-calendar" />
-              </el-form-item>
-
-              <el-form-item label="角色">
-                <EnhancedInput v-model="userForm.roleName" disabled icon="icon-user" />
-              </el-form-item>
-            </el-form>
-
-            <div class="profile-actions">
-              <CustomButton type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">保存修改</CustomButton>
-              <CustomButton @click="handleChangePassword">修改密码</CustomButton>
-              <CustomButton type="danger" @click="showLogoutDialog = true">退出登录</CustomButton>
-            </div>
+  <div class="profile-container">
+    <div class="profile-card">
+      <h2 class="profile-title">个人中心</h2>
+      <div class="profile-avatar">
+        <div class="avatar-wrapper" @click="handleChangeAvatar">
+          <Avatar size="x-large" :avatar-id="userForm.avatar"/>
+          <div class="avatar-edit-icon">
+            <i class="iconfont icon-edit"></i>
           </div>
+        </div>
+      </div>
+      <el-form :model="userForm" label-position="top" class="profile-form">
+        <el-form-item label="用户名">
+          <EnhancedInput v-model="userForm.username" placeholder="请输入用户名" icon="icon-contact" />
+        </el-form-item>
 
-          <!-- 编辑信息区域 -->
-          <Transition name="slide-left">
-            <div class="edit-card" v-show="showEditCard">
-              <div class="edit-content">
-                <!-- 编辑内容将根据编辑类型动态显示 -->
-                <Transition name="switch">
-                  <div v-if="editType === 'password'">
-                    <h2 class="edit-title">修改密码</h2>
-                    <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-position="top" class="profile-form edit-form">
-                      <el-form-item label="原密码" prop="originalPassword">
-                        <EnhancedInput type="password" v-model="passwordForm.originalPassword" placeholder="请输入原密码" icon="icon-lock" />
-                      </el-form-item>
-                      <el-form-item label="新密码" prop="newPassword">
-                        <EnhancedInput type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码" icon="icon-lock" />
-                      </el-form-item>
-                      <el-form-item label="确认新密码" prop="confirmNewPassword">
-                        <EnhancedInput type="password" v-model="passwordForm.confirmNewPassword" placeholder="请确认新密码" icon="icon-lock" />
-                      </el-form-item>
-                      <el-form-item label="验证码" prop="captcha">
-                        <CaptchaInput
-                            v-model="passwordForm.captcha"
-                            ref="captchaInputRef"
-                            :height="40"
-                            input-width="150px"
-                        />
-                      </el-form-item>
-                    </el-form>
+        <el-form-item label="手机号">
+          <EnhancedInput v-model="userForm.mobile" placeholder="请输入手机号" icon="icon-device-phone" />
+        </el-form-item>
+
+        <el-form-item label="注册时间">
+          <EnhancedInput v-model="userForm.createTime" disabled icon="icon-calendar" />
+        </el-form-item>
+
+        <el-form-item label="角色">
+          <EnhancedInput v-model="userForm.roleName" disabled icon="icon-user" />
+        </el-form-item>
+      </el-form>
+
+      <div class="profile-actions">
+        <CustomButton type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">保存修改</CustomButton>
+        <CustomButton @click="handleChangePassword">修改密码</CustomButton>
+        <CustomButton type="danger" @click="handleLogout">退出登录</CustomButton>
+      </div>
+    </div>
+
+    <!-- 编辑信息区域 -->
+    <Transition name="slide-left">
+      <div class="edit-card" v-show="showEditCard">
+        <div class="edit-content">
+          <!-- 编辑内容将根据编辑类型动态显示 -->
+          <Transition name="switch">
+            <div v-if="editType === 'password'">
+              <h2 class="edit-title">修改密码</h2>
+              <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-position="top" class="profile-form edit-form">
+                <el-form-item label="原密码" prop="originalPassword">
+                  <EnhancedInput type="password" v-model="passwordForm.originalPassword" placeholder="请输入原密码" icon="icon-lock" />
+                </el-form-item>
+                <el-form-item label="新密码" prop="newPassword">
+                  <EnhancedInput type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码" icon="icon-lock" />
+                </el-form-item>
+                <el-form-item label="确认新密码" prop="confirmNewPassword">
+                  <EnhancedInput type="password" v-model="passwordForm.confirmNewPassword" placeholder="请确认新密码" icon="icon-lock" />
+                </el-form-item>
+                <el-form-item label="验证码" prop="captcha">
+                  <CaptchaInput
+                      v-model="passwordForm.captcha"
+                      ref="captchaInputRef"
+                      :height="40"
+                      input-width="150px"
+                  />
+                </el-form-item>
+              </el-form>
+            </div>
+            <div v-else-if="editType === 'avatar'">
+              <h2 class="edit-title">选择头像</h2>
+              <div class="avatar-upload-section">
+                <Avatar size="x-large" :avatar-id="selectedAvatar"/>
+                <div class="avatar-grid">
+                  <div
+                    v-for="avatarId in systemAvatars"
+                    :key="avatarId"
+                    class="avatar-item"
+                    :class="{ 'selected': selectedAvatar === avatarId }"
+                    @click="handleSelectAvatar(avatarId)"
+                  >
+                    <Avatar size="large" :avatar-id="avatarId"/>
                   </div>
-                  <div v-else-if="editType === 'avatar'">
-                    <h2 class="edit-title">选择头像</h2>
-                    <div class="avatar-upload-section">
-                      <Avatar size="x-large" :avatar-id="selectedAvatar"/>
-                      <div class="avatar-grid">
-                        <div
-                          v-for="avatarId in systemAvatars"
-                          :key="avatarId"
-                          class="avatar-item"
-                          :class="{ 'selected': selectedAvatar === avatarId }"
-                          @click="handleSelectAvatar(avatarId)"
-                        >
-                          <Avatar size="large" :avatar-id="avatarId"/>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Transition>
-              </div>
-              <div class="edit-actions">
-                <CustomButton
-                  type="primary"
-                  @click="editType === 'password' ? handleChangePasswordSubmit() : handleChangeAvatarSubmit()"
-                  :loading="editType === 'password' ? loadingChangePassword : loadingChangeAvatar"
-                  loading-text="修改中..."
-                >
-                  确认
-                </CustomButton>
-                <CustomButton @click="showEditCard = false" type="danger">取消</CustomButton>
+                </div>
               </div>
             </div>
           </Transition>
         </div>
-      </main>
-    </div>
-
-    <!-- 底部版权信息 -->
-    <CopyrightFooter/>
-
-    <!-- 登出确认对话框 -->
-    <ConfirmDialog
-        v-model:visible="showLogoutDialog"
-        title="退出登录"
-        message="您确定要退出登录吗？"
-        confirm-text="确定"
-        cancel-text="取消"
-        @confirm="handleLogout('已退出登录')"
-    />
+        <div class="edit-actions">
+          <CustomButton
+            type="primary"
+            @click="editType === 'password' ? handleChangePasswordSubmit() : handleChangeAvatarSubmit()"
+            :loading="editType === 'password' ? loadingChangePassword : loadingChangeAvatar"
+            loading-text="修改中..."
+          >
+            确认
+          </CustomButton>
+          <CustomButton @click="showEditCard = false" type="danger">取消</CustomButton>
+        </div>
+      </div>
+    </Transition>
 
     <!-- 确认保存修改对话框 -->
     <ConfirmDialog
@@ -139,28 +109,20 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
-import Header from '@/components/Header.vue';
-import Sidebar from '@/components/Sidebar.vue';
-import CopyrightFooter from '@/components/CopyrightFooter.vue';
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import showMessage from '@/utils/message'
-import {useSystemStore} from '@/stores/system';
-import {useUserStore} from '@/stores/user';
-import router from "@/router/index.js";
+import { useUserStore } from '@/stores/user';
 import Avatar from "@/components/Avatar.vue";
 import EnhancedInput from "@/components/EnhancedInput.vue";
 import CaptchaInput from "@/components/CaptchaInput.vue";
-import {getSystemAvatarIds} from '@/utils/avatarManager';
+import { getSystemAvatarIds } from '@/utils/avatarManager';
 import CustomButton from "@/components/CustomButton.vue";
 
-const systemStore = useSystemStore();
+const router = useRouter()
 const userStore = useUserStore();
-const {getSystemInfo} = systemStore;
-const {logout, getUserInfo, updateUserInfo, changePassword, updateUserAvatar} = userStore;
-
-// 控制登出确认对话框显示/隐藏
-const showLogoutDialog = ref(false);
+const { getUserInfo, updateUserInfo, changePassword, updateUserAvatar, logout } = userStore;
 
 const showConfirmSave = ref(false);
 
@@ -224,9 +186,8 @@ const userForm = ref({
   avatar: ''
 });
 
-// 初始化系统信息和用户信息
+// 初始化用户信息
 onMounted(async () => {
-  await getSystemInfo();
   const userInfo = await getUserInfo();
   if (userInfo) {
     userForm.value = {
@@ -367,34 +328,13 @@ const handleChangeAvatarSubmit = async () => {
 // 处理退出登录
 const handleLogout = (msg) => {
   logout();
-  showLogoutDialog.value = false;
   showConfirmSave.value = false;
   router.push('/login');
-  showMessage.info(msg)
+  showMessage.info(msg || '已退出登录')
 };
 </script>
 
 <style scoped>
-.index-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content-wrapper {
-  margin-top: var(--header-height);
-}
-
-.main-content {
-  margin-left: var(--sidebar-width);
-  transition: all 0.3s ease;
-  max-height: calc(100vh - var(--header-height) - var(--footer-height));
-  min-height: calc(100vh - var(--header-height) - var(--footer-height));
-  background: var(--main-content-bg);
-  padding: var(--space-5);
-  overflow-y: auto;
-}
-
 .profile-container {
   width: 100%;
   display: flex;
@@ -675,11 +615,6 @@ const handleLogout = (msg) => {
 }
 
 @media (max-width: 768px) {
-  .main-content {
-    margin-left: var(--sidebar-width-md);
-    padding: var(--space-4);
-  }
-
   .profile-card,
   .edit-card {
     padding: 32px 24px;
@@ -706,11 +641,6 @@ const handleLogout = (msg) => {
 
 /* 小屏幕适配 */
 @media (max-width: 480px) {
-  .main-content {
-    margin-left: 0;
-    padding: var(--space-3);
-  }
-
   .profile-card {
     padding: 24px 16px;
     max-width: 95%;

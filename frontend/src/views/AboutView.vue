@@ -1,157 +1,84 @@
 <template>
-  <div class="index-container">
-    <!-- 头部组件 -->
-    <Header @show-logout-dialog="showLogoutDialog = true" />
-
-    <!-- 主体内容区域 -->
-    <div class="main-content-wrapper">
-      <!-- 左侧导航栏 -->
-      <Sidebar />
-
-      <!-- 主内容区域 -->
-      <main class="main-content">
-        <div class="about-container">
-          <!-- 顶部系统信息卡片 -->
-          <div class="about-hero-card">
-            <div class="about-logo">
-              <div class="logo-icon">
-                <Logo />
-              </div>
-            </div>
-            <h1 class="about-title">{{ systemName || '冰箱管理系统' }}</h1>
-            <p class="about-version">当前版本：{{ systemVersion || 'v1.0.0' }}</p>
-            <p class="about-slogan">
-              {{ slogan || '智能管理冰箱食材，让新鲜触手可及' }}
-            </p>
-          </div>
-
-          <!-- 功能特性区域 -->
-          <div class="about-section">
-            <h2 class="section-title">
-              <i class="iconfont icon-bookmark" />
-              核心功能
-            </h2>
-            <div class="feature-grid">
-              <div class="feature-card" v-for="(feature, index) in features" :key="index">
-                <div class="feature-icon">
-                  <i :class="['iconfont', feature.icon]" />
-                </div>
-                <h3 class="feature-title">{{ feature.title }}</h3>
-                <p class="feature-desc">{{ feature.description }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 更新日志 -->
-          <div class="about-section">
-            <h2 class="section-title">
-              <i class="iconfont icon-calendar-check" />
-              最近更新
-            </h2>
-            <div class="update-card">
-              <div class="update-item" v-for="update in updates" :key="update.version">
-                <div class="update-header">
-                  <span class="update-version">{{ update.version }}</span>
-                  <span class="update-date">{{ update.date }}</span>
-                </div>
-                <ul class="update-list">
-                  <li v-for="(item, idx) in update.changes" :key="idx">{{ item }}</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- 技术支持与版权 -->
-          <div class="about-section">
-            <h2 class="section-title">
-              <i class="iconfont icon-info-box" />
-              关于我们
-            </h2>
-            <div class="info-card">
-              <div class="info-row" v-for="(item, index) in about" :key="index">
-                <span class="info-label">{{ item.label }}</span>
-                <span class="info-value">{{ item.value }}</span>
-              </div>
-            </div>
-          </div>
+  <div class="about-container">
+    <!-- 顶部系统信息卡片 -->
+    <div class="about-hero-card">
+      <div class="about-logo">
+        <div class="logo-icon">
+          <Logo />
         </div>
-      </main>
+      </div>
+      <h1 class="about-title">{{ systemName || '冰箱管理系统' }}</h1>
+      <p class="about-version">当前版本：{{ systemVersion || 'v1.0.0' }}</p>
+      <p class="about-slogan">
+        {{ slogan || '智能管理冰箱食材，让新鲜触手可及' }}
+      </p>
     </div>
 
-    <!-- 底部版权信息 -->
-    <CopyrightFooter />
+    <!-- 功能特性区域 -->
+    <div class="about-section">
+      <h2 class="section-title">
+        <i class="iconfont icon-bookmark" />
+        核心功能
+      </h2>
+      <div class="feature-grid">
+        <div class="feature-card" v-for="(feature, index) in features" :key="index">
+          <div class="feature-icon">
+            <i :class="['iconfont', feature.icon]" />
+          </div>
+          <h3 class="feature-title">{{ feature.title }}</h3>
+          <p class="feature-desc">{{ feature.description }}</p>
+        </div>
+      </div>
+    </div>
 
-    <!-- 登出确认对话框 -->
-    <ConfirmDialog
-      v-model:visible="showLogoutDialog"
-      title="退出登录"
-      message="您确定要退出登录吗？"
-      confirm-text="确定"
-      cancel-text="取消"
-      @confirm="handleLogout"
-    />
+    <!-- 更新日志 -->
+    <div class="about-section">
+      <h2 class="section-title">
+        <i class="iconfont icon-calendar-check" />
+        最近更新
+      </h2>
+      <div class="update-card">
+        <div class="update-item" v-for="update in updates" :key="update.version">
+          <div class="update-header">
+            <span class="update-version">{{ update.version }}</span>
+            <span class="update-date">{{ update.date }}</span>
+          </div>
+          <ul class="update-list">
+            <li v-for="(item, idx) in update.changes" :key="idx">{{ item }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 技术支持与版权 -->
+    <div class="about-section">
+      <h2 class="section-title">
+        <i class="iconfont icon-info-box" />
+        关于我们
+      </h2>
+      <div class="info-card">
+        <div class="info-row" v-for="(item, index) in about" :key="index">
+          <span class="info-label">{{ item.label }}</span>
+          <span class="info-value">{{ item.value }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import Header from '@/components/Header.vue'
-import Sidebar from '@/components/Sidebar.vue'
-import CopyrightFooter from '@/components/CopyrightFooter.vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import showMessage from '@/utils/message'
+import { computed } from 'vue'
 import { useSystemStore } from '@/stores/system'
-import { useUserStore } from '@/stores/user'
-import Logo from "@/components/Logo.vue";
+import Logo from '@/components/Logo.vue'
 
-const router = useRouter()
 const systemStore = useSystemStore()
-const userStore = useUserStore()
-const { systemName, systemVersion, slogan, features, updates, about, getSystemInfo } = systemStore
-const { logout } = userStore
-
-// 控制登出确认对话框显示/隐藏
-const showLogoutDialog = ref(false)
+const { systemName, systemVersion, slogan, features, updates, about } = systemStore
 
 // 当前年份
 const currentYear = computed(() => new Date().getFullYear())
-
-// 初始化系统信息
-onMounted(async () => {
-  await getSystemInfo()
-})
-
-// 处理退出登录
-const handleLogout = () => {
-  logout()
-  showLogoutDialog.value = false
-  router.push('/login')
-  showMessage.info('已退出登录')
-}
 </script>
 
 <style scoped>
-.index-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content-wrapper {
-  margin-top: var(--header-height);
-}
-
-.main-content {
-  margin-left: var(--sidebar-width);
-  transition: all 0.3s ease;
-  max-height: calc(100vh - var(--header-height) - var(--footer-height));
-  height: 100%;
-  background: var(--main-content-bg);
-  padding: var(--space-5);
-  overflow-y: auto;
-}
-
 .about-container {
   max-width: 960px;
   margin: 0 auto;
@@ -401,11 +328,6 @@ const handleLogout = () => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .main-content {
-    margin-left: var(--sidebar-width-md);
-    padding: var(--space-4);
-  }
-
   .about-hero-card {
     padding: 36px 24px;
   }
@@ -430,11 +352,6 @@ const handleLogout = () => {
 
 /* 小屏幕适配 */
 @media (max-width: 480px) {
-  .main-content {
-    margin-left: 0;
-    padding: var(--space-3);
-  }
-
   .about-container {
     gap: 24px;
   }

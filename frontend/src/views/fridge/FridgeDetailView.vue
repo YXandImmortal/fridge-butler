@@ -1,121 +1,94 @@
 <template>
-  <div class="index-container">
-    <!-- 头部组件 -->
-    <Header @show-logout-dialog="showLogoutDialog = true" />
-
-    <!-- 主体内容区域 -->
-    <div class="main-content-wrapper">
-      <!-- 左侧导航栏 -->
-      <Sidebar />
-
-      <!-- 主内容区域 -->
-      <main class="main-content">
-        <div class="fridge-detail-container">
-          <!-- 返回按钮 -->
-          <div class="back-bar">
-            <CustomButton type="link" @click="handleBack">
-              <i class="iconfont icon-arrow-left" />
-              返回列表
-            </CustomButton>
-            <CustomButton type="link" @click="openSelectFridgeDialog">
-              <i class="iconfont icon-switch" />
-              切换冰箱
-            </CustomButton>
-          </div>
-
-          <!-- 加载状态 -->
-          <div v-if="loading" class="loading-wrapper">
-            <el-skeleton :rows="6" animated />
-          </div>
-
-          <!-- 详情内容 -->
-          <div v-else-if="fridgeForm" class="detail-card">
-            <div class="detail-header">
-              <div class="detail-icon">
-                <i class="iconfont icon-fridge-line" />
-              </div>
-              <div class="detail-info">
-                <h2 class="detail-name">{{ fridgeForm.fridgeName }}</h2>
-                <p class="detail-desc">{{ fridgeForm.remark || '暂无描述' }}</p>
-              </div>
-              <div class="item-management-wrapper">
-                <CustomButton class="item-management" @click="handleItemManage">
-                  <div class="item-management-inner">
-                    <i class="iconfont icon-inbox-full" />
-                    <span>物品管理</span>
-                  </div>
-                </CustomButton>
-              </div>
-              <div class="detail-actions">
-                <CustomButton type="primary" :loading="saving" @click="handleSave">
-                  保存信息
-                </CustomButton>
-                <CustomButton type="danger" @click="handleDelete">
-                  删除冰箱
-                </CustomButton>
-              </div>
-            </div>
-
-            <el-divider/>
-
-            <el-form :model="fridgeForm" label-width="100px" class="detail-form">
-
-              <!-- 可编辑字段 -->
-              <el-form-item label="冰箱名称" required>
-                <EnhancedInput v-model="fridgeForm.fridgeName" placeholder="请输入冰箱名称" maxlength="30" show-word-limit />
-              </el-form-item>
-
-              <el-form-item label="默认冰箱" required>
-                <el-switch v-model="fridgeForm.isDefault" active-text="是" inactive-text="否" />
-              </el-form-item>
-
-              <el-form-item label="冰箱地址">
-                <EnhancedInput v-model="fridgeForm.fridgeAddress" placeholder="请输入冰箱地址" maxlength="200" show-word-limit />
-              </el-form-item>
-
-              <el-form-item label="总容量">
-                <el-input-number v-model="fridgeForm.totalCapacity" :min="0" :precision="0" placeholder="请输入总容量（L）" style="width: 100%;" />
-              </el-form-item>
-
-              <el-form-item label="状态">
-                <el-switch v-model="fridgeForm.status" :active-value="true" :inactive-value="false" active-text="启用" inactive-text="停用" />
-              </el-form-item>
-
-              <el-form-item label="备注">
-                <EnhancedInput v-model="fridgeForm.remark" type="textarea" :rows="3" placeholder="请输入备注" maxlength="200" show-word-limit />
-              </el-form-item>
-
-              <!-- 不可编辑字段 -->
-              <el-form-item label="物品数量">
-                <EnhancedInput :model-value="fridgeForm.itemCount + ' 件'" disabled />
-              </el-form-item>
-              <el-form-item label="创建时间">
-                <EnhancedInput :model-value="formatDateTime(fridgeForm.createTime)" disabled />
-              </el-form-item>
-              <el-form-item label="更新时间">
-                <EnhancedInput :model-value="formatDateTime(fridgeForm.updateTime)" disabled />
-              </el-form-item>
-            </el-form>
-          </div>
-
-          <!-- 未找到 -->
-          <el-empty v-else description="冰箱不存在或已被删除" />
-        </div>
-      </main>
+  <div class="fridge-detail-container">
+    <!-- 返回按钮 -->
+    <div class="back-bar">
+      <CustomButton type="link" @click="handleBack">
+        <i class="iconfont icon-arrow-left" />
+        返回列表
+      </CustomButton>
+      <CustomButton type="link" @click="openSelectFridgeDialog">
+        <i class="iconfont icon-switch" />
+        切换冰箱
+      </CustomButton>
     </div>
 
-    <!-- 底部版权信息 -->
-    <CopyrightFooter />
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-wrapper">
+      <el-skeleton :rows="6" animated />
+    </div>
 
-    <!-- 登出确认对话框 -->
-    <ConfirmDialog
-      v-model:visible="showLogoutDialog"
-      title="退出登录"
-      message="您确定要退出登录吗？"
-      confirm-text="确定"
-      cancel-text="取消"
-      @confirm="handleLogout"
-    />
+    <!-- 详情内容 -->
+    <div v-else-if="fridgeForm" class="detail-card">
+      <div class="detail-header">
+        <div class="detail-icon">
+          <i class="iconfont icon-fridge-line" />
+        </div>
+        <div class="detail-info">
+          <h2 class="detail-name">{{ fridgeForm.fridgeName }}</h2>
+          <p class="detail-desc">{{ fridgeForm.remark || '暂无描述' }}</p>
+        </div>
+        <div class="item-management-wrapper">
+          <CustomButton class="item-management" @click="handleItemManage">
+            <div class="item-management-inner">
+              <i class="iconfont icon-inbox-full" />
+              <span>物品管理</span>
+            </div>
+          </CustomButton>
+        </div>
+        <div class="detail-actions">
+          <CustomButton type="primary" :loading="saving" @click="handleSave">
+            保存信息
+          </CustomButton>
+          <CustomButton type="danger" @click="handleDelete">
+            删除冰箱
+          </CustomButton>
+        </div>
+      </div>
+
+      <el-divider/>
+
+      <el-form :model="fridgeForm" label-width="100px" class="detail-form">
+
+        <!-- 可编辑字段 -->
+        <el-form-item label="冰箱名称" required>
+          <EnhancedInput v-model="fridgeForm.fridgeName" placeholder="请输入冰箱名称" maxlength="30" show-word-limit />
+        </el-form-item>
+
+        <el-form-item label="默认冰箱" required>
+          <el-switch v-model="fridgeForm.isDefault" active-text="是" inactive-text="否" />
+        </el-form-item>
+
+        <el-form-item label="冰箱地址">
+          <EnhancedInput v-model="fridgeForm.fridgeAddress" placeholder="请输入冰箱地址" maxlength="200" show-word-limit />
+        </el-form-item>
+
+        <el-form-item label="总容量">
+          <el-input-number v-model="fridgeForm.totalCapacity" :min="0" :precision="0" placeholder="请输入总容量（L）" style="width: 100%;" />
+        </el-form-item>
+
+        <el-form-item label="状态">
+          <el-switch v-model="fridgeForm.status" :active-value="true" :inactive-value="false" active-text="启用" inactive-text="停用" />
+        </el-form-item>
+
+        <el-form-item label="备注">
+          <EnhancedInput v-model="fridgeForm.remark" type="textarea" :rows="3" placeholder="请输入备注" maxlength="200" show-word-limit />
+        </el-form-item>
+
+        <!-- 不可编辑字段 -->
+        <el-form-item label="物品数量">
+          <EnhancedInput :model-value="fridgeForm.itemCount + ' 件'" disabled />
+        </el-form-item>
+        <el-form-item label="创建时间">
+          <EnhancedInput :model-value="formatDateTime(fridgeForm.createTime)" disabled />
+        </el-form-item>
+        <el-form-item label="更新时间">
+          <EnhancedInput :model-value="formatDateTime(fridgeForm.updateTime)" disabled />
+        </el-form-item>
+      </el-form>
+    </div>
+
+    <!-- 未找到 -->
+    <el-empty v-else description="冰箱不存在或已被删除" />
 
     <!-- 删除确认对话框 -->
     <ConfirmDialog
@@ -153,20 +126,14 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Header from '@/components/Header.vue'
-import Sidebar from '@/components/Sidebar.vue'
-import CopyrightFooter from '@/components/CopyrightFooter.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
-import { useUserStore } from '@/stores/user'
 import { getFridgeDetail, deleteFridge, listMyFridges, updateFridge, getDefaultFridge } from '@/api/fridge'
 import CustomButton from "@/components/CustomButton.vue";
 import EnhancedInput from "@/components/EnhancedInput.vue";
 
 const route = useRoute()
 const router = useRouter()
-const userStore = useUserStore()
-const { logout } = userStore
 
 // 冰箱数据
 const fridge = ref(null)
@@ -175,7 +142,6 @@ const loading = ref(false)
 const saving = ref(false)
 
 // 对话框
-const showLogoutDialog = ref(false)
 const showDeleteDialog = ref(false)
 const showSelectFridgeDialog = ref(false)
 
@@ -339,14 +305,6 @@ const confirmDelete = async () => {
   }
 }
 
-// 处理退出登录
-const handleLogout = () => {
-  logout()
-  showLogoutDialog.value = false
-  router.push('/login')
-  showMessage.info('已退出登录')
-}
-
 // 格式化日期时间
 const formatDateTime = (dateStr) => {
   if (!dateStr) return '-'
@@ -377,26 +335,6 @@ watch(
 </script>
 
 <style scoped>
-.index-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content-wrapper {
-  margin-top: var(--header-height);
-}
-
-.main-content {
-  margin-left: var(--sidebar-width);
-  transition: all 0.3s ease;
-  max-height: calc(100vh - var(--header-height) - var(--footer-height));
-  min-height: calc(100vh - var(--header-height) - var(--footer-height));
-  background: var(--main-content-bg);
-  padding: var(--space-5);
-  overflow-y: auto;
-}
-
 .fridge-detail-container {
   max-width: 600px;
   margin: 0 auto;
@@ -582,11 +520,6 @@ watch(
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .main-content {
-    margin-left: var(--sidebar-width-md);
-    padding: var(--space-4);
-  }
-
   .detail-header {
     flex-direction: column;
     align-items: flex-start;
@@ -634,11 +567,6 @@ watch(
 
 /* 小屏幕适配 */
 @media (max-width: 480px) {
-  .main-content {
-    margin-left: 0;
-    padding: var(--space-3);
-  }
-
   .detail-card {
     padding: 20px;
   }

@@ -1,121 +1,87 @@
 <template>
-  <div class="index-container">
-    <!-- 头部组件 -->
-    <Header @show-logout-dialog="showLogoutDialog = true" />
+  <div class="fridge-create-page">
+    <div class="fridge-create-container">
+      <!-- 返回按钮 -->
+      <div class="back-bar">
+        <CustomButton type="link" @click="handleBack">
+          <i class="iconfont icon-arrow-left" />
+          返回列表
+        </CustomButton>
+      </div>
 
-    <!-- 主体内容区域 -->
-    <div class="main-content-wrapper">
-      <!-- 左侧导航栏 -->
-      <Sidebar />
+      <div class="create-card">
+        <h2 class="create-title">新建冰箱</h2>
 
-      <!-- 主内容区域 -->
-      <main class="main-content">
-        <div class="fridge-create-container">
-          <!-- 返回按钮 -->
-          <div class="back-bar">
-            <CustomButton type="link" @click="handleBack">
-              <i class="iconfont icon-arrow-left" />
-              返回列表
-            </CustomButton>
-          </div>
+        <el-form
+          ref="formRef"
+          :model="form"
+          :rules="rules"
+          label-position="top"
+          class="create-form"
+        >
+          <el-form-item label="冰箱名称" prop="name">
+            <EnhancedInput
+              v-model="form.name"
+              placeholder="请输入冰箱名称，如：家用冰箱、办公室冰箱"
+              maxlength="50"
+              show-word-limit
+              icon="icon-refrigerator"
+            />
+          </el-form-item>
 
-          <div class="create-card">
-            <h2 class="create-title">新建冰箱</h2>
+          <el-form-item label="冰箱描述" prop="description">
+            <EnhancedInput
+              v-model="form.description"
+              type="textarea"
+              :rows="4"
+              placeholder="请输入冰箱描述（选填）"
+              maxlength="200"
+              show-word-limit
+            />
+          </el-form-item>
 
-            <el-form
-              ref="formRef"
-              :model="form"
-              :rules="rules"
-              label-position="top"
-              class="create-form"
-            >
-              <el-form-item label="冰箱名称" prop="name">
-                <EnhancedInput
-                  v-model="form.name"
-                  placeholder="请输入冰箱名称，如：家用冰箱、办公室冰箱"
-                  maxlength="50"
-                  show-word-limit
-                  icon="icon-refrigerator"
-                />
-              </el-form-item>
+          <el-form-item label="地址" prop="address">
+            <EnhancedInput
+              v-model="form.address"
+              placeholder="请输入冰箱地址（选填）"
+              maxlength="100"
+              show-word-limit
+              icon="icon-location"
+            />
+          </el-form-item>
+        </el-form>
 
-              <el-form-item label="冰箱描述" prop="description">
-                <EnhancedInput
-                  v-model="form.description"
-                  type="textarea"
-                  :rows="4"
-                  placeholder="请输入冰箱描述（选填）"
-                  maxlength="200"
-                  show-word-limit
-                />
-              </el-form-item>
-
-              <el-form-item label="地址" prop="address">
-                <EnhancedInput
-                  v-model="form.address"
-                  placeholder="请输入冰箱地址（选填）"
-                  maxlength="100"
-                  show-word-limit
-                  icon="icon-location"
-                />
-              </el-form-item>
-            </el-form>
-
-            <div class="form-actions">
-              <CustomButton
-                type="primary"
-                size="large"
-                :loading="submitting"
-                @click="handleSubmit"
-              >
-                {{ submitting ? '创建中...' : '创建冰箱' }}
-              </CustomButton>
-              <CustomButton size="large" @click="handleBack" type="danger">取消</CustomButton>
-            </div>
-          </div>
+        <div class="form-actions">
+          <CustomButton
+            type="primary"
+            size="large"
+            :loading="submitting"
+            @click="handleSubmit"
+          >
+            {{ submitting ? '创建中...' : '创建冰箱' }}
+          </CustomButton>
+          <CustomButton size="large" @click="handleBack" type="danger">取消</CustomButton>
         </div>
-      </main>
+      </div>
     </div>
-
-    <!-- 底部版权信息 -->
-    <CopyrightFooter />
-
-    <!-- 登出确认对话框 -->
-    <ConfirmDialog
-      v-model:visible="showLogoutDialog"
-      title="退出登录"
-      message="您确定要退出登录吗？"
-      confirm-text="确定"
-      cancel-text="取消"
-      @confirm="handleLogout"
-    />
   </div>
 </template>
 
 <script setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import Header from '@/components/Header.vue'
-import Sidebar from '@/components/Sidebar.vue'
-import CopyrightFooter from '@/components/CopyrightFooter.vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
-import { useUserStore } from '@/stores/user'
 import { createFridge } from '@/api/fridge'
 import EnhancedInput from "@/components/EnhancedInput.vue";
+import CustomButton from "@/components/CustomButton.vue";
 
 const router = useRouter()
-const userStore = useUserStore()
-const { logout } = userStore
 
 // 表单引用
 const formRef = ref(null)
 
 // 提交状态
 const submitting = ref(false)
-
-// 对话框
-const showLogoutDialog = ref(false)
 
 // 表单数据
 const form = reactive({
@@ -177,37 +143,14 @@ const handleSubmit = async () => {
 const handleBack = () => {
   router.push('/fridge/list')
 }
-
-// 处理退出登录
-const handleLogout = () => {
-  logout()
-  showLogoutDialog.value = false
-  router.push('/login')
-  showMessage.info('已退出登录')
-}
 </script>
 
 <style scoped>
-.index-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content-wrapper {
-  margin-top: var(--header-height);
-}
-
-.main-content {
-  margin-left: var(--sidebar-width);
-  transition: all 0.3s ease;
-  max-height: calc(100vh - var(--header-height) - var(--footer-height));
-  min-height: calc(100vh - var(--header-height) - var(--footer-height));
-  background: var(--main-content-bg);
-  padding: var(--space-5);
+.fridge-create-page {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 100%;
 }
 
 .fridge-create-container {
@@ -306,11 +249,6 @@ const handleLogout = () => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .main-content {
-    margin-left: var(--sidebar-width-md);
-    padding: var(--space-4);
-  }
-
   .create-card {
     padding: 32px 24px;
   }
@@ -323,11 +261,6 @@ const handleLogout = () => {
 
 /* 小屏幕适配 */
 @media (max-width: 480px) {
-  .main-content {
-    margin-left: 0;
-    padding: var(--space-3);
-  }
-
   .create-card {
     padding: 24px 16px;
   }

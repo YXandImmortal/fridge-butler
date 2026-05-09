@@ -69,7 +69,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useSystemStore } from '@/stores/system'
 import showMessage from '@/utils/message'
-import AuthLayout from "@/components/auth/AuthLayout.vue"
+import AuthLayout from "@/layouts/AuthLayout.vue"
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
 import EnhancedInput from "@/components/EnhancedInput.vue"
 import CaptchaInput from "@/components/CaptchaInput.vue"

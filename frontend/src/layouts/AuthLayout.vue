@@ -18,9 +18,9 @@
 
 <script setup>
 import { defineProps } from 'vue'
-import AuthHeader from './AuthHeader.vue'
-import CopyrightFooter from '../CopyrightFooter.vue'
-import ThemeToggle from '../ThemeToggle.vue'
+import AuthHeader from '../components/auth/AuthHeader.vue'
+import CopyrightFooter from '../components/CopyrightFooter.vue'
+import ThemeToggle from '../components/ThemeToggle.vue'
 
 const props = defineProps({
   title: {

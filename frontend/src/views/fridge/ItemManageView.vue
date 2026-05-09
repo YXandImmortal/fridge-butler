@@ -1,225 +1,208 @@
 <template>
-  <div class="index-container">
-    <!-- 头部组件 -->
-    <Header @show-logout-dialog="showLogoutDialog = true" />
-
-    <!-- 主体内容区域 -->
-    <div class="main-content-wrapper">
-      <!-- 左侧导航栏 -->
-      <Sidebar />
-
-      <!-- 主内容区域 -->
-      <main class="main-content">
-        <div class="item-manage-container">
-          <!-- 返回栏 -->
-          <div class="back-bar">
-            <CustomButton type="link" @click="handleBack">
-              <i class="iconfont icon-arrow-left" />
-              返回冰箱详情
-            </CustomButton>
-            <CustomButton type="link" @click="openSelectFridgeDialog">
-              <i class="iconfont icon-switch" />
-              切换冰箱
-            </CustomButton>
-          </div>
-
-          <!-- 单卡片布局 -->
-          <div class="cards-wrapper">
-            <!-- 左侧卡片：物品搜索与展示 -->
-            <div class="card search-card">
-              <div class="card-header">
-                <div class="card-title-wrapper">
-                  <i class="iconfont icon-search-list card-title-icon" />
-                  <h3 class="card-title">物品列表</h3>
-                </div>
-                <span v-if="!itemLoading" class="card-subtitle">
-                  共 {{ itemList.length }} 件物品
-                </span>
-                <el-tooltip :disabled="hasFridgeId" content="请选择冰箱" placement="top">
-                  <CustomButton type="primary" :disabled="!hasFridgeId" @click="showCreateDialog = true">
-                    添加物品
-                  </CustomButton>
-                </el-tooltip>
-              </div>
-
-              <!-- 搜索区域 -->
-              <div class="search-section">
-                <SearchBar
-                  v-model="searchForm.keyword"
-                  placeholder="搜索物品名称"
-                  @search="handleSearch"
-                  @clear="handleReset"
-                >
-                  <SortControl
-                    v-model:field="sortField"
-                    v-model:order="sortOrder"
-                    :field-options="sortFieldOptions"
-                    @change="handleSortChange"
-                  />
-                  <CustomSelect
-                    v-model="searchForm.categoryId"
-                    placeholder="全部分类"
-                    clearable
-                    grid
-                    class="filter-select"
-                    :options="categoryOptions"
-                    @change="handleSortChange"
-                  />
-                  <CustomSelect
-                    v-model="searchForm.unitTypeId"
-                    placeholder="全部单位类型"
-                    clearable
-                    grid
-                    class="filter-select"
-                    :options="unitTypeOptions"
-                    @change="handleSortChange"
-                  />
-                  <CustomSelect
-                    v-model="searchForm.unitId"
-                    placeholder="全部单位"
-                    clearable
-                    grid
-                    dropdown-align="right"
-                    class="filter-select"
-                    :disabled="!searchForm.unitTypeId"
-                    :options="unitOptions"
-                    @change="handleSortChange"
-                  />
-                  <CustomButton @click="handleReset">
-                    重置
-                  </CustomButton>
-                </SearchBar>
-              </div>
-
-              <!-- 列表区域 -->
-              <div v-loading="itemLoading" class="list-section">
-                <!-- 空状态 -->
-                <el-empty
-                  v-if="!itemLoading && itemList.length === 0"
-                  description="暂无物品"
-                  class="item-empty"
-                />
-
-                <!-- 物品表格列表 -->
-                <div v-else class="item-table-wrapper">
-                  <el-table
-                      max-height="62vh"
-                    :data="itemList"
-                    class="item-table"
-                    :header-cell-style="{ background: 'var(--gray-20)', color: 'var(--text-primary)', fontWeight: 600 }"
-                  >
-                    <el-table-column label="物品名称" min-width="140" show-overflow-tooltip>
-                      <template #default="{ row }">
-                        <div class="item-name-cell">
-                          <div class="item-icon-sm">
-                            <i class="iconfont icon-item" />
-                          </div>
-                          <div class="item-name-info">
-                            <span class="item-name-text">{{ row.itemName }}</span>
-                            <el-tag
-                                v-if="row.categoryName"
-                                size="small"
-                                :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
-                                :color="themeStore.theme === 'dark' ? 'var(--primary-light)' : ''"
-                                type="info"
-                                class="item-category-tag">
-                              {{ row.categoryName }}
-                            </el-tag>
-                            <span v-else class="item-category-none">未分类</span>
-                          </div>
-                        </div>
-                      </template>
-                    </el-table-column>
-
-                    <el-table-column label="数量" width="120" align="center">
-                      <template #default="{ row }">
-                        <span class="quantity-value-table">{{ row.itemNum }}</span>
-                        <span class="quantity-unit-table">{{ row.unitName }}</span>
-                      </template>
-                    </el-table-column>
-
-                    <el-table-column label="生产日期" width="120" align="center">
-                      <template #default="{ row }">
-                        <span class="date-text">{{ row.productionDate || '-' }}</span>
-                      </template>
-                    </el-table-column>
-
-                    <el-table-column label="保质期" width="100" align="center">
-                      <template #default="{ row }">
-                        <span v-if="row.shelfLifeDays" class="shelf-life-tag">
-                          {{ row.shelfLifeDays }} 天
-                        </span>
-                        <span v-else class="date-text">-</span>
-                      </template>
-                    </el-table-column>
-
-                    <el-table-column label="新鲜度" width="100" align="center">
-                      <template #default="{ row }">
-                        <el-tag
-                          v-if="getFreshnessStatus(row).label !== '-'"
-                          size="small"
-                          :type="getFreshnessStatus(row).type"
-                          :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
-                        >
-                          {{ getFreshnessStatus(row).label }}
-                        </el-tag>
-                        <span v-else class="date-text">-</span>
-                      </template>
-                    </el-table-column>
-
-                    <el-table-column label="入库时间" width="120" align="center">
-                      <template #default="{ row }">
-                        <span class="date-text">{{ row.storedDate || '-' }}</span>
-                      </template>
-                    </el-table-column>
-
-                    <el-table-column label="备注" min-width="140" show-overflow-tooltip>
-                      <template #default="{ row }">
-                        <span class="remark-text">{{ row.remark || '-' }}</span>
-                      </template>
-                    </el-table-column>
-
-                    <el-table-column label="操作" width="160" align="center" fixed="right">
-                      <template #default="{ row }">
-                        <div class="action-btns">
-                          <el-dropdown size="small" @command="(cmd) => handleTakeOutCommand(cmd, row)">
-                            <CustomButton type="primary" size="small">
-                              取出<i class="iconfont icon-arrow-right-box" />
-                            </CustomButton>
-                            <template #dropdown>
-                              <el-dropdown-menu>
-                                <el-dropdown-item command="all">取出全部</el-dropdown-item>
-                                <el-dropdown-item command="half">取出一半</el-dropdown-item>
-                                <el-dropdown-item command="custom">自定义数量...</el-dropdown-item>
-                              </el-dropdown-menu>
-                            </template>
-                          </el-dropdown>
-                          <el-tooltip content="编辑" placement="top">
-                            <CustomButton type="link" size="small" @click="handleEditItem(row)">
-                              <i class="iconfont icon-edit" />
-                            </CustomButton>
-                          </el-tooltip>
-                          <el-tooltip content="删除" placement="top">
-                            <CustomButton type="link" size="small" class="danger-link" @click="handleDeleteItem(row)">
-                              <i class="iconfont icon-delete" />
-                            </CustomButton>
-                          </el-tooltip>
-                        </div>
-                      </template>
-                    </el-table-column>
-                  </el-table>
-                </div>
-              </div>
-            </div>
-
-
-          </div>
-        </div>
-      </main>
+  <div class="item-manage-container">
+    <!-- 返回栏 -->
+    <div class="back-bar">
+      <CustomButton type="link" @click="handleBack">
+        <i class="iconfont icon-arrow-left" />
+        返回冰箱详情
+      </CustomButton>
+      <CustomButton type="link" @click="openSelectFridgeDialog">
+        <i class="iconfont icon-switch" />
+        切换冰箱
+      </CustomButton>
     </div>
 
-    <!-- 底部版权信息 -->
-    <CopyrightFooter />
+    <!-- 单卡片布局 -->
+    <div class="cards-wrapper">
+      <!-- 左侧卡片：物品搜索与展示 -->
+      <div class="card search-card">
+        <div class="card-header">
+          <div class="card-title-wrapper">
+            <i class="iconfont icon-search-list card-title-icon" />
+            <h3 class="card-title">物品列表</h3>
+          </div>
+          <span v-if="!itemLoading" class="card-subtitle">
+            共 {{ itemList.length }} 件物品
+          </span>
+          <el-tooltip :disabled="hasFridgeId" content="请选择冰箱" placement="top">
+            <CustomButton type="primary" :disabled="!hasFridgeId" @click="showCreateDialog = true">
+              添加物品
+            </CustomButton>
+          </el-tooltip>
+        </div>
+
+        <!-- 搜索区域 -->
+        <div class="search-section">
+          <SearchBar
+            v-model="searchForm.keyword"
+            placeholder="搜索物品名称"
+            @search="handleSearch"
+            @clear="handleReset"
+          >
+            <SortControl
+              v-model:field="sortField"
+              v-model:order="sortOrder"
+              :field-options="sortFieldOptions"
+              @change="handleSortChange"
+            />
+            <CustomSelect
+              v-model="searchForm.categoryId"
+              placeholder="全部分类"
+              clearable
+              grid
+              class="filter-select"
+              :options="categoryOptions"
+              @change="handleSortChange"
+            />
+            <CustomSelect
+              v-model="searchForm.unitTypeId"
+              placeholder="全部单位类型"
+              clearable
+              grid
+              class="filter-select"
+              :options="unitTypeOptions"
+              @change="handleSortChange"
+            />
+            <CustomSelect
+              v-model="searchForm.unitId"
+              placeholder="全部单位"
+              clearable
+              grid
+              dropdown-align="right"
+              class="filter-select"
+              :disabled="!searchForm.unitTypeId"
+              :options="unitOptions"
+              @change="handleSortChange"
+            />
+            <CustomButton @click="handleReset">
+              重置
+            </CustomButton>
+          </SearchBar>
+        </div>
+
+        <!-- 列表区域 -->
+        <div v-loading="itemLoading" class="list-section">
+          <!-- 空状态 -->
+          <el-empty
+            v-if="!itemLoading && itemList.length === 0"
+            description="暂无物品"
+            class="item-empty"
+          />
+
+          <!-- 物品表格列表 -->
+          <div v-else class="item-table-wrapper">
+            <el-table
+                max-height="62vh"
+              :data="itemList"
+              class="item-table"
+              :header-cell-style="{ background: 'var(--gray-20)', color: 'var(--text-primary)', fontWeight: 600 }"
+            >
+              <el-table-column label="物品名称" min-width="140" show-overflow-tooltip>
+                <template #default="{ row }">
+                  <div class="item-name-cell">
+                    <div class="item-icon-sm">
+                      <i class="iconfont icon-item" />
+                    </div>
+                    <div class="item-name-info">
+                      <span class="item-name-text">{{ row.itemName }}</span>
+                      <el-tag
+                          v-if="row.categoryName"
+                          size="small"
+                          :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
+                          :color="themeStore.theme === 'dark' ? 'var(--primary-light)' : ''"
+                          type="info"
+                          class="item-category-tag">
+                        {{ row.categoryName }}
+                      </el-tag>
+                      <span v-else class="item-category-none">未分类</span>
+                    </div>
+                  </div>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="数量" width="120" align="center">
+                <template #default="{ row }">
+                  <span class="quantity-value-table">{{ row.itemNum }}</span>
+                  <span class="quantity-unit-table">{{ row.unitName }}</span>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="生产日期" width="120" align="center">
+                <template #default="{ row }">
+                  <span class="date-text">{{ row.productionDate || '-' }}</span>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="保质期" width="100" align="center">
+                <template #default="{ row }">
+                  <span v-if="row.shelfLifeDays" class="shelf-life-tag">
+                    {{ row.shelfLifeDays }} 天
+                  </span>
+                  <span v-else class="date-text">-</span>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="新鲜度" width="100" align="center">
+                <template #default="{ row }">
+                  <el-tag
+                    v-if="getFreshnessStatus(row).label !== '-'"
+                    size="small"
+                    :type="getFreshnessStatus(row).type"
+                    :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
+                  >
+                    {{ getFreshnessStatus(row).label }}
+                  </el-tag>
+                  <span v-else class="date-text">-</span>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="入库时间" width="120" align="center">
+                <template #default="{ row }">
+                  <span class="date-text">{{ row.storedDate || '-' }}</span>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="备注" min-width="140" show-overflow-tooltip>
+                <template #default="{ row }">
+                  <span class="remark-text">{{ row.remark || '-' }}</span>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="操作" width="160" align="center" fixed="right">
+                <template #default="{ row }">
+                  <div class="action-btns">
+                    <el-dropdown size="small" @command="(cmd) => handleTakeOutCommand(cmd, row)">
+                      <CustomButton type="primary" size="small">
+                        取出<i class="iconfont icon-arrow-right-box" />
+                      </CustomButton>
+                      <template #dropdown>
+                        <el-dropdown-menu>
+                          <el-dropdown-item command="all">取出全部</el-dropdown-item>
+                          <el-dropdown-item command="half">取出一半</el-dropdown-item>
+                          <el-dropdown-item command="custom">自定义数量...</el-dropdown-item>
+                        </el-dropdown-menu>
+                      </template>
+                    </el-dropdown>
+                    <el-tooltip content="编辑" placement="top">
+                      <CustomButton type="link" size="small" @click="handleEditItem(row)">
+                        <i class="iconfont icon-edit" />
+                      </CustomButton>
+                    </el-tooltip>
+                    <el-tooltip content="删除" placement="top">
+                      <CustomButton type="link" size="small" class="danger-link" @click="handleDeleteItem(row)">
+                        <i class="iconfont icon-delete" />
+                      </CustomButton>
+                    </el-tooltip>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
 
     <!-- 选择冰箱对话框 -->
     <ConfirmDialog
@@ -279,16 +262,6 @@
       cancel-text="取消"
       @confirm="handleDeleteConfirm"
     />
-
-    <!-- 登出确认对话框 -->
-    <ConfirmDialog
-      v-model:visible="showLogoutDialog"
-      title="退出登录"
-      message="您确定要退出登录吗？"
-      confirm-text="确定"
-      cancel-text="取消"
-      @confirm="handleLogout"
-    />
   </div>
 </template>
 
@@ -296,12 +269,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Header from '@/components/Header.vue'
-import Sidebar from '@/components/Sidebar.vue'
-import CopyrightFooter from '@/components/CopyrightFooter.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
-import { useUserStore } from '@/stores/user'
 import { useThemeStore } from '@/stores/theme'
 import {
   listItemCategories,
@@ -321,9 +290,7 @@ import ItemTakeOutDialog from '@/components/item/ItemTakeOutDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
-const userStore = useUserStore()
 const themeStore = useThemeStore()
-const { logout } = userStore
 
 // ==================== 数据加载状态 ====================
 const categoryLoading = ref(false)
@@ -379,7 +346,6 @@ const currentFridgeId = computed(() => {
 })
 
 // ==================== 对话框控制 ====================
-const showLogoutDialog = ref(false)
 const showCreateDialog = ref(false)
 const showEditDialog = ref(false)
 const currentEditItem = ref(null)
@@ -678,14 +644,6 @@ const getFreshnessStatus = (row) => {
   }
 }
 
-// 处理退出登录
-const handleLogout = () => {
-  logout()
-  showLogoutDialog.value = false
-  router.push('/login')
-  showMessage.info('已退出登录')
-}
-
 // 解析当前冰箱ID，如果没有则尝试获取默认冰箱
 const resolveFridgeId = async () => {
   let fridgeId = route.params.id || route.query.fridgeId
@@ -740,26 +698,6 @@ watch(
 
 
 <style scoped>
-.index-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content-wrapper {
-  margin-top: var(--header-height);
-}
-
-.main-content {
-  margin-left: var(--sidebar-width);
-  transition: all 0.3s ease;
-  max-height: calc(100vh - var(--header-height) - var(--footer-height));
-  min-height: calc(100vh - var(--header-height) - var(--footer-height));
-  background: var(--main-content-bg);
-  padding: var(--space-5);
-  overflow-y: auto;
-}
-
 .item-manage-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -980,11 +918,6 @@ watch(
 }
 
 @media (max-width: 768px) {
-  .main-content {
-    margin-left: var(--sidebar-width-md);
-    padding: var(--space-4);
-  }
-
   .search-section :deep(.search-bar-wrapper) {
     flex-direction: column;
     align-items: stretch;
@@ -1005,11 +938,6 @@ watch(
 }
 
 @media (max-width: 480px) {
-  .main-content {
-    margin-left: 0;
-    padding: var(--space-3);
-  }
-
   .card {
     padding: 16px;
   }
