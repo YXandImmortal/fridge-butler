@@ -40,7 +40,7 @@ public class CaptchaController {
     public void generateCaptcha(HttpServletResponse response) throws IOException {
         // 创建数字验证码，4位数字
         Captcha captcha = new SpecCaptcha(130, 44, 4);
-        captcha.setCharType(SpecCaptcha.TYPE_ONLY_NUMBER);
+        captcha.setCharType(SpecCaptcha.TYPE_DEFAULT);
         
         // 生成验证码
         String code = captcha.text();
