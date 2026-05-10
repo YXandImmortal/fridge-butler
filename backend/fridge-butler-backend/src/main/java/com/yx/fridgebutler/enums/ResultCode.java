@@ -82,7 +82,12 @@ public enum ResultCode {
     TAKE_OUT_NUM_EXCEED(400, "取出数量不能大于现有数量"),
     CATEGORY_NAME_EXISTS(400, "分类名称已存在"),
     CATEGORY_NOT_EDITABLE(403, "系统默认分类不允许编辑"),
-    CATEGORY_IN_USE(400, "该分类下存在物品，无法删除");
+    CATEGORY_IN_USE(400, "该分类下存在物品，无法删除"),
+    UNIT_TYPE_NOT_FOUND(404, "单位类型不存在"),
+    UNIT_NAME_EXISTS(400, "单位名称已存在"),
+    UNIT_TYPE_NAME_EXISTS(400, "单位类型名称已存在"),
+    UNIT_NOT_EDITABLE(403, "系统默认单位不允许编辑"),
+    UNIT_TYPE_NOT_EDITABLE(403, "系统默认单位类型不允许编辑");
 
     /**
      * 状态码数值

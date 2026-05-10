@@ -7,9 +7,13 @@ import com.yx.fridgebutler.dto.ItemCreateRequest;
 import com.yx.fridgebutler.vo.ItemVO;
 import com.yx.fridgebutler.dto.ItemSearchRequest;
 import com.yx.fridgebutler.dto.ItemTakeOutRequest;
+import com.yx.fridgebutler.dto.ItemUnitCreateRequest;
+import com.yx.fridgebutler.dto.ItemUnitUpdateRequest;
 import com.yx.fridgebutler.dto.ItemUpdateRequest;
 import com.yx.fridgebutler.vo.ItemUnitVO;
 import com.yx.fridgebutler.vo.UnitTypeVO;
+import com.yx.fridgebutler.dto.UnitTypeCreateRequest;
+import com.yx.fridgebutler.dto.UnitTypeUpdateRequest;
 import com.yx.fridgebutler.service.ItemService;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
@@ -127,6 +131,66 @@ public class ItemController {
         List<UnitTypeVO> result = itemService.listUnitTypes();
         log.info("查询单位类型列表成功，数量：{}", result.size());
         return Result.success(result);
+    }
+
+    /**
+     * 创建单位类型（用户自定义）
+     */
+    @PostMapping("/unit-type/create")
+    public Result<Long> createUnitType(@Valid @RequestBody UnitTypeCreateRequest request) {
+        Long unitTypeId = itemService.createUnitType(request);
+        log.info("创建单位类型成功，类型ID：{}，名称：{}", unitTypeId, request.getTypeName());
+        return Result.success(unitTypeId);
+    }
+
+    /**
+     * 更新单位类型（用户自定义）
+     */
+    @PostMapping("/unit-type/update")
+    public Result<Void> updateUnitType(@Valid @RequestBody UnitTypeUpdateRequest request) {
+        itemService.updateUnitType(request);
+        log.info("更新单位类型成功，类型ID：{}，名称：{}", request.getId(), request.getTypeName());
+        return Result.success(null);
+    }
+
+    /**
+     * 删除单位类型（用户自定义，软删除）
+     */
+    @DeleteMapping("/unit-type/delete/{id}")
+    public Result<Void> deleteUnitType(@PathVariable Long id) {
+        itemService.deleteUnitType(id);
+        log.info("删除单位类型成功，类型ID：{}", id);
+        return Result.success(null);
+    }
+
+    /**
+     * 创建物品单位（用户自定义）
+     */
+    @PostMapping("/unit/create")
+    public Result<Long> createItemUnit(@Valid @RequestBody ItemUnitCreateRequest request) {
+        Long unitId = itemService.createItemUnit(request);
+        log.info("创建物品单位成功，单位ID：{}，名称：{}", unitId, request.getUnitName());
+        return Result.success(unitId);
+    }
+
+    /**
+     * 更新物品单位（用户自定义）
+     */
+    @PostMapping("/unit/update")
+    public Result<Void> updateItemUnit(@Valid @RequestBody ItemUnitUpdateRequest request) {
+        itemService.updateItemUnit(request);
+        log.info("更新物品单位成功，单位ID：{}，名称：{}", request.getId(), request.getUnitName());
+        return Result.success(null);
+    }
+
+    /**
+     * 删除物品单位（用户自定义，软删除）
+     */
+    @DeleteMapping("/unit/delete/{id}")
+    public Result<Void> deleteItemUnit(@PathVariable Long id) {
+        itemService.deleteItemUnit(id);
+        log.info("删除物品单位成功，单位ID：{}", id);
+        return Result.success(null);
     }
 
     /**

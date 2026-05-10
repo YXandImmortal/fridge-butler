@@ -316,4 +316,49 @@ public class BusinessException extends RuntimeException {
         return new BusinessException(ResultCode.CATEGORY_IN_USE);
     }
 
+    /**
+     * 创建单位类型不存在异常
+     *
+     * @return 单位类型不存在业务异常
+     */
+    public static BusinessException unitTypeNotFound() {
+        return new BusinessException(ResultCode.UNIT_TYPE_NOT_FOUND);
+    }
+
+    /**
+     * 创建单位名称已存在异常
+     *
+     * @return 单位名称已存在业务异常
+     */
+    public static BusinessException unitNameExists() {
+        return new BusinessException(ResultCode.UNIT_NAME_EXISTS);
+    }
+
+    /**
+     * 创建单位类型名称已存在异常
+     *
+     * @return 单位类型名称已存在业务异常
+     */
+    public static BusinessException unitTypeNameExists() {
+        return new BusinessException(ResultCode.UNIT_TYPE_NAME_EXISTS);
+    }
+
+    /**
+     * 创建单位不可编辑异常（系统默认单位）
+     *
+     * @return 系统默认单位不允许编辑业务异常
+     */
+    public static BusinessException unitNotEditable() {
+        return new BusinessException(ResultCode.UNIT_NOT_EDITABLE);
+    }
+
+    /**
+     * 创建单位类型不可编辑异常（系统默认单位类型）
+     *
+     * @return 系统默认单位类型不允许编辑业务异常
+     */
+    public static BusinessException unitTypeNotEditable() {
+        return new BusinessException(ResultCode.UNIT_TYPE_NOT_EDITABLE);
+    }
+
 }

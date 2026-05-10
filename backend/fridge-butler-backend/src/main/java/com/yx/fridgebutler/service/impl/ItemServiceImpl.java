@@ -8,8 +8,12 @@ import com.yx.fridgebutler.vo.ItemVO;
 import com.yx.fridgebutler.dto.ItemSearchRequest;
 import com.yx.fridgebutler.dto.ItemTakeOutRequest;
 import com.yx.fridgebutler.vo.ItemUnitVO;
+import com.yx.fridgebutler.dto.ItemUnitCreateRequest;
+import com.yx.fridgebutler.dto.ItemUnitUpdateRequest;
 import com.yx.fridgebutler.dto.ItemUpdateRequest;
 import com.yx.fridgebutler.vo.UnitTypeVO;
+import com.yx.fridgebutler.dto.UnitTypeCreateRequest;
+import com.yx.fridgebutler.dto.UnitTypeUpdateRequest;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.BizFridgeItem;
 import com.yx.fridgebutler.entity.BizItemCategory;
@@ -232,22 +236,26 @@ public class ItemServiceImpl implements ItemService {
 
         List<BizItemUnit> units = unitRepository.findAllByOwnerIdOrSystemDefault(currentUserId);
 
-        // 收集所有单位类型ID，用于批量查询单位类型名称
+        // 收集所有单位类型ID，用于批量查询单位类型名称（过滤已删除）
         Set<Long> unitTypeIds = units.stream()
                 .map(BizItemUnit::getUnitTypeId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         Map<Long, String> unitTypeMap = unitTypeRepository.findAllById(unitTypeIds).stream()
+                .filter(t -> !Boolean.TRUE.equals(t.getIsDeleted()))
                 .collect(Collectors.toMap(BizUnitType::getId, BizUnitType::getUnitTypeName));
 
         return units.stream()
-                .map(u -> ItemUnitVO.builder()
-                        .id(u.getId())
-                        .unitName(u.getUnitName())
-                        .unitTypeId(u.getUnitTypeId())
-                        .unitTypeName(unitTypeMap.get(u.getUnitTypeId()))
-                        .isSystemDefault(u.getIsSystemDefault())
-                        .build())
+                .map(u -> {
+                    String typeName = unitTypeMap.get(u.getUnitTypeId());
+                    return ItemUnitVO.builder()
+                            .id(u.getId())
+                            .unitName(u.getUnitName())
+                            .unitTypeId(u.getUnitTypeId())
+                            .unitTypeName(typeName != null ? typeName : "未知")
+                            .isSystemDefault(u.getIsSystemDefault())
+                            .build();
+                })
                 .toList();
     }
 
@@ -275,6 +283,190 @@ public class ItemServiceImpl implements ItemService {
     /**
      * {@inheritDoc}
      * <p>
+     * 创建用户自定义单位类型，同一用户下单位类型名称不能重复。
+     */
+    @Override
+    public Long createUnitType(UnitTypeCreateRequest request) {
+        Long currentUserId = getCurrentUserId();
+        log.info("创建单位类型，用户ID：{}，类型名称：{}", currentUserId, request.getTypeName());
+
+        // 校验同一用户下是否已存在相同名称的未删除单位类型
+        if (unitTypeRepository.existsByUnitTypeNameAndOwnerIdAndIsDeletedFalse(request.getTypeName(), currentUserId)) {
+            throw BusinessException.unitTypeNameExists();
+        }
+
+        BizUnitType unitType = new BizUnitType();
+        unitType.setUnitTypeName(request.getTypeName());
+        unitType.setOwnerId(currentUserId);
+        unitType.setIsSystemDefault(false);
+        unitType.setIsDeleted(false);
+        Instant now = Instant.now();
+        unitType.setCreateTime(now);
+        unitType.setUpdateTime(now);
+
+        BizUnitType saved = unitTypeRepository.save(unitType);
+        return saved.getId();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 只能更新自己创建的自定义单位类型，系统默认单位类型不允许编辑。
+     */
+    @Override
+    public void updateUnitType(UnitTypeUpdateRequest request) {
+        Long currentUserId = getCurrentUserId();
+        log.info("更新单位类型，用户ID：{}，类型ID：{}", currentUserId, request.getId());
+
+        BizUnitType unitType = unitTypeRepository.findByIdAndOwnerIdAndIsDeletedFalse(request.getId(), currentUserId)
+                .orElseThrow(BusinessException::unitTypeNotFound);
+
+        if (Boolean.TRUE.equals(unitType.getIsSystemDefault())) {
+            throw BusinessException.unitTypeNotEditable();
+        }
+
+        // 校验新名称是否与该用户下的其他单位类型重名
+        if (!unitType.getUnitTypeName().equals(request.getTypeName()) &&
+                unitTypeRepository.existsByUnitTypeNameAndOwnerIdAndIsDeletedFalse(request.getTypeName(), currentUserId)) {
+            throw BusinessException.unitTypeNameExists();
+        }
+
+        unitType.setUnitTypeName(request.getTypeName());
+        unitType.setUpdateTime(Instant.now());
+        unitTypeRepository.save(unitType);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 只能删除自己创建的自定义单位类型。删除后该类型下已关联的单位仍保留关联关系，
+     * 但前端展示时会将单位类型名称显示为"未知"。
+     */
+    @Override
+    @Transactional
+    public void deleteUnitType(Long id) {
+        Long currentUserId = getCurrentUserId();
+        log.info("删除单位类型，类型ID：{}，用户ID：{}", id, currentUserId);
+
+        BizUnitType unitType = unitTypeRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, currentUserId)
+                .orElseThrow(BusinessException::unitTypeNotFound);
+
+        if (Boolean.TRUE.equals(unitType.getIsSystemDefault())) {
+            throw BusinessException.unitTypeNotEditable();
+        }
+
+        unitType.setIsDeleted(true);
+        unitType.setUpdateTime(Instant.now());
+        unitTypeRepository.save(unitType);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 创建用户自定义单位，会校验单位类型是否存在，同一用户下单位名称不能重复。
+     */
+    @Override
+    public Long createItemUnit(ItemUnitCreateRequest request) {
+        Long currentUserId = getCurrentUserId();
+        log.info("创建物品单位，用户ID：{}，单位名称：{}，单位类型ID：{}", currentUserId, request.getUnitName(), request.getUnitTypeId());
+
+        // 校验单位类型是否存在
+        BizUnitType unitType = unitTypeRepository.findById(request.getUnitTypeId())
+                .orElseThrow(BusinessException::unitTypeNotFound);
+        if (Boolean.TRUE.equals(unitType.getIsDeleted())) {
+            throw BusinessException.unitTypeNotFound();
+        }
+        // 只能使用系统默认类型或自己创建的类型
+        if (Boolean.FALSE.equals(unitType.getIsSystemDefault()) && !unitType.getOwnerId().equals(currentUserId)) {
+            throw BusinessException.unitTypeNotFound();
+        }
+
+        // 校验同一用户下是否已存在相同名称的未删除单位
+        if (unitRepository.existsByUnitNameAndOwnerIdAndIsDeletedFalse(request.getUnitName(), currentUserId)) {
+            throw BusinessException.unitNameExists();
+        }
+
+        BizItemUnit unit = new BizItemUnit();
+        unit.setUnitName(request.getUnitName());
+        unit.setUnitTypeId(request.getUnitTypeId());
+        unit.setOwnerId(currentUserId);
+        unit.setIsSystemDefault(false);
+        unit.setIsDeleted(false);
+        Instant now = Instant.now();
+        unit.setCreateTime(now);
+        unit.setUpdateTime(now);
+
+        BizItemUnit saved = unitRepository.save(unit);
+        return saved.getId();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 只能更新自己创建的自定义单位，系统默认单位不允许编辑。
+     */
+    @Override
+    public void updateItemUnit(ItemUnitUpdateRequest request) {
+        Long currentUserId = getCurrentUserId();
+        log.info("更新物品单位，用户ID：{}，单位ID：{}", currentUserId, request.getId());
+
+        BizItemUnit unit = unitRepository.findByIdAndOwnerIdAndIsDeletedFalse(request.getId(), currentUserId)
+                .orElseThrow(BusinessException::unitNotFound);
+
+        if (Boolean.TRUE.equals(unit.getIsSystemDefault())) {
+            throw BusinessException.unitNotEditable();
+        }
+
+        // 校验单位类型是否存在
+        BizUnitType unitType = unitTypeRepository.findById(request.getUnitTypeId())
+                .orElseThrow(BusinessException::unitTypeNotFound);
+        if (Boolean.TRUE.equals(unitType.getIsDeleted())) {
+            throw BusinessException.unitTypeNotFound();
+        }
+        // 只能使用系统默认类型或自己创建的类型
+        if (Boolean.FALSE.equals(unitType.getIsSystemDefault()) && !unitType.getOwnerId().equals(currentUserId)) {
+            throw BusinessException.unitTypeNotFound();
+        }
+
+        // 校验新名称是否与该用户下的其他单位重名
+        if (!unit.getUnitName().equals(request.getUnitName()) &&
+                unitRepository.existsByUnitNameAndOwnerIdAndIsDeletedFalse(request.getUnitName(), currentUserId)) {
+            throw BusinessException.unitNameExists();
+        }
+
+        unit.setUnitName(request.getUnitName());
+        unit.setUnitTypeId(request.getUnitTypeId());
+        unit.setUpdateTime(Instant.now());
+        unitRepository.save(unit);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 只能删除自己创建的自定义单位。删除后已关联该单位的物品仍保留关联关系，
+     * 但前端展示时会将单位名称显示为"未知"。
+     */
+    @Override
+    @Transactional
+    public void deleteItemUnit(Long id) {
+        Long currentUserId = getCurrentUserId();
+        log.info("删除物品单位，单位ID：{}，用户ID：{}", id, currentUserId);
+
+        BizItemUnit unit = unitRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, currentUserId)
+                .orElseThrow(BusinessException::unitNotFound);
+
+        if (Boolean.TRUE.equals(unit.getIsSystemDefault())) {
+            throw BusinessException.unitNotEditable();
+        }
+
+        unit.setIsDeleted(true);
+        unit.setUpdateTime(Instant.now());
+        unitRepository.save(unit);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
      * 创建前会校验冰箱归属权、分类存在性（如传了分类ID）、单位存在性（如传了单位ID）。
      */
     @Override
@@ -286,16 +478,22 @@ public class ItemServiceImpl implements ItemService {
         fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(request.getFridgeId(), currentUserId)
                 .orElseThrow(BusinessException::fridgeNotFound);
 
-        // 校验分类是否存在（如果传了分类ID）
+        // 校验分类是否存在且未删除（如果传了分类ID）
         if (request.getCategoryId() != null) {
-            categoryRepository.findById(request.getCategoryId())
+            BizItemCategory category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(BusinessException::categoryNotFound);
+            if (Boolean.TRUE.equals(category.getIsDeleted())) {
+                throw BusinessException.categoryNotFound();
+            }
         }
 
-        // 校验单位是否存在（如果传了单位ID）
+        // 校验单位是否存在且未删除（如果传了单位ID）
         if (request.getItemUnitId() != null) {
-            unitRepository.findById(request.getItemUnitId())
+            BizItemUnit unit = unitRepository.findById(request.getItemUnitId())
                     .orElseThrow(BusinessException::unitNotFound);
+            if (Boolean.TRUE.equals(unit.getIsDeleted())) {
+                throw BusinessException.unitNotFound();
+            }
         }
 
         BizFridgeItem item = new BizFridgeItem();
@@ -354,16 +552,22 @@ public class ItemServiceImpl implements ItemService {
         fridgeRepository.findByIdAndOwnerIdAndIsDeletedFalse(item.getFridgeId(), currentUserId)
                 .orElseThrow(BusinessException::fridgeNotFound);
 
-        // 校验分类是否存在（如果传了分类ID）
+        // 校验分类是否存在且未删除（如果传了分类ID）
         if (request.getCategoryId() != null) {
-            categoryRepository.findById(request.getCategoryId())
+            BizItemCategory category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(BusinessException::categoryNotFound);
+            if (Boolean.TRUE.equals(category.getIsDeleted())) {
+                throw BusinessException.categoryNotFound();
+            }
         }
 
-        // 校验单位是否存在（如果传了单位ID）
+        // 校验单位是否存在且未删除（如果传了单位ID）
         if (request.getItemUnitId() != null) {
-            unitRepository.findById(request.getItemUnitId())
+            BizItemUnit unit = unitRepository.findById(request.getItemUnitId())
                     .orElseThrow(BusinessException::unitNotFound);
+            if (Boolean.TRUE.equals(unit.getIsDeleted())) {
+                throw BusinessException.unitNotFound();
+            }
         }
 
         // 记录变更前的值，用于生成变更记录
@@ -571,19 +775,21 @@ public class ItemServiceImpl implements ItemService {
                 .filter(c -> !Boolean.TRUE.equals(c.getIsDeleted()))
                 .collect(Collectors.toMap(BizItemCategory::getId, BizItemCategory::getCategoryName));
 
-        // 批量查询单位信息
+        // 批量查询单位信息（过滤已删除）
         Set<Long> unitIds = items.stream()
                 .map(BizFridgeItem::getItemUnitId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         Map<Long, BizItemUnit> unitMap = unitRepository.findAllById(unitIds).stream()
+                .filter(u -> !Boolean.TRUE.equals(u.getIsDeleted()))
                 .collect(Collectors.toMap(BizItemUnit::getId, Function.identity()));
 
-        // 批量查询单位类型名称
+        // 批量查询单位类型名称（过滤已删除）
         Set<Long> unitTypeIds = unitMap.values().stream()
                 .map(BizItemUnit::getUnitTypeId)
                 .collect(Collectors.toSet());
         Map<Long, String> unitTypeMap = unitTypeRepository.findAllById(unitTypeIds).stream()
+                .filter(t -> !Boolean.TRUE.equals(t.getIsDeleted()))
                 .collect(Collectors.toMap(BizUnitType::getId, BizUnitType::getUnitTypeName));
 
         return items.stream()
@@ -604,18 +810,14 @@ public class ItemServiceImpl implements ItemService {
                                   Map<Long, String> categoryMap,
                                   Map<Long, BizItemUnit> unitMap,
                                   Map<Long, String> unitTypeMap) {
-        BizItemUnit unit = item.getItemUnitId() != null ? unitMap.get(item.getItemUnitId()) : null;
-        Long unitTypeId = unit != null ? unit.getUnitTypeId() : null;
-        String unitTypeName = unitTypeId != null ? unitTypeMap.get(unitTypeId) : null;
-
         return ItemVO.builder()
                 .id(item.getId())
                 .fridgeId(item.getFridgeId())
                 .itemName(item.getItemName())
                 .itemUnitId(item.getItemUnitId())
-                .unitName(unit != null ? unit.getUnitName() : null)
-                .unitTypeId(unitTypeId)
-                .unitTypeName(unitTypeName)
+                .unitName(resolveUnitName(item.getItemUnitId(), unitMap))
+                .unitTypeId(resolveUnitTypeId(item.getItemUnitId(), unitMap))
+                .unitTypeName(resolveUnitTypeName(item.getItemUnitId(), unitMap, unitTypeMap))
                 .storedDate(item.getStoredDate())
                 .productionDate(item.getProductionDate())
                 .shelfLifeDays(item.getShelfLifeDays())
@@ -645,6 +847,67 @@ public class ItemServiceImpl implements ItemService {
         }
         String name = categoryMap.get(categoryId);
         return name != null ? name : "未知";
+    }
+
+    /**
+     * 解析物品的单位名称。
+     * <p>
+     * 如果单位 ID 为空，则返回 null；
+     * 如果单位已被软删除（在 unitMap 中不存在），则返回"未知"；
+     * 否则返回单位原始名称。
+     *
+     * @param itemUnitId 单位ID
+     * @param unitMap    单位ID到单位实体的映射（仅包含未删除的单位）
+     * @return 单位名称
+     */
+    private String resolveUnitName(Long itemUnitId, Map<Long, BizItemUnit> unitMap) {
+        if (itemUnitId == null) {
+            return null;
+        }
+        BizItemUnit unit = unitMap.get(itemUnitId);
+        return unit != null ? unit.getUnitName() : "未知";
+    }
+
+    /**
+     * 解析物品的单位类型ID。
+     * <p>
+     * 如果单位 ID 为空或单位已被软删除，则返回 null；
+     * 否则返回单位关联的类型ID。
+     *
+     * @param itemUnitId 单位ID
+     * @param unitMap    单位ID到单位实体的映射（仅包含未删除的单位）
+     * @return 单位类型ID
+     */
+    private Long resolveUnitTypeId(Long itemUnitId, Map<Long, BizItemUnit> unitMap) {
+        if (itemUnitId == null) {
+            return null;
+        }
+        BizItemUnit unit = unitMap.get(itemUnitId);
+        return unit != null ? unit.getUnitTypeId() : null;
+    }
+
+    /**
+     * 解析物品的单位类型名称。
+     * <p>
+     * 如果单位 ID 为空或单位已被软删除，则返回 null；
+     * 如果单位类型已被软删除（在 unitTypeMap 中不存在），则返回"未知"；
+     * 否则返回单位类型原始名称。
+     *
+     * @param itemUnitId  单位ID
+     * @param unitMap     单位ID到单位实体的映射（仅包含未删除的单位）
+     * @param unitTypeMap 单位类型ID到名称的映射（仅包含未删除的类型）
+     * @return 单位类型名称
+     */
+    private String resolveUnitTypeName(Long itemUnitId, Map<Long, BizItemUnit> unitMap, Map<Long, String> unitTypeMap) {
+        if (itemUnitId == null) {
+            return null;
+        }
+        BizItemUnit unit = unitMap.get(itemUnitId);
+        if (unit == null) {
+            return "未知";
+        }
+        String typeName = unitTypeMap.get(unit.getUnitTypeId());
+        return typeName != null ? typeName : "未知";
     }
 
     /**

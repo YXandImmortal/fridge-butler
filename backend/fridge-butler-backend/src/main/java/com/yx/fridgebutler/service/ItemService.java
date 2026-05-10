@@ -8,8 +8,12 @@ import com.yx.fridgebutler.vo.ItemVO;
 import com.yx.fridgebutler.dto.ItemSearchRequest;
 import com.yx.fridgebutler.dto.ItemTakeOutRequest;
 import com.yx.fridgebutler.vo.ItemUnitVO;
+import com.yx.fridgebutler.dto.ItemUnitCreateRequest;
+import com.yx.fridgebutler.dto.ItemUnitUpdateRequest;
 import com.yx.fridgebutler.dto.ItemUpdateRequest;
 import com.yx.fridgebutler.vo.UnitTypeVO;
+import com.yx.fridgebutler.dto.UnitTypeCreateRequest;
+import com.yx.fridgebutler.dto.UnitTypeUpdateRequest;
 
 import java.util.List;
 
@@ -92,6 +96,50 @@ public interface ItemService {
      * @return 单位类型列表
      */
     List<UnitTypeVO> listUnitTypes();
+
+    /**
+     * 创建单位类型（用户自定义）。
+     *
+     * @param request 单位类型创建请求参数
+     * @return 新创建单位类型的ID
+     */
+    Long createUnitType(UnitTypeCreateRequest request);
+
+    /**
+     * 更新单位类型（用户自定义）。
+     *
+     * @param request 单位类型更新请求参数
+     */
+    void updateUnitType(UnitTypeUpdateRequest request);
+
+    /**
+     * 删除单位类型（用户自定义，软删除）。
+     *
+     * @param id 单位类型ID
+     */
+    void deleteUnitType(Long id);
+
+    /**
+     * 创建物品单位（用户自定义）。
+     *
+     * @param request 物品单位创建请求参数
+     * @return 新创建物品单位的ID
+     */
+    Long createItemUnit(ItemUnitCreateRequest request);
+
+    /**
+     * 更新物品单位（用户自定义）。
+     *
+     * @param request 物品单位更新请求参数
+     */
+    void updateItemUnit(ItemUnitUpdateRequest request);
+
+    /**
+     * 删除物品单位（用户自定义，软删除）。
+     *
+     * @param id 物品单位ID
+     */
+    void deleteItemUnit(Long id);
 
     /**
      * 删除指定物品（软删除）。

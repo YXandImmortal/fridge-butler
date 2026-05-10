@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 单位类型数据访问层。
@@ -23,4 +24,22 @@ public interface BizUnitTypeRepository extends JpaRepository<BizUnitType, Long> 
      */
     @Query("SELECT t FROM BizUnitType t WHERE t.isDeleted = false AND (t.isSystemDefault = true OR t.ownerId = :ownerId)")
     List<BizUnitType> findAllByOwnerIdOrSystemDefault(@Param("ownerId") Long ownerId);
+
+    /**
+     * 根据单位类型ID、所有者ID查询未删除的单位类型。
+     *
+     * @param id      单位类型ID
+     * @param ownerId 所有者ID
+     * @return 符合条件的单位类型
+     */
+    Optional<BizUnitType> findByIdAndOwnerIdAndIsDeletedFalse(Long id, Long ownerId);
+
+    /**
+     * 检查指定用户下是否已存在相同名称且未删除的单位类型。
+     *
+     * @param unitTypeName 单位类型名称
+     * @param ownerId      所有者ID
+     * @return 若存在则返回true
+     */
+    boolean existsByUnitTypeNameAndOwnerIdAndIsDeletedFalse(String unitTypeName, Long ownerId);
 }

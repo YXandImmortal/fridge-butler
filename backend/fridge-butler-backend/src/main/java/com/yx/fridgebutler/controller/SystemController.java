@@ -25,7 +25,7 @@ import java.util.List;
 @RequestMapping("/system")
 public class SystemController {
     public static final String SYSTEM_NAME = "智鲜·引擎";
-    public static final String SYSTEM_VERSION = "alpha 0.0.7";
+    public static final String SYSTEM_VERSION = "alpha 0.0.8";
     public static final String SYSTEM_SLOGAN = "智能管理您的冰箱，让食材更新鲜";
     public static final List<SidebarFeatureVO> USER_INDEX_FEATURES;
     public static final List<FeatureVO> SYSTEM_FEATURES;
@@ -91,6 +91,18 @@ public class SystemController {
                         .name("物品单位")
                         .path("/item-unit")
                         .icon("icon-inbox-all")
+                        .children(Arrays.asList(
+                                SidebarFeatureVO.builder()
+                                        .id(41)
+                                        .name("单位分类一览")
+                                        .path("/item-unit-type/list")
+                                        .build(),
+                                SidebarFeatureVO.builder()
+                                        .id(42)
+                                        .name("创建单位分类")
+                                        .path("/item-unit-type/create")
+                                        .build()
+                        ))
                         .build(),
                 SidebarFeatureVO.builder()
                         .id(5)
@@ -135,7 +147,8 @@ public class SystemController {
                         .date("2026-5-9")
                         .changes(Arrays.asList(
                                 "完善了冰箱物品管理功能，现在可以使用全部物品管理功能",
-                                "新增了物品分类管理功能，可以自由创建物品分类"
+                                "新增了物品分类管理功能，可以自由创建物品分类",
+                                "新增了物品单位分类管理功能，物品数量一目了然"
                         ))
                         .build(),
                 UpdateLogVO.builder()
