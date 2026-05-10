@@ -41,6 +41,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -101,6 +102,7 @@ public class ItemServiceImpl implements ItemService {
         List<BizItemCategory> categories = categoryRepository.findAllByOwnerIdOrSystemDefault(currentUserId);
 
         return categories.stream()
+                .sorted(Comparator.comparing(BizItemCategory::getIsSystemDefault))
                 .map(c -> ItemCategoryVO.builder()
                         .id(c.getId())
                         .categoryName(c.getCategoryName())
@@ -197,7 +199,8 @@ public class ItemServiceImpl implements ItemService {
     /**
      * {@inheritDoc}
      * <p>
-     * 只能删除自己创建的自定义分类，若分类下仍存在物品则不允许删除。
+     * 只能删除自己创建的自定义分类。删除后该分类下已关联的物品仍保留关联关系，
+     * 但前端展示时会将分类名称显示为"未知"。
      */
     @Override
     @Transactional
@@ -210,12 +213,6 @@ public class ItemServiceImpl implements ItemService {
 
         if (Boolean.TRUE.equals(category.getIsSystemDefault())) {
             throw BusinessException.categoryNotEditable();
-        }
-
-        // 检查该分类下是否还有未删除的物品
-        long itemCount = itemRepository.countByCategoryIdAndIsDeletedFalse(id);
-        if (itemCount > 0) {
-            throw BusinessException.categoryInUse();
         }
 
         category.setIsDeleted(true);
@@ -571,6 +568,7 @@ public class ItemServiceImpl implements ItemService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         Map<Long, String> categoryMap = categoryRepository.findAllById(categoryIds).stream()
+                .filter(c -> !Boolean.TRUE.equals(c.getIsDeleted()))
                 .collect(Collectors.toMap(BizItemCategory::getId, BizItemCategory::getCategoryName));
 
         // 批量查询单位信息
@@ -622,12 +620,31 @@ public class ItemServiceImpl implements ItemService {
                 .productionDate(item.getProductionDate())
                 .shelfLifeDays(item.getShelfLifeDays())
                 .categoryId(item.getCategoryId())
-                .categoryName(categoryMap.get(item.getCategoryId()))
+                .categoryName(resolveCategoryName(item.getCategoryId(), categoryMap))
                 .itemNum(item.getItemNum())
                 .remark(item.getRemark())
                 .createTime(formatInstant(item.getCreateTime()))
                 .updateTime(formatInstant(item.getUpdateTime()))
                 .build();
+    }
+
+    /**
+     * 解析物品的分类名称。
+     * <p>
+     * 如果分类 ID 为空，则返回 null；
+     * 如果分类已被软删除（在 categoryMap 中不存在），则返回"未知"；
+     * 否则返回分类原始名称。
+     *
+     * @param categoryId  分类ID
+     * @param categoryMap 分类ID到名称的映射（仅包含未删除的分类）
+     * @return 分类名称
+     */
+    private String resolveCategoryName(Long categoryId, Map<Long, String> categoryMap) {
+        if (categoryId == null) {
+            return null;
+        }
+        String name = categoryMap.get(categoryId);
+        return name != null ? name : "未知";
     }
 
     /**

@@ -71,14 +71,26 @@ public class SystemController {
                 SidebarFeatureVO.builder()
                         .id(3)
                         .name("物品分类")
-                        .path("/user/item-category")
-                        .icon("icon-inbox-full")
+                        .path("/item-category")
+                        .icon("icon-label-alt-multiple")
+                        .children(Arrays.asList(
+                                SidebarFeatureVO.builder()
+                                        .id(31)
+                                        .name("物品分类一览")
+                                        .path("/item-category/list")
+                                        .build(),
+                                SidebarFeatureVO.builder()
+                                        .id(32)
+                                        .name("创建物品分类")
+                                        .path("/item-category/create")
+                                        .build()
+                        ))
                         .build(),
                 SidebarFeatureVO.builder()
                         .id(4)
                         .name("物品单位")
-                        .path("/user/item-unit")
-                        .icon("icon-label")
+                        .path("/item-unit")
+                        .icon("icon-inbox-all")
                         .build(),
                 SidebarFeatureVO.builder()
                         .id(5)
@@ -103,7 +115,7 @@ public class SystemController {
                 FeatureVO.builder()
                         .title("物品分类")
                         .description("自定义物品分类体系，支持多级分类，让食材归类更清晰")
-                        .icon("icon-inbox-full")
+                        .icon("icon-label")
                         .build(),
                 FeatureVO.builder()
                         .title("过期提醒")
@@ -118,6 +130,14 @@ public class SystemController {
         );
 
         SYSTEM_UPDATES = List.of(
+                UpdateLogVO.builder()
+                        .version(SYSTEM_VERSION)
+                        .date("2026-5-9")
+                        .changes(Arrays.asList(
+                                "完善了冰箱物品管理功能，现在可以使用全部物品管理功能",
+                                "新增了物品分类管理功能，可以自由创建物品分类"
+                        ))
+                        .build(),
                 UpdateLogVO.builder()
                         .version("alpha 0.0.7")
                         .date("2026-4-30")
@@ -183,7 +203,7 @@ public class SystemController {
     /**
      * 获取系统信息
      * <p>
-     * 返回系统的完整信息，包括系统名称、版本、标语、功能特性、侧边栏菜单、更新日志和关于信息。
+     * 返回系统的完整信息，包括系统名称、版本、标语、功能特性、侧边栏菜单、更新日志和 关于我们信息。
      * </p>
      *
      * @return 包含系统所有信息的响应结果
