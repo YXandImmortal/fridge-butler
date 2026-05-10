@@ -1,6 +1,6 @@
 <template>
-  <div class="fridge-create-page">
-    <div class="fridge-create-container">
+  <div class="unit-type-create-page">
+    <div class="unit-type-create-container">
       <!-- 返回按钮 -->
       <div class="back-bar">
         <CustomButton type="link" @click="handleBack">
@@ -10,7 +10,7 @@
       </div>
 
       <div class="create-card">
-        <h2 class="create-title">创建冰箱</h2>
+        <h2 class="create-title">创建物品单位分类</h2>
 
         <el-form
           ref="formRef"
@@ -19,34 +19,13 @@
           label-position="top"
           class="create-form"
         >
-          <el-form-item label="冰箱名称" prop="name">
+          <el-form-item label="分类名称" prop="typeName">
             <EnhancedInput
-              v-model="form.name"
-              placeholder="请输入冰箱名称，如：家用冰箱、办公室冰箱"
-              maxlength="50"
+              v-model="form.typeName"
+              placeholder="请输入单位分类名称，如：重量、容量、数量"
+              maxlength="20"
               show-word-limit
-              icon="icon-refrigerator"
-            />
-          </el-form-item>
-
-          <el-form-item label="冰箱描述" prop="description">
-            <EnhancedInput
-              v-model="form.description"
-              type="textarea"
-              :rows="4"
-              placeholder="请输入冰箱描述（选填）"
-              maxlength="200"
-              show-word-limit
-            />
-          </el-form-item>
-
-          <el-form-item label="地址" prop="address">
-            <EnhancedInput
-              v-model="form.address"
-              placeholder="请输入冰箱地址（选填）"
-              maxlength="100"
-              show-word-limit
-              icon="icon-location"
+              icon="icon-label-alt"
             />
           </el-form-item>
         </el-form>
@@ -58,7 +37,7 @@
             :loading="submitting"
             @click="handleSubmit"
           >
-            {{ submitting ? '创建中...' : '创建冰箱' }}
+            {{ submitting ? '创建中...' : '创建分类' }}
           </CustomButton>
           <CustomButton size="large" @click="handleBack" type="danger">取消</CustomButton>
         </div>
@@ -71,9 +50,9 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import showMessage from '@/utils/message'
-import { createFridge } from '@/api/fridge'
-import EnhancedInput from "@/components/EnhancedInput.vue";
-import CustomButton from "@/components/CustomButton.vue";
+import { createUnitType } from '@/api/item'
+import EnhancedInput from '@/components/EnhancedInput.vue'
+import CustomButton from '@/components/CustomButton.vue'
 
 const router = useRouter()
 
@@ -85,22 +64,14 @@ const submitting = ref(false)
 
 // 表单数据
 const form = reactive({
-  name: '',
-  description: '',
-  address: ''
+  typeName: ''
 })
 
 // 表单校验规则
 const rules = {
-  name: [
-    { required: true, message: '请输入冰箱名称', trigger: 'blur' },
-    { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
-  ],
-  description: [
-    { max: 200, message: '描述最多 200 个字符', trigger: 'blur' }
-  ],
-  address: [
-    { max: 100, message: '地址最多 100 个字符', trigger: 'blur' }
+  typeName: [
+    { required: true, message: '请输入单位分类名称', trigger: 'blur' },
+    { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur' }
   ]
 }
 
@@ -116,23 +87,18 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
-    const res = await createFridge({
-      fridgeName: form.name.trim(),
-      remark: form.description.trim() || undefined,
-      fridgeAddress: form.address.trim() || undefined
+    const res = await createUnitType({
+      typeName: form.typeName.trim()
     })
 
     if (res.code === 200) {
-      showMessage.success('冰箱创建成功')
-      await router.push({
-        name: 'fridge-detail',
-        params: { id: res.data ? res.data : '' }
-      })
+      showMessage.success('创建成功')
+      router.push({ name: 'item-unit-type-list' })
     } else {
       showMessage.error(res.message || '创建失败')
     }
   } catch (error) {
-    console.error('创建冰箱失败:', error)
+    console.error('创建单位分类失败:', error)
     showMessage.error('创建失败')
   } finally {
     submitting.value = false
@@ -141,20 +107,20 @@ const handleSubmit = async () => {
 
 // 返回列表
 const handleBack = () => {
-  router.push('/fridge/list')
+  router.push({ name: 'item-unit-type-list' })
 }
 </script>
 
 <style scoped>
-.fridge-create-page {
+.unit-type-create-page {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100%;
 }
 
-.fridge-create-container {
-  max-width: 600px;
+.unit-type-create-container {
+  max-width: 560px;
   width: 100%;
   animation: fade-in-up 0.6s ease-out;
 }

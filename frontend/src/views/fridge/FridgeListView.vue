@@ -2,7 +2,7 @@
   <div class="fridge-list-container">
     <!-- 页面标题栏 -->
     <div class="page-header">
-      <h2 class="page-title">我的冰箱</h2>
+      <h2 class="page-title">冰箱一览</h2>
       <CustomButton type="primary" @click="handleCreate" class="create-btn">
         新建冰箱
       </CustomButton>

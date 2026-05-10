@@ -110,3 +110,130 @@ export function takeOutItem(data) {
         data
     })
 }
+
+/**
+ * 查询物品分类详情
+ * @param {number} id - 分类ID
+ */
+export function getItemCategoryDetail(id) {
+    return request({
+        url: `/item/category/detail/${id}`,
+        method: 'get'
+    })
+}
+
+/**
+ * 创建单位类型
+ * @param {Object} data - 单位类型数据
+ * @param {string} data.typeName - 单位类型名称
+ */
+export function createUnitType(data) {
+    return request({
+        url: '/item/unit-type/create',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 更新单位类型
+ * @param {Object} data - 单位类型数据
+ * @param {number} data.id - 单位类型ID
+ * @param {string} data.typeName - 单位类型名称
+ */
+export function updateUnitType(data) {
+    return request({
+        url: '/item/unit-type/update',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 删除单位类型
+ * @param {number} id - 单位类型ID
+ */
+export function deleteUnitType(id) {
+    return request({
+        url: `/item/unit-type/delete/${id}`,
+        method: 'delete'
+    })
+}
+
+/**
+ * 创建物品单位
+ * @param {Object} data - 物品单位数据
+ * @param {string} data.unitName - 单位名称
+ * @param {number} data.unitTypeId - 所属单位类型ID
+ */
+export function createItemUnit(data) {
+    return request({
+        url: '/item/unit/create',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 更新物品单位
+ * @param {Object} data - 物品单位数据
+ * @param {number} data.id - 单位ID
+ * @param {string} data.unitName - 单位名称
+ * @param {number} data.unitTypeId - 所属单位类型ID
+ */
+export function updateItemUnit(data) {
+    return request({
+        url: '/item/unit/update',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 删除物品单位
+ * @param {number} id - 单位ID
+ */
+export function deleteItemUnit(id) {
+    return request({
+        url: `/item/unit/delete/${id}`,
+        method: 'delete'
+    })
+}
+
+/**
+ * 创建物品分类
+ * @param {Object} data - 分类数据
+ * @param {string} data.categoryName - 分类名称
+ */
+export function createItemCategory(data) {
+    return request({
+        url: '/item/category/create',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 更新物品分类
+ * @param {Object} data - 分类数据
+ * @param {number} data.id - 分类ID
+ * @param {string} data.categoryName - 分类名称
+ */
+export function updateItemCategory(data) {
+    return request({
+        url: '/item/category/update',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 删除物品分类
+ * @param {number} id - 分类ID
+ */
+export function deleteItemCategory(id) {
+    return request({
+        url: `/item/category/delete/${id}`,
+        method: 'delete'
+    })
+}

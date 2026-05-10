@@ -3,12 +3,14 @@ import { useUserStore } from '@/stores/user'
 import { MainLayout } from '@/layouts'
 
 const UserIndexView = () => import('@/views/user/UserIndexView.vue')
-const SuperAdminIndex = () => import('@/views/super-admin/SuperAdminIndex.vue')
+const SuperAdminIndex = () => import('@/views/super-admin/SuperAdminIndexView.vue')
 const UserCenterView = () => import('@/views/user/UserCenterView.vue')
 const FridgeListView = () => import('@/views/fridge/FridgeListView.vue')
 const FridgeDetailView = () => import('@/views/fridge/FridgeDetailView.vue')
 const FridgeCreateView = () => import('@/views/fridge/FridgeCreateView.vue')
 const ItemManageView = () => import('@/views/fridge/ItemManageView.vue')
+const ItemCategoryListView = () => import('@/views/item/ItemCategoryListView.vue')
+const ItemCategoryCreateView = () => import('@/views/item/ItemCategoryCreateView.vue')
 const AboutView = () => import('@/views/AboutView.vue')
 
 const LoginView = () => import('@/views/LoginView.vue')
@@ -94,6 +96,55 @@ const router = createRouter({
             roles: [USER_PERMISSION]
           }
         }
+      ]
+    },
+    // 物品分类管理路由（使用主布局）
+    {
+      path: '/item-category',
+      component: MainLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'list',
+          name: 'item-category-list',
+          component: ItemCategoryListView,
+          meta: {
+            roles: [USER_PERMISSION]
+          }
+        },
+        {
+          path: 'create',
+          name: 'item-category-create',
+          component: ItemCategoryCreateView,
+          meta: {
+            roles: [USER_PERMISSION]
+          }
+        },
+        // 编辑分类已改为对话框形式，无需独立路由
+      ]
+    },
+    // 物品单位管理路由（使用主布局）
+    {
+      path: '/item-unit-type',
+      component: MainLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'list',
+          name: 'item-unit-type-list',
+          component: () => import('@/views/item/ItemUnitTypeListView.vue'),
+          meta: {
+            roles: [USER_PERMISSION]
+          }
+        },
+        {
+          path: 'create',
+          name: 'item-unit-type-create',
+          component: () => import('@/views/item/ItemUnitTypeCreateView.vue'),
+          meta: {
+            roles: [USER_PERMISSION]
+          }
+        },
       ]
     },
     // 超级管理员路由（使用主布局）
