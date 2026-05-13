@@ -158,7 +158,7 @@ const handleRegister = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* 记住我选项 */
 .remember-me-item {
   margin-bottom: var(--space-6);

@@ -1,30 +1,45 @@
 <template>
   <transition name="dialog-fade">
-    <div v-if="visible" class="confirm-dialog-overlay" @click.self="handleOverlayClick">
-      <div class="confirm-dialog" :style="{ maxWidth: width }">
+    <div v-if="visible" class="input-dialog-overlay" @click.self="handleOverlayClick">
+      <div class="input-dialog">
         <div class="dialog-header">
           <div class="dialog-title-container">
-            <i class="iconfont icon-alert dialog-icon"></i>
+            <i class="iconfont icon-edit dialog-icon" />
             <h3 class="dialog-title">{{ title }}</h3>
           </div>
-          <i v-if="showClose" class="iconfont icon-close dialog-close" @click="handleCancel"></i>
+          <i class="iconfont icon-close dialog-close" @click="handleClose" />
         </div>
         <div class="dialog-content">
-          <p>{{ message }}</p>
-          <div v-if="type === 'select'" class="dialog-select-wrapper">
-            <CustomSelect
-              :model-value="selectValue"
-              :placeholder="selectPlaceholder"
-              style="width: 100%"
-              :options="mappedOptions"
-              @update:model-value="handleSelectChange"
-            />
-          </div>
-          <slot />
+          <el-form
+            ref="formRef"
+            :model="form"
+            :rules="rules"
+            label-position="top"
+            class="edit-form"
+          >
+            <el-form-item :label="label" prop="value">
+              <EnhancedInput
+                v-model="form.value"
+                :placeholder="placeholder"
+                maxlength="20"
+                show-word-limit
+                :icon="icon"
+              />
+            </el-form-item>
+          </el-form>
         </div>
         <div class="dialog-footer">
-          <CustomButton v-if="showCancel" type="danger" class="dialog-btn dialog-btn-cancel" @click="handleCancel">{{ cancelText }}</CustomButton>
-          <CustomButton type="primary" class="dialog-btn dialog-btn-confirm" @click="handleConfirm">{{ confirmText }}</CustomButton>
+          <CustomButton class="dialog-btn dialog-btn-cancel" @click="handleClose">
+            取消
+          </CustomButton>
+          <CustomButton
+            type="primary"
+            class="dialog-btn dialog-btn-confirm"
+            :loading="loading"
+            @click="handleSubmit"
+          >
+            {{ confirmText }}
+          </CustomButton>
         </div>
       </div>
     </div>
@@ -32,8 +47,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import CustomSelect from './CustomSelect.vue'
+import { reactive, ref, watch } from 'vue'
+import CustomButton from '@/components/CustomButton.vue'
+import EnhancedInput from '@/components/EnhancedInput.vue'
 
 const props = defineProps({
   visible: {
@@ -42,109 +58,99 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: '确认操作'
+    default: '编辑'
   },
-  message: {
+  label: {
     type: String,
-    default: '您确定要执行此操作吗？'
+    default: '名称'
+  },
+  placeholder: {
+    type: String,
+    default: '请输�?
+  },
+  icon: {
+    type: String,
+    default: 'icon-edit'
+  },
+  data: {
+    type: Object,
+    default: () => null
+  },
+  valueProp: {
+    type: String,
+    default: 'name'
   },
   confirmText: {
     type: String,
     default: '确认'
   },
-  cancelText: {
-    type: String,
-    default: '取消'
-  },
-  persistent: {
+  loading: {
     type: Boolean,
     default: false
-  },
-  showClose: {
-    type: Boolean,
-    default: true
-  },
-  showCancel: {
-    type: Boolean,
-    default: true
-  },
-  width: {
-    type: String,
-    default: '300px'
-  },
-  type: {
-    type: String,
-    default: 'confirm'
-  },
-  selectValue: {
-    type: [String, Number],
-    default: null
-  },
-  options: {
-    type: Array,
-    default: () => []
-  },
-  optionLabel: {
-    type: String,
-    default: 'label'
-  },
-  optionValue: {
-    type: String,
-    default: 'value'
-  },
-  selectPlaceholder: {
-    type: String,
-    default: '请选择'
-  },
-  selectLoading: {
-    type: Boolean,
-    default: false
-  },
-  selectClearable: {
-    type: Boolean,
-    default: true
   }
 })
 
-const emit = defineEmits(['update:visible', 'confirm', 'cancel', 'update:selectValue'])
+const emit = defineEmits(['update:visible', 'submit'])
 
-const handleConfirm = () => {
-  emit('confirm')
-  if (props.type !== 'select') {
-    emit('update:visible', false)
+const formRef = ref(null)
+
+const form = reactive({
+  value: ''
+})
+
+const rules = {
+  value: [
+    { required: true, message: props.placeholder, trigger: 'blur' },
+    { min: 1, max: 20, message: '长度�?1 �?20 个字�?, trigger: 'blur' }
+  ]
+}
+
+const resetForm = () => {
+  form.value = ''
+  if (formRef.value) {
+    formRef.value.resetFields()
   }
 }
 
-const mappedOptions = computed(() => {
-  return props.options.map(item => ({
-    label: item[props.optionLabel],
-    value: item[props.optionValue]
-  }))
+const initForm = () => {
+  if (props.data) {
+    form.value = props.data[props.valueProp] || ''
+  }
+}
+
+watch(() => props.visible, (val) => {
+  if (val) {
+    initForm()
+  } else {
+    resetForm()
+  }
 })
 
-const handleSelectChange = (val) => {
-  emit('update:selectValue', val)
+const handleClose = () => {
+  emit('update:visible', false)
 }
 
 const handleOverlayClick = () => {
-  if (props.persistent) {
-    return
-  }
-  handleCancel()
+  handleClose()
 }
 
-const handleCancel = () => {
-  if (props.persistent) {
-    emit('cancel')
+const handleSubmit = async () => {
+  const valid = await formRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  if (!props.data) {
     return
   }
-  emit('cancel')
-  emit('update:visible', false)
+
+  emit('submit', {
+    id: props.data.id,
+    value: form.value.trim()
+  })
 }
 </script>
 
-<style scoped lang="scss">
-.confirm-dialog-overlay {
+<style lang="scss" scoped lang="scss">
+.input-dialog-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -158,11 +164,11 @@ const handleCancel = () => {
   z-index: 100;
 }
 
-.confirm-dialog {
+.input-dialog {
   background: var(--card-bg);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
-  max-width: 500px;
+  max-width: 440px;
   width: 90%;
   animation: dialog-slide-in 0.3s ease-out;
 }
@@ -182,7 +188,7 @@ const handleCancel = () => {
 
 .dialog-icon {
   font-size: 24px;
-  color: var(--warn-color);
+  color: var(--primary-color);
 }
 
 .dialog-title {
@@ -205,19 +211,18 @@ const handleCancel = () => {
 }
 
 .dialog-content {
-  padding: var(--space-6);
+  padding: var(--space-5) var(--space-6);
 }
 
-.dialog-content p {
-  margin: 0;
-  font-size: 18px;
+.edit-form :deep(.el-form-item__label) {
   color: var(--text-secondary);
-  line-height: 1.5;
-  text-align: center;
+  font-weight: 500;
+  font-size: 14px;
+  padding-bottom: 4px;
 }
 
-.dialog-select-wrapper {
-  margin-top: var(--space-4);
+.edit-form :deep(.el-form-item) {
+  margin-bottom: 0;
 }
 
 .dialog-footer {
@@ -238,12 +243,12 @@ const handleCancel = () => {
 }
 
 .dialog-btn-cancel {
-  background: var(--danger-color);
-  color: var(--text-inverse);
+  background: var(--gray-20);
+  color: var(--text-secondary);
 }
 
 .dialog-btn-cancel:hover {
-  box-shadow: 0 6px 20px var(--danger-40);
+  background: var(--gray-30);
   transform: translateY(-2px);
 }
 
@@ -282,7 +287,7 @@ const handleCancel = () => {
 }
 
 @media (max-width: 768px) {
-  .confirm-dialog {
+  .input-dialog {
     min-width: 280px;
     width: 85%;
   }
@@ -300,7 +305,7 @@ const handleCancel = () => {
   }
 
   .dialog-content {
-    padding: var(--space-5);
+    padding: var(--space-4) var(--space-5);
   }
 
   .dialog-footer {

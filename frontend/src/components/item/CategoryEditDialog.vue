@@ -140,7 +140,7 @@ const handleSubmit = async () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .category-edit-dialog-overlay {
   position: fixed;
   top: 0;

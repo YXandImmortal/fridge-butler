@@ -37,7 +37,7 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .copyright-footer {
   z-index: 1000;
   padding: 20px 24px;

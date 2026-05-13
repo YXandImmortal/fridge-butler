@@ -17,7 +17,7 @@
 // 超级管理员首页 - 占位页面
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .super-admin-container {
   max-width: 960px;
   margin: 0 auto;

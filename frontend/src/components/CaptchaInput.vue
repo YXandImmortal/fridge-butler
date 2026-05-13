@@ -79,7 +79,7 @@ defineExpose({
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .captcha-input-wrapper {
   display: flex;
   align-items: center;

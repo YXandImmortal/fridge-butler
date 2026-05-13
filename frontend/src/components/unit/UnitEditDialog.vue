@@ -154,7 +154,7 @@ const handleSubmit = async () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .unit-edit-dialog-overlay {
   position: fixed;
   top: 0;

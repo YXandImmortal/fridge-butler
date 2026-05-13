@@ -68,7 +68,7 @@ const handleClick = (event) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .custom-button {
   display: inline-flex;
   align-items: center;

@@ -111,7 +111,7 @@ const handleBack = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .category-create-page {
   display: flex;
   align-items: center;

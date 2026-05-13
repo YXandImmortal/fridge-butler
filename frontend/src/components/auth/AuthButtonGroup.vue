@@ -52,7 +52,7 @@ const secondaryAction = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* 按钮组 */
 .button-group {
   margin-bottom: 0;

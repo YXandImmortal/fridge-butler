@@ -8,6 +8,6 @@
 // 无需编写任何代码，空的 setup 即可
 </script>
 
-<style>
+<style lang="scss">
 /* 全局样式已迁移至 src/styles/global.scss */
 </style>

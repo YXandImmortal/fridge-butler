@@ -78,7 +78,7 @@ const { systemName, systemVersion, slogan, features, updates, about } = systemSt
 const currentYear = computed(() => new Date().getFullYear())
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .about-container {
   max-width: 960px;
   margin: 0 auto;

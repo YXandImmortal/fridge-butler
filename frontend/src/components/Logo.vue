@@ -6,7 +6,7 @@
 // 组件逻辑
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .logo-svg {
   width: 100%;
   height: 100%;

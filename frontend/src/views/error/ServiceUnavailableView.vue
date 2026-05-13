@@ -86,7 +86,7 @@ const goBack = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .error-page {
   min-height: 100vh;
   display: flex;

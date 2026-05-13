@@ -1,8 +1,17 @@
 {
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
+  "include": [
+    "src/**/*",
+    "auto-imports.d.ts",
+    "components.d.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

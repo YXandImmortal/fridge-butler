@@ -85,7 +85,7 @@ const goBack = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .not-found-page {
   min-height: 100vh;
   display: flex;

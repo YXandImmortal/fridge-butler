@@ -347,7 +347,7 @@ const handleSubmit = async () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .item-create-dialog-overlay {
   position: fixed;
   top: 0;

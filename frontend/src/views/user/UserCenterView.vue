@@ -334,7 +334,7 @@ const handleLogout = (msg) => {
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .profile-container {
   width: 100%;
   display: flex;
@@ -564,7 +564,6 @@ const handleLogout = (msg) => {
 
 .avatar-item:hover :deep(.el-avatar) {
   box-shadow: var(--shadow-avatar);
-  transition: all 0.3s ease;
   transition: all 0.3s ease;
 }
 

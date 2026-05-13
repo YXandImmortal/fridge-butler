@@ -3,7 +3,7 @@
  * 按顺序引入：变量 -> Mixins -> 动画 -> Element覆盖 -> 全局 -> 业务公共
  * ========================================================= */
 
-@use './variables.scss';
+@use './css-variables.scss';
 @use './animations.scss';
 @use './mixins.scss';
 @use './element-overrides.scss';

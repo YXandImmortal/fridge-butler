@@ -55,7 +55,7 @@ const handleClose = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .custom-message {
   position: fixed;
   top: var(--space-5);

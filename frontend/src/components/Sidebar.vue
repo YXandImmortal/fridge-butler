@@ -141,7 +141,7 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .app-sidebar {
   width: var(--sidebar-width);
   height: calc(100vh - var(--header-height));

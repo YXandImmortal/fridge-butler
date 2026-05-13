@@ -111,7 +111,7 @@ const handleBack = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .unit-type-create-page {
   display: flex;
   align-items: center;

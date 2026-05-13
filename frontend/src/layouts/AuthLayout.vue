@@ -34,7 +34,7 @@ const props = defineProps({
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* 主题切换按钮定位 */
 .auth-theme-toggle {
     position: absolute;

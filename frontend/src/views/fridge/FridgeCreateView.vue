@@ -145,7 +145,7 @@ const handleBack = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .fridge-create-page {
   display: flex;
   align-items: center;

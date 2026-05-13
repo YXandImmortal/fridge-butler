@@ -334,7 +334,7 @@ watch(
 )
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .fridge-detail-container {
   max-width: 600px;
   margin: 0 auto;

@@ -63,7 +63,7 @@ const handleLogout = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .main-layout {
   display: flex;
   flex-direction: column;

@@ -222,7 +222,7 @@ const confirmDeleteUnit = async () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .unit-expand-dialog-overlay {
   position: fixed;
   top: 0;

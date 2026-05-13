@@ -53,7 +53,7 @@ const handleFieldChange = (val) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .sort-control-wrapper {
   display: flex;
   gap: 12px;

@@ -13,9 +13,11 @@ export default defineConfig({
     vue(),
     AutoImport({
       resolvers: [ElementPlusResolver()],
+      dts: true,
     }),
     Components({
       resolvers: [ElementPlusResolver()],
+      dts: true,
     }),
   ],
   resolve: {
@@ -24,10 +26,10 @@ export default defineConfig({
     }
   },
   css: {
-    transformer: 'postcss',
+
     preprocessorOptions: {
       scss: {
-        additionalData: `@use "@/styles/variables.scss" as *; @use "@/styles/mixins.scss" as *;`
+        additionalData: `@use "@/styles/mixins.scss" as *;`
       }
     }
   }

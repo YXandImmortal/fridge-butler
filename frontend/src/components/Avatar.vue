@@ -83,7 +83,7 @@ const sizeClass = computed(() => `avatar--${props.size}`)
 const shapeClass = computed(() => `avatar--${props.shape}`)
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .avatar-container {
   display: inline-flex;
   align-items: center;

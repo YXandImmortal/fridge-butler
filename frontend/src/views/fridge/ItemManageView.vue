@@ -697,7 +697,7 @@ watch(
 </script>
 
 
-<style scoped>
+<style scoped lang="scss">
 .item-manage-container {
   max-width: 1400px;
   margin: 0 auto;

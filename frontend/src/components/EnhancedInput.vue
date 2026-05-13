@@ -57,7 +57,7 @@ const inputStyle = computed(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* 基础容器 */
 .enhanced-input {
   width: 100%;

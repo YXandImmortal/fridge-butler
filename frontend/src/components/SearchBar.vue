@@ -46,7 +46,7 @@ const handleClear = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .search-bar-wrapper {
   display: flex;
   gap: 12px;

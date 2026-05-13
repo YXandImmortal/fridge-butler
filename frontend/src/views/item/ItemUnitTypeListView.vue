@@ -278,7 +278,7 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .unit-type-list-container {
   max-width: 1200px;
   margin: 0 auto;

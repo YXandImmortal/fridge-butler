@@ -24,7 +24,7 @@ const props = defineProps({
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* 认证头部 */
 .auth-header {
     text-align: center;
