@@ -66,7 +66,7 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: '请输�?
+    default: '请输入名称'
   },
   icon: {
     type: String,
@@ -101,7 +101,7 @@ const form = reactive({
 const rules = {
   value: [
     { required: true, message: props.placeholder, trigger: 'blur' },
-    { min: 1, max: 20, message: '长度�?1 �?20 个字�?, trigger: 'blur' }
+    { min: 1, max: 20, message: '长度为1-20个字符', trigger: 'blur' }
   ]
 }
 
@@ -149,7 +149,7 @@ const handleSubmit = async () => {
 }
 </script>
 
-<style lang="scss" scoped lang="scss">
+<style lang="scss" scoped>
 .input-dialog-overlay {
   position: fixed;
   top: 0;
