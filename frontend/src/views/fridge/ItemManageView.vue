@@ -93,9 +93,10 @@
           <div v-else class="item-table-wrapper">
             <el-table
                 max-height="62vh"
-              :data="itemList"
-              class="item-table"
-              :header-cell-style="{ background: 'var(--gray-20)', color: 'var(--text-primary)', fontWeight: 600 }"
+                :data="itemList"
+                class="item-table"
+                :header-cell-style="{ color: 'var(--text-primary)', fontWeight: 600 }"
+                width="100%"
             >
               <el-table-column label="物品名称" min-width="140" show-overflow-tooltip>
                 <template #default="{ row }">

@@ -81,7 +81,9 @@ const handleClick = (event) => {
   line-height: 1;
   letter-spacing: 0.5px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease,
+  box-shadow 0.3s ease, border-color 0.3s ease,
+  filter 0.3s ease, opacity 0.3s ease;
   border: 1px solid transparent;
   outline: none;
   font-family: var(--el-font-family);
@@ -90,7 +92,7 @@ const handleClick = (event) => {
 }
 
 .custom-button--default {
-  background: var(--card-bg);
+  background: transparent;
   color: var(--text-primary);
   border-color: var(--gray-40);
 }

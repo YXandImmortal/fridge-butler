@@ -19,9 +19,14 @@ export const useThemeStore = defineStore('theme', () => {
         applyTheme()
     }
 
-    // 应用主题到 DOM
+    // 应用主题到 DOM（使用 Element Plus 官方 dark 类方式）
     const applyTheme = () => {
-        document.documentElement.setAttribute('data-theme', theme.value)
+        const html = document.documentElement
+        if (theme.value === 'dark') {
+            html.classList.add('dark')
+        } else {
+            html.classList.remove('dark')
+        }
     }
 
     // 切换主题

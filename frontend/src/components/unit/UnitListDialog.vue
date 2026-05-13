@@ -248,6 +248,8 @@ const confirmDeleteUnit = async () => {
   display: flex;
   flex-direction: column;
   animation: dialog-slide-in 0.3s ease-out;
+  transition: background-color 0.3s ease, color 0.3s ease,
+  border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .dialog-header {
@@ -390,7 +392,7 @@ const confirmDeleteUnit = async () => {
   background: var(--glass-bg);
   border-radius: var(--radius-md);
   border: 1px solid var(--gray-30);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   position: relative;
   gap: var(--space-2);
 }

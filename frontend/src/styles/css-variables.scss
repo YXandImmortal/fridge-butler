@@ -66,7 +66,7 @@
  * 浅色主题（默认）
  * --------------------------------------------------------- */
 :root,
-html[data-theme="light"] {
+html:not(.dark) {
   /* 语义化品牌色 */
   --primary-color: var(--color-primary-300);
   --primary-dark: var(--color-primary-400);
@@ -165,6 +165,10 @@ html[data-theme="light"] {
   --gradient-text: linear-gradient(90deg, var(--primary-color), var(--success-color));
   --gradient-btn: linear-gradient(90deg, var(--primary-color), var(--success-color));
 
+  /* Footer 背景拆分为两套，用于伪元素交叉淡入淡出 */
+  --gradient-footer-light: radial-gradient(ellipse, rgba(255, 255, 255, 1) 0%, rgba(248, 250, 252, 0.85) 80%, rgba(248, 250, 252, 0.6) 100%);
+  --gradient-footer-dark: radial-gradient(ellipse, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 0.95) 80%, rgba(15, 23, 42, 0.8) 100%);
+
   /* 滚动条 */
   --scrollbar-track: var(--primary-10);
   --scrollbar-thumb: var(--primary-30);
@@ -190,7 +194,7 @@ html[data-theme="light"] {
 /* ---------------------------------------------------------
  * 深色主题
  * --------------------------------------------------------- */
-html[data-theme="dark"] {
+html.dark {
   /* 语义化品牌色 */
   --primary-color: var(--color-primary-300);
   --primary-dark: var(--color-primary-200);
@@ -296,4 +300,22 @@ html[data-theme="dark"] {
 
   /* Element Plus 字体统一为 MiSans（深色模式下单独覆盖，避免被官方 CSS 后加载覆盖） */
   --el-font-family: 'MiSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+
+  /* Element Plus 暗色主题核心变量兜底 — 避免官方 #141414 与项目 #1e293b 不协调 */
+  --el-bg-color: var(--card-bg);
+  --el-bg-color-page: var(--page-bg);
+  --el-bg-color-overlay: var(--card-bg);
+  --el-fill-color-blank: var(--card-bg);
+  --el-fill-color-light: var(--input-bg);
+  --el-fill-color-lighter: rgba(160, 174, 192, 0.1);
+  --el-border-color: var(--border-color);
+  --el-border-color-light: var(--gray-20);
+  --el-border-color-lighter: var(--gray-20);
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-secondary);
+  --el-text-color-secondary: var(--text-tertiary);
+  --el-color-primary: var(--color-primary-300);
+  --el-table-header-bg-color: var(--gray-20);
+  --el-table-row-hover-bg-color: var(--primary-10);
+  --el-table-striped-row-bg-color: var(--white-10);
 }

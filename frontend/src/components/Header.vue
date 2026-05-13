@@ -22,49 +22,39 @@
 
       <!-- 通知图标 -->
       <div class="notification-icon">
-        <i class="iconfont icon-notification" />
-        <span class="notification-badge">3</span>
+        <el-badge :value="3">
+          <i class="iconfont icon-notification" />
+        </el-badge>
       </div>
 
       <!-- 用户信息 -->
-      <div class="user-info" 
-           @mouseenter="handleMouseEnter" 
-           @mouseleave="handleMouseLeave"
-           @click="toggleUserMenu"
-           @keydown="handleKeydown"
-           tabindex="0"
-           role="button"
-           :aria-expanded="showUserMenu">
-        <div class="user-avatar">
-          <Avatar :avatar-id="currentAvatar" size="small" />
+      <el-dropdown trigger="hover" @command="handleCommand" @visible-change="(visible) => showUserMenu = visible">
+        <div class="user-info">
+          <div class="user-avatar">
+            <Avatar :avatar-id="currentAvatar" size="small" />
+          </div>
+          <span class="user-name">{{ username }}</span>
+          <i class="iconfont icon-chevron-down user-arrow" :class="{ 'rotate-180': showUserMenu }" />
         </div>
-        <span class="user-name">{{ username }}</span>
-        <i class="iconfont icon-chevron-down user-arrow" :class="{ 'rotate-180': showUserMenu }" />
-        
-        <!-- 下拉菜单 -->
-        <div class="user-dropdown" 
-             ref="dropdownRef" 
-             v-show="showUserMenu" 
-             @mouseenter="clearHideTimer"
-             @mouseleave="startHideTimer">
-          <div class="dropdown-item" 
-               @click="goToUserCenter"
-               @keydown.enter="goToUserCenter"
-               tabindex="0"
-               role="menuitem">个人中心<i class="iconfont icon-user" /></div>
-          <div class="dropdown-item" 
-               @click="showLogoutConfirm"
-               @keydown.enter="showLogoutConfirm"
-               tabindex="0"
-               role="menuitem" style="color: var(--danger-color)">退出登录<i class="iconfont icon-logout" /></div>
-        </div>
-      </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="userCenter">
+              <span>个人中心</span>
+              <i class="iconfont icon-user" style="margin-left: 8px;" />
+            </el-dropdown-item>
+            <el-dropdown-item command="logout" style="color: var(--danger-color)">
+              <span>退出登录</span>
+              <i class="iconfont icon-logout" style="margin-left: 8px;" />
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
   </header>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useUserStore } from "@/stores/user.js"
 import { useSystemStore } from "@/stores/system.js"
 import Logo from './Logo.vue'
@@ -80,10 +70,8 @@ const { systemName, getSystemInfo } = systemStore;
 // 使用computed确保头像响应式更新，直接从userStore访问avatar状态
 const currentAvatar = computed(() => userStore.avatar);
 
-// 控制下拉菜单显示/隐藏
+// 控制下拉箭头旋转
 const showUserMenu = ref(false);
-const dropdownRef = ref(null);
-let hideTimer = null;
 
 // 定义事件
 const emit = defineEmits(['show-logout-dialog']);
@@ -94,81 +82,13 @@ onMounted(async () => {
   await getSystemInfo()
 })
 
-// 组件卸载时清理定时器
-onUnmounted(() => {
-  if (hideTimer) {
-    clearTimeout(hideTimer);
-    hideTimer = null;
+// 下拉菜单命令处理
+const handleCommand = (command) => {
+  if (command === 'userCenter') {
+    router.push('/user/center');
+  } else if (command === 'logout') {
+    emit('show-logout-dialog');
   }
-})
-
-// 鼠标进入处理
-const handleMouseEnter = () => {
-  clearHideTimer();
-  showUserMenu.value = true;
-}
-
-// 鼠标离开处理
-const handleMouseLeave = () => {
-  startHideTimer();
-}
-
-// 清除隐藏定时器
-const clearHideTimer = () => {
-  if (hideTimer) {
-    clearTimeout(hideTimer);
-    hideTimer = null;
-  }
-}
-
-// 开始隐藏定时器
-const startHideTimer = () => {
-  hideTimer = setTimeout(() => {
-    showUserMenu.value = false;
-  }, 300); // 300ms延迟，给用户足够时间移动鼠标到下拉菜单
-}
-
-// 切换用户菜单显示/隐藏
-const toggleUserMenu = () => {
-  showUserMenu.value = !showUserMenu.value;
-  clearHideTimer();
-}
-
-// 键盘事件处理
-const handleKeydown = (event) => {
-  switch (event.key) {
-    case 'Enter':
-    case ' ':
-      event.preventDefault();
-      toggleUserMenu();
-      break;
-    case 'Escape':
-      showUserMenu.value = false;
-      break;
-    case 'Tab':
-      if (showUserMenu.value) {
-        // 如果菜单打开，Tab键应该先聚焦到菜单项
-        event.preventDefault();
-        setTimeout(() => {
-          const firstMenuItem = dropdownRef.value?.querySelector('.dropdown-item');
-          firstMenuItem?.focus();
-        }, 0);
-      }
-      break;
-  }
-}
-
-// 个人中心
-const goToUserCenter = () => {
-  router.push('/user/center');
-  showUserMenu.value = false;
-}
-
-// 显示登出确认对话框
-const showLogoutConfirm = () => {
-  showUserMenu.value = false;
-  // 触发事件，通知父组件显示登出确认对话框
-  emit('show-logout-dialog');
 }
 
 </script>
@@ -258,6 +178,9 @@ const showLogoutConfirm = () => {
 
 .notification-icon:hover {
   color: var(--primary-color);
+}
+
+.notification-icon:hover .iconfont {
   transform: scale(1.1);
 }
 
@@ -265,22 +188,8 @@ const showLogoutConfirm = () => {
   width: 30px;
   height: 30px;
   font-size: 30px;
-}
-
-.notification-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: var(--danger-color);
-  color: var(--text-inverse);
-  font-size: 12px;
-  font-weight: 600;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
+  transition: transform 0.3s ease;
 }
 
 .user-info {
@@ -289,6 +198,7 @@ const showLogoutConfirm = () => {
   gap: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
+  outline: none;
 }
 
 .user-info:hover {
@@ -319,64 +229,6 @@ const showLogoutConfirm = () => {
 .user-info:hover .user-arrow,
 .rotate-180 {
   transform: rotate(180deg);
-}
-
-.user-info:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* 下拉菜单样式 */
-.user-dropdown {
-  position: absolute;
-  top: calc(var(--header-height) - 15px);
-  right: 24px;
-  background: var(--dropdown-bg);
-  border-radius: 4px;
-  box-shadow: var(--shadow-dropdown);
-  min-width: 110px;
-  z-index: 1001;
-  animation: dropdown-fade-in 0.3s ease;
-  text-align: center;
-}
-
-@keyframes dropdown-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dropdown-item {
-  padding: 10px 16px;
-  font-size: 14px;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.dropdown-item .iconfont {
-  font-size: 14px;
-}
-
-.dropdown-item:hover {
-  background: var(--primary-light);
-}
-
-.dropdown-item:first-child {
-  border-radius: 4px 4px 0 0;
-}
-
-.dropdown-item:last-child {
-  border-radius: 0 0 4px 4px;
 }
 
 /* 响应式设计 */

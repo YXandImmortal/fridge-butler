@@ -41,7 +41,7 @@ onMounted(async () => {
 .copyright-footer {
   z-index: 1000;
   padding: 20px 24px;
-  background: var(--gradient-footer);
+  background: transparent;
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(100, 181, 246, 0.15);
   box-shadow: var(--shadow-footer);
@@ -50,6 +50,40 @@ onMounted(async () => {
   left: 0;
   width: 100%;
   box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* 浅色背景层 */
+.copyright-footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-footer-light);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 深色背景层 */
+.copyright-footer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-footer-dark);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 深色模式下交换两层透明度 */
+html.dark .copyright-footer::before {
+  opacity: 0;
+}
+
+html.dark .copyright-footer::after {
+  opacity: 1;
 }
 
 .copyright-content {

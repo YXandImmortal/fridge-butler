@@ -135,7 +135,7 @@ onUnmounted(() => {
   justify-content: space-between;
   height: 100%;
   padding: 0 12px;
-  background: var(--card-bg);
+  background: transparent;
   border: 1px solid var(--gray-40);
   border-radius: var(--radius-md);
   cursor: pointer;

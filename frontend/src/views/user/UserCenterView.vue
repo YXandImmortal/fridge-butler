@@ -340,7 +340,8 @@ const handleLogout = (msg) => {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
+  min-height: 100%;
   gap: 32px;
   animation: fade-in-up 0.6s ease-out;
   flex-wrap: wrap;

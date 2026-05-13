@@ -20,6 +20,7 @@ declare module 'vue' {
     CopyrightFooter: typeof import('./src/components/CopyrightFooter.vue')['default']
     CustomButton: typeof import('./src/components/CustomButton.vue')['default']
     CustomSelect: typeof import('./src/components/CustomSelect.vue')['default']
+    ElBadge: typeof import('element-plus/es')['ElBadge']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']

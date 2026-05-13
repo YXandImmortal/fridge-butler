@@ -165,6 +165,8 @@ const handleCancel = () => {
   max-width: 500px;
   width: 90%;
   animation: dialog-slide-in 0.3s ease-out;
+  transition: background-color 0.3s ease, color 0.3s ease,
+  border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .dialog-header {
