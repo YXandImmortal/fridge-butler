@@ -93,10 +93,17 @@
     />
 
     <!-- 编辑分类对话框 -->
-    <CategoryEditDialog
+    <InputDialog
       v-model:visible="showEditDialog"
-      :category-data="selectedCategory"
-      @success="handleEditSuccess"
+      title="编辑分类名称"
+      label="分类名称"
+      placeholder="请输入分类名称"
+      icon="icon-category"
+      value-prop="categoryName"
+      confirm-text="确认修改"
+      :data="selectedCategory"
+      :loading="editLoading"
+      @submit="handleEditSubmit"
     />
   </div>
 </template>
@@ -105,9 +112,9 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import CategoryEditDialog from '@/components/item/CategoryEditDialog.vue'
+import InputDialog from '@/components/InputDialog.vue'
 import showMessage from '@/utils/message'
-import { listItemCategories, deleteItemCategory } from '@/api/item'
+import { listItemCategories, deleteItemCategory, updateItemCategory } from '@/api/item'
 import CustomButton from '@/components/CustomButton.vue'
 
 const router = useRouter()
@@ -139,6 +146,7 @@ const systemCategories = computed(() =>
 const showDeleteDialog = ref(false)
 const showEditDialog = ref(false)
 const selectedCategory = ref(null)
+const editLoading = ref(false)
 
 // 获取分类列表
 const fetchCategoryList = async () => {
@@ -175,9 +183,27 @@ const handleEdit = (category) => {
   showEditDialog.value = true
 }
 
-// 编辑成功回调
-const handleEditSuccess = () => {
-  fetchCategoryList()
+// 编辑提交
+const handleEditSubmit = async ({ id, value }) => {
+  editLoading.value = true
+  try {
+    const res = await updateItemCategory({
+      id,
+      categoryName: value
+    })
+    if (res.code === 200) {
+      showMessage.success('修改成功')
+      showEditDialog.value = false
+      await fetchCategoryList()
+    } else {
+      showMessage.error(res.message || '修改失败')
+    }
+  } catch (error) {
+    console.error('修改分类失败:', error)
+    showMessage.error('修改失败')
+  } finally {
+    editLoading.value = false
+  }
 }
 
 // 删除确认

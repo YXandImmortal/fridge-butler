@@ -60,6 +60,8 @@
               v-for="unit in unitList"
               :key="unit.id"
               class="unit-item"
+              :class="{ 'unit-item--editable': !unitType?.isSystemDefault && !unit.isSystemDefault }"
+              @click="handleEditUnit(unit)"
             >
               <div class="unit-info">
                 <i class="iconfont icon-inbox unit-item-icon" />
@@ -69,7 +71,7 @@
                 <i
                   v-if="!unitType?.isSystemDefault && !unit.isSystemDefault"
                   class="iconfont icon-close unit-delete-icon"
-                  @click="handleDeleteUnit(unit)"
+                  @click.stop="handleDeleteUnit(unit)"
                 />
                 <span v-else-if="unit.isSystemDefault" class="system-unit-badge">
                   <i class="iconfont icon-shield-fill" /> 系统
@@ -88,6 +90,20 @@
     </div>
   </transition>
 
+  <!-- 编辑单位对话框 -->
+  <InputDialog
+    v-model:visible="showEditDialog"
+    title="编辑单位名称"
+    label="单位名称"
+    placeholder="请输入单位名称"
+    icon="icon-item"
+    value-prop="unitName"
+    confirm-text="确认修改"
+    :data="selectedUnit"
+    :loading="editLoading"
+    @submit="handleEditSubmit"
+  />
+
   <!-- 删除单位确认对话框 -->
   <ConfirmDialog
     v-model:visible="showDeleteConfirm"
@@ -105,7 +121,7 @@ import { reactive, ref, watch, computed } from 'vue'
 import CustomButton from '@/components/CustomButton.vue'
 import EnhancedInput from '@/components/EnhancedInput.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import { createItemUnit, deleteItemUnit } from '@/api/item'
+import { createItemUnit, deleteItemUnit, updateItemUnit } from '@/api/item'
 import showMessage from '@/utils/message'
 
 const props = defineProps({
@@ -129,6 +145,8 @@ const addFormRef = ref(null)
 const adding = ref(false)
 const showDeleteConfirm = ref(false)
 const selectedUnit = ref(null)
+const showEditDialog = ref(false)
+const editLoading = ref(false)
 
 const unitTypeName = computed(() => {
   return props.unitType?.unitTypeName || props.unitType?.typeName || '单位分类'
@@ -192,6 +210,37 @@ const handleAddUnit = async () => {
     showMessage.error('添加失败')
   } finally {
     adding.value = false
+  }
+}
+
+// 编辑单位
+const handleEditUnit = (unit) => {
+  if (props.unitType?.isSystemDefault || unit.isSystemDefault) return
+  selectedUnit.value = unit
+  showEditDialog.value = true
+}
+
+// 编辑提交
+const handleEditSubmit = async ({ id, value }) => {
+  editLoading.value = true
+  try {
+    const res = await updateItemUnit({
+      id,
+      unitName: value,
+      unitTypeId: selectedUnit.value?.unitTypeId || props.unitType?.id
+    })
+    if (res.code === 200) {
+      showMessage.success('修改成功')
+      showEditDialog.value = false
+      emit('success')
+    } else {
+      showMessage.error(res.message || '修改失败')
+    }
+  } catch (error) {
+    console.error('修改单位失败:', error)
+    showMessage.error('修改失败')
+  } finally {
+    editLoading.value = false
   }
 }
 
@@ -401,6 +450,10 @@ const confirmDeleteUnit = async () => {
   background: var(--primary-light);
   border-color: var(--primary-20);
   transform: translateY(-2px);
+}
+
+.unit-item--editable {
+  cursor: pointer;
 }
 
 .unit-info {

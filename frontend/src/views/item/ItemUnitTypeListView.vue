@@ -104,10 +104,17 @@
     />
 
     <!-- 编辑单位分类对话框 -->
-    <UnitTypeEditDialog
+    <InputDialog
       v-model:visible="showEditDialog"
-      :type-data="selectedUnitType"
-      @success="handleEditSuccess"
+      title="编辑单位分类"
+      label="分类名称"
+      placeholder="请输入单位分类名称"
+      icon="icon-label-alt"
+      value-prop="unitTypeName"
+      confirm-text="确认修改"
+      :data="selectedUnitType"
+      :loading="editLoading"
+      @submit="handleEditSubmit"
     />
 
     <!-- 展开单位分类对话框 -->
@@ -124,10 +131,10 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import UnitTypeEditDialog from '@/components/unit/UnitTypeEditDialog.vue'
+import InputDialog from '@/components/InputDialog.vue'
 import UnitListDialog from '@/components/unit/UnitListDialog.vue'
 import showMessage from '@/utils/message'
-import { listUnitTypes, listItemUnits, deleteUnitType } from '@/api/item'
+import { listUnitTypes, listItemUnits, deleteUnitType, updateUnitType } from '@/api/item'
 import CustomButton from '@/components/CustomButton.vue'
 
 const router = useRouter()
@@ -163,6 +170,7 @@ const showDeleteDialog = ref(false)
 const showEditDialog = ref(false)
 const showExpandDialog = ref(false)
 const selectedUnitType = ref(null)
+const editLoading = ref(false)
 
 // 获取该单位类型下的单位数量
 const getUnitCount = (unitTypeId) => {
@@ -232,9 +240,27 @@ const handleEdit = (unitType) => {
   showEditDialog.value = true
 }
 
-// 编辑成功回调
-const handleEditSuccess = () => {
-  fetchUnitTypeList()
+// 编辑提交
+const handleEditSubmit = async ({ id, value }) => {
+  editLoading.value = true
+  try {
+    const res = await updateUnitType({
+      id,
+      typeName: value
+    })
+    if (res.code === 200) {
+      showMessage.success('修改成功')
+      showEditDialog.value = false
+      await fetchUnitTypeList()
+    } else {
+      showMessage.error(res.message || '修改失败')
+    }
+  } catch (error) {
+    console.error('修改单位分类失败:', error)
+    showMessage.error('修改失败')
+  } finally {
+    editLoading.value = false
+  }
 }
 
 // 展开成功回调（单位增删后刷新）

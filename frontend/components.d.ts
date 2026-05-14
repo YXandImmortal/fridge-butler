@@ -15,7 +15,6 @@ declare module 'vue' {
     AuthHeader: typeof import('./src/components/auth/AuthHeader.vue')['default']
     Avatar: typeof import('./src/components/Avatar.vue')['default']
     CaptchaInput: typeof import('./src/components/CaptchaInput.vue')['default']
-    CategoryEditDialog: typeof import('./src/components/item/CategoryEditDialog.vue')['default']
     ConfirmDialog: typeof import('./src/components/ConfirmDialog.vue')['default']
     CopyrightFooter: typeof import('./src/components/CopyrightFooter.vue')['default']
     CustomButton: typeof import('./src/components/CustomButton.vue')['default']
@@ -55,9 +54,7 @@ declare module 'vue' {
     Sidebar: typeof import('./src/components/Sidebar.vue')['default']
     SortControl: typeof import('./src/components/SortControl.vue')['default']
     ThemeToggle: typeof import('./src/components/ThemeToggle.vue')['default']
-    UnitEditDialog: typeof import('./src/components/unit/UnitEditDialog.vue')['default']
     UnitListDialog: typeof import('./src/components/unit/UnitListDialog.vue')['default']
-    UnitTypeEditDialog: typeof import('./src/components/unit/UnitTypeEditDialog.vue')['default']
   }
   export interface GlobalDirectives {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']
