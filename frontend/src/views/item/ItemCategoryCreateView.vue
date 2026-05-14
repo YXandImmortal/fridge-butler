@@ -25,7 +25,7 @@
               placeholder="请输入分类名称，如：冷冻食品、调味品"
               maxlength="20"
               show-word-limit
-              icon="icon-category"
+              icon="icon-label"
             />
           </el-form-item>
         </el-form>

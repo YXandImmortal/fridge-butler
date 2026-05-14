@@ -25,7 +25,7 @@
               placeholder="请输入单位分类名称，如：重量、容量、数量"
               maxlength="20"
               show-word-limit
-              icon="icon-label-alt"
+              icon="icon-inbox"
             />
           </el-form-item>
         </el-form>
