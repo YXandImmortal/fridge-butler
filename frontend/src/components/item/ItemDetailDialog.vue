@@ -45,7 +45,7 @@
                 :precision="2"
                 :step="1"
                 placeholder="请输入数量"
-                class="form-input-number"
+                style="width: 100%"
               />
             </el-form-item>
 
@@ -90,13 +90,14 @@
             </el-form-item>
 
             <el-form-item label="保质期（天）" prop="shelfLifeDays">
-              <el-input-number
+              <el-slider
                 v-model="form.shelfLifeDays"
                 :min="1"
-                :precision="0"
-                :step="1"
+                :max="500"
+                :step="5"
                 placeholder="请输入保质期天数"
-                class="form-input-number"
+                style="margin-left: 12px;"
+                show-input
               />
             </el-form-item>
 
@@ -113,7 +114,7 @@
             </el-form-item>
 
             <el-form-item label="备注" prop="remark">
-              <el-input
+              <EnhancedInput
                 v-model="form.remark"
                 type="textarea"
                 :rows="3"
@@ -440,10 +441,6 @@ const handleSubmit = async () => {
   width: 100%;
 }
 
-.form-input-number {
-  width: 100%;
-}
-
 .form-input-number :deep(.el-input__wrapper) {
   padding-left: 8px;
   padding-right: 8px;
@@ -462,7 +459,6 @@ const handleSubmit = async () => {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
   border: 1px solid transparent;
 }
 

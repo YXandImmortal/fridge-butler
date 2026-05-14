@@ -63,7 +63,14 @@
         </el-form-item>
 
         <el-form-item label="总容量">
-          <el-input-number v-model="fridgeForm.totalCapacity" :min="0" :precision="0" placeholder="请输入总容量（L）" style="width: 100%;" />
+          <el-slider
+              v-model="fridgeForm.totalCapacity"
+              :min="0"
+              :max="1000"
+              placeholder="请输入总容量（L）"
+              show-input
+              :step="10"
+              style="margin-left: 12px" />
         </el-form-item>
 
         <el-form-item label="状态">
@@ -452,7 +459,6 @@ watch(
 .item-management {
   border-radius: var(--radius-md);
   letter-spacing: 0.5px;
-  transition: all 0.3s ease;
   height: 100%;
 }
 

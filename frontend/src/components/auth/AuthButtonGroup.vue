@@ -70,7 +70,6 @@ const secondaryAction = () => {
   padding: 14px 24px;
   font-weight: 400;
   letter-spacing: 1px;
-  transition: all 0.3s ease;
 }
 
 :deep(button.custom-button.enhanced-button:hover:not(:disabled)) {

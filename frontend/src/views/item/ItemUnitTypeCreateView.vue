@@ -190,7 +190,6 @@ const handleBack = () => {
   border-radius: 12px;
   padding: 12px var(--space-8);
   letter-spacing: 0.5px;
-  transition: all 0.3s ease;
   min-width: 140px;
 }
 

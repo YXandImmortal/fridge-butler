@@ -479,7 +479,6 @@ const confirmDeleteUnit = async () => {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
   border: 1px solid transparent;
 }
 

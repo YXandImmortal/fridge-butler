@@ -474,7 +474,6 @@ const handleLogout = (msg) => {
   border-radius: 12px;
   padding: 12px 24px;
   letter-spacing: 0.5px;
-  transition: all 0.3s ease;
 }
 
 .profile-actions .custom-button:hover:not(:disabled) {
@@ -580,7 +579,6 @@ const handleLogout = (msg) => {
   border-radius: 12px;
   padding: 12px 24px;
   letter-spacing: 0.5px;
-  transition: all 0.3s ease;
   min-width: 120px;
 }
 
