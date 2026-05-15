@@ -6,22 +6,37 @@
         <h3 class="chart-title">冰箱容量利用率</h3>
       </div>
     </div>
-    <div v-if="data.length > 0" class="gauge-grid">
-      <div v-for="(item, index) in data" :key="index" class="gauge-item">
-        <v-chart
-          class="gauge-chart"
-          :option="getGaugeOption(item, index)"
-          autoresize
-        />
-        <div class="gauge-name">{{ item.name }}</div>
-      </div>
-    </div>
+    <el-carousel
+      v-if="data.length > 0"
+      class="gauge-carousel"
+      :interval="10000"
+      arrow="hover"
+      indicator-position="outside"
+      height="280px"
+      @change="handleChange"
+    >
+      <el-carousel-item v-for="(group, gIndex) in groupedData" :key="gIndex">
+        <div class="gauge-slide">
+          <div v-for="(item, index) in group" :key="index" class="gauge-item">
+            <v-chart
+              v-if="gIndex === activeIndex"
+              class="gauge-chart"
+              :option="getGaugeOption(item)"
+              :init-options="chartInitOptions"
+              autoresize
+            />
+            <div v-else class="gauge-chart gauge-chart-placeholder" />
+            <div class="gauge-name">{{ item.name }}</div>
+          </div>
+        </div>
+      </el-carousel-item>
+    </el-carousel>
     <el-empty v-else description="暂无冰箱数据" class="chart-empty" />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GaugeChart } from 'echarts/charts'
@@ -37,6 +52,20 @@ const props = defineProps({
 })
 
 const themeStore = useThemeStore()
+const activeIndex = ref(0)
+const chartInitOptions = { width: 160, height: 160 }
+
+function handleChange(index) {
+  activeIndex.value = index
+}
+
+const groupedData = computed(() => {
+  const groups = []
+  for (let i = 0; i < props.data.length; i += 2) {
+    groups.push(props.data.slice(i, i + 2))
+  }
+  return groups
+})
 
 function getGaugeColor(rate) {
   if (rate < 50) return '#81C784'
@@ -44,7 +73,7 @@ function getGaugeColor(rate) {
   return '#F87171'
 }
 
-function getGaugeOption(item, index) {
+function getGaugeOption(item) {
   const colors = getChartThemeColors(themeStore.theme === 'dark')
   const rate = item.totalCapacity > 0
     ? Math.round((item.value / item.totalCapacity) * 100)
@@ -137,12 +166,23 @@ function getGaugeOption(item, index) {
   margin: 0;
 }
 
-.gauge-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: var(--space-4);
+.gauge-carousel {
   flex: 1;
-  align-items: start;
+  width: 100%;
+}
+
+.gauge-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-10);
+  height: 100%;
+  padding: var(--space-2) var(--space-8);
+}
+
+.gauge-item {
+  width: 180px;
+  flex-shrink: 0;
 }
 
 .gauge-item {
@@ -152,8 +192,8 @@ function getGaugeOption(item, index) {
 }
 
 .gauge-chart {
-  width: 100%;
-  height: 140px;
+  width: 160px;
+  height: 160px;
 }
 
 .gauge-name {
@@ -178,8 +218,18 @@ function getGaugeOption(item, index) {
     padding: var(--space-4);
   }
 
+  .gauge-slide {
+    gap: var(--space-4);
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .gauge-item {
+    width: 130px;
+  }
+
   .gauge-chart {
-    height: 120px;
+    width: 130px;
+    height: 130px;
   }
 }
 </style>

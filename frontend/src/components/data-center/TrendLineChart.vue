@@ -22,11 +22,12 @@ import { use, graphic } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
+import { LegacyGridContainLabel } from 'echarts/features'
 import VChart from 'vue-echarts'
 import { getChartThemeColors } from '@/utils/data-analysis'
 import { useThemeStore } from '@/stores/theme'
 
-use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent])
+use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent, LegacyGridContainLabel])
 
 const props = defineProps({
   data: {

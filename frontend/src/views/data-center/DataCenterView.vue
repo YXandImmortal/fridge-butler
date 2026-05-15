@@ -24,24 +24,26 @@
         <StatCard
           :value="overviewStats.totalItems"
           label="物品总件数"
-          icon-class="icon-inbox-full"
+          icon-class="icon-item"
           type="success"
           suffix=" 件"
         />
         <StatCard
-          :value="overviewStats.expiringCount"
-          label="临期 / 过期预警"
-          icon-class="icon-warning"
-          type="warning"
-          suffix=" 件"
+            :value="overviewStats.capacityRate"
+            label="平均容量利用率"
+            icon-class="icon-inbox-full"
+            type="default"
+            suffix="%"
         />
-        <StatCard
-          :value="overviewStats.capacityRate"
-          label="平均容量利用率"
-          icon-class="icon-chart-pie"
-          type="default"
-          suffix="%"
-        />
+        <a href="#expiring-table-section" class="stat-link">
+          <StatCard
+            :value="overviewStats.expiringCount"
+            label="临期 / 过期预警"
+            icon-class="icon-alert"
+            type="warning"
+            suffix=" 件"
+          />
+        </a>
       </div>
 
       <!-- 第一行图表：冰箱分布 + 分类占比 -->
@@ -75,7 +77,7 @@
       </div>
 
       <!-- 底部预警清单 -->
-      <div class="table-row">
+      <div id="expiring-table-section" class="table-row">
         <ExpiringItemTable :data="expiringItems" />
       </div>
     </template>
@@ -205,6 +207,13 @@ onMounted(() => {
 
 .chart-col {
   min-width: 0;
+}
+
+/* 超链接包裹 StatCard */
+.stat-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
 
 /* 底部表格行 */

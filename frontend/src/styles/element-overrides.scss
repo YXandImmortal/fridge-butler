@@ -147,3 +147,23 @@
 .el-table-fixed-column--right.is-first-column.el-table__cell::before {
   background-color: transparent;
 }
+
+/* =========================================================
+ * Carousel 箭头暗色模式适配
+ * 默认背景 rgba(31,45,61,0.11) 在深色卡片上几乎不可见
+ * ========================================================= */
+.el-carousel__arrow {
+  background-color: rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.35);
+  }
+}
+
+html.dark .el-carousel__arrow {
+  background-color: rgba(255, 255, 255, 0.2);
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.35);
+  }
+}
