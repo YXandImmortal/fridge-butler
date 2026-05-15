@@ -98,7 +98,7 @@
       title="编辑分类名称"
       label="分类名称"
       placeholder="请输入分类名称"
-      icon="icon-category"
+      icon="icon-label"
       value-prop="categoryName"
       confirm-text="确认修改"
       :data="selectedCategory"

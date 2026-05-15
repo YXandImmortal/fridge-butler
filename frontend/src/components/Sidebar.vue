@@ -3,6 +3,7 @@
     <!-- 导航菜单 -->
     <nav class="sidebar-nav">
       <ul class="nav-menu">
+        <!-- 动态菜单 -->
         <li
           v-for="feature in userIndexFeatures"
           :key="feature.id"

@@ -11,6 +11,7 @@ const FridgeCreateView = () => import('@/views/fridge/FridgeCreateView.vue')
 const ItemManageView = () => import('@/views/fridge/ItemManageView.vue')
 const ItemCategoryListView = () => import('@/views/item/ItemCategoryListView.vue')
 const ItemCategoryCreateView = () => import('@/views/item/ItemCategoryCreateView.vue')
+const DataCenterView = () => import('@/views/data-center/DataCenterView.vue')
 const AboutView = () => import('@/views/AboutView.vue')
 
 const LoginView = () => import('@/views/LoginView.vue')
@@ -92,6 +93,22 @@ const router = createRouter({
           path: 'items/:id?',
           name: 'fridge-items',
           component: ItemManageView,
+          meta: {
+            roles: [USER_PERMISSION]
+          }
+        }
+      ]
+    },
+    // 数据中心路由（使用主布局）
+    {
+      path: '/data-center',
+      component: MainLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'index',
+          name: 'data-center',
+          component: DataCenterView,
           meta: {
             roles: [USER_PERMISSION]
           }

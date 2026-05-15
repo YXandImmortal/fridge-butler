@@ -25,7 +25,7 @@ import java.util.List;
 @RequestMapping("/system")
 public class SystemController {
     public static final String SYSTEM_NAME = "智鲜·引擎";
-    public static final String SYSTEM_VERSION = "alpha 0.0.8";
+    public static final String SYSTEM_VERSION = "alpha 0.0.9";
     public static final String SYSTEM_SLOGAN = "智能管理您的冰箱，让食材更新鲜";
     public static final List<SidebarFeatureVO> USER_INDEX_FEATURES;
     public static final List<FeatureVO> SYSTEM_FEATURES;
@@ -42,76 +42,82 @@ public class SystemController {
                         .build(),
                 SidebarFeatureVO.builder()
                         .id(2)
+                        .name("数据中心")
+                        .path("/data-center/index")
+                        .icon("icon-chart")
+                        .build(),
+                SidebarFeatureVO.builder()
+                        .id(3)
                         .name("冰箱管理")
                         .path("/fridge")
                         .icon("icon-fridge-line")
                         .children(Arrays.asList(
                                 SidebarFeatureVO.builder()
-                                        .id(21)
+                                        .id(31)
                                         .name("冰箱一览")
                                         .path("/fridge/list")
                                         .build(),
                                 SidebarFeatureVO.builder()
-                                        .id(22)
+                                        .id(32)
                                         .name("创建冰箱")
                                         .path("/fridge/create")
                                         .build(),
                                 SidebarFeatureVO.builder()
-                                        .id(23)
+                                        .id(33)
                                         .name("详细信息")
                                         .path("/fridge/detail")
                                         .build(),
                                 SidebarFeatureVO.builder()
-                                        .id(24)
+                                        .id(34)
                                         .name("物品管理")
                                         .path("/fridge/items")
                                         .build()
                         ))
                         .build(),
                 SidebarFeatureVO.builder()
-                        .id(3)
+                        .id(4)
                         .name("物品分类")
                         .path("/item-category")
                         .icon("icon-label-alt-multiple")
                         .children(Arrays.asList(
                                 SidebarFeatureVO.builder()
-                                        .id(31)
+                                        .id(41)
                                         .name("物品分类一览")
                                         .path("/item-category/list")
                                         .build(),
                                 SidebarFeatureVO.builder()
-                                        .id(32)
+                                        .id(42)
                                         .name("创建物品分类")
                                         .path("/item-category/create")
                                         .build()
                         ))
                         .build(),
                 SidebarFeatureVO.builder()
-                        .id(4)
+                        .id(5)
                         .name("物品单位")
                         .path("/item-unit")
                         .icon("icon-inbox-all")
                         .children(Arrays.asList(
                                 SidebarFeatureVO.builder()
-                                        .id(41)
+                                        .id(51)
                                         .name("单位分类一览")
                                         .path("/item-unit-type/list")
                                         .build(),
                                 SidebarFeatureVO.builder()
-                                        .id(42)
+                                        .id(52)
                                         .name("创建单位分类")
                                         .path("/item-unit-type/create")
                                         .build()
                         ))
                         .build(),
                 SidebarFeatureVO.builder()
-                        .id(5)
+                        .id(6)
                         .name("个人中心")
                         .path("/user/center")
                         .icon("icon-user")
                         .build(),
                 SidebarFeatureVO.builder()
-                        .id(6)
+                        .id(7)
                         .name("关于系统")
                         .path("/user/about")
                         .icon("icon-info-box")

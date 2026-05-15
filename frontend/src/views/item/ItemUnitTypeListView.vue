@@ -109,7 +109,7 @@
       title="编辑单位分类"
       label="分类名称"
       placeholder="请输入单位分类名称"
-      icon="icon-label-alt"
+      icon="icon-inbox"
       value-prop="unitTypeName"
       confirm-text="确认修改"
       :data="selectedUnitType"

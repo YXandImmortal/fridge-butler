@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>头像预览</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'MiSans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #f2f2f2 0%, #e3f2fd 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    h1 { color: #2d3748; margin-bottom: 8px; font-size: 24px; }
+    p { color: #606266; margin-bottom: 40px; font-size: 14px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 40px;
+      max-width: 800px;
+      width: 100%;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      transition: transform 0.3s ease;
+    }
+    .card:hover { transform: translateY(-4px); }
+    .card img { width: 96px; height: 96px; border-radius: 50%; }
+    .card .name { font-size: 16px; font-weight: 600; color: #2d3748; }
+    .card .desc { font-size: 12px; color: #718096; text-align: center; }
+    .sizes {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .sizes img { border-radius: 50%; }
+    .s32 { width: 32px; height: 32px; }
+    .s48 { width: 48px; height: 48px; }
+    .s64 { width: 64px; height: 64px; }
+  </style>
+</head>
+<body>
+  <h1>🎨 新头像设计预览</h1>
+  <p>四个系统默认头像 — 结合智能冰箱管理系统的科技风格重新设计</p>
+  <div class="grid">
+    <div class="card">
+      <img src="bot.svg" alt="bot">
+      <div class="name">智芯管家</div>
+      <div class="desc">bot.svg<br>AI 智能助手形象</div>
+      <div class="sizes">
+        <img src="bot.svg" class="s32" alt="">
+        <img src="bot.svg" class="s48" alt="">
+        <img src="bot.svg" class="s64" alt="">
+      </div>
+    </div>
+    <div class="card">
+      <img src="core.svg" alt="core">
+      <div class="name">物联核心</div>
+      <div class="desc">core.svg<br>物联网数据中枢</div>
+      <div class="sizes">
+        <img src="core.svg" class="s32" alt="">
+        <img src="core.svg" class="s48" alt="">
+        <img src="core.svg" class="s64" alt="">
+      </div>
+    </div>
+    <div class="card">
+      <img src="fruit.svg" alt="fruit">
+      <div class="name">鲜橙精灵</div>
+      <div class="desc">fruit.svg<br>新鲜食材守护</div>
+      <div class="sizes">
+        <img src="fruit.svg" class="s32" alt="">
+        <img src="fruit.svg" class="s48" alt="">
+        <img src="fruit.svg" class="s64" alt="">
+      </div>
+    </div>
+    <div class="card">
+      <img src="panda.svg" alt="panda">
+      <div class="name">霜雪精灵</div>
+      <div class="desc">panda.svg<br>冰霜冷藏守护</div>
+      <div class="sizes">
+        <img src="panda.svg" class="s32" alt="">
+        <img src="panda.svg" class="s48" alt="">
+        <img src="panda.svg" class="s64" alt="">
+      </div>
+    </div>
+  </div>
+</body>
+</html>
