@@ -11,6 +11,7 @@ import com.yx.fridgebutler.vo.ItemUnitVO;
 import com.yx.fridgebutler.dto.ItemUnitCreateRequest;
 import com.yx.fridgebutler.dto.ItemUnitUpdateRequest;
 import com.yx.fridgebutler.dto.ItemUpdateRequest;
+import com.yx.fridgebutler.vo.TakeOutDailyStatisticsVO;
 import com.yx.fridgebutler.vo.UnitTypeVO;
 import com.yx.fridgebutler.dto.UnitTypeCreateRequest;
 import com.yx.fridgebutler.dto.UnitTypeUpdateRequest;
@@ -43,8 +44,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -684,6 +687,88 @@ public class ItemServiceImpl implements ItemService {
                 .build();
         takeOutRecordRepository.save(record);
         log.info("保存取出记录成功，记录ID：{}，物品ID：{}" , record.getId(), item.getId());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 查询当前用户近30天每日取出次数，按日期升序返回，无数据日期补0。
+     */
+    @Override
+    public List<TakeOutDailyStatisticsVO> getRecent30DaysTakeOutStatistics(Long fridgeId) {
+        Long currentUserId = getCurrentUserId();
+        log.info("查询近30天取出统计，用户ID：{}，冰箱ID：{}", currentUserId, fridgeId);
+
+        // 计算30天前的时间点（上海时区）
+        LocalDate today = LocalDate.now(ZONE_ID_SHANGHAI);
+        LocalDate startDate = today.minusDays(29);
+        Instant startTime = startDate.atStartOfDay(ZONE_ID_SHANGHAI).toInstant();
+
+        // 查询数据库中有记录的日期及次数
+        List<Object[]> dbResults = takeOutRecordRepository.countDailyByOperatorIdAndTimeRange(
+                currentUserId, fridgeId, startTime);
+
+        // 将查询结果转为 Map<日期, 次数>
+        Map<LocalDate, Long> countMap = dbResults.stream()
+                .collect(Collectors.toMap(
+                        row -> LocalDate.parse(row[0].toString()),
+                        row -> ((Number) row[1]).longValue()
+                ));
+
+        // 生成近30天完整数据，无记录则补0
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        List<TakeOutDailyStatisticsVO> result = new ArrayList<>();
+        for (int i = 0; i < 30; i++) {
+            LocalDate date = startDate.plusDays(i);
+            result.add(TakeOutDailyStatisticsVO.builder()
+                    .date(date.format(dateFormatter))
+                    .count(countMap.getOrDefault(date, 0L))
+                    .build());
+        }
+
+        log.info("查询近30天取出统计成功，用户ID：{}，数据条数：{}", currentUserId, result.size());
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 查询当前用户近30天每日添加物品次数，按日期升序返回，无数据日期补0。
+     */
+    @Override
+    public List<TakeOutDailyStatisticsVO> getRecent30DaysAddStatistics(Long fridgeId) {
+        Long currentUserId = getCurrentUserId();
+        log.info("查询近30天添加统计，用户ID：{}，冰箱ID：{}", currentUserId, fridgeId);
+
+        // 计算30天前的时间点（上海时区）
+        LocalDate today = LocalDate.now(ZONE_ID_SHANGHAI);
+        LocalDate startDate = today.minusDays(29);
+        Instant startTime = startDate.atStartOfDay(ZONE_ID_SHANGHAI).toInstant();
+
+        // 查询数据库中有记录的日期及次数
+        List<Object[]> dbResults = addRecordRepository.countDailyByOperatorIdAndTimeRange(
+                currentUserId, fridgeId, startTime);
+
+        // 将查询结果转为 Map<日期, 次数>
+        Map<LocalDate, Long> countMap = dbResults.stream()
+                .collect(Collectors.toMap(
+                        row -> LocalDate.parse(row[0].toString()),
+                        row -> ((Number) row[1]).longValue()
+                ));
+
+        // 生成近30天完整数据，无记录则补0
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        List<TakeOutDailyStatisticsVO> result = new ArrayList<>();
+        for (int i = 0; i < 30; i++) {
+            LocalDate date = startDate.plusDays(i);
+            result.add(TakeOutDailyStatisticsVO.builder()
+                    .date(date.format(dateFormatter))
+                    .count(countMap.getOrDefault(date, 0L))
+                    .build());
+        }
+
+        log.info("查询近30天添加统计成功，用户ID：{}，数据条数：{}", currentUserId, result.size());
+        return result;
     }
 
     /**

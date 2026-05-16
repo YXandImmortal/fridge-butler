@@ -167,7 +167,7 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     const res = await takeOutItem({
-      itemId: props.item.id,
+      id: props.item.id,
       takeOutNum: form.takeOutNum
     })
     if (res.code === 200) {

@@ -10,6 +10,7 @@ import com.yx.fridgebutler.dto.ItemTakeOutRequest;
 import com.yx.fridgebutler.dto.ItemUnitCreateRequest;
 import com.yx.fridgebutler.dto.ItemUnitUpdateRequest;
 import com.yx.fridgebutler.dto.ItemUpdateRequest;
+import com.yx.fridgebutler.vo.TakeOutDailyStatisticsVO;
 import com.yx.fridgebutler.vo.ItemUnitVO;
 import com.yx.fridgebutler.vo.UnitTypeVO;
 import com.yx.fridgebutler.dto.UnitTypeCreateRequest;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -222,5 +224,35 @@ public class ItemController {
         itemService.takeOutItem(request);
         log.info("取出物品成功，物品ID：{}，取出数量：{}", request.getId(), request.getTakeOutNum());
         return Result.success(null);
+    }
+
+    /**
+     * 查询近30天每日取出次数统计
+     * <p>返回包含今天在内的近30天数据，按日期升序排列，无取出记录的日期次数为0。</p>
+     *
+     * @param fridgeId 冰箱ID（可选，不传则统计当前用户所有冰箱）
+     * @return 近30天每日取出次数列表
+     */
+    @GetMapping("/take-out/statistics/recent-30-days")
+    public Result<List<TakeOutDailyStatisticsVO>> getRecent30DaysTakeOutStatistics(
+            @RequestParam(required = false) Long fridgeId) {
+        List<TakeOutDailyStatisticsVO> result = itemService.getRecent30DaysTakeOutStatistics(fridgeId);
+        log.info("查询近30天取出统计成功，冰箱ID：{}，数据条数：{}", fridgeId, result.size());
+        return Result.success(result);
+    }
+
+    /**
+     * 查询近30天每日添加物品次数统计
+     * <p>返回包含今天在内的近30天数据，按日期升序排列，无添加记录的日期次数为0。</p>
+     *
+     * @param fridgeId 冰箱ID（可选，不传则统计当前用户所有冰箱）
+     * @return 近30天每日添加次数列表
+     */
+    @GetMapping("/add/statistics/recent-30-days")
+    public Result<List<TakeOutDailyStatisticsVO>> getRecent30DaysAddStatistics(
+            @RequestParam(required = false) Long fridgeId) {
+        List<TakeOutDailyStatisticsVO> result = itemService.getRecent30DaysAddStatistics(fridgeId);
+        log.info("查询近30天添加统计成功，冰箱ID：{}，数据条数：{}", fridgeId, result.size());
+        return Result.success(result);
     }
 }

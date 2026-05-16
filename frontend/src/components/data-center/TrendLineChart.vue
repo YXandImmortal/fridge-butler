@@ -3,16 +3,16 @@
     <div class="chart-header">
       <div class="chart-title-wrapper">
         <i class="iconfont icon-chart-line chart-title-icon" />
-        <h3 class="chart-title">近30天入库趋势</h3>
+        <h3 class="chart-title">{{ title }}</h3>
       </div>
     </div>
     <v-chart
-      v-if="data.dates.length > 0 && data.counts.some(c => c > 0)"
+      v-if="hasData"
       class="chart-body"
       :option="chartOption"
       autoresize
     />
-    <el-empty v-else description="近30天暂无入库记录" class="chart-empty" />
+    <el-empty v-else :description="emptyText" class="chart-empty" />
   </div>
 </template>
 
@@ -30,6 +30,14 @@ import { useThemeStore } from '@/stores/theme'
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent, LegacyGridContainLabel])
 
 const props = defineProps({
+  title: {
+    type: String,
+    default: '近30天入库趋势'
+  },
+  emptyText: {
+    type: String,
+    default: '近30天暂无入库记录'
+  },
   data: {
     type: Object,
     default: () => ({ dates: [], counts: [] })
@@ -38,8 +46,86 @@ const props = defineProps({
 
 const themeStore = useThemeStore()
 
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
+
+const hasData = computed(() => {
+  if (!props.data.dates || props.data.dates.length === 0) return false
+  if (props.data.series && Array.isArray(props.data.series)) {
+    return props.data.series.some(s => Array.isArray(s.counts) && s.counts.some(c => c > 0))
+  }
+  return Array.isArray(props.data.counts) && props.data.counts.some(c => c > 0)
+})
+
 const chartOption = computed(() => {
   const colors = getChartThemeColors(themeStore.theme === 'dark')
+
+  const isMultiSeries = props.data.series && Array.isArray(props.data.series)
+
+  const seriesList = isMultiSeries
+    ? props.data.series.map((s, index) => {
+        const color = s.color || colors.colors[index % colors.colors.length]
+        return {
+          name: s.name,
+          type: 'line',
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 6,
+          showSymbol: false,
+          lineStyle: {
+            width: 3,
+            color
+          },
+          areaStyle: {
+            color: new graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: hexToRgba(color, 0.35) },
+              { offset: 1, color: hexToRgba(color, 0.02) }
+            ])
+          },
+          itemStyle: {
+            color,
+            borderColor: colors.tooltipBg,
+            borderWidth: 2
+          },
+          emphasis: {
+            focus: 'series',
+            itemStyle: { borderWidth: 3 }
+          },
+          data: s.counts || []
+        }
+      })
+    : [{
+        name: '入库数量',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        showSymbol: false,
+        lineStyle: {
+          width: 3,
+          color: '#64B5F6'
+        },
+        areaStyle: {
+          color: new graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(100,181,246,0.35)' },
+            { offset: 1, color: 'rgba(100,181,246,0.02)' }
+          ])
+        },
+        itemStyle: {
+          color: '#64B5F6',
+          borderColor: colors.tooltipBg,
+          borderWidth: 2
+        },
+        emphasis: {
+          focus: 'series',
+          itemStyle: { borderWidth: 3 }
+        },
+        data: props.data.counts || []
+      }]
 
   return {
     color: colors.colors,
@@ -53,11 +139,18 @@ const chartOption = computed(() => {
         lineStyle: { color: colors.primaryColor, width: 1, type: 'dashed' }
       }
     },
+    legend: {
+      data: seriesList.map(s => s.name),
+      top: '2%',
+      textStyle: { color: colors.subTextColor, fontSize: 12 },
+      itemWidth: 12,
+      itemHeight: 8
+    },
     grid: {
       left: '3%',
       right: '4%',
       bottom: '3%',
-      top: '10%',
+      top: '18%',
       containLabel: true
     },
     xAxis: {
@@ -65,7 +158,17 @@ const chartOption = computed(() => {
       boundaryGap: false,
       data: props.data.dates,
       axisLine: { lineStyle: { color: colors.axisLineColor } },
-      axisLabel: { color: colors.subTextColor, fontSize: 11 }
+      axisLabel: {
+        color: colors.subTextColor,
+        fontSize: 11,
+        formatter: (value) => {
+          if (typeof value === 'string' && value.includes('-')) {
+            const d = new Date(value)
+            return `${d.getMonth() + 1}/${d.getDate()}`
+          }
+          return value
+        }
+      }
     },
     yAxis: {
       type: 'value',
@@ -74,34 +177,7 @@ const chartOption = computed(() => {
       splitLine: { lineStyle: { color: colors.splitLineColor, type: 'dashed' } },
       axisLabel: { color: colors.subTextColor }
     },
-    series: [{
-      name: '入库数量',
-      type: 'line',
-      smooth: true,
-      symbol: 'circle',
-      symbolSize: 6,
-      showSymbol: false,
-      lineStyle: {
-        width: 3,
-        color: '#64B5F6'
-      },
-      areaStyle: {
-        color: new graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: 'rgba(100,181,246,0.35)' },
-          { offset: 1, color: 'rgba(100,181,246,0.02)' }
-        ])
-      },
-      itemStyle: {
-        color: '#64B5F6',
-        borderColor: colors.tooltipBg,
-        borderWidth: 2
-      },
-      emphasis: {
-        focus: 'series',
-        itemStyle: { borderWidth: 3 }
-      },
-      data: props.data.counts
-    }]
+    series: seriesList
   }
 })
 </script>

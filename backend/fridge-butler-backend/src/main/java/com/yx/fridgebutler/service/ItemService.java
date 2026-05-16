@@ -11,6 +11,7 @@ import com.yx.fridgebutler.vo.ItemUnitVO;
 import com.yx.fridgebutler.dto.ItemUnitCreateRequest;
 import com.yx.fridgebutler.dto.ItemUnitUpdateRequest;
 import com.yx.fridgebutler.dto.ItemUpdateRequest;
+import com.yx.fridgebutler.vo.TakeOutDailyStatisticsVO;
 import com.yx.fridgebutler.vo.UnitTypeVO;
 import com.yx.fridgebutler.dto.UnitTypeCreateRequest;
 import com.yx.fridgebutler.dto.UnitTypeUpdateRequest;
@@ -155,4 +156,22 @@ public interface ItemService {
      * @param request 物品取出请求参数
      */
     void takeOutItem(ItemTakeOutRequest request);
+
+    /**
+     * 查询近30天每日取出次数统计。
+     * <p>返回包含今天在内的近30天数据，无取出记录的日期次数为0。</p>
+     *
+     * @param fridgeId 冰箱ID（为null时统计当前用户所有冰箱）
+     * @return 近30天每日取出次数列表，按日期升序排列
+     */
+    List<TakeOutDailyStatisticsVO> getRecent30DaysTakeOutStatistics(Long fridgeId);
+
+    /**
+     * 查询近30天每日添加物品次数统计。
+     * <p>返回包含今天在内的近30天数据，无添加记录的日期次数为0。</p>
+     *
+     * @param fridgeId 冰箱ID（为null时统计当前用户所有冰箱）
+     * @return 近30天每日添加次数列表，按日期升序排列
+     */
+    List<TakeOutDailyStatisticsVO> getRecent30DaysAddStatistics(Long fridgeId);
 }

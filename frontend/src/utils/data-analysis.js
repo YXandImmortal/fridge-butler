@@ -134,7 +134,7 @@ export function computeInboundTrend(items) {
     const d = new Date(now)
     d.setDate(d.getDate() - i)
     const dateStr = d.toISOString().split('T')[0]
-    dates.push(`${d.getMonth() + 1}/${d.getDate()}`)
+    dates.push(dateStr)
 
     const dayCount = items.filter(item => {
       if (!item.storedDate) return false

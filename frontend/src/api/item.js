@@ -100,7 +100,7 @@ export function deleteItem(id) {
 /**
  * 取出物品（减少库存）
  * @param {Object} data - 取出数据
- * @param {number} data.itemId - 物品ID
+ * @param {number} data.id - 物品ID
  * @param {number} data.takeOutNum - 取出数量
  */
 export function takeOutItem(data) {
@@ -235,5 +235,29 @@ export function deleteItemCategory(id) {
     return request({
         url: `/item/category/delete/${id}`,
         method: 'delete'
+    })
+}
+
+/**
+ * 查询近30天取出记录统计
+ * @param {number} [fridgeId] - 冰箱ID（可选，不传则统计当前用户所有冰箱）
+ */
+export function getRecent30DaysTakeOutStats(fridgeId) {
+    return request({
+        url: '/item/take-out/statistics/recent-30-days',
+        method: 'get',
+        params: fridgeId ? { fridgeId } : {}
+    })
+}
+
+/**
+ * 查询近30天入库记录统计
+ * @param {number} [fridgeId] - 冰箱ID（可选，不传则统计当前用户所有冰箱）
+ */
+export function getRecent30DaysAddStats(fridgeId) {
+    return request({
+        url: '/item/add/statistics/recent-30-days',
+        method: 'get',
+        params: fridgeId ? { fridgeId } : {}
     })
 }

@@ -62,7 +62,11 @@
           <FreshnessPieChart :data="freshnessPieData" />
         </div>
         <div class="chart-col">
-          <TrendLineChart :data="trendData" />
+          <TrendLineChart
+            title="近30天出入库趋势"
+            empty-text="近30天暂无出入库记录"
+            :data="trendData"
+          />
         </div>
       </div>
 
@@ -87,7 +91,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { listMyFridges } from '@/api/fridge'
-import { searchItems } from '@/api/item'
+import { searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats } from '@/api/item'
 import showMessage from '@/utils/message'
 import StatCard from '@/components/data-center/StatCard.vue'
 import FridgeItemBarChart from '@/components/data-center/FridgeItemBarChart.vue'
@@ -111,13 +115,38 @@ import {
 const loading = ref(false)
 const fridgeList = ref([])
 const itemList = ref([])
+const takeOutList = ref([])
+const addList = ref([])
 
 // ==================== 计算属性：聚合数据 ====================
 const overviewStats = computed(() => computeOverviewStats(fridgeList.value, itemList.value))
 const fridgeBarData = computed(() => aggregateByFridge(fridgeList.value))
 const categoryPieData = computed(() => aggregateByCategory(itemList.value))
 const freshnessPieData = computed(() => aggregateFreshness(itemList.value))
-const trendData = computed(() => computeInboundTrend(itemList.value))
+const trendData = computed(() => {
+  let dates = []
+  let inboundCounts = []
+
+  if (addList.value.length > 0) {
+    dates = addList.value.map(item => item.date)
+    inboundCounts = addList.value.map(item => item.count)
+  } else {
+    const inbound = computeInboundTrend(itemList.value)
+    dates = inbound.dates
+    inboundCounts = inbound.counts
+  }
+
+  const takeOutMap = new Map(takeOutList.value.map(item => [item.date, item.count]))
+  const takeOutCounts = dates.map(date => takeOutMap.get(date) || 0)
+
+  return {
+    dates,
+    series: [
+      { name: '入库数量', counts: inboundCounts, color: '#64B5F6' },
+      { name: '取出数量', counts: takeOutCounts, color: '#FFB74D' }
+    ]
+  }
+})
 const shelfLifeBarData = computed(() => aggregateShelfLifeDistribution(itemList.value))
 const expiringItems = computed(() => getExpiringItems(itemList.value, fridgeList.value))
 
@@ -125,9 +154,17 @@ const expiringItems = computed(() => getExpiringItems(itemList.value, fridgeList
 const fetchData = async () => {
   loading.value = true
   try {
-    const [fridgeRes, itemRes] = await Promise.all([
+    const [fridgeRes, itemRes, takeOutRes, addRes] = await Promise.all([
       listMyFridges(),
-      searchItems({})
+      searchItems({}),
+      getRecent30DaysTakeOutStats().catch(err => {
+        console.error('获取取出趋势失败:', err)
+        return { code: -1, data: [] }
+      }),
+      getRecent30DaysAddStats().catch(err => {
+        console.error('获取入库趋势失败:', err)
+        return { code: -1, data: [] }
+      })
     ])
 
     if (fridgeRes.code === 200 && Array.isArray(fridgeRes.data)) {
@@ -141,11 +178,25 @@ const fetchData = async () => {
     } else {
       itemList.value = []
     }
+
+    if (takeOutRes.code === 200 && Array.isArray(takeOutRes.data)) {
+      takeOutList.value = takeOutRes.data
+    } else {
+      takeOutList.value = []
+    }
+
+    if (addRes.code === 200 && Array.isArray(addRes.data)) {
+      addList.value = addRes.data
+    } else {
+      addList.value = []
+    }
   } catch (error) {
     console.error('获取数据中心数据失败:', error)
     showMessage.error('获取数据失败')
     fridgeList.value = []
     itemList.value = []
+    addList.value = []
+    takeOutList.value = []
   } finally {
     loading.value = false
   }

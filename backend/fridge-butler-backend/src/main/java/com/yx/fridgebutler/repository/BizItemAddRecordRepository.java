@@ -2,7 +2,12 @@ package com.yx.fridgebutler.repository;
 
 import com.yx.fridgebutler.entity.BizItemAddRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.Instant;
+import java.util.List;
 
 /**
  * 物品添加记录数据访问层。
@@ -10,4 +15,26 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface BizItemAddRecordRepository extends JpaRepository<BizItemAddRecord, Long> {
+
+    /**
+     * 查询指定用户在指定时间范围内的每日添加次数。
+     * <p>按日期分组统计，返回近30天内有添加记录的日期及对应次数。</p>
+     *
+     * @param operatorId 操作人ID（当前用户ID）
+     * @param fridgeId   冰箱ID（为null时统计所有冰箱）
+     * @param startTime  起始时间（30天前）
+     * @return 每日统计列表，每个元素为 [date, count]，date格式为yyyy-MM-dd
+     */
+    @Query(value = "SELECT DATE(create_time) as date, COUNT(*) as count " +
+            "FROM biz_item_add_record " +
+            "WHERE operator_id = :operatorId " +
+            "AND create_time >= :startTime " +
+            "AND (:fridgeId IS NULL OR fridge_id = :fridgeId) " +
+            "GROUP BY DATE(create_time) " +
+            "ORDER BY DATE(create_time)",
+            nativeQuery = true)
+    List<Object[]> countDailyByOperatorIdAndTimeRange(
+            @Param("operatorId") Long operatorId,
+            @Param("fridgeId") Long fridgeId,
+            @Param("startTime") Instant startTime);
 }
