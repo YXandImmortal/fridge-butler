@@ -2,7 +2,7 @@
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title-wrapper">
-        <i class="iconfont icon-chart-line chart-title-icon" />
+        <i class="iconfont icon-trending chart-title-icon" />
         <h3 class="chart-title">{{ title }}</h3>
       </div>
     </div>

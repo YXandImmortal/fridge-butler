@@ -2,7 +2,7 @@
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title-wrapper">
-        <i class="iconfont icon-calendar chart-title-icon" />
+        <i class="iconfont icon-calendar-text chart-title-icon" />
         <h3 class="chart-title">保质期剩余天数分布</h3>
       </div>
     </div>

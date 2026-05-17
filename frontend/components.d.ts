@@ -48,6 +48,7 @@ declare module 'vue' {
     EnhancedInput: typeof import('./src/components/EnhancedInput.vue')['default']
     ExpiringItemTable: typeof import('./src/components/data-center/ExpiringItemTable.vue')['default']
     FreshnessPieChart: typeof import('./src/components/data-center/FreshnessPieChart.vue')['default']
+    FridgeCreateDialog: typeof import('./src/components/fridge/FridgeCreateDialog.vue')['default']
     FridgeItemBarChart: typeof import('./src/components/data-center/FridgeItemBarChart.vue')['default']
     Header: typeof import('./src/components/Header.vue')['default']
     InputDialog: typeof import('./src/components/InputDialog.vue')['default']

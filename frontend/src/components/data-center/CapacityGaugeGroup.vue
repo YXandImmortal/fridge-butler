@@ -2,7 +2,7 @@
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title-wrapper">
-        <i class="iconfont icon-fridge-line chart-title-icon" />
+        <i class="iconfont icon-speed-slow chart-title-icon" />
         <h3 class="chart-title">冰箱容量利用率</h3>
       </div>
     </div>

@@ -110,7 +110,6 @@
                           v-if="row.categoryName"
                           size="small"
                           :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
-                          :color="themeStore.theme === 'dark' ? 'var(--primary-light)' : ''"
                           type="info"
                           class="item-category-tag">
                         {{ row.categoryName }}
@@ -146,10 +145,10 @@
               <el-table-column label="新鲜度" width="100" align="center">
                 <template #default="{ row }">
                   <el-tag
-                    v-if="getFreshnessStatus(row).label !== '-'"
-                    size="small"
-                    :type="getFreshnessStatus(row).type"
-                    :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
+                      v-if="getFreshnessStatus(row).label !== '-'"
+                      size="small"
+                      :type="getFreshnessStatus(row).type"
+                      :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
                   >
                     {{ getFreshnessStatus(row).label }}
                   </el-tag>
@@ -617,6 +616,10 @@ const handleBack = () => {
 
 // 计算物品新鲜度
 const getFreshnessStatus = (row) => {
+  if (row.shelfLifeDays > 30) {
+    return { label: '长保质期', type: 'info' }
+  }
+
   if (!row.productionDate || !row.shelfLifeDays) {
     return { label: '-', type: 'info' }
   }
@@ -627,21 +630,16 @@ const getFreshnessStatus = (row) => {
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
   const remainingDays = row.shelfLifeDays - diffDays
+  const R = (remainingDays / row.shelfLifeDays) * 100
 
-  if (remainingDays <= 0) {
+  if (R <= 0) {
     return { label: '已过期', type: 'danger' }
-  }
-
-  const percent = (remainingDays / row.shelfLifeDays) * 100
-
-  if (percent > 70) {
-    return { label: '新鲜', type: 'success' }
-  } else if (percent > 40) {
-    return { label: '一般', type: 'primary' }
-  } else if (percent > 10) {
+  } else if (R < 20) {
     return { label: '临期', type: 'warning' }
+  } else if (R < 50) {
+    return { label: '一般', type: 'primary' }
   } else {
-    return { label: '已过期', type: 'danger' }
+    return { label: '新鲜', type: 'success' }
   }
 }
 

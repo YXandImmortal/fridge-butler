@@ -92,6 +92,19 @@
       width="450px"
     />
 
+    <!-- 创建分类对话框 -->
+    <InputDialog
+      v-model:visible="showCreateDialog"
+      title="创建物品分类"
+      label="分类名称"
+      placeholder="请输入分类名称，如：冷冻食品、调味品"
+      icon="icon-label"
+      value-prop="categoryName"
+      confirm-text="创建分类"
+      :loading="createLoading"
+      @submit="handleCreateSubmit"
+    />
+
     <!-- 编辑分类对话框 -->
     <InputDialog
       v-model:visible="showEditDialog"
@@ -110,14 +123,11 @@
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import InputDialog from '@/components/InputDialog.vue'
 import showMessage from '@/utils/message'
-import { listItemCategories, deleteItemCategory, updateItemCategory } from '@/api/item'
+import { listItemCategories, deleteItemCategory, updateItemCategory, createItemCategory } from '@/api/item'
 import CustomButton from '@/components/CustomButton.vue'
-
-const router = useRouter()
 
 // 加载状态
 const loading = ref(false)
@@ -144,8 +154,10 @@ const systemCategories = computed(() =>
 
 // 对话框控制
 const showDeleteDialog = ref(false)
+const showCreateDialog = ref(false)
 const showEditDialog = ref(false)
 const selectedCategory = ref(null)
+const createLoading = ref(false)
 const editLoading = ref(false)
 
 // 获取分类列表
@@ -168,9 +180,29 @@ const fetchCategoryList = async () => {
 
 // 创建分类
 const handleCreate = () => {
-  router.push({
-    name: 'item-category-create'
-  })
+  showCreateDialog.value = true
+}
+
+// 创建提交
+const handleCreateSubmit = async ({ value }) => {
+  createLoading.value = true
+  try {
+    const res = await createItemCategory({
+      categoryName: value.trim()
+    })
+    if (res.code === 200) {
+      showMessage.success('创建成功')
+      showCreateDialog.value = false
+      await fetchCategoryList()
+    } else {
+      showMessage.error(res.message || '创建失败')
+    }
+  } catch (error) {
+    console.error('创建分类失败:', error)
+    showMessage.error('创建失败')
+  } finally {
+    createLoading.value = false
+  }
 }
 
 // 编辑分类

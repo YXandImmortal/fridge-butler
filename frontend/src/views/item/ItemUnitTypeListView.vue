@@ -103,6 +103,19 @@
       width="450px"
     />
 
+    <!-- 创建单位分类对话框 -->
+    <InputDialog
+      v-model:visible="showCreateDialog"
+      title="创建单位分类"
+      label="分类名称"
+      placeholder="请输入单位分类名称，如：重量、容量、数量"
+      icon="icon-inbox"
+      value-prop="typeName"
+      confirm-text="创建分类"
+      :loading="createLoading"
+      @submit="handleCreateSubmit"
+    />
+
     <!-- 编辑单位分类对话框 -->
     <InputDialog
       v-model:visible="showEditDialog"
@@ -129,15 +142,12 @@
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import InputDialog from '@/components/InputDialog.vue'
 import UnitListDialog from '@/components/unit/UnitListDialog.vue'
 import showMessage from '@/utils/message'
-import { listUnitTypes, listItemUnits, deleteUnitType, updateUnitType } from '@/api/item'
+import { listUnitTypes, listItemUnits, deleteUnitType, updateUnitType, createUnitType } from '@/api/item'
 import CustomButton from '@/components/CustomButton.vue'
-
-const router = useRouter()
 
 // 加载状态
 const loading = ref(false)
@@ -167,9 +177,11 @@ const systemUnitTypes = computed(() =>
 
 // 对话框控制
 const showDeleteDialog = ref(false)
+const showCreateDialog = ref(false)
 const showEditDialog = ref(false)
 const showExpandDialog = ref(false)
 const selectedUnitType = ref(null)
+const createLoading = ref(false)
 const editLoading = ref(false)
 
 // 获取该单位类型下的单位数量
@@ -219,9 +231,29 @@ const fetchUnitList = async () => {
 
 // 创建单位类型
 const handleCreate = () => {
-  router.push({
-    name: 'item-unit-type-create'
-  })
+  showCreateDialog.value = true
+}
+
+// 创建提交
+const handleCreateSubmit = async ({ value }) => {
+  createLoading.value = true
+  try {
+    const res = await createUnitType({
+      typeName: value.trim()
+    })
+    if (res.code === 200) {
+      showMessage.success('创建成功')
+      showCreateDialog.value = false
+      await fetchUnitTypeList()
+    } else {
+      showMessage.error(res.message || '创建失败')
+    }
+  } catch (error) {
+    console.error('创建单位分类失败:', error)
+    showMessage.error('创建失败')
+  } finally {
+    createLoading.value = false
+  }
 }
 
 // 展开单位类型

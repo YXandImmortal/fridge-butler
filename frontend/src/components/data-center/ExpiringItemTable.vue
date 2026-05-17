@@ -2,7 +2,7 @@
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title-wrapper">
-        <i class="iconfont icon-warning chart-title-icon" />
+        <i class="iconfont icon-alert chart-title-icon" />
         <h3 class="chart-title">临期 / 过期物品预警</h3>
       </div>
       <el-tag

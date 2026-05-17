@@ -2,7 +2,7 @@
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title-wrapper">
-        <i class="iconfont icon-search-list chart-title-icon" />
+        <i class="iconfont icon-charts-pie chart-title-icon" />
         <h3 class="chart-title">物品分类占比</h3>
       </div>
     </div>

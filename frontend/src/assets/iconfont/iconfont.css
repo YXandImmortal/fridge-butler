@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 5163375 */
-  src: url('iconfont.woff2?t=1778837487489') format('woff2'),
-       url('iconfont.woff?t=1778837487489') format('woff'),
-       url('iconfont.ttf?t=1778837487489') format('truetype');
+  src: url('iconfont.woff2?t=1779024580793') format('woff2'),
+       url('iconfont.woff?t=1779024580793') format('woff'),
+       url('iconfont.ttf?t=1779024580793') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,62 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-cloud-moon:before {
+  content: "\eb25";
+}
+
+.icon-cloud-sun:before {
+  content: "\eb26";
+}
+
+.icon-heart:before {
+  content: "\eb2f";
+}
+
+.icon-moon:before {
+  content: "\eb42";
+}
+
+.icon-moon-star:before {
+  content: "\eb43";
+}
+
+.icon-moon-stars:before {
+  content: "\eb44";
+}
+
+.icon-sun:before {
+  content: "\eb64";
+}
+
+.icon-sun-alt:before {
+  content: "\eb65";
+}
+
+.icon-leaf:before {
+  content: "\e8f5";
+}
+
+.icon-charts-pie:before {
+  content: "\e826";
+}
+
+.icon-speed-slow:before {
+  content: "\eb62";
+}
+
+.icon-trending:before {
+  content: "\eb6b";
+}
+
+.icon-building-community:before {
+  content: "\eb24";
+}
+
+.icon-notes:before {
+  content: "\eb48";
 }
 
 .icon-chart:before {

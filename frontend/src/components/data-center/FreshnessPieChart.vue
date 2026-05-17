@@ -2,7 +2,7 @@
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title-wrapper">
-        <i class="iconfont icon-item chart-title-icon" />
+        <i class="iconfont icon-leaf chart-title-icon" />
         <h3 class="chart-title">新鲜度状态分布</h3>
       </div>
     </div>
@@ -38,7 +38,8 @@ const statusColors = {
   '新鲜': '#81C784',
   '一般': '#64B5F6',
   '临期': '#FFB74D',
-  '已过期': '#F87171'
+  '已过期': '#F87171',
+  '长保质期': '#A0AEC0'
 }
 
 const chartOption = computed(() => {

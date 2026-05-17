@@ -79,6 +79,13 @@
       </div>
     </div>
 
+    <!-- 创建冰箱对话框 -->
+    <FridgeCreateDialog
+      v-model:visible="showCreateDialog"
+      :loading="createLoading"
+      @submit="handleCreateSubmit"
+    />
+
     <!-- 删除确认对话框 -->
     <ConfirmDialog
       v-model:visible="showDeleteDialog"
@@ -95,8 +102,9 @@
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import FridgeCreateDialog from '@/components/fridge/FridgeCreateDialog.vue'
 import showMessage from '@/utils/message'
-import { listMyFridges, deleteFridge, searchFridges } from '@/api/fridge'
+import { listMyFridges, deleteFridge, searchFridges, createFridge } from '@/api/fridge'
 import CustomButton from "@/components/CustomButton.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import SortControl from "@/components/SortControl.vue";
@@ -129,8 +137,10 @@ const sortOrderOptions = [
 ]
 
 // 对话框控制
+const showCreateDialog = ref(false)
 const showDeleteDialog = ref(false)
 const selectedFridge = ref(null)
+const createLoading = ref(false)
 
 // 获取冰箱列表
 const fetchFridgeList = async () => {
@@ -182,9 +192,35 @@ const handleViewDetail = (id) => {
 
 // 创建冰箱
 const handleCreate = () => {
-  router.push({
-    name: 'fridge-create',
-  })
+  showCreateDialog.value = true
+}
+
+// 创建提交
+const handleCreateSubmit = async ({ fridgeName, remark, fridgeAddress }) => {
+  createLoading.value = true
+  try {
+    const res = await createFridge({
+      fridgeName,
+      remark,
+      fridgeAddress
+    })
+
+    if (res.code === 200) {
+      showMessage.success('冰箱创建成功')
+      showCreateDialog.value = false
+      await router.push({
+        name: 'fridge-detail',
+        params: { id: res.data ? res.data : '' }
+      })
+    } else {
+      showMessage.error(res.message || '创建失败')
+    }
+  } catch (error) {
+    console.error('创建冰箱失败:', error)
+    showMessage.error('创建失败')
+  } finally {
+    createLoading.value = false
+  }
 }
 
 // 删除确认

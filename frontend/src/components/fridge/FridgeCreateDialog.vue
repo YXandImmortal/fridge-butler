@@ -1,11 +1,11 @@
 <template>
   <transition name="dialog-fade">
-    <div v-if="visible" class="input-dialog-overlay" @click.self="handleOverlayClick">
-      <div class="input-dialog">
+    <div v-if="visible" class="fridge-create-dialog-overlay" @click.self="handleOverlayClick">
+      <div class="fridge-create-dialog">
         <div class="dialog-header">
           <div class="dialog-title-container">
-            <i class="iconfont icon-edit dialog-icon" />
-            <h3 class="dialog-title">{{ title }}</h3>
+            <i class="iconfont icon-fridge-line dialog-icon" />
+            <h3 class="dialog-title">创建冰箱</h3>
           </div>
           <i class="iconfont icon-close dialog-close" @click="handleClose" />
         </div>
@@ -15,15 +15,36 @@
             :model="form"
             :rules="rules"
             label-position="top"
-            class="edit-form"
+            class="create-form"
           >
-            <el-form-item :label="label" prop="value">
+            <el-form-item label="冰箱名称" prop="name">
               <EnhancedInput
-                v-model="form.value"
-                :placeholder="placeholder"
-                maxlength="20"
+                v-model="form.name"
+                placeholder="请输入冰箱名称，如：家用冰箱、办公室冰箱"
+                maxlength="50"
                 show-word-limit
-                :icon="icon"
+                icon="icon-notes"
+              />
+            </el-form-item>
+
+            <el-form-item label="地址" prop="address">
+              <EnhancedInput
+                v-model="form.address"
+                placeholder="请输入冰箱地址（选填）"
+                maxlength="100"
+                show-word-limit
+                icon="icon-building-community"
+              />
+            </el-form-item>
+
+            <el-form-item label="冰箱描述" prop="description">
+              <EnhancedInput
+                  v-model="form.description"
+                  type="textarea"
+                  :rows="3"
+                  placeholder="请输入冰箱描述（选填）"
+                  maxlength="200"
+                  show-word-limit
               />
             </el-form-item>
           </el-form>
@@ -38,7 +59,7 @@
             :loading="loading"
             @click="handleSubmit"
           >
-            {{ confirmText }}
+            {{ loading ? '创建中...' : '创建冰箱' }}
           </CustomButton>
         </div>
       </div>
@@ -56,34 +77,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  title: {
-    type: String,
-    default: '编辑'
-  },
-  label: {
-    type: String,
-    default: '名称'
-  },
-  placeholder: {
-    type: String,
-    default: '请输入名称'
-  },
-  icon: {
-    type: String,
-    default: 'icon-edit'
-  },
-  data: {
-    type: Object,
-    default: () => null
-  },
-  valueProp: {
-    type: String,
-    default: 'name'
-  },
-  confirmText: {
-    type: String,
-    default: '确认'
-  },
   loading: {
     type: Boolean,
     default: false
@@ -95,35 +88,35 @@ const emit = defineEmits(['update:visible', 'submit'])
 const formRef = ref(null)
 
 const form = reactive({
-  value: ''
+  name: '',
+  description: '',
+  address: ''
 })
 
 const rules = {
-  value: [
-    { required: true, message: props.placeholder, trigger: 'blur' },
-    { min: 1, max: 20, message: '长度为1-20个字符', trigger: 'blur' }
+  name: [
+    { required: true, message: '请输入冰箱名称', trigger: 'blur' },
+    { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
+  ],
+  description: [
+    { max: 200, message: '描述最多 200 个字符', trigger: 'blur' }
+  ],
+  address: [
+    { max: 100, message: '地址最多 100 个字符', trigger: 'blur' }
   ]
 }
 
 const resetForm = () => {
-  form.value = ''
+  form.name = ''
+  form.description = ''
+  form.address = ''
   if (formRef.value) {
     formRef.value.resetFields()
   }
 }
 
-const initForm = () => {
-  if (props.data) {
-    form.value = props.data[props.valueProp] || ''
-  } else {
-    form.value = ''
-  }
-}
-
 watch(() => props.visible, (val) => {
-  if (val) {
-    initForm()
-  } else {
+  if (!val) {
     resetForm()
   }
 })
@@ -141,14 +134,15 @@ const handleSubmit = async () => {
   if (!valid) return
 
   emit('submit', {
-    id: props.data?.id,
-    value: form.value.trim()
+    fridgeName: form.name.trim(),
+    remark: form.description.trim() || undefined,
+    fridgeAddress: form.address.trim() || undefined
   })
 }
 </script>
 
 <style lang="scss" scoped>
-.input-dialog-overlay {
+.fridge-create-dialog-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -162,15 +156,15 @@ const handleSubmit = async () => {
   z-index: 100;
 }
 
-.input-dialog {
+.fridge-create-dialog {
   background: var(--card-bg);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
-  max-width: 440px;
+  max-width: 480px;
   width: 90%;
   animation: dialog-slide-in 0.3s ease-out;
   transition: background-color 0.3s ease, color 0.3s ease,
-  border-color 0.3s ease, box-shadow 0.3s ease;
+    border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .dialog-header {
@@ -214,14 +208,18 @@ const handleSubmit = async () => {
   padding: var(--space-5) var(--space-6);
 }
 
-.edit-form :deep(.el-form-item__label) {
+.create-form :deep(.el-form-item__label) {
   color: var(--text-secondary);
   font-weight: 500;
   font-size: 14px;
   padding-bottom: 4px;
 }
 
-.edit-form :deep(.el-form-item) {
+.create-form :deep(.el-form-item) {
+  margin-bottom: var(--space-4);
+}
+
+.create-form :deep(.el-form-item:last-child) {
   margin-bottom: 0;
 }
 
@@ -286,7 +284,7 @@ const handleSubmit = async () => {
 }
 
 @media (max-width: 768px) {
-  .input-dialog {
+  .fridge-create-dialog {
     min-width: 280px;
     width: 85%;
   }

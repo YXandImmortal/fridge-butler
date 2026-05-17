@@ -25,13 +25,13 @@
           :value="overviewStats.totalItems"
           label="物品总件数"
           icon-class="icon-item"
-          type="success"
+          type="default"
           suffix=" 件"
         />
         <StatCard
             :value="overviewStats.capacityRate"
             label="平均容量利用率"
-            icon-class="icon-inbox-full"
+            icon-class="icon-trending"
             type="default"
             suffix="%"
         />

@@ -9,6 +9,10 @@
  * @returns {Object} { label, type, remainingDays, percent }
  */
 export function getFreshnessStatus(item) {
+  if (item.shelfLifeDays > 30) {
+    return { label: '长保质期', type: 'info', remainingDays: null, percent: null }
+  }
+
   if (!item.productionDate || !item.shelfLifeDays) {
     return { label: '-', type: 'info', remainingDays: null, percent: null }
   }
@@ -19,21 +23,16 @@ export function getFreshnessStatus(item) {
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
   const remainingDays = item.shelfLifeDays - diffDays
+  const R = (remainingDays / item.shelfLifeDays) * 100
 
-  if (remainingDays <= 0) {
+  if (R <= 0) {
     return { label: '已过期', type: 'danger', remainingDays, percent: 0 }
-  }
-
-  const percent = (remainingDays / item.shelfLifeDays) * 100
-
-  if (percent > 70) {
-    return { label: '新鲜', type: 'success', remainingDays, percent }
-  } else if (percent > 40) {
-    return { label: '一般', type: 'primary', remainingDays, percent }
-  } else if (percent > 10) {
-    return { label: '临期', type: 'warning', remainingDays, percent }
+  } else if (R < 20) {
+    return { label: '临期', type: 'warning', remainingDays, percent: R }
+  } else if (R < 50) {
+    return { label: '一般', type: 'primary', remainingDays, percent: R }
   } else {
-    return { label: '已过期', type: 'danger', remainingDays, percent }
+    return { label: '新鲜', type: 'success', remainingDays, percent: R }
   }
 }
 
@@ -106,7 +105,7 @@ export function aggregateByCategory(items) {
  * @returns {Array} [{ name, value, type }]
  */
 export function aggregateFreshness(items) {
-  const counts = { '新鲜': 0, '一般': 0, '临期': 0, '已过期': 0, '-': 0 }
+  const counts = { '新鲜': 0, '一般': 0, '临期': 0, '已过期': 0, '长保质期': 0, '-': 0 }
   items.forEach(item => {
     const status = getFreshnessStatus(item)
     counts[status.label] = (counts[status.label] || 0) + 1
@@ -116,7 +115,8 @@ export function aggregateFreshness(items) {
     { name: '新鲜', value: counts['新鲜'], type: 'success' },
     { name: '一般', value: counts['一般'], type: 'primary' },
     { name: '临期', value: counts['临期'], type: 'warning' },
-    { name: '已过期', value: counts['已过期'], type: 'danger' }
+    { name: '已过期', value: counts['已过期'], type: 'danger' },
+    { name: '长保质期', value: counts['长保质期'], type: 'info' }
   ].filter(d => d.value > 0)
 }
 
@@ -167,7 +167,13 @@ export function aggregateShelfLifeDistribution(items) {
 
   items.forEach(item => {
     const status = getFreshnessStatus(item)
-    if (status.remainingDays === null) return
+    if (status.remainingDays === null) {
+      if (item.shelfLifeDays > 30) {
+        const range = counts.find(r => r.name === '>30天')
+        if (range) range.value++
+      }
+      return
+    }
 
     for (const range of counts) {
       if (status.remainingDays >= range.min && status.remainingDays <= range.max) {
