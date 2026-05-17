@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import request from '@/utils/request'
+import { getSystemInfo as fetchSystemInfo, getSystemBuildTime } from '@/api/system'
 
 export const useSystemStore = defineStore('system', () => {
     const systemName = ref('')
@@ -10,6 +10,7 @@ export const useSystemStore = defineStore('system', () => {
     const features = ref([])
     const updates = ref([])
     const about = ref([])
+    const buildTime = ref('')
     const isLoading = ref(false)
 
     // 从localStorage加载数据
@@ -25,6 +26,7 @@ export const useSystemStore = defineStore('system', () => {
                 features.value = parsedData.features || []
                 updates.value = parsedData.updates || []
                 about.value = parsedData.about || []
+                buildTime.value = parsedData.buildTime || ''
             } catch (error) {
                 console.error('Error loading system info from localStorage:', error)
                 // 清除损坏的数据
@@ -42,18 +44,27 @@ export const useSystemStore = defineStore('system', () => {
             userIndexFeatures: userIndexFeatures.value,
             features: features.value,
             updates: updates.value,
-            about: about.value
+            about: about.value,
+            buildTime: buildTime.value
         }
         localStorage.setItem('systemInfo', JSON.stringify(data))
+    }
+
+    // 从后端获取构建版本标识
+    const fetchBuildTimeFromBackend = async () => {
+        try {
+            const res = await getSystemBuildTime()
+            return res.data || null
+        } catch (error) {
+            console.error('获取构建版本标识失败：', error)
+            return null
+        }
     }
 
     // 从后端获取数据
     const fetchSystemInfoFromBackend = async () => {
         try {
-            const res = await request({
-                method: 'get',
-                url: '/system/info'
-            })
+            const res = await fetchSystemInfo()
             return res.data || {}
         } catch (error) {
             console.error('获取系统信息失败：', error)
@@ -62,7 +73,7 @@ export const useSystemStore = defineStore('system', () => {
     }
 
     // 获取系统信息（核心方法）
-    // 检查版本号是否变更，如果变更从后端获取最新数据，否则使用localStorage中的数据
+    // 检查构建版本标识是否变更，如果变更从后端获取最新数据，否则使用localStorage中的数据
     const getSystemInfo = async () => {
         if (isLoading.value) {
             // 防止重复请求
@@ -72,27 +83,32 @@ export const useSystemStore = defineStore('system', () => {
         isLoading.value = true
         
         try {
-            // 先从后端获取版本信息
-            const backendInfo = await fetchSystemInfoFromBackend()
+            // 先从后端获取构建版本标识
+            const backendBuildTime = await fetchBuildTimeFromBackend()
             
-            if (!backendInfo) {
+            if (!backendBuildTime) {
                 // 如果后端请求失败，使用本地数据
                 return buildReturnData()
             }
 
-            // 检查版本号是否变更
-            if (systemVersion.value !== backendInfo.systemVersion) {
-                // 版本号变更，更新数据
-                systemName.value = backendInfo.systemName || ''
-                systemVersion.value = backendInfo.systemVersion || ''
-                slogan.value = backendInfo.slogan || ''
-                userIndexFeatures.value = backendInfo.userIndexFeatures || []
-                features.value = backendInfo.features || []
-                updates.value = backendInfo.updates || []
-                about.value = backendInfo.about || []
+            // 检查构建版本标识是否变更
+            if (buildTime.value !== backendBuildTime) {
+                // 构建版本标识变更，获取完整的系统信息
+                const backendInfo = await fetchSystemInfoFromBackend()
                 
-                // 保存到localStorage
-                saveToLocalStorage()
+                if (backendInfo) {
+                    systemName.value = backendInfo.systemName || ''
+                    systemVersion.value = backendInfo.systemVersion || ''
+                    slogan.value = backendInfo.slogan || ''
+                    userIndexFeatures.value = backendInfo.userIndexFeatures || []
+                    features.value = backendInfo.features || []
+                    updates.value = backendInfo.updates || []
+                    about.value = backendInfo.about || []
+                    buildTime.value = backendBuildTime
+                    
+                    // 保存到localStorage
+                    saveToLocalStorage()
+                }
             }
 
             // 返回最新数据
@@ -109,7 +125,8 @@ export const useSystemStore = defineStore('system', () => {
         userIndexFeatures: userIndexFeatures.value,
         features: features.value,
         updates: updates.value,
-        about: about.value
+        about: about.value,
+        buildTime: buildTime.value
     })
 
     // 初始化时加载数据
@@ -123,6 +140,7 @@ export const useSystemStore = defineStore('system', () => {
         features,
         updates,
         about,
+        buildTime,
         isLoading,
         getSystemInfo,
         loadFromLocalStorage

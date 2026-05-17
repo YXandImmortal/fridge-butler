@@ -34,6 +34,9 @@ public class SystemController {
     @Value("${system.slogan}")
     private String systemSlogan;
 
+    @Value("${system.build-time}")
+    private String buildTime;
+
     private static final List<SidebarFeatureVO> USER_INDEX_FEATURES = List.of(
             SidebarFeatureVO.builder()
                     .id(1)
@@ -221,5 +224,21 @@ public class SystemController {
                 .updates(SYSTEM_UPDATES)
                 .about(SYSTEM_ABOUT)
                 .build());
+    }
+
+    /**
+     * 获取最新构建时间（版本标识）
+     * <p>
+     * 返回最新的构建时间标识，格式为 {@code yyyyMMdd-NN}（日期+构建次数），
+     * 例如 {@code 20260517-01}。前端可通过比对该值判断当前系统是否为最新版本，
+     * 若与本地缓存不一致则提示用户刷新页面或重新加载资源。
+     * </p>
+     *
+     * @return 构建时间标识字符串
+     */
+    @GetMapping("/build-time")
+    public Result<String> getBuildTime() {
+        log.debug("获取系统构建时间");
+        return Result.success(buildTime);
     }
 }
