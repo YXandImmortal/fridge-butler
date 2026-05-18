@@ -6,7 +6,6 @@ import com.yx.fridgebutler.dto.FridgeSearchRequest;
 import com.yx.fridgebutler.dto.FridgeUpdateRequest;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.SysUser;
-import com.yx.fridgebutler.enums.ResultCode;
 import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.BizFridgeRepository;
 import com.yx.fridgebutler.repository.BizFridgeItemRepository;
