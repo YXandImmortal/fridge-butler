@@ -9,6 +9,7 @@
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-wrapper">
       <el-skeleton :rows="8" animated />
+      <p class="loading-hint">数据加载中，首次计算可能需要较长时间，请稍候...</p>
     </div>
 
     <template v-else>
@@ -76,7 +77,7 @@
           <ShelfLifeBarChart :data="shelfLifeBarData" />
         </div>
         <div class="chart-col">
-          <CapacityGaugeGroup :data="fridgeBarData" />
+          <CapacityGaugeGroup :data="gaugeData" />
         </div>
       </div>
 
@@ -90,7 +91,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { listMyFridges } from '@/api/fridge'
+import { listMyFridges, getCapacityStats } from '@/api/fridge'
 import { searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats } from '@/api/item'
 import showMessage from '@/utils/message'
 import StatCard from '@/components/data-center/StatCard.vue'
@@ -117,10 +118,26 @@ const fridgeList = ref([])
 const itemList = ref([])
 const takeOutList = ref([])
 const addList = ref([])
+const capacityStats = ref(null)
 
 // ==================== 计算属性：聚合数据 ====================
-const overviewStats = computed(() => computeOverviewStats(fridgeList.value, itemList.value))
+const overviewStats = computed(() => {
+  const stats = computeOverviewStats(fridgeList.value, itemList.value)
+  // 容量利用率统一由后端接口提供
+  stats.capacityRate = capacityStats.value?.avgRate ?? 0
+  return stats
+})
 const fridgeBarData = computed(() => aggregateByFridge(fridgeList.value))
+const gaugeData = computed(() => {
+  const rates = capacityStats.value?.fridgeRates
+  if (!Array.isArray(rates)) return []
+  return rates.map(item => ({
+    name: item.fridgeName,
+    rate: item.rate,
+    totalCapacity: item.totalCapacity,
+    itemCount: item.itemCount
+  }))
+})
 const categoryPieData = computed(() => aggregateByCategory(itemList.value))
 const freshnessPieData = computed(() => aggregateFreshness(itemList.value))
 const trendData = computed(() => {
@@ -154,7 +171,7 @@ const expiringItems = computed(() => getExpiringItems(itemList.value, fridgeList
 const fetchData = async () => {
   loading.value = true
   try {
-    const [fridgeRes, itemRes, takeOutRes, addRes] = await Promise.all([
+    const [fridgeRes, itemRes, takeOutRes, addRes, capacityRes] = await Promise.all([
       listMyFridges(),
       searchItems({}),
       getRecent30DaysTakeOutStats().catch(err => {
@@ -164,6 +181,10 @@ const fetchData = async () => {
       getRecent30DaysAddStats().catch(err => {
         console.error('获取入库趋势失败:', err)
         return { code: -1, data: [] }
+      }),
+      getCapacityStats().catch(err => {
+        console.error('获取容量利用率失败:', err)
+        return { code: -1, data: null }
       })
     ])
 
@@ -189,6 +210,15 @@ const fetchData = async () => {
       addList.value = addRes.data
     } else {
       addList.value = []
+    }
+
+    // 保存后端返回的完整容量统计数据
+    if (capacityRes.code === 200 && capacityRes.data != null) {
+      capacityStats.value = typeof capacityRes.data === 'number'
+        ? { avgRate: capacityRes.data, fridgeRates: [] }
+        : capacityRes.data
+    } else {
+      capacityStats.value = null
     }
   } catch (error) {
     console.error('获取数据中心数据失败:', error)
@@ -238,6 +268,13 @@ onMounted(() => {
   border-radius: var(--radius-lg);
   padding: var(--space-8);
   box-shadow: var(--shadow-sm);
+}
+
+.loading-hint {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-top: var(--space-4);
 }
 
 /* 顶部指标行 */

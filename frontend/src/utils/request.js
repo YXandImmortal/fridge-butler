@@ -6,7 +6,7 @@ import { replaceToLogin } from '@/utils/navigate'
 // 创建axios实例
 const service = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL, // 后端接口基础地址（在.env文件配置）
-    timeout: 30000 // 请求超时时间
+    timeout: 120000 // 请求超时时间
 })
 
 // 请求拦截器：添加token到请求头

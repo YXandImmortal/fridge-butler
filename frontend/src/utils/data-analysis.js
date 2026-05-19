@@ -54,20 +54,12 @@ export function computeOverviewStats(fridges, items) {
     }
   })
 
-  // 容量利用率（所有启用的冰箱加权平均）
-  const activeFridges = fridges.filter(f => f.status !== false)
-  let capacityRate = 0
-  if (activeFridges.length > 0) {
-    const totalCapacity = activeFridges.reduce((sum, f) => sum + (f.totalCapacity || 0), 0)
-    const totalItemCount = activeFridges.reduce((sum, f) => sum + (f.itemCount || 0), 0)
-    capacityRate = totalCapacity > 0 ? Math.round((totalItemCount / totalCapacity) * 100) : 0
-  }
-
+  // 容量利用率不再由前端计算，统一由后端 /fridge/capacity-stats 接口提供
   return {
     fridgeCount,
     totalItems,
     expiringCount,
-    capacityRate
+    capacityRate: 0
   }
 }
 
@@ -80,7 +72,7 @@ export function aggregateByFridge(fridges) {
   return fridges.map(f => ({
     name: f.fridgeName || '未命名',
     value: f.itemCount || 0,
-    totalCapacity: f.totalCapacity || 0,
+    totalCapacity: f.totalCapacity, // 保留原始值，用于判断容量是否已设置
     status: f.status
   }))
 }

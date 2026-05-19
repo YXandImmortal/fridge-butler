@@ -37,4 +37,13 @@ public interface BizItemAddRecordRepository extends JpaRepository<BizItemAddReco
             @Param("operatorId") Long operatorId,
             @Param("fridgeId") Long fridgeId,
             @Param("startTime") Instant startTime);
+
+    /**
+     * 检查指定冰箱在指定时间之后是否有新增物品记录。
+     *
+     * @param fridgeId   冰箱ID
+     * @param createTime 时间阈值
+     * @return true 表示有新增记录
+     */
+    boolean existsByFridgeIdAndCreateTimeAfter(Long fridgeId, Instant createTime);
 }

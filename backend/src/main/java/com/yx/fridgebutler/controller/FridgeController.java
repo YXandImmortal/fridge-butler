@@ -4,7 +4,9 @@ import com.yx.fridgebutler.dto.fridge.FridgeCreateRequest;
 import com.yx.fridgebutler.vo.FridgeVO;
 import com.yx.fridgebutler.dto.fridge.FridgeSearchRequest;
 import com.yx.fridgebutler.dto.fridge.FridgeUpdateRequest;
+import com.yx.fridgebutler.service.CapacityStatsService;
 import com.yx.fridgebutler.service.FridgeService;
+import com.yx.fridgebutler.vo.CapacityStatsVO;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,9 @@ public class FridgeController {
 
     @Autowired
     private FridgeService fridgeService;
+
+    @Autowired
+    private CapacityStatsService capacityStatsService;
 
     /**
      * 查询当前用户拥有的冰箱列表
@@ -93,6 +98,19 @@ public class FridgeController {
     public Result<List<FridgeVO>> searchFridges(@Valid @RequestBody FridgeSearchRequest request) {
         List<FridgeVO> result = fridgeService.searchFridges(request);
         log.info("搜索冰箱成功，关键词：{}，结果数量：{}", request.getKeyword(), result.size());
+        return Result.success(result);
+    }
+
+    /**
+     * 获取当前用户冰箱的容量利用率统计。
+     * <p>支持查询所有冰箱或指定单个冰箱。</p>
+     *
+     * @param fridgeId 指定冰箱ID（可选），为 null 时返回所有冰箱统计
+     */
+    @GetMapping("/capacity-stats")
+    public Result<CapacityStatsVO> getCapacityStats(@RequestParam(required = false) Long fridgeId) {
+        CapacityStatsVO result = capacityStatsService.getCapacityStats(fridgeId);
+        log.info("查询容量利用率统计成功，冰箱ID：{}，平均占用率：{}%", fridgeId, result.getAvgRate());
         return Result.success(result);
     }
 

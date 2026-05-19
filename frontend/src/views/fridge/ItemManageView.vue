@@ -14,6 +14,30 @@
 
     <!-- 单卡片布局 -->
     <div class="cards-wrapper">
+      <!-- 容量卡片 -->
+      <div v-if="capacityData && capacityData.totalCapacity != null" class="card capacity-card">
+        <div class="card-header">
+          <div class="card-title-wrapper">
+            <i class="iconfont icon-speed-slow card-title-icon" />
+            <h3 class="card-title">冰箱已用容量</h3>
+          </div>
+          <span class="capacity-text">{{ capacityData.itemCount }} / {{ capacityData.totalCapacity }} L</span>
+        </div>
+        <div v-loading="capacityLoading" class="capacity-body">
+          <el-progress
+            :percentage="capacityData.rate"
+            :color="[
+              { color: '#67C23A', percentage: 50 },
+              { color: '#E6A23C', percentage: 80 },
+              { color: '#F56C6C', percentage: 100 }
+            ]"
+            :stroke-width="16"
+            class="capacity-progress"
+          />
+          <div class="capacity-rate">{{ capacityData.rate }}%</div>
+        </div>
+      </div>
+
       <!-- 左侧卡片：物品搜索与展示 -->
       <div class="card search-card">
         <div class="card-header">
@@ -280,7 +304,7 @@ import {
   deleteItem,
   takeOutItem
 } from '@/api/item'
-import { listMyFridges, getDefaultFridge } from '@/api/fridge'
+import { listMyFridges, getDefaultFridge, getCapacityStats } from '@/api/fridge'
 import CustomButton from '@/components/CustomButton.vue'
 import CustomSelect from '@/components/CustomSelect.vue'
 import SortControl from '@/components/SortControl.vue'
@@ -297,12 +321,14 @@ const categoryLoading = ref(false)
 const unitLoading = ref(false)
 const unitTypeLoading = ref(false)
 const itemLoading = ref(false)
+const capacityLoading = ref(false)
 
 // ==================== 基础数据列表 ====================
 const categoryList = ref([])
 const unitList = ref([])
 const unitTypeList = ref([])
 const itemList = ref([])
+const capacityData = ref(null)
 
 // ==================== 搜索表单 ====================
 const searchForm = reactive({
@@ -663,6 +689,43 @@ const resolveFridgeId = async () => {
   return fridgeId
 }
 
+// 获取容量统计
+const fetchCapacityStats = async () => {
+  const fridgeId = currentFridgeId.value
+  if (!fridgeId) {
+    capacityData.value = null
+    return
+  }
+  capacityLoading.value = true
+  try {
+    const res = await getCapacityStats(fridgeId)
+    if (res.code === 200 && res.data) {
+      const rates = res.data.fridgeRates
+      if (Array.isArray(rates) && rates.length > 0) {
+        const item = rates[0]
+        if (item.totalCapacity != null) {
+          capacityData.value = {
+            rate: item.rate,
+            itemCount: item.itemCount,
+            totalCapacity: item.totalCapacity
+          }
+        } else {
+          capacityData.value = null
+        }
+      } else {
+        capacityData.value = null
+      }
+    } else {
+      capacityData.value = null
+    }
+  } catch (error) {
+    console.error('获取容量统计失败:', error)
+    capacityData.value = null
+  } finally {
+    capacityLoading.value = false
+  }
+}
+
 // ==================== 生命周期 ====================
 onMounted(async () => {
   const fridgeId = await resolveFridgeId()
@@ -674,6 +737,7 @@ onMounted(async () => {
   fetchUnits()
   fetchUnitTypes()
   fetchItems()
+  fetchCapacityStats()
 })
 
 // 监听单位类别变化，清空单位选择
@@ -690,6 +754,7 @@ watch(
   (newId, oldId) => {
     if (newId && newId !== oldId) {
       fetchItems()
+      fetchCapacityStats()
     }
   }
 )
@@ -768,6 +833,39 @@ watch(
 .card-subtitle {
   font-size: 13px;
   color: var(--text-tertiary);
+}
+
+/* 容量卡片 */
+.capacity-card {
+  animation: fade-in-up 0.5s ease-out;
+}
+
+.capacity-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.capacity-body {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.capacity-progress {
+  flex: 1;
+}
+
+.capacity-progress :deep(.el-progress__text) {
+  display: none;
+}
+
+.capacity-rate {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 50px;
+  text-align: right;
 }
 
 /* 搜索区域 */

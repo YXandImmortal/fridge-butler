@@ -124,6 +124,19 @@ public class SystemController {
 
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
+                    .version("beta 0.1.1")
+                    .date("2026-5-19")
+                    .changes(Arrays.asList(
+                            "新增冰箱容量利用率统计功能，基于 DeepSeek AI 大模型智能估算各冰箱空间占用率",
+                            "后端新增容量统计服务与缓存机制，支持 1 小时缓存有效期与异步更新策略，降低 AI 调用成本",
+                            "数据中心页面集成容量利用率仪表盘，直观展示各冰箱空间占用与平均利用率",
+                            "物品管理页面新增冰箱容量进度条卡片，实时呈现已用容量与总容量占比",
+                            "新增异步线程池配置（AsyncConfig），提升 AI 计算等耗时任务的处理性能",
+                            "前端新增首次加载友好提示，避免用户因 AI 计算等待而重复刷新",
+                            "关于页面更新日志与系统信息展示优化"
+                    ))
+                    .build(),
+            UpdateLogVO.builder()
                     .version("beta 0.1.0")
                     .date("2026-5-19")
                     .changes(Arrays.asList(

@@ -37,4 +37,13 @@ public interface BizItemTakeOutRecordRepository extends JpaRepository<BizItemTak
             @Param("operatorId") Long operatorId,
             @Param("fridgeId") Long fridgeId,
             @Param("startTime") Instant startTime);
+
+    /**
+     * 检查指定冰箱在指定时间之后是否有取出物品记录。
+     *
+     * @param fridgeId   冰箱ID
+     * @param createTime 时间阈值
+     * @return true 表示有取出记录
+     */
+    boolean existsByFridgeIdAndCreateTimeAfter(Long fridgeId, Instant createTime);
 }

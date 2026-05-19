@@ -37,24 +37,22 @@
         <i class="iconfont icon-calendar-check" />
         最近更新
       </h2>
-      <div class="update-card">
-        <el-scrollbar height="500px">
-          <el-timeline>
-            <el-timeline-item
-                v-for="(update, index) in updates"
-                :key="update.version"
-                :timestamp="update.date"
-                placement="top"
-                :type="index === 0 ? 'primary' : ''"
-            >
-              <div class="timeline-version">{{ update.version }}</div>
-              <ul class="update-list">
-                <li v-for="(item, idx) in update.changes" :key="idx">{{ item }}</li>
-              </ul>
-            </el-timeline-item>
-          </el-timeline>
-        </el-scrollbar>
-      </div>
+      <el-scrollbar height="500px" class="update-card" view-style="padding: 24px 32px;">
+        <el-timeline>
+          <el-timeline-item
+              v-for="(update, index) in updates"
+              :key="update.version"
+              :timestamp="update.date"
+              placement="top"
+              :type="index === 0 ? 'primary' : ''"
+          >
+            <div class="timeline-version">{{ update.version }}</div>
+            <ul class="update-list">
+              <li v-for="(item, idx) in update.changes" :key="idx">{{ item }}</li>
+            </ul>
+          </el-timeline-item>
+        </el-timeline>
+      </el-scrollbar>
     </div>
 
     <!-- 技术支持与版权 -->
@@ -242,7 +240,7 @@ const currentYear = computed(() => new Date().getFullYear())
   border-radius: 16px;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
-  padding: 24px 32px;
+
 }
 
 .timeline-version {

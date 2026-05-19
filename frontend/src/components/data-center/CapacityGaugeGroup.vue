@@ -4,6 +4,9 @@
       <div class="chart-title-wrapper">
         <i class="iconfont icon-speed-slow chart-title-icon" />
         <h3 class="chart-title">冰箱容量利用率</h3>
+        <el-tooltip content="该数据每小时刷新" placement="right" :offset="6">
+          <i class="iconfont icon-info-box info-icon" style="margin-left: -6px"/>
+        </el-tooltip>
       </div>
     </div>
     <el-carousel
@@ -27,6 +30,7 @@
             />
             <div v-else class="gauge-chart gauge-chart-placeholder" />
             <div class="gauge-name">{{ item.name }}</div>
+            <div v-if="!item.totalCapacity" class="gauge-hint">未设置容量</div>
           </div>
         </div>
       </el-carousel-item>
@@ -75,10 +79,9 @@ function getGaugeColor(rate) {
 
 function getGaugeOption(item) {
   const colors = getChartThemeColors(themeStore.theme === 'dark')
-  const rate = item.totalCapacity > 0
-    ? Math.round((item.value / item.totalCapacity) * 100)
-    : 0
-  const color = getGaugeColor(rate)
+  const hasCapacity = item.totalCapacity != null && item.totalCapacity > 0
+  const rate = hasCapacity ? item.rate : 0
+  const color = hasCapacity ? getGaugeColor(rate) : '#9e9e9e'
 
   return {
     series: [{
@@ -115,11 +118,11 @@ function getGaugeOption(item) {
         valueAnimation: true,
         fontSize: 20,
         fontWeight: 'bold',
-        color: colors.textColor,
+        color: hasCapacity ? colors.textColor : '#9e9e9e',
         offsetCenter: [0, '0%'],
-        formatter: '{value}%'
+        formatter: hasCapacity ? '{value}%' : '--'
       },
-      data: [{ value: rate }]
+      data: [{ value: hasCapacity ? rate : 0 }]
     }]
   }
 }
@@ -157,6 +160,18 @@ function getGaugeOption(item) {
 .chart-title-icon {
   font-size: 22px;
   color: var(--primary-color);
+}
+
+.info-icon {
+  font-size: 16px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  margin-left: 4px;
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--primary-color);
+  }
 }
 
 .chart-title {
@@ -206,6 +221,13 @@ function getGaugeOption(item) {
   text-overflow: ellipsis;
   white-space: nowrap;
   padding: 0 var(--space-2);
+}
+
+.gauge-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 4px;
 }
 
 .chart-empty {

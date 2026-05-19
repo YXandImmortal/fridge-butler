@@ -87,3 +87,16 @@ export function deleteFridge(id) {
         method: 'delete'
     })
 }
+
+/**
+ * 获取冰箱容量利用率统计
+ * 包含总体平均利用率及各冰箱利用率明细
+ * @param {number} [fridgeId] - 指定冰箱ID，不传则返回当前用户所有冰箱
+ */
+export function getCapacityStats(fridgeId = null) {
+    return request({
+        url: '/fridge/capacity-stats',
+        method: 'get',
+        params: fridgeId ? { fridgeId } : {}
+    })
+}
