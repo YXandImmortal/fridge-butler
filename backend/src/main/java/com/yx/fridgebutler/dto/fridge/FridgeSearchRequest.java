@@ -1,4 +1,4 @@
-package com.yx.fridgebutler.dto;
+package com.yx.fridgebutler.dto.fridge;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;

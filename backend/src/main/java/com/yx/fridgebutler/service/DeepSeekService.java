@@ -1,0 +1,48 @@
+package com.yx.fridgebutler.service;
+
+import com.yx.fridgebutler.dto.deepseek.DeepSeekChatMessage;
+import com.yx.fridgebutler.dto.deepseek.DeepSeekChatRequest;
+import com.yx.fridgebutler.dto.deepseek.DeepSeekChatResponse;
+
+import java.util.List;
+
+/**
+ * DeepSeek AI 大模型服务接口。
+ * <p>封装与 DeepSeek API 的交互，提供简洁的对话调用方式。</p>
+ */
+public interface DeepSeekService {
+
+    /**
+     * 发送单轮对话请求，直接获取模型回复文本。
+     *
+     * @param userMessage 用户输入内容
+     * @return 模型生成的回复文本
+     */
+    String chat(String userMessage);
+
+    /**
+     * 发送带系统提示的对话请求。
+     *
+     * @param systemMessage 系统提示词，用于设定模型角色或行为
+     * @param userMessage   用户输入内容
+     * @return 模型生成的回复文本
+     */
+    String chat(String systemMessage, String userMessage);
+
+    /**
+     * 发送多轮对话请求。
+     *
+     * @param messages 消息列表，可包含 system、user、assistant 多轮消息
+     * @return 模型生成的回复文本
+     */
+    String chat(List<DeepSeekChatMessage> messages);
+
+    /**
+     * 发送完整的对话请求并返回原始响应对象。
+     * <p>适用于需要获取 token 用量、finish_reason 等详细信息的场景。</p>
+     *
+     * @param request 自定义对话请求参数
+     * @return DeepSeek 原始响应对象
+     */
+    DeepSeekChatResponse chatComplete(DeepSeekChatRequest request);
+}

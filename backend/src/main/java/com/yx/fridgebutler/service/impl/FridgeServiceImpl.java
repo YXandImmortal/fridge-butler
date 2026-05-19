@@ -1,9 +1,9 @@
 package com.yx.fridgebutler.service.impl;
 
-import com.yx.fridgebutler.dto.FridgeCreateRequest;
+import com.yx.fridgebutler.dto.fridge.FridgeCreateRequest;
 import com.yx.fridgebutler.vo.FridgeVO;
-import com.yx.fridgebutler.dto.FridgeSearchRequest;
-import com.yx.fridgebutler.dto.FridgeUpdateRequest;
+import com.yx.fridgebutler.dto.fridge.FridgeSearchRequest;
+import com.yx.fridgebutler.dto.fridge.FridgeUpdateRequest;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.SysUser;
 import com.yx.fridgebutler.exception.BusinessException;

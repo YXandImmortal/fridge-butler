@@ -261,3 +261,13 @@ export function getRecent30DaysAddStats(fridgeId) {
         params: fridgeId ? { fridgeId } : {}
     })
 }
+
+/**
+ * 查询临期/过期物品汇总统计
+ */
+export function getExpiringSummary() {
+    return request({
+        url: '/item/expiring/summary',
+        method: 'get'
+    })
+}

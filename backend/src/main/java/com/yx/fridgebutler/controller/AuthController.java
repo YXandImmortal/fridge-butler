@@ -1,8 +1,8 @@
 package com.yx.fridgebutler.controller;
 
-import com.yx.fridgebutler.dto.LoginRequest;
+import com.yx.fridgebutler.dto.auth.LoginRequest;
 import com.yx.fridgebutler.vo.LoginVO;
-import com.yx.fridgebutler.dto.RegisterRequest;
+import com.yx.fridgebutler.dto.auth.RegisterRequest;
 import com.yx.fridgebutler.enums.ResultCode;
 import com.yx.fridgebutler.service.AuthService;
 import com.yx.fridgebutler.vo.Result;

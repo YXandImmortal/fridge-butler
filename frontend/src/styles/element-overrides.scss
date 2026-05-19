@@ -3,6 +3,13 @@
  * 统一在这里管理，避免分散在组件中用 :deep()
  * ========================================================= */
 
+.el-scrollbar {
+  --el-scrollbar-bg-color: var(--scrollbar-thumb);
+  --el-scrollbar-opacity: 1;
+  --el-scrollbar-hover-bg-color: var(--scrollbar-thumb-hover);
+  --el-scrollbar-hover-opacity: 1;
+}
+
 /* 表单项目默认间距 */
 .el-form-item {
   align-items: center;

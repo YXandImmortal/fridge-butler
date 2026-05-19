@@ -1,4 +1,4 @@
-package com.yx.fridgebutler.dto;
+package com.yx.fridgebutler.dto.item;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -12,18 +12,18 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * 物品创建请求DTO
+ * 物品更新请求DTO
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemCreateRequest {
+public class ItemUpdateRequest {
 
     /**
-     * 冰箱ID
+     * 物品ID
      */
-    @NotNull(message = "冰箱ID不能为空")
-    private Long fridgeId;
+    @NotNull(message = "物品ID不能为空")
+    private Long id;
 
     /**
      * 物品名称

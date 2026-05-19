@@ -1,18 +1,25 @@
-package com.yx.fridgebutler.dto;
+package com.yx.fridgebutler.dto.unittype;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 单位类型创建请求DTO
+ * 单位类型更新请求DTO
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UnitTypeCreateRequest {
+public class UnitTypeUpdateRequest {
+
+    /**
+     * 单位类型ID
+     */
+    @NotNull(message = "单位类型ID不能为空")
+    private Long id;
 
     /**
      * 单位类型名称

@@ -87,7 +87,13 @@ public enum ResultCode {
     UNIT_NAME_EXISTS(400, "单位名称已存在"),
     UNIT_TYPE_NAME_EXISTS(400, "单位类型名称已存在"),
     UNIT_NOT_EDITABLE(403, "系统默认单位不允许编辑"),
-    UNIT_TYPE_NOT_EDITABLE(403, "系统默认单位类型不允许编辑");
+    UNIT_TYPE_NOT_EDITABLE(403, "系统默认单位类型不允许编辑"),
+
+    /**
+     * AI 服务状态码
+     * <p>DeepSeek AI 大模型调用相关</p>
+     */
+    DEEPSEEK_API_ERROR(503, "AI 服务调用失败");
 
     /**
      * 状态码数值

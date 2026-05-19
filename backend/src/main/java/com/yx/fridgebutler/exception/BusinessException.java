@@ -361,4 +361,25 @@ public class BusinessException extends RuntimeException {
         return new BusinessException(ResultCode.UNIT_TYPE_NOT_EDITABLE);
     }
 
+    // ======================== AI 服务相关 ========================
+
+    /**
+     * 创建 DeepSeek API 调用失败异常
+     *
+     * @return AI 服务调用失败业务异常
+     */
+    public static BusinessException deepSeekApiError() {
+        return new BusinessException(ResultCode.DEEPSEEK_API_ERROR);
+    }
+
+    /**
+     * 创建 DeepSeek API 调用失败异常（携带详细错误信息）
+     *
+     * @param detail 详细错误信息
+     * @return AI 服务调用失败业务异常
+     */
+    public static BusinessException deepSeekApiError(String detail) {
+        return new BusinessException(ResultCode.DEEPSEEK_API_ERROR.getCode(), ResultCode.DEEPSEEK_API_ERROR.getMessage() + ": " + detail);
+    }
+
 }

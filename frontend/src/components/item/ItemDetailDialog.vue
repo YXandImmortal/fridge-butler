@@ -45,7 +45,8 @@
                 :precision="2"
                 :step="1"
                 placeholder="请输入数量"
-                style="width: 100%"
+                style="width: 100%;
+                --el-border-radius-base: var(--radius-md);"
               />
             </el-form-item>
 
@@ -82,23 +83,39 @@
                 placeholder="请选择生产日期"
                 value-format="YYYY-MM-DD"
                 format="YYYY-MM-DD"
-                class="form-date-picker"
+                style="width: 100%;
+                --el-border-radius-base: var(--radius-md);
+                --el-input-height: 40px;"
                 clearable
-                style="width: 100%"
                 :default-value="new Date()"
               />
             </el-form-item>
 
-            <el-form-item label="保质期（天）" prop="shelfLifeDays">
-              <el-slider
-                v-model="form.shelfLifeDays"
-                :min="1"
-                :max="500"
-                :step="5"
-                placeholder="请输入保质期天数"
-                style="margin-left: 12px;"
-                show-input
-              />
+            <el-form-item label="保质期" prop="shelfLifeDays">
+              <div class="shelf-life-container">
+                <el-segmented
+                  v-model="shelfLifeMode"
+                  :options="shelfLifeOptions"
+                  size="small"
+                  class="mode-switch"
+                  @change="handleModeChange"
+                />
+
+                <el-slider
+                  v-model="sliderValue"
+                  :min="1"
+                  :max="modeMax"
+                  :step="1"
+                  :show-stops="shelfLifeMode === 'year'"
+                  show-input
+                  style="padding-left: 12px; --el-border-radius-base: var(--radius-md);"
+                  @change="handleSliderChange"
+                />
+
+                <div class="shelf-life-hint">
+                  约 {{ form.shelfLifeDays || 0 }} 天
+                </div>
+              </div>
             </el-form-item>
 
             <el-form-item v-if="mode === 'edit'" label="入库时间">
@@ -108,8 +125,9 @@
                 placeholder="暂无入库时间"
                 value-format="YYYY-MM-DD"
                 format="YYYY-MM-DD"
-                class="form-date-picker"
-                style="width: 100%"
+                style="width: 100% ;
+                --el-border-radius-base: var(--radius-md);
+                --el-input-height: 40px;"
               />
             </el-form-item>
 
@@ -186,6 +204,14 @@ const emit = defineEmits(['update:visible', 'success'])
 
 const formRef = ref(null)
 const submitting = ref(false)
+const shelfLifeMode = ref('day')
+const sliderValue = ref(1)
+
+const shelfLifeOptions = [
+  { label: '按天', value: 'day' },
+  { label: '按月', value: 'month' },
+  { label: '按年', value: 'year' }
+]
 
 const form = reactive({
   itemName: '',
@@ -194,7 +220,7 @@ const form = reactive({
   unitTypeId: null,
   itemUnitId: null,
   productionDate: '',
-  shelfLifeDays: null,
+  shelfLifeDays: 1,
   storedDate: '',
   remark: ''
 })
@@ -249,8 +275,63 @@ const unitOptions = computed(() => {
     }))
 })
 
+const modeMax = computed(() => {
+  switch (shelfLifeMode.value) {
+    case 'day': return 100
+    case 'month': return 48
+    case 'year': return 10
+    default: return 100
+  }
+})
+
 const handleUnitTypeChange = () => {
   form.itemUnitId = null
+}
+
+const handleSliderChange = (val) => {
+  if (shelfLifeMode.value === 'day') {
+    form.shelfLifeDays = val
+  } else if (shelfLifeMode.value === 'month') {
+    form.shelfLifeDays = val * 30
+  } else if (shelfLifeMode.value === 'year') {
+    form.shelfLifeDays = val * 365
+  }
+}
+
+const handleModeChange = () => {
+  const days = form.shelfLifeDays || 1
+  if (days > 0) {
+    if (shelfLifeMode.value === 'day') {
+      sliderValue.value = Math.min(days, 100)
+      form.shelfLifeDays = sliderValue.value
+    } else if (shelfLifeMode.value === 'month') {
+      sliderValue.value = Math.min(Math.max(Math.round(days / 30), 1), 48)
+      form.shelfLifeDays = sliderValue.value * 30
+    } else if (shelfLifeMode.value === 'year') {
+      sliderValue.value = Math.min(Math.max(Math.round(days / 365), 1), 10)
+      form.shelfLifeDays = sliderValue.value * 365
+    }
+  } else {
+    sliderValue.value = 1
+  }
+}
+
+const initShelfLifeMode = (days) => {
+  if (!days || days <= 0) {
+    shelfLifeMode.value = 'day'
+    sliderValue.value = 1
+    return
+  }
+  if (days <= 100) {
+    shelfLifeMode.value = 'day'
+    sliderValue.value = days
+  } else if (days <= 1440) {
+    shelfLifeMode.value = 'month'
+    sliderValue.value = Math.min(Math.round(days / 30), 48)
+  } else {
+    shelfLifeMode.value = 'year'
+    sliderValue.value = Math.min(Math.round(days / 365), 10)
+  }
 }
 
 const resetForm = () => {
@@ -263,6 +344,8 @@ const resetForm = () => {
   form.shelfLifeDays = null
   form.storedDate = ''
   form.remark = ''
+  shelfLifeMode.value = 'day'
+  sliderValue.value = 1
   if (formRef.value) {
     formRef.value.resetFields()
   }
@@ -279,6 +362,7 @@ const initFormFromItemData = () => {
     form.shelfLifeDays = props.itemData.shelfLifeDays || null
     form.storedDate = props.itemData.storedDate || ''
     form.remark = props.itemData.remark || ''
+    initShelfLifeMode(props.itemData.shelfLifeDays)
   }
 }
 
@@ -382,7 +466,7 @@ const handleSubmit = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-5) var(--space-6) 0;
+  padding: var(--space-5) var(--space-6);
 }
 
 .dialog-title-container {
@@ -532,5 +616,27 @@ const handleSubmit = async () => {
   .dialog-footer {
     padding: 0 var(--space-5) var(--space-5);
   }
+}
+
+.shelf-life-container {
+  width: 100%;
+}
+
+.mode-switch {
+  margin-bottom: 12px;
+  display: flex;
+  --el-border-radius-base: var(--radius-md);
+}
+
+.mode-switch :deep(.el-segmented__item) {
+  padding: 2px 12px;
+  font-size: 13px;
+}
+
+.shelf-life-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: right;
 }
 </style>

@@ -38,15 +38,22 @@
         最近更新
       </h2>
       <div class="update-card">
-        <div class="update-item" v-for="update in updates" :key="update.version">
-          <div class="update-header">
-            <span class="update-version">{{ update.version }}</span>
-            <span class="update-date">{{ update.date }}</span>
-          </div>
-          <ul class="update-list">
-            <li v-for="(item, idx) in update.changes" :key="idx">{{ item }}</li>
-          </ul>
-        </div>
+        <el-scrollbar height="500px">
+          <el-timeline>
+            <el-timeline-item
+                v-for="(update, index) in updates"
+                :key="update.version"
+                :timestamp="update.date"
+                placement="top"
+                :type="index === 0 ? 'primary' : ''"
+            >
+              <div class="timeline-version">{{ update.version }}</div>
+              <ul class="update-list">
+                <li v-for="(item, idx) in update.changes" :key="idx">{{ item }}</li>
+              </ul>
+            </el-timeline-item>
+          </el-timeline>
+        </el-scrollbar>
       </div>
     </div>
 
@@ -238,36 +245,29 @@ const currentYear = computed(() => new Date().getFullYear())
   padding: 24px 32px;
 }
 
-.update-item {
-  padding: 20px 0;
-  border-bottom: 1px solid var(--divider-color);
-}
-
-.update-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.update-item:first-child {
-  padding-top: 0;
-}
-
-.update-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.update-version {
+.timeline-version {
   font-size: 16px;
   font-weight: 600;
   color: var(--primary-color);
+  margin-bottom: 8px;
 }
 
-.update-date {
-  font-size: 13px;
+/* Timeline 样式适配主题 */
+.update-card :deep(.el-timeline) {
+  padding-left: 4px;
+}
+
+.update-card :deep(.el-timeline-item__tail) {
+  border-left-color: var(--primary-20);
+}
+
+.update-card :deep(.el-timeline-item__node--normal) {
+  background-color: var(--primary-color);
+}
+
+.update-card :deep(.el-timeline-item__timestamp) {
   color: var(--text-tertiary);
+  font-size: 13px;
 }
 
 .update-list {

@@ -305,7 +305,7 @@ const confirmDeleteUnit = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-5) var(--space-6) 0;
+  padding: var(--space-5) var(--space-6);
   flex-shrink: 0;
 }
 

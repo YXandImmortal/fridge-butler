@@ -103,4 +103,21 @@ public interface BizFridgeItemRepository extends JpaRepository<BizFridgeItem, Lo
      * @return 该分类下未删除的物品数量
      */
     long countByCategoryIdAndIsDeletedFalse(Long categoryId);
+
+    /**
+     * 根据多个冰箱ID查询可能临期的候选物品。
+     * <p>过滤条件：未删除、有生产日期、有保质期天数、保质期≤30天（长保质期物品不参与临期计算）。</p>
+     *
+     * @param fridgeIds 冰箱ID列表
+     * @return 符合条件的物品列表
+     */
+    @Query("""
+            SELECT i FROM BizFridgeItem i
+            WHERE i.fridgeId IN :fridgeIds
+              AND i.isDeleted = false
+              AND i.productionDate IS NOT NULL
+              AND i.shelfLifeDays IS NOT NULL
+              AND i.shelfLifeDays <= 30
+            """)
+    List<BizFridgeItem> findExpiringCandidates(@Param("fridgeIds") List<Long> fridgeIds);
 }

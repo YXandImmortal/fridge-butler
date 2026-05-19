@@ -1,9 +1,9 @@
 package com.yx.fridgebutler.controller;
 
-import com.yx.fridgebutler.dto.FridgeCreateRequest;
+import com.yx.fridgebutler.dto.fridge.FridgeCreateRequest;
 import com.yx.fridgebutler.vo.FridgeVO;
-import com.yx.fridgebutler.dto.FridgeSearchRequest;
-import com.yx.fridgebutler.dto.FridgeUpdateRequest;
+import com.yx.fridgebutler.dto.fridge.FridgeSearchRequest;
+import com.yx.fridgebutler.dto.fridge.FridgeUpdateRequest;
 import com.yx.fridgebutler.service.FridgeService;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;

@@ -1,20 +1,21 @@
 package com.yx.fridgebutler.service.impl;
 
 import com.yx.fridgebutler.vo.ItemCategoryVO;
-import com.yx.fridgebutler.dto.ItemCategoryCreateRequest;
-import com.yx.fridgebutler.dto.ItemCategoryUpdateRequest;
-import com.yx.fridgebutler.dto.ItemCreateRequest;
+import com.yx.fridgebutler.dto.category.ItemCategoryCreateRequest;
+import com.yx.fridgebutler.dto.category.ItemCategoryUpdateRequest;
+import com.yx.fridgebutler.dto.item.ItemCreateRequest;
 import com.yx.fridgebutler.vo.ItemVO;
-import com.yx.fridgebutler.dto.ItemSearchRequest;
-import com.yx.fridgebutler.dto.ItemTakeOutRequest;
+import com.yx.fridgebutler.dto.item.ItemSearchRequest;
+import com.yx.fridgebutler.dto.item.ItemTakeOutRequest;
 import com.yx.fridgebutler.vo.ItemUnitVO;
-import com.yx.fridgebutler.dto.ItemUnitCreateRequest;
-import com.yx.fridgebutler.dto.ItemUnitUpdateRequest;
-import com.yx.fridgebutler.dto.ItemUpdateRequest;
+import com.yx.fridgebutler.dto.unit.ItemUnitCreateRequest;
+import com.yx.fridgebutler.dto.unit.ItemUnitUpdateRequest;
+import com.yx.fridgebutler.dto.item.ItemUpdateRequest;
+import com.yx.fridgebutler.vo.ExpiringSummaryVO;
 import com.yx.fridgebutler.vo.TakeOutDailyStatisticsVO;
 import com.yx.fridgebutler.vo.UnitTypeVO;
-import com.yx.fridgebutler.dto.UnitTypeCreateRequest;
-import com.yx.fridgebutler.dto.UnitTypeUpdateRequest;
+import com.yx.fridgebutler.dto.unittype.UnitTypeCreateRequest;
+import com.yx.fridgebutler.dto.unittype.UnitTypeUpdateRequest;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.BizFridgeItem;
 import com.yx.fridgebutler.entity.BizItemCategory;
@@ -47,6 +48,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -769,6 +771,69 @@ public class ItemServiceImpl implements ItemService {
 
         log.info("查询近30天添加统计成功，用户ID：{}，数据条数：{}", currentUserId, result.size());
         return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 临期/过期统计逻辑，与前端 getFreshnessStatus 算法保持一致：
+     * <ol>
+     *   <li>保质期 &gt; 30 天的物品视为长保质期，不参与统计</li>
+     *   <li>缺少 productionDate 或 shelfLifeDays 的物品跳过</li>
+     *   <li>diffDays = 生产日期到今天的天数差（向下取整）</li>
+     *   <li>remainingDays = shelfLifeDays - diffDays</li>
+     *   <li>R = (remainingDays / shelfLifeDays) × 100</li>
+     *   <li>R ≤ 0 → 已过期；0 &lt; R &lt; 20 → 临期</li>
+     * </ol>
+     */
+    @Override
+    public ExpiringSummaryVO getExpiringSummary() {
+        Long currentUserId = getCurrentUserId();
+        log.info("查询临期物品统计，用户ID：{}", currentUserId);
+
+        // 获取当前用户所有冰箱ID
+        List<Long> fridgeIds = fridgeRepository.findByOwnerIdAndIsDeletedFalse(currentUserId, Sort.unsorted())
+                .stream()
+                .map(BizFridge::getId)
+                .toList();
+
+        if (fridgeIds.isEmpty()) {
+            return ExpiringSummaryVO.builder()
+                    .expiringCount(0)
+                    .expiredCount(0)
+                    .totalExpiring(0)
+                    .build();
+        }
+
+        // 查询候选物品（已过滤：未删除、有生产日期、有保质期、保质期≤30天）
+        List<BizFridgeItem> candidates = itemRepository.findExpiringCandidates(fridgeIds);
+
+        LocalDate today = LocalDate.now(ZONE_ID_SHANGHAI);
+        int expiredCount = 0;
+        int expiringCount = 0;
+
+        for (BizFridgeItem item : candidates) {
+            // 计算从生产日期到今天的天数差（与前端 Math.floor(diffTime / 86400000) 对应）
+            long diffDays = ChronoUnit.DAYS.between(item.getProductionDate(), today);
+            int remainingDays = item.getShelfLifeDays() - (int) diffDays;
+            double r = ((double) remainingDays / item.getShelfLifeDays()) * 100.0;
+
+            if (r <= 0) {
+                expiredCount++;
+            } else if (r < 20) {
+                expiringCount++;
+            }
+            // R >= 20 的物品为"一般"或"新鲜"，不纳入统计
+        }
+
+        log.info("查询临期统计成功，用户ID：{}，临期：{}，过期：{}，总计：{}",
+                currentUserId, expiringCount, expiredCount, expiringCount + expiredCount);
+
+        return ExpiringSummaryVO.builder()
+                .expiringCount(expiringCount)
+                .expiredCount(expiredCount)
+                .totalExpiring(expiringCount + expiredCount)
+                .build();
     }
 
     /**

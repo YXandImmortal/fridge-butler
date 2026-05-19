@@ -124,6 +124,20 @@ public class SystemController {
 
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
+                    .version("beta 0.1.0")
+                    .date("2026-5-19")
+                    .changes(Arrays.asList(
+                            "全新上线 AI 智能冰箱管家，集成 DeepSeek 大模型，支持自然语言交互与意图识别",
+                            "用户首页全面重构，新增个性化欢迎语、数据统计卡片与 AI 聊天助手入口",
+                            "AI 聊天支持会话管理、历史消息回溯与结构化数据渲染（冰箱/物品/临期提醒）",
+                            "新增临期/过期物品统计摘要接口，首页实时展示食材保鲜状态",
+                            "后端 DTO 包结构按业务模块重构（auth、fridge、item、category 等），架构更清晰",
+                            "安全配置升级：数据库密码、JWT 密钥等敏感信息强制环境变量注入，提升安全性",
+                            "关于页面更新日志升级为 Timeline 时间轴展示，视觉体验更佳",
+                            "系统版本正式进入 beta 阶段"
+                    ))
+                    .build(),
+            UpdateLogVO.builder()
                     .version("alpha 0.0.9")
                     .date("2026-5-17")
                     .changes(Arrays.asList(

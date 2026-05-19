@@ -1,8 +1,8 @@
 package com.yx.fridgebutler.service;
 
-import com.yx.fridgebutler.dto.UserChangePasswordRequest;
-import com.yx.fridgebutler.dto.UserUpdateAvatarRequest;
-import com.yx.fridgebutler.dto.UserUpdateRequest;
+import com.yx.fridgebutler.dto.user.UserChangePasswordRequest;
+import com.yx.fridgebutler.dto.user.UserUpdateAvatarRequest;
+import com.yx.fridgebutler.dto.user.UserUpdateRequest;
 import com.yx.fridgebutler.vo.UserInfoVO;
 
 /**

@@ -4,8 +4,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/fridge_butler_db?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:yx011215}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -20,12 +20,27 @@ server:
   port: 8080
 
 jwt:
-  secret: ${JWT_SECRET:fridge-bulter-default-2026-secret-pass-key}
-  expiration: ${JWT_EXPIRATION:86400000}
-  remember-me-expiration: ${JWT_REMEMBER_ME_EXPIRATION:2592000000}
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+  remember-me-expiration: ${JWT_REMEMBER_ME_EXPIRATION}
 
 system:
   name: 智鲜·引擎
-  version: alpha 0.0.9
+  version: beta 0.1.0
   slogan: 智能管理您的冰箱，让食材更新鲜
   build-time: 20260517-01
+
+# AI 聊天历史配置
+ai:
+  history:
+    retention-days: 7      # 会话保留天数（超过此天数的会话将被软删除）
+    purge-days: 30         # 物理删除延迟（已软删数据保留多少天后彻底删除）
+
+# DeepSeek AI 大模型配置
+# 文档参考：https://api-docs.deepseek.com/zh-cn/
+deepseek:
+  api-key: ${DEEPSEEK_API_KEY}
+  base-url: https://api.deepseek.com
+  model: deepseek-v4-pro
+  temperature: 0.7
+  max-tokens: 4096

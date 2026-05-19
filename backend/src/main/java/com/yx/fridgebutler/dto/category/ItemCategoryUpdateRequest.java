@@ -1,18 +1,25 @@
-package com.yx.fridgebutler.dto;
+package com.yx.fridgebutler.dto.category;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 物品分类创建请求DTO
+ * 物品分类更新请求DTO
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemCategoryCreateRequest {
+public class ItemCategoryUpdateRequest {
+
+    /**
+     * 分类ID
+     */
+    @NotNull(message = "分类ID不能为空")
+    private Long id;
 
     /**
      * 分类名称

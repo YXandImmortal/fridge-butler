@@ -1,20 +1,21 @@
 package com.yx.fridgebutler.service;
 
 import com.yx.fridgebutler.vo.ItemCategoryVO;
-import com.yx.fridgebutler.dto.ItemCategoryCreateRequest;
-import com.yx.fridgebutler.dto.ItemCategoryUpdateRequest;
-import com.yx.fridgebutler.dto.ItemCreateRequest;
+import com.yx.fridgebutler.dto.category.ItemCategoryCreateRequest;
+import com.yx.fridgebutler.dto.category.ItemCategoryUpdateRequest;
+import com.yx.fridgebutler.dto.item.ItemCreateRequest;
 import com.yx.fridgebutler.vo.ItemVO;
-import com.yx.fridgebutler.dto.ItemSearchRequest;
-import com.yx.fridgebutler.dto.ItemTakeOutRequest;
+import com.yx.fridgebutler.dto.item.ItemSearchRequest;
+import com.yx.fridgebutler.dto.item.ItemTakeOutRequest;
 import com.yx.fridgebutler.vo.ItemUnitVO;
-import com.yx.fridgebutler.dto.ItemUnitCreateRequest;
-import com.yx.fridgebutler.dto.ItemUnitUpdateRequest;
-import com.yx.fridgebutler.dto.ItemUpdateRequest;
+import com.yx.fridgebutler.dto.unit.ItemUnitCreateRequest;
+import com.yx.fridgebutler.dto.unit.ItemUnitUpdateRequest;
+import com.yx.fridgebutler.dto.item.ItemUpdateRequest;
+import com.yx.fridgebutler.vo.ExpiringSummaryVO;
 import com.yx.fridgebutler.vo.TakeOutDailyStatisticsVO;
 import com.yx.fridgebutler.vo.UnitTypeVO;
-import com.yx.fridgebutler.dto.UnitTypeCreateRequest;
-import com.yx.fridgebutler.dto.UnitTypeUpdateRequest;
+import com.yx.fridgebutler.dto.unittype.UnitTypeCreateRequest;
+import com.yx.fridgebutler.dto.unittype.UnitTypeUpdateRequest;
 
 import java.util.List;
 
@@ -174,4 +175,19 @@ public interface ItemService {
      * @return 近30天每日添加次数列表，按日期升序排列
      */
     List<TakeOutDailyStatisticsVO> getRecent30DaysAddStatistics(Long fridgeId);
+
+    /**
+     * 查询当前用户临期/过期物品统计摘要。
+     * <p>算法与前端 getFreshnessStatus 保持一致：
+     * <ul>
+     *   <li>保质期 &gt; 30 天的物品视为长保质期，不参与统计</li>
+     *   <li>缺少生产日期或保质期的物品跳过</li>
+     *   <li>R = (remainingDays / shelfLifeDays) × 100</li>
+     *   <li>R ≤ 0 → 已过期；0 &lt; R &lt; 20 → 临期</li>
+     * </ul>
+     * </p>
+     *
+     * @return 临期统计摘要，包含临期数、过期数、总计数
+     */
+    ExpiringSummaryVO getExpiringSummary();
 }

@@ -1,9 +1,9 @@
 package com.yx.fridgebutler.service.impl;
 
 import cn.hutool.core.util.PhoneUtil;
-import com.yx.fridgebutler.dto.LoginRequest;
+import com.yx.fridgebutler.dto.auth.LoginRequest;
 import com.yx.fridgebutler.vo.LoginVO;
-import com.yx.fridgebutler.dto.RegisterRequest;
+import com.yx.fridgebutler.dto.auth.RegisterRequest;
 import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.entity.SysUser;
 import com.yx.fridgebutler.exception.BusinessException;

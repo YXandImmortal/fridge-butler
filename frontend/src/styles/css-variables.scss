@@ -87,6 +87,7 @@ html:not(.dark) {
   --glass-lavender-25: rgba(224, 224, 242, 0.25);
   --overlay-bg: rgba(0, 0, 0, 0.5);
   --dropdown-bg: #ffffff;
+  --user-message-bg: #71a4ff;
 
   /* 边框与分隔线 */
   --border-color: rgba(0, 0, 0, 0.06);
@@ -215,6 +216,7 @@ html.dark {
   --glass-lavender-25: rgba(100, 181, 246, 0.15);
   --overlay-bg: rgba(0, 0, 0, 0.7);
   --dropdown-bg: #1e293b;
+  --user-message-bg: #3c5780;
 
   /* 边框与分隔线 */
   --border-color: rgba(255, 255, 255, 0.08);

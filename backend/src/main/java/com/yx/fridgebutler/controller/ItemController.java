@@ -1,20 +1,21 @@
 package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.vo.ItemCategoryVO;
-import com.yx.fridgebutler.dto.ItemCategoryCreateRequest;
-import com.yx.fridgebutler.dto.ItemCategoryUpdateRequest;
-import com.yx.fridgebutler.dto.ItemCreateRequest;
+import com.yx.fridgebutler.dto.category.ItemCategoryCreateRequest;
+import com.yx.fridgebutler.dto.category.ItemCategoryUpdateRequest;
+import com.yx.fridgebutler.dto.item.ItemCreateRequest;
 import com.yx.fridgebutler.vo.ItemVO;
-import com.yx.fridgebutler.dto.ItemSearchRequest;
-import com.yx.fridgebutler.dto.ItemTakeOutRequest;
-import com.yx.fridgebutler.dto.ItemUnitCreateRequest;
-import com.yx.fridgebutler.dto.ItemUnitUpdateRequest;
-import com.yx.fridgebutler.dto.ItemUpdateRequest;
+import com.yx.fridgebutler.dto.item.ItemSearchRequest;
+import com.yx.fridgebutler.dto.item.ItemTakeOutRequest;
+import com.yx.fridgebutler.dto.unit.ItemUnitCreateRequest;
+import com.yx.fridgebutler.dto.unit.ItemUnitUpdateRequest;
+import com.yx.fridgebutler.dto.item.ItemUpdateRequest;
+import com.yx.fridgebutler.vo.ExpiringSummaryVO;
 import com.yx.fridgebutler.vo.TakeOutDailyStatisticsVO;
 import com.yx.fridgebutler.vo.ItemUnitVO;
 import com.yx.fridgebutler.vo.UnitTypeVO;
-import com.yx.fridgebutler.dto.UnitTypeCreateRequest;
-import com.yx.fridgebutler.dto.UnitTypeUpdateRequest;
+import com.yx.fridgebutler.dto.unittype.UnitTypeCreateRequest;
+import com.yx.fridgebutler.dto.unittype.UnitTypeUpdateRequest;
 import com.yx.fridgebutler.service.ItemService;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
@@ -253,6 +254,21 @@ public class ItemController {
             @RequestParam(required = false) Long fridgeId) {
         List<TakeOutDailyStatisticsVO> result = itemService.getRecent30DaysAddStatistics(fridgeId);
         log.info("查询近30天添加统计成功，冰箱ID：{}，数据条数：{}", fridgeId, result.size());
+        return Result.success(result);
+    }
+
+    /**
+     * 查询临期/过期物品统计摘要
+     * <p>只统计保质期≤30天的物品，长保质期物品不参与计算。
+     * 算法与前端 getFreshnessStatus 完全一致。</p>
+     *
+     * @return 临期数量、过期数量、总计数量
+     */
+    @GetMapping("/expiring/summary")
+    public Result<ExpiringSummaryVO> getExpiringSummary() {
+        ExpiringSummaryVO result = itemService.getExpiringSummary();
+        log.info("查询临期统计成功，临期：{}，过期：{}，总计：{}",
+                result.getExpiringCount(), result.getExpiredCount(), result.getTotalExpiring());
         return Result.success(result);
     }
 }
