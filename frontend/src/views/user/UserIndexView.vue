@@ -1135,7 +1135,7 @@ onUnmounted(() => {
 /* ==================== 欢迎区 ==================== */
 .welcome-section {
   text-align: center;
-  padding: var(--space-8) var(--space-5) var(--space-5);
+  padding: var(--space-5);
 }
 
 .welcome-title {
@@ -1354,7 +1354,7 @@ onUnmounted(() => {
 }
 
 .message-user .message-time {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .message-time {

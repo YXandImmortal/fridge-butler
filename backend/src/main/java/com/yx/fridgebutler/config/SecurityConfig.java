@@ -95,7 +95,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
-                                .requestMatchers("/auth/**", "/system/**", "/captcha/generate", "/captcha/verify").permitAll()
+                                .requestMatchers("/auth/**", "/system/**", "/captcha/generate", "/captcha/verify", "/daily-tip/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

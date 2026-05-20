@@ -124,6 +124,21 @@ public class SystemController {
 
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
+                    .version("beta 0.1.3")
+                    .date("2026-5-21")
+                    .changes(Arrays.asList(
+                            "全新上线每日小贴士功能：由 DeepSeek AI 每日自动生成冰箱相关的冷知识、实用技巧、冷笑话与谜语",
+                            "后端新增每日小贴士完整模块：实体、枚举、Repository、Service、Controller 与定时任务",
+                            "新增 /daily-tip/today 与 /daily-tip/by-date 接口，支持匿名访问，无数据时实时调用 AI 生成并持久化",
+                            "新增 DailyTipGenerateJob 定时任务，每天凌晨 1:00 预生成当日小贴士，避免首次访问等待",
+                            "前端侧边栏集成每日小贴士卡片，支持类型标签、emoji、谜语交互式答案与本地缓存",
+                            "前端新增 dailyTip.js API 模块与 DAILY_TIP_API.md 接口文档",
+                            "AI 聊天用户消息气泡背景色优化，提升视觉辨识度",
+                            "用户首页欢迎区与消息时间样式微调，整体排版更紧凑",
+                            "Sidebar 布局重构，适配底部固定小贴士区域，导航区独立滚动"
+                    ))
+                    .build(),
+            UpdateLogVO.builder()
                     .version("beta 0.1.2")
                     .date("2026-5-20")
                     .changes(Arrays.asList(

@@ -73,13 +73,72 @@
         </li>
       </ul>
     </nav>
+
+    <!-- 每日小贴士 -->
+    <div class="daily-tip-section">
+      <div class="daily-tip-card">
+        <!-- 加载中 -->
+        <div v-if="tipLoading" class="tip-loading">
+          <div class="tip-loading-spinner"></div>
+          <span class="tip-loading-text">正在加载今日小贴士...</span>
+        </div>
+
+        <!-- 内容区 -->
+        <template v-else-if="tip">
+          <!-- 头部：emoji + 类型标签 -->
+          <div class="tip-header">
+            <span class="tip-emoji">{{ tip.emoji }}</span>
+            <span
+              class="tip-type-badge"
+              :style="typeBadgeStyle"
+            >
+              {{ tip.typeLabel }}
+            </span>
+          </div>
+
+          <!-- 标题 -->
+          <h4 class="tip-title">{{ tip.title }}</h4>
+
+          <!-- 正文 -->
+          <p class="tip-content">{{ tip.content }}</p>
+
+          <!-- 谜语答案（交互式） -->
+          <div v-if="tip.type === 'RIDDLE' && tip.answer" class="tip-riddle-answer">
+            <button
+              v-if="!showAnswer"
+              class="tip-answer-btn"
+              @click="showAnswer = true"
+            >
+              看答案 👀
+            </button>
+            <transition name="fade">
+              <p v-if="showAnswer" class="tip-answer-text">
+                答案：{{ tip.answer }}
+              </p>
+            </transition>
+          </div>
+
+          <!-- 日期 -->
+          <div class="tip-footer">
+            <span class="tip-date">{{ tip.date }}</span>
+          </div>
+        </template>
+
+        <!-- 空状态 -->
+        <div v-else class="tip-empty">
+          <span class="tip-empty-icon">📝</span>
+          <span class="tip-empty-text">今日暂无小贴士</span>
+        </div>
+      </div>
+    </div>
   </aside>
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useSystemStore } from "@/stores/system.js"
 import { useRoute } from 'vue-router'
+import { getTodayTip } from '@/api/dailyTip'
 
 const systemStore = useSystemStore()
 const { userIndexFeatures, getSystemInfo } = systemStore
@@ -139,13 +198,85 @@ watch(() => route.path, () => {
 
 onMounted(async () => {
   await getSystemInfo()
+  await loadTodayTip()
 })
+
+// ==================== 每日小贴士 ====================
+const tip = ref(null)
+const tipLoading = ref(false)
+const showAnswer = ref(false)
+
+const TIP_CACHE_KEY = 'fridge_daily_tip_cache'
+
+// 类型对应的颜色配置
+const typeColorMap = {
+  FACT: {
+    color: 'var(--color-primary-400)',
+    bg: 'var(--primary-10)'
+  },
+  TIP: {
+    color: 'var(--color-emerald)',
+    bg: 'rgba(129, 199, 132, 0.15)'
+  },
+  JOKE: {
+    color: 'var(--color-pink-500)',
+    bg: 'rgba(244, 143, 177, 0.15)'
+  },
+  RIDDLE: {
+    color: 'var(--color-purple-500)',
+    bg: 'rgba(179, 157, 219, 0.15)'
+  }
+}
+
+const typeBadgeStyle = computed(() => {
+  const config = typeColorMap[tip.value?.type] || typeColorMap.FACT
+  return {
+    color: config.color,
+    backgroundColor: config.bg
+  }
+})
+
+// 加载今日小贴士（带本地缓存）
+const loadTodayTip = async () => {
+  tipLoading.value = true
+  try {
+    // 1. 先尝试读取本地缓存
+    const cached = localStorage.getItem(TIP_CACHE_KEY)
+    if (cached) {
+      try {
+        const { date, data } = JSON.parse(cached)
+        const today = new Date().toISOString().split('T')[0]
+        if (date === today && data) {
+          tip.value = data
+          tipLoading.value = false
+          return
+        }
+      } catch {
+        // 缓存解析失败，继续请求
+      }
+    }
+
+    // 2. 缓存无效，请求接口
+    const res = await getTodayTip()
+    if (res.code === 200 && res.data) {
+      tip.value = res.data
+      // 写入缓存
+      const today = new Date().toISOString().split('T')[0]
+      localStorage.setItem(TIP_CACHE_KEY, JSON.stringify({
+        date: today,
+        data: res.data
+      }))
+    }
+  } finally {
+    tipLoading.value = false
+  }
+}
 </script>
 
 <style scoped lang="scss">
 .app-sidebar {
   width: var(--sidebar-width);
-  height: calc(100vh - var(--header-height));
+  height: calc(100vh - var(--header-height) - var(--footer-height));
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
   box-shadow: var(--shadow-sidebar);
@@ -153,7 +284,8 @@ onMounted(async () => {
   top: var(--header-height);
   left: 0;
   transition: all 0.3s ease;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .nav-icon .iconfont {
@@ -161,6 +293,10 @@ onMounted(async () => {
 }
 
 .sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
   padding: 24px 0;
 }
 
@@ -332,6 +468,182 @@ onMounted(async () => {
   max-height: 300px;
 }
 
+/* =========================================================
+ * 每日小贴士区域
+ * ========================================================= */
+.daily-tip-section {
+  flex-shrink: 0;
+  padding: 0 16px 16px;
+  height: 340px;
+  margin-bottom: var(--space-5);
+  margin-top: var(--space-3);
+}
+
+.daily-tip-card {
+  height: 100%;
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  opacity: 0.9;
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* 加载状态 */
+.tip-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-tertiary);
+}
+
+.tip-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--primary-10);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: tip-spin 0.8s linear infinite;
+}
+
+@keyframes tip-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tip-loading-text {
+  font-size: 13px;
+}
+
+/* 头部 */
+.tip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.tip-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.tip-type-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+/* 标题 */
+.tip-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+/* 正文 */
+.tip-content {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* 谜语答案 */
+.tip-riddle-answer {
+  margin-top: 12px;
+}
+
+.tip-answer-btn {
+  width: 100%;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary-color);
+  background: var(--primary-10);
+  border: 1px dashed var(--primary-30);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  &:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+}
+
+.tip-answer-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-purple-500);
+  background: rgba(179, 157, 219, 0.12);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin: 0;
+  text-align: center;
+}
+
+/* 底部日期 */
+.tip-footer {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+  text-align: right;
+}
+
+.tip-date {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+/* 空状态 */
+.tip-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-tertiary);
+}
+
+.tip-empty-icon {
+  font-size: 32px;
+  opacity: 0.6;
+}
+
+.tip-empty-text {
+  font-size: 13px;
+}
+
+/* 淡入淡出动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .app-sidebar {
@@ -350,6 +662,23 @@ onMounted(async () => {
   .sub-nav-link {
     padding: 8px 16px 8px 44px;
   }
+
+  .daily-tip-section {
+    height: 300px;
+    padding: 0 12px 12px;
+  }
+
+  .daily-tip-card {
+    padding: 16px;
+  }
+
+  .tip-emoji {
+    font-size: 24px;
+  }
+
+  .tip-title {
+    font-size: 14px;
+  }
 }
 
 /* 小屏幕适配 */
@@ -360,6 +689,11 @@ onMounted(async () => {
     top: 0;
     height: auto;
     box-shadow: none;
+  }
+
+  .daily-tip-section {
+    height: auto;
+    min-height: 280px;
   }
 }
 
@@ -379,5 +713,32 @@ onMounted(async () => {
 
 .app-sidebar::-webkit-scrollbar-thumb:hover {
   background: var(--primary-40);
+}
+
+/* 小贴士内部滚动条 */
+.tip-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.tip-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tip-content::-webkit-scrollbar-thumb {
+  background: var(--primary-20);
+  border-radius: 2px;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--primary-20);
+  border-radius: 2px;
 }
 </style>
