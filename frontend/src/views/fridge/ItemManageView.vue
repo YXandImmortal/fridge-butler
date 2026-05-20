@@ -20,6 +20,9 @@
           <div class="card-title-wrapper">
             <i class="iconfont icon-speed-slow card-title-icon" />
             <h3 class="card-title">冰箱已用容量</h3>
+            <el-tooltip content="该数据每小时刷新" placement="right" :offset="6">
+              <i class="iconfont icon-info-box info-icon" style="margin-left: -6px"/>
+            </el-tooltip>
           </div>
           <span class="capacity-text">{{ capacityData.itemCount }} / {{ capacityData.totalCapacity }} L</span>
         </div>
