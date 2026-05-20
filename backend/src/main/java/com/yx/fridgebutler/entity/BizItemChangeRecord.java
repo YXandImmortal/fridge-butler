@@ -74,14 +74,14 @@ public class BizItemChangeRecord {
      * 变更前值，最大长度255。
      */
     @Size(max = 255)
-    @Column(name = "old_value", length = 255)
+    @Column(name = "old_value")
     private String oldValue;
 
     /**
      * 变更后值，最大长度255。
      */
     @Size(max = 255)
-    @Column(name = "new_value", length = 255)
+    @Column(name = "new_value")
     private String newValue;
 
     /**
@@ -95,7 +95,7 @@ public class BizItemChangeRecord {
      * 备注信息，最大长度255。
      */
     @Size(max = 255)
-    @Column(name = "remark", length = 255)
+    @Column(name = "remark")
     private String remark;
 
     /**

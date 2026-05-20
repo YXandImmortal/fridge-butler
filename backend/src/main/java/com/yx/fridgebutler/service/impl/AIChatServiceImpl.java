@@ -11,7 +11,6 @@ import com.yx.fridgebutler.entity.AiChatMessage;
 import com.yx.fridgebutler.entity.AiChatSession;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.BizFridgeItem;
-import com.yx.fridgebutler.entity.BizItemCategory;
 import com.yx.fridgebutler.entity.BizItemUnit;
 import com.yx.fridgebutler.entity.SysUser;
 import com.yx.fridgebutler.exception.BusinessException;
@@ -19,7 +18,6 @@ import com.yx.fridgebutler.repository.AiChatMessageRepository;
 import com.yx.fridgebutler.repository.AiChatSessionRepository;
 import com.yx.fridgebutler.repository.BizFridgeItemRepository;
 import com.yx.fridgebutler.repository.BizFridgeRepository;
-import com.yx.fridgebutler.repository.BizItemCategoryRepository;
 import com.yx.fridgebutler.repository.BizItemUnitRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.service.AIChatService;
@@ -39,14 +37,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -120,9 +116,6 @@ public class AIChatServiceImpl implements AIChatService {
     private BizItemUnitRepository unitRepository;
 
     @Autowired
-    private BizItemCategoryRepository categoryRepository;
-
-    @Autowired
     private SysUserRepository userRepository;
 
     @Autowired
@@ -165,7 +158,6 @@ public class AIChatServiceImpl implements AIChatService {
             if (existing.isPresent()) {
                 session = existing.get();
             } else {
-                isNewSession = true;
                 session = createNewSession(sessionId, currentUserId, request.getMessage());
             }
         } else {
@@ -979,8 +971,7 @@ public class AIChatServiceImpl implements AIChatService {
         List<String> list = new ArrayList<>();
         if (node.containsKey(field) && node.getJSONArray(field) != null) {
             JSONArray array = node.getJSONArray(field);
-            for (int i = 0; i < array.size(); i++) {
-                Object item = array.get(i);
+            for (Object item : array) {
                 if (item != null) {
                     list.add(String.valueOf(item));
                 }
@@ -990,19 +981,15 @@ public class AIChatServiceImpl implements AIChatService {
     }
 
     /**
-     * 意图识别结果内部类。
-     */
-    private static class IntentResult {
-        final String intent;
-        final Map<String, Object> params;
-        final double confidence;
-
-        IntentResult(String intent, Map<String, Object> params, double confidence) {
-            this.intent = intent != null ? intent : "text";
-            this.params = params != null ? params : new HashMap<>();
-            this.confidence = confidence;
+         * 意图识别结果内部类。
+         */
+        private record IntentResult(String intent, Map<String, Object> params, double confidence) {
+            private IntentResult(String intent, Map<String, Object> params, double confidence) {
+                this.intent = intent != null ? intent : "text";
+                this.params = params != null ? params : new HashMap<>();
+                this.confidence = confidence;
+            }
         }
-    }
 
     /**
      * 新鲜度状态记录。

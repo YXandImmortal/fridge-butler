@@ -3,6 +3,7 @@ package com.yx.fridgebutler.config;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -29,7 +30,7 @@ public class LogInterceptor implements HandlerInterceptor {
     private static final String START_TIME_KEY = "startTime";
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+    public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
         // 生成请求唯一追踪 ID
         String traceId = UUID.randomUUID().toString().replace("-", "");
         MDC.put(TRACE_ID_KEY, traceId);
@@ -53,7 +54,7 @@ public class LogInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, @NonNull Object handler, Exception ex) {
         Long startTime = (Long) request.getAttribute(START_TIME_KEY);
         long duration = startTime != null ? System.currentTimeMillis() - startTime : 0;
 

@@ -98,7 +98,7 @@ public class DeepSeekServiceImpl implements DeepSeekService {
             throw BusinessException.deepSeekApiError("响应中无有效内容");
         }
 
-        String content = response.getChoices().get(0).getMessage().getContent();
+        String content = response.getChoices().getFirst().getMessage().getContent();
         log.info("DeepSeek 对话成功，消耗 token：prompt={}, completion={}, total={}",
                 response.getUsage() != null ? response.getUsage().getPromptTokens() : "N/A",
                 response.getUsage() != null ? response.getUsage().getCompletionTokens() : "N/A",

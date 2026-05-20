@@ -360,7 +360,7 @@ public class CapacityStatsServiceImpl implements CapacityStatsService {
         if (matcher.find()) {
             try {
                 int rate = Integer.parseInt(matcher.group());
-                return Math.max(0, Math.min(100, rate));
+                return Math.clamp(rate, 0, 100);
             } catch (NumberFormatException e) {
                 log.warn("无法解析AI返回的占用率数字：{}", response);
             }
