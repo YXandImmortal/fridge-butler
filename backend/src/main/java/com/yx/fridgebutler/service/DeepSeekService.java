@@ -45,4 +45,14 @@ public interface DeepSeekService {
      * @return DeepSeek 原始响应对象
      */
     DeepSeekChatResponse chatComplete(DeepSeekChatRequest request);
+
+    /**
+     * 流式对话请求。
+     * <p>通过 SSE 协议逐字符获取模型回复，适用于需要实时显示打字效果的场景。</p>
+     *
+     * @param messages 消息列表
+     * @param onChunk  每个文本片段的回调（会在调用线程中同步执行）
+     * @throws java.io.IOException 网络或流式读取异常
+     */
+    void chatStream(List<DeepSeekChatMessage> messages, java.util.function.Consumer<String> onChunk) throws java.io.IOException;
 }

@@ -7,6 +7,7 @@ import com.yx.fridgebutler.dto.aichat.AIChatHistoryMessage;
 import com.yx.fridgebutler.dto.aichat.AIChatRequest;
 import com.yx.fridgebutler.dto.deepseek.DeepSeekChatMessage;
 import com.yx.fridgebutler.dto.item.ItemSearchRequest;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.yx.fridgebutler.entity.AiChatMessage;
 import com.yx.fridgebutler.entity.AiChatSession;
 import com.yx.fridgebutler.entity.BizFridge;
@@ -34,15 +35,18 @@ import com.yx.fridgebutler.vo.aichat.AIChatSessionVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -990,6 +994,198 @@ public class AIChatServiceImpl implements AIChatService {
                 this.confidence = confidence;
             }
         }
+
+    // ======================== 流式输出方法 ========================
+
+    @Override
+    public void streamChat(AIChatRequest request, SseEmitter emitter) {
+        Long currentUserId;
+        SecurityContext securityContext;
+        try {
+            currentUserId = getCurrentUserId();
+            securityContext = SecurityContextHolder.getContext();
+        } catch (Exception e) {
+            sendStreamError(emitter, e);
+            return;
+        }
+
+        CompletableFuture.runAsync(() -> {
+            SecurityContextHolder.setContext(securityContext);
+            try {
+                streamChatInternal(request, emitter, currentUserId);
+            } catch (Exception e) {
+                log.error("AI 流式聊天异常", e);
+                sendStreamError(emitter, e);
+            } finally {
+                SecurityContextHolder.clearContext();
+            }
+        });
+    }
+
+    private void streamChatInternal(AIChatRequest request, SseEmitter emitter, Long currentUserId) throws Exception {
+        String sessionId = request.getSessionId();
+        boolean isNewSession = false;
+
+        // 1. 查找或创建会话
+        if (sessionId == null || sessionId.isBlank()) {
+            sessionId = "sess_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+            isNewSession = true;
+        }
+
+        AiChatSession session;
+        if (!isNewSession) {
+            Optional<AiChatSession> existing = sessionRepository
+                    .findBySessionIdAndUserIdAndIsDeleted(sessionId, currentUserId, (byte) 0);
+            if (existing.isPresent()) {
+                session = existing.get();
+            } else {
+                session = createNewSession(sessionId, currentUserId, request.getMessage());
+            }
+        } else {
+            session = createNewSession(sessionId, currentUserId, request.getMessage());
+        }
+
+        // 2. 加载历史
+        List<AIChatHistoryMessage> dbHistory = buildHistoryFromDb(sessionId);
+
+        // 3. 保存用户消息
+        saveUserMessage(sessionId, request.getMessage());
+
+        // 4. 同步意图识别
+        IntentResult intent = recognizeIntent(request.getMessage(), dbHistory);
+        log.info("AI 流式聊天意图识别结果：intent={}, params={}, confidence={}",
+                intent.intent, intent.params, intent.confidence);
+
+        // 5. 根据意图分发处理
+        StringBuilder fullText = new StringBuilder();
+        AIChatReplyVO reply;
+
+        try {
+            reply = switch (intent.intent) {
+                case "fridge_list" -> {
+                    AIChatReplyVO r = handleFridgeList();
+                    streamStructuredReply(emitter, r, fullText);
+                    yield r;
+                }
+                case "item_list" -> {
+                    AIChatReplyVO r = handleItemList(intent.params);
+                    streamStructuredReply(emitter, r, fullText);
+                    yield r;
+                }
+                case "expiring_alert" -> {
+                    AIChatReplyVO r = handleExpiringAlert();
+                    streamStructuredReply(emitter, r, fullText);
+                    yield r;
+                }
+                case "recipe_recommend" -> {
+                    AIChatReplyVO r = handleRecipeRecommend();
+                    streamStructuredReply(emitter, r, fullText);
+                    yield r;
+                }
+                case "trend_chart" -> {
+                    AIChatReplyVO r = handleTrendChart(intent.params);
+                    streamStructuredReply(emitter, r, fullText);
+                    yield r;
+                }
+                case "action_confirm" -> {
+                    AIChatReplyVO r = handleActionConfirm(intent.params);
+                    streamStructuredReply(emitter, r, fullText);
+                    yield r;
+                }
+                default -> streamTextReply(request.getMessage(), dbHistory, emitter, fullText);
+            };
+        } catch (Exception e) {
+            log.error("AI 流式聊天业务处理异常，intent={}", intent.intent, e);
+            reply = AIChatReplyVO.builder()
+                    .messageType("text")
+                    .text("抱歉，处理你的请求时出了点问题，请稍后再试。")
+                    .data(null)
+                    .build();
+            streamStructuredReply(emitter, reply, fullText);
+        }
+
+        // 6. 保存 AI 回复
+        saveAssistantMessage(sessionId, reply);
+
+        // 7. 更新会话
+        session.setLastActiveTime(Instant.now());
+        sessionRepository.save(session);
+
+        // 8. 发送 done 事件
+        List<String> suggestions = generateSuggestions(reply.getMessageType());
+        Map<String, Object> doneEvent = new LinkedHashMap<>();
+        doneEvent.put("sessionId", sessionId);
+        doneEvent.put("suggestions", suggestions);
+        emitter.send(SseEmitter.event().name("done").data(doneEvent));
+        emitter.complete();
+    }
+
+    private void streamStructuredReply(SseEmitter emitter, AIChatReplyVO reply, StringBuilder fullText) throws IOException {
+        String text = reply.getText();
+        if (text != null && !text.isEmpty()) {
+            Map<String, Object> textEvent = new LinkedHashMap<>();
+            textEvent.put("chunk", text);
+            emitter.send(SseEmitter.event().name("text").data(textEvent));
+            fullText.append(text);
+        }
+
+        Map<String, Object> cardEvent = new LinkedHashMap<>();
+        cardEvent.put("messageType", reply.getMessageType());
+        cardEvent.put("data", reply.getData());
+        emitter.send(SseEmitter.event().name("card").data(cardEvent));
+    }
+
+    private AIChatReplyVO streamTextReply(String userMessage, List<AIChatHistoryMessage> history,
+                                          SseEmitter emitter, StringBuilder fullText) throws IOException {
+        List<DeepSeekChatMessage> messages = new ArrayList<>();
+
+        String systemPrompt = "你是冰箱管家，一个智能冰箱管理助手。你可以帮助用户查询冰箱库存、查看临期提醒、推荐菜谱。回答要简洁友好，不要太长。";
+        messages.add(DeepSeekChatMessage.builder().role("system").content(systemPrompt).build());
+
+        if (history != null && !history.isEmpty()) {
+            for (AIChatHistoryMessage msg : history) {
+                String normalizedRole = normalizeRole(msg.getRole());
+                if (normalizedRole != null) {
+                    messages.add(DeepSeekChatMessage.builder()
+                            .role(normalizedRole)
+                            .content(msg.getContent())
+                            .build());
+                }
+            }
+        }
+
+        messages.add(DeepSeekChatMessage.builder().role("user").content(userMessage).build());
+
+        deepSeekService.chatStream(messages, chunk -> {
+            try {
+                Map<String, Object> textEvent = new LinkedHashMap<>();
+                textEvent.put("chunk", chunk);
+                emitter.send(SseEmitter.event().name("text").data(textEvent));
+                fullText.append(chunk);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return AIChatReplyVO.builder()
+                .messageType("text")
+                .text(fullText.toString())
+                .data(null)
+                .build();
+    }
+
+    private void sendStreamError(SseEmitter emitter, Throwable e) {
+        try {
+            Map<String, Object> errorEvent = new LinkedHashMap<>();
+            errorEvent.put("code", 500);
+            errorEvent.put("message", e.getMessage() != null ? e.getMessage() : "未知错误");
+            emitter.send(SseEmitter.event().name("error").data(errorEvent));
+        } catch (Exception ex) {
+            log.warn("发送 SSE 错误事件失败", ex);
+        } finally {
+            emitter.completeWithError(e);
+        }
+    }
 
     /**
      * 新鲜度状态记录。

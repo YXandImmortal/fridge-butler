@@ -124,6 +124,22 @@ public class SystemController {
 
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
+                    .version("beta 0.1.2")
+                    .date("2026-5-20")
+                    .changes(Arrays.asList(
+                            "AI 聊天全面升级：支持 SSE 流式输出，实现逐字打字机效果，响应更实时",
+                            "AI 消息支持 Markdown 渲染与代码块语法高亮，提升技术类回答的可读性",
+                            "前端新增 AiMessageContent 组件，封装 Markdown 解析与 Highlight.js 高亮",
+                            "后端新增 /ai/chat/stream 流式接口，基于 SseEmitter 分阶段推送 text/card/done 事件",
+                            "DeepSeek 服务接入流式对话 API（chatStream），支持逐字符实时获取模型回复",
+                            "AI 聊天支持中断请求（AbortController），用户可随时终止当前对话",
+                            "物品管理页冰箱容量卡片新增数据刷新频率提示，交互更友好",
+                            "安全配置优化：放行 ASYNC/ERROR 分发类型，确保 SSE 异步请求正常处理",
+                            "后端代码现代化：IntentResult 改为 record 类型，Math.clamp 替代手动边界计算",
+                            "新增 SSE 使用指南文档（SSE_USAGE_GUIDE.md），前后端各一份"
+                    ))
+                    .build(),
+            UpdateLogVO.builder()
                     .version("beta 0.1.1")
                     .date("2026-5-19")
                     .changes(Arrays.asList(

@@ -1,5 +1,8 @@
 package com.yx.fridgebutler.service.impl;
 
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.yx.fridgebutler.dto.deepseek.DeepSeekChatMessage;
 import com.yx.fridgebutler.dto.deepseek.DeepSeekChatRequest;
 import com.yx.fridgebutler.dto.deepseek.DeepSeekChatResponse;
@@ -13,12 +16,19 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * DeepSeek AI 大模型服务实现类。
@@ -140,5 +150,80 @@ public class DeepSeekServiceImpl implements DeepSeekService {
             log.error("DeepSeek API 调用异常", e);
             throw BusinessException.deepSeekApiError(e.getMessage());
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 使用 {@link RestTemplate#execute} 配合 {@link RequestCallback} 与 {@link ResponseExtractor}
+     * 实现流式 HTTP 请求。请求体由 Spring 的 Jackson MessageConverter 自动序列化，
+     * 响应体通过 Hutool JSON 逐行解析 SSE 数据块。
+     */
+    @Override
+    public void chatStream(List<DeepSeekChatMessage> messages, Consumer<String> onChunk) throws IOException {
+        String url = baseUrl + CHAT_COMPLETIONS_PATH;
+        log.debug("调用 DeepSeek 流式 API，URL：{}，模型：{}", url, defaultModel);
+
+        DeepSeekChatRequest request = DeepSeekChatRequest.builder()
+                .model(defaultModel)
+                .messages(messages)
+                .temperature(defaultTemperature)
+                .maxTokens(defaultMaxTokens)
+                .stream(true)
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+        headers.setAccept(List.of(MediaType.parseMediaType("text/event-stream"), MediaType.APPLICATION_JSON));
+
+        RequestCallback requestCallback = clientHttpRequest -> {
+            clientHttpRequest.getHeaders().addAll(headers);
+            for (HttpMessageConverter<?> converter : restTemplate.getMessageConverters()) {
+                if (converter.canWrite(DeepSeekChatRequest.class, MediaType.APPLICATION_JSON)) {
+                    @SuppressWarnings("unchecked")
+                    HttpMessageConverter<Object> typedConverter = (HttpMessageConverter<Object>) converter;
+                    typedConverter.write(request, MediaType.APPLICATION_JSON, clientHttpRequest);
+                    break;
+                }
+            }
+        };
+
+        ResponseExtractor<Void> responseExtractor = clientHttpResponse -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(clientHttpResponse.getBody()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("data: ")) {
+                        String data = line.substring(6);
+                        if ("[DONE]".equals(data)) {
+                            break;
+                        }
+                        try {
+                            JSONObject root = JSONUtil.parseObj(data);
+                            if (root.containsKey("choices")) {
+                                JSONArray choices = root.getJSONArray("choices");
+                                if (choices != null && !choices.isEmpty()) {
+                                    JSONObject choice = choices.getJSONObject(0);
+                                    if (choice.containsKey("delta")) {
+                                        JSONObject delta = choice.getJSONObject("delta");
+                                        if (delta.containsKey("content")) {
+                                            String content = delta.getStr("content");
+                                            if (content != null && !content.isEmpty()) {
+                                                onChunk.accept(content);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            log.warn("DeepSeek 流式 chunk 解析失败，跳过。原始数据：{}", data, e);
+                        }
+                    }
+                }
+            }
+            return null;
+        };
+
+        restTemplate.execute(url, HttpMethod.POST, requestCallback, responseExtractor);
     }
 }

@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AiMessageContent: typeof import('./src/components/ai/AiMessageContent.vue')['default']
     AuthButtonGroup: typeof import('./src/components/auth/AuthButtonGroup.vue')['default']
     AuthHeader: typeof import('./src/components/auth/AuthHeader.vue')['default']
     Avatar: typeof import('./src/components/Avatar.vue')['default']
@@ -40,8 +41,6 @@ declare module 'vue' {
     ElInput: typeof import('element-plus/es')['ElInput']
     ElInputNumber: typeof import('element-plus/es')['ElInputNumber']
     ElProgress: typeof import('element-plus/es')['ElProgress']
-    ElRadioButton: typeof import('element-plus/es')['ElRadioButton']
-    ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
     ElScrollbar: typeof import('element-plus/es')['ElScrollbar']
     ElSegmented: typeof import('element-plus/es')['ElSegmented']
     ElSkeleton: typeof import('element-plus/es')['ElSkeleton']

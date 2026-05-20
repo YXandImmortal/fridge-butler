@@ -9,7 +9,9 @@ import com.yx.fridgebutler.vo.aichat.AIChatSessionVO;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -79,5 +81,26 @@ public class AIChatController {
         List<AIChatMessageVO> result = aiChatService.getSessionMessages(sessionId);
         log.info("查询会话消息成功，sessionId：{}，消息数：{}", sessionId, result.size());
         return Result.success(result);
+    }
+
+    /**
+     * AI 流式聊天接口（SSE）。
+     * <p>通过 Server-Sent Events 协议分阶段推送回复：
+     * <ul>
+     *     <li><b>event: text</b> — 自然语言文本片段（text 意图下为逐字流式，结构化意图下一次性发送）</li>
+     *     <li><b>event: card</b> — 结构化卡片数据（到达后前端根据 messageType 渲染对应组件）</li>
+     *     <li><b>event: done</b> — 结束事件，携带 sessionId 和 suggestions</li>
+     *     <li><b>event: error</b> — 异常事件</li>
+     * </ul>
+     *
+     * @param request AI 聊天请求参数
+     * @return SSE 发射器
+     */
+    @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter chatStream(@Valid @RequestBody AIChatRequest request) {
+        log.info("AI 流式聊天请求，sessionId：{}，message：{}", request.getSessionId(), request.getMessage());
+        SseEmitter emitter = new SseEmitter(180_000L); // 3 分钟超时
+        aiChatService.streamChat(request, emitter);
+        return emitter;
     }
 }

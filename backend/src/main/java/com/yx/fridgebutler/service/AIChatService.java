@@ -4,6 +4,7 @@ import com.yx.fridgebutler.dto.aichat.AIChatRequest;
 import com.yx.fridgebutler.vo.aichat.AIChatDataVO;
 import com.yx.fridgebutler.vo.aichat.AIChatMessageVO;
 import com.yx.fridgebutler.vo.aichat.AIChatSessionVO;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -44,4 +45,13 @@ public interface AIChatService {
      * @return 消息列表
      */
     List<AIChatMessageVO> getSessionMessages(String sessionId);
+
+    /**
+     * 流式处理 AI 聊天请求。
+     * <p>通过 SSE 协议分阶段推送：text（自然语言）→ card（结构化数据）→ done（结束）。</p>
+     *
+     * @param request AI 聊天请求参数
+     * @param emitter SSE 发射器，用于向前端推送事件
+     */
+    void streamChat(AIChatRequest request, SseEmitter emitter);
 }

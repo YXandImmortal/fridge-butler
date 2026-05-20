@@ -55,16 +55,28 @@
       <div ref="chatMessagesRef" class="chat-messages">
         <div
           v-for="(msg, idx) in messages"
-          :key="idx"
+          :key="msg.id"
           :class="['message', msg.role === 'user' ? 'message-user' : 'message-ai']"
         >
           <Logo v-if="msg.role === 'assistant'" class="ai-logo-sm" />
           <div v-else class="message-avatar">
             <span class="user-avatar-text">{{ userAvatarText }}</span>
           </div>
-          <div class="message-bubble">
-            <!-- 文本内容 -->
-            <div class="message-content" v-html="formatMessage(msg.content)" />
+          <div :class="['message-bubble', { 'typing-bubble': aiTyping && msg.role === 'assistant' && !msg.content && !msg.data && idx === messages.length - 1 }]">
+            <!-- 文本内容（Markdown 渲染） -->
+            <div v-if="msg.content" class="message-content">
+              <AiMessageContent
+                :content="msg.content"
+                :is-streaming="aiTyping && msg.role === 'assistant' && idx === messages.length - 1"
+              />
+            </div>
+
+            <!-- AI 打字中 -->
+            <div v-if="aiTyping && msg.role === 'assistant' && !msg.content && !msg.data && idx === messages.length - 1" class="typing-indicator">
+              <span />
+              <span />
+              <span />
+            </div>
 
             <!-- 结构化数据渲染 -->
             <div v-if="msg.messageType === 'fridge_list' && msg.data" class="struct-content">
@@ -162,23 +174,10 @@
               </div>
             </div>
 
-            <div class="message-time">{{ msg.time }}</div>
+            <div v-if="msg.content || msg.data || msg.role === 'user'" class="message-time">{{ msg.time }}</div>
           </div>
         </div>
 
-        <!-- AI 打字中 -->
-        <div v-if="aiTyping" class="message message-ai">
-          <div class="message-avatar">
-            <Logo class="ai-logo-sm" />
-          </div>
-          <div class="message-bubble typing-bubble">
-            <div class="typing-indicator">
-              <span />
-              <span />
-              <span />
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- 快捷指令（后端 suggestions + 固定快捷按钮） -->
@@ -298,14 +297,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useThemeStore } from '@/stores/theme'
 import Logo from '@/components/Logo.vue'
+import AiMessageContent from '@/components/ai/AiMessageContent.vue'
 import { listMyFridges } from '@/api/fridge'
 import { searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats, getExpiringSummary } from '@/api/item'
-import { sendChatMessage, getChatSessions, deleteChatSession, getChatSessionMessages } from '@/api/ai'
+import { sendChatMessage, sendChatMessageStream, getChatSessions, deleteChatSession, getChatSessionMessages } from '@/api/ai'
 import { use, graphic } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart } from 'echarts/charts'
@@ -426,8 +426,13 @@ const statsList = computed(() => {
 })
 
 // ==================== AI 聊天 ====================
+function generateMsgId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}
+
 const messages = ref([
   {
+    id: generateMsgId(),
     role: 'assistant',
     content: '你好！我是你的 AI 冰箱管家 🎉\n我可以帮你：\n• 查询冰箱库存\n• 查看临期提醒\n• 推荐菜谱\n• 回答食材相关问题\n\n试试点击下方快捷按钮，或直接输入你想问的问题~',
     time: formatTime(new Date())
@@ -436,6 +441,7 @@ const messages = ref([
 const inputMessage = ref('')
 const aiTyping = ref(false)
 const chatMessagesRef = ref(null)
+const abortController = ref(null)
 
 const defaultQuickActions = [
   { text: '查看冰箱' },
@@ -452,10 +458,6 @@ function formatTime(date) {
   const h = String(date.getHours()).padStart(2, '0')
   const m = String(date.getMinutes()).padStart(2, '0')
   return `${h}:${m}`
-}
-
-function formatMessage(content) {
-  return content.replace(/\n/g, '<br>')
 }
 
 function scrollToBottom() {
@@ -478,6 +480,7 @@ async function sendMessage() {
 
   // 用户消息
   messages.value.push({
+    id: generateMsgId(),
     role: 'user',
     content: text,
     time: formatTime(new Date())
@@ -485,60 +488,157 @@ async function sendMessage() {
   inputMessage.value = ''
   scrollToBottom()
 
-  // AI 回复
+  // AI 回复占位
   aiTyping.value = true
+  messages.value.push({
+    id: generateMsgId(),
+    role: 'assistant',
+    content: '',
+    messageType: 'text',
+    data: null,
+    time: formatTime(new Date())
+  })
+  const assistantMsg = messages.value[messages.value.length - 1]
   scrollToBottom()
 
+  // 中断之前的流
+  if (abortController.value) {
+    abortController.value.abort()
+  }
+  abortController.value = new AbortController()
+
+  let useFallback = false
+  let scrollTimer = null
+
+  const scheduleScroll = () => {
+    if (!scrollTimer) {
+      scrollTimer = setTimeout(() => {
+        scrollTimer = null
+        scrollToBottom()
+      }, 50)
+    }
+  }
+
+  // 先尝试 SSE 流式接口
   try {
-    const res = await sendChatMessage({
+    await sendChatMessageStream({
       message: text,
-      sessionId: sessionId.value
-    })
-
-    if (res.code === 200 && res.data) {
-      const { sessionId: newSid, reply, suggestions: newSuggestions } = res.data
-      sessionId.value = newSid || sessionId.value
-      if (sessionId.value) {
-        localStorage.setItem(SESSION_STORAGE_KEY, sessionId.value)
+      sessionId: sessionId.value,
+      signal: abortController.value.signal,
+      onText: (chunk) => {
+        assistantMsg.content += chunk
+        scheduleScroll()
+      },
+      onCard: (messageType, data) => {
+        assistantMsg.messageType = messageType
+        assistantMsg.data = data
+        scrollToBottom()
+      },
+      onDone: (newSid, newSuggestions) => {
+        if (scrollTimer) {
+          clearTimeout(scrollTimer)
+          scrollTimer = null
+        }
+        sessionId.value = newSid || sessionId.value
+        if (sessionId.value) {
+          localStorage.setItem(SESSION_STORAGE_KEY, sessionId.value)
+        }
+        suggestions.value = (newSuggestions || []).filter(
+          item => !defaultQuickActionsTextArr.includes(item)
+        )
+        aiTyping.value = false
+        abortController.value = null
+        loadSessions()
+        scrollToBottom()
+      },
+      onError: (msg) => {
+        console.error('SSE 流式错误:', msg)
+        useFallback = true
+        const idx = messages.value.indexOf(assistantMsg)
+        if (idx !== -1) {
+          messages.value.splice(idx, 1)
+        }
       }
-      suggestions.value = newSuggestions || []
+    })
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      console.error('SSE 请求失败:', err)
+      useFallback = true
+      const idx = messages.value.indexOf(assistantMsg)
+      if (idx !== -1) {
+        messages.value.splice(idx, 1)
+      }
+    } else {
+      // 用户主动中断或组件卸载
+      aiTyping.value = false
+      abortController.value = null
+      return
+    }
+  }
 
-      //过滤已有快速操作
-      suggestions.value = suggestions.value.filter(item => !defaultQuickActionsTextArr.includes(item))
+  // 兜底：如果 SSE 流正常结束但 onDone 未被触发（如连接静默关闭），强制重置状态
+  if (!useFallback && aiTyping.value) {
+    aiTyping.value = false
+    abortController.value = null
+  }
 
-      messages.value.push({
-        role: 'assistant',
-        content: reply.text || '',
-        messageType: reply.messageType || 'text',
-        data: reply.data || null,
-        time: formatTime(new Date())
+  // SSE 失败时降级到旧同步接口
+  if (useFallback) {
+    aiTyping.value = true
+    try {
+      const res = await sendChatMessage({
+        message: text,
+        sessionId: sessionId.value
       })
 
-      // 刷新会话列表（新会话可能已生成标题）
-      loadSessions()
-    } else {
+      if (res.code === 200 && res.data) {
+        const { sessionId: newSid, reply, suggestions: newSuggestions } = res.data
+        sessionId.value = newSid || sessionId.value
+        if (sessionId.value) {
+          localStorage.setItem(SESSION_STORAGE_KEY, sessionId.value)
+        }
+        suggestions.value = newSuggestions || []
+
+        //过滤已有快速操作
+        suggestions.value = suggestions.value.filter(item => !defaultQuickActionsTextArr.includes(item))
+
+        messages.value.push({
+          id: generateMsgId(),
+          role: 'assistant',
+          content: reply.text || '',
+          messageType: reply.messageType || 'text',
+          data: reply.data || null,
+          time: formatTime(new Date())
+        })
+
+        // 刷新会话列表（新会话可能已生成标题）
+        loadSessions()
+      } else {
+        messages.value.push({
+          id: generateMsgId(),
+          role: 'assistant',
+          content: '服务暂时不可用，请稍后再试。',
+          messageType: 'text',
+          data: null,
+          time: formatTime(new Date())
+        })
+        suggestions.value = []
+      }
+    } catch (err) {
+      console.error('AI 聊天请求失败:', err)
       messages.value.push({
+        id: generateMsgId(),
         role: 'assistant',
-        content: '服务暂时不可用，请稍后再试。',
+        content: '网络连接异常，请检查网络后重试。',
         messageType: 'text',
         data: null,
         time: formatTime(new Date())
       })
       suggestions.value = []
+    } finally {
+      aiTyping.value = false
+      scrollToBottom()
     }
-  } catch (err) {
-    console.error('AI 聊天请求失败:', err)
-    messages.value.push({
-      role: 'assistant',
-      content: '网络连接异常，请检查网络后重试。',
-      messageType: 'text',
-      data: null,
-      time: formatTime(new Date())
-    })
-    suggestions.value = []
-  } finally {
-    aiTyping.value = false
-    scrollToBottom()
   }
 }
 
@@ -669,6 +769,11 @@ async function switchSession(sid) {
     drawerVisible.value = false
     return
   }
+  if (abortController.value) {
+    abortController.value.abort()
+    abortController.value = null
+  }
+  aiTyping.value = false
   sessionId.value = sid
   localStorage.setItem(SESSION_STORAGE_KEY, sid)
   messages.value = []
@@ -680,6 +785,7 @@ async function switchSession(sid) {
     const res = await getChatSessionMessages(sid)
     if (res.code === 200 && Array.isArray(res.data)) {
       messages.value = res.data.map(m => ({
+        id: m.id || generateMsgId(),
         role: m.role,
         content: m.content || '',
         messageType: m.messageType || 'text',
@@ -695,8 +801,14 @@ async function switchSession(sid) {
 }
 
 function createNewSession() {
+  if (abortController.value) {
+    abortController.value.abort()
+    abortController.value = null
+  }
+  aiTyping.value = false
   sessionId.value = null
   messages.value = [{
+    id: generateMsgId(),
     role: 'assistant',
     content: '你好！我是你的 AI 冰箱管家 🎉\n我可以帮你：\n• 查询冰箱库存\n• 查看临期提醒\n• 推荐菜谱\n• 回答食材相关问题\n\n试试点击下方快捷按钮，或直接输入你想问的问题~',
     time: formatTime(new Date())
@@ -987,6 +1099,13 @@ onMounted(() => {
       })
   }
 })
+
+onUnmounted(() => {
+  if (abortController.value) {
+    abortController.value.abort()
+    abortController.value = null
+  }
+})
 </script>
 
 <style scoped lang="scss">
@@ -1228,6 +1347,10 @@ onMounted(() => {
   background: var(--user-message-bg);
   color: white;
   border-top-right-radius: 4px;
+}
+
+.message-content {
+  white-space: pre-wrap;
 }
 
 .message-user .message-time {
