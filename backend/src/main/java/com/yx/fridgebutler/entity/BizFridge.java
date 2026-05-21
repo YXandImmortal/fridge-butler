@@ -47,6 +47,12 @@ public class BizFridge {
     private Long ownerId;
 
     /**
+     * 冰箱类型ID，关联冰箱类型实体。
+     */
+    @Column(name = "fridge_type_id")
+    private Long fridgeTypeId;
+
+    /**
      * 是否为默认冰箱，true 表示默认，默认值为 false。
      */
     @NotNull

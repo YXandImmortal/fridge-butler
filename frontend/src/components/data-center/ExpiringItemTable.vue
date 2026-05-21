@@ -77,7 +77,7 @@
 
         <el-table-column label="操作" width="100" align="center">
           <template #default="{ row }">
-            <CustomButton type="primary" size="small" @click="handleManage(row)">
+            <CustomButton type="primary" size="small" @click="handleManage(row)" style="margin: 4px 0">
               管理
             </CustomButton>
           </template>

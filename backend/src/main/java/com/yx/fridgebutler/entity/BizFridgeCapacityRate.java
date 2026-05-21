@@ -39,6 +39,9 @@ public class BizFridgeCapacityRate {
     @Column(name = "total_capacity")
     private Integer totalCapacity;
 
+    @Column(name = "fridge_type_id")
+    private Long fridgeTypeId;
+
     @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "last_calculate_time", nullable = false)

@@ -9,6 +9,7 @@ import com.yx.fridgebutler.entity.SysUser;
 import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.BizFridgeRepository;
 import com.yx.fridgebutler.repository.BizFridgeItemRepository;
+import com.yx.fridgebutler.repository.BizFridgeTypeRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.service.FridgeService;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,9 @@ public class FridgeServiceImpl implements FridgeService {
 
     @Autowired
     private BizFridgeItemRepository itemRepository;
+
+    @Autowired
+    private BizFridgeTypeRepository fridgeTypeRepository;
 
     /**
      * {@inheritDoc}
@@ -101,6 +105,7 @@ public class FridgeServiceImpl implements FridgeService {
         fridge.setFridgeName(request.getFridgeName());
         fridge.setFridgeAddress(request.getFridgeAddress());
         fridge.setRemark(request.getRemark());
+        fridge.setFridgeTypeId(request.getFridgeTypeId());
         fridge.setOwnerId(currentUserId);
         fridge.setIsDefault(false);
         fridge.setStatus(true);
@@ -140,6 +145,7 @@ public class FridgeServiceImpl implements FridgeService {
         fridge.setFridgeAddress(request.getFridgeAddress());
         fridge.setRemark(request.getRemark());
         fridge.setTotalCapacity(request.getTotalCapacity());
+        fridge.setFridgeTypeId(request.getFridgeTypeId());
         fridge.setIsDefault(request.getIsDefault());
         if (request.getStatus() != null) {
             fridge.setStatus(request.getStatus());
@@ -198,7 +204,7 @@ public class FridgeServiceImpl implements FridgeService {
         String likeKeyword = (keyword == null || keyword.isBlank()) ? "" : "%" + keyword + "%";
         Sort sort = buildSort(request.getSortField(), request.getSortOrder());
 
-        List<BizFridge> fridges = fridgeRepository.searchByKeyword(currentUserId, likeKeyword, sort);
+        List<BizFridge> fridges = fridgeRepository.searchByKeyword(currentUserId, likeKeyword, request.getFridgeTypeId(), sort);
 
         // 默认冰箱排在前面
         return fridges.stream()
@@ -238,6 +244,13 @@ public class FridgeServiceImpl implements FridgeService {
      * @return 冰箱视图对象
      */
     private FridgeVO convertToVO(BizFridge fridge) {
+        String fridgeTypeName = null;
+        if (fridge.getFridgeTypeId() != null) {
+            fridgeTypeName = fridgeTypeRepository.findByIdAndIsDeletedFalse(fridge.getFridgeTypeId())
+                    .map(com.yx.fridgebutler.entity.BizFridgeType::getTypeName)
+                    .orElse(null);
+        }
+
         return FridgeVO.builder()
                 .id(fridge.getId())
                 .fridgeName(fridge.getFridgeName())
@@ -246,6 +259,8 @@ public class FridgeServiceImpl implements FridgeService {
                 .fridgeAddress(fridge.getFridgeAddress())
                 .status(fridge.getStatus())
                 .totalCapacity(fridge.getTotalCapacity())
+                .fridgeTypeId(fridge.getFridgeTypeId())
+                .fridgeTypeName(fridgeTypeName)
                 .itemCount((int) itemRepository.countByFridgeIdAndIsDeletedFalse(fridge.getId()))
                 .createTime(formatInstant(fridge.getCreateTime()))
                 .updateTime(formatInstant(fridge.getUpdateTime()))

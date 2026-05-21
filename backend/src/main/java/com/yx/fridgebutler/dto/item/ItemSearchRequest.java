@@ -41,7 +41,7 @@ public class ItemSearchRequest {
     /**
      * 排序字段：itemNum（数量）、storedDate（入库时间）
      */
-    @Pattern(regexp = "itemNum|storedDate", message = "排序字段只能是 itemNum 或 storedDate")
+    @Pattern(regexp = "itemNum|storedDate|freshness", message = "排序字段只能是 itemNum、storedDate 或 freshness")
     private String sortField = "storedDate";
 
     /**

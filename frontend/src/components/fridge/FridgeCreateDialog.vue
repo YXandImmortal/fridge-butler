@@ -27,6 +27,25 @@
               />
             </el-form-item>
 
+            <el-form-item label="冰箱类型" prop="fridgeTypeId">
+              <CustomSelect
+                  v-model="form.fridgeTypeId"
+                  :options="fridgeTypeOptions"
+                  placeholder="请选择冰箱类型"
+                  :grid="true"
+                  :full-width="true"
+                  clearable
+              >
+                <template #prefix="{ selected }">
+                  <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt="" />
+                </template>
+                <template #option="{ option }">
+                  <img :src="option.icon" class="fridge-type-icon-option" alt="" />
+                  <span class="option-label">{{ option.label }}</span>
+                </template>
+              </CustomSelect>
+            </el-form-item>
+
             <el-form-item label="地址" prop="address">
               <EnhancedInput
                 v-model="form.address"
@@ -71,6 +90,8 @@
 import { reactive, ref, watch } from 'vue'
 import CustomButton from '@/components/CustomButton.vue'
 import EnhancedInput from '@/components/EnhancedInput.vue'
+import CustomSelect from '@/components/CustomSelect.vue'
+import { FRIDGE_TYPE_LIST } from '@/utils/fridgeTypeMap.js'
 
 const props = defineProps({
   visible: {
@@ -90,8 +111,15 @@ const formRef = ref(null)
 const form = reactive({
   name: '',
   description: '',
-  address: ''
+  address: '',
+  fridgeTypeId: null
 })
+
+const fridgeTypeOptions = FRIDGE_TYPE_LIST.map(item => ({
+  label: item.name,
+  value: item.id,
+  icon: item.icon
+}))
 
 const rules = {
   name: [
@@ -110,6 +138,7 @@ const resetForm = () => {
   form.name = ''
   form.description = ''
   form.address = ''
+  form.fridgeTypeId = null
   if (formRef.value) {
     formRef.value.resetFields()
   }
@@ -136,7 +165,8 @@ const handleSubmit = async () => {
   emit('submit', {
     fridgeName: form.name.trim(),
     remark: form.description.trim() || undefined,
-    fridgeAddress: form.address.trim() || undefined
+    fridgeAddress: form.address.trim() || undefined,
+    fridgeTypeId: form.fridgeTypeId || undefined
   })
 }
 </script>
@@ -281,6 +311,19 @@ const handleSubmit = async () => {
 
 .dialog-fade-leave-to {
   opacity: 0;
+}
+
+.fridge-type-icon-trigger {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.fridge-type-icon-option {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 4px;
 }
 
 @media (max-width: 768px) {

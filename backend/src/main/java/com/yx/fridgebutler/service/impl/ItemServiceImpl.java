@@ -855,7 +855,10 @@ public class ItemServiceImpl implements ItemService {
         String likeKeyword = (request.getKeyword() == null || request.getKeyword().isBlank())
                 ? "" : "%" + request.getKeyword() + "%";
 
-        Sort sort = buildSort(request.getSortField(), request.getSortOrder());
+        // 新鲜度排序在内存中进行，数据库层不排序
+        Sort sort = "freshness".equals(request.getSortField())
+                ? Sort.unsorted()
+                : buildSort(request.getSortField(), request.getSortOrder());
 
         List<BizFridgeItem> items;
         if (request.getFridgeId() != null) {
@@ -877,6 +880,11 @@ public class ItemServiceImpl implements ItemService {
 
             items = itemRepository.searchItems(
                     fridgeIds, likeKeyword, request.getCategoryId(), request.getUnitId(), request.getUnitTypeId(), sort);
+        }
+
+        // 若按新鲜度排序，在内存中计算 r 值并排序
+        if ("freshness".equals(request.getSortField())) {
+            items = sortByFreshness(items, request.getSortOrder());
         }
 
         return convertToVOList(items);
@@ -905,6 +913,63 @@ public class ItemServiceImpl implements ItemService {
                 : Sort.Direction.DESC;
 
         return Sort.by(direction, field);
+    }
+
+    /**
+     * 按新鲜度（r 值）对物品列表进行内存排序。
+     * <p>
+     * r = (remainingDays / shelfLifeDays) × 100
+     * 无法计算 r 值的物品（缺少生产日期/保质期、或长保质期）统一放在最后。
+     *
+     * @param items     物品列表
+     * @param sortOrder 排序方向：asc（r 值从小到大，过期优先）、desc（r 值从大到小，新鲜优先）
+     * @return 排序后的物品列表
+     */
+    private List<BizFridgeItem> sortByFreshness(List<BizFridgeItem> items, String sortOrder) {
+        LocalDate today = LocalDate.now(ZONE_ID_SHANGHAI);
+
+        return items.stream()
+                .sorted((a, b) -> {
+                    Double rA = calculateFreshnessScore(a, today);
+                    Double rB = calculateFreshnessScore(b, today);
+
+                    boolean validA = rA != null;
+                    boolean validB = rB != null;
+
+                    // 无法计算 r 值的统一放最后
+                    if (!validA && !validB) {
+                        return 0;
+                    }
+                    if (!validA) {
+                        return 1;
+                    }
+                    if (!validB) {
+                        return -1;
+                    }
+
+                    int comparison = Double.compare(rA, rB);
+                    return "asc".equalsIgnoreCase(sortOrder) ? comparison : -comparison;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 计算物品新鲜度分数（r 值）。
+     *
+     * @param item  物品实体
+     * @param today 当前日期
+     * @return r 值；若无法计算则返回 null（长保质期、缺少生产日期或保质期）
+     */
+    private Double calculateFreshnessScore(BizFridgeItem item, LocalDate today) {
+        if (item.getProductionDate() == null || item.getShelfLifeDays() == null) {
+            return null;
+        }
+        if (item.getShelfLifeDays() > 30) {
+            return null; // 长保质期不参与 r 值排序
+        }
+        long diffDays = ChronoUnit.DAYS.between(item.getProductionDate(), today);
+        int remainingDays = item.getShelfLifeDays() - (int) diffDays;
+        return ((double) remainingDays / item.getShelfLifeDays()) * 100.0;
     }
 
     /**

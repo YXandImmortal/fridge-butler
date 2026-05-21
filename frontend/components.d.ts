@@ -62,6 +62,7 @@ declare module 'vue' {
     ItemDetailDialog: typeof import('./src/components/item/ItemDetailDialog.vue')['default']
     ItemTakeOutDialog: typeof import('./src/components/item/ItemTakeOutDialog.vue')['default']
     Logo: typeof import('./src/components/Logo.vue')['default']
+    LogoButton: typeof import('./src/components/LogoButton.vue')['default']
     MessageComponent: typeof import('./src/components/MessageComponent.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

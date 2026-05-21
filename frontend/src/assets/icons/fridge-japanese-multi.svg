@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+  <!-- 日式多门冰箱 -->
+  <rect x="18" y="8" width="64" height="84" rx="3" ry="3" fill="none" stroke="#333" stroke-width="2"/>
+  
+  <!-- 上门冷藏室 -->
+  <line x1="18" y1="28" x2="82" y2="28" stroke="#333" stroke-width="1.5"/>
+  
+  <!-- 制冰室 -->
+  <line x1="50" y1="28" x2="50" y2="45" stroke="#333" stroke-width="1.5"/>
+  <line x1="18" y1="45" x2="82" y2="45" stroke="#333" stroke-width="1.5"/>
+  
+  <!-- 冷冻室 -->
+  <line x1="50" y1="45" x2="50" y2="62" stroke="#333" stroke-width="1.5"/>
+  <line x1="18" y1="62" x2="82" y2="62" stroke="#333" stroke-width="1.5"/>
+  
+  <!-- 果蔬室 -->
+  <line x1="50" y1="62" x2="50" y2="78" stroke="#333" stroke-width="1.5"/>
+  <line x1="18" y1="78" x2="82" y2="78" stroke="#333" stroke-width="1.5"/>
+  
+  <!-- 上门把手 -->
+  <line x1="72" y1="14" x2="72" y2="22" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- 制冰室把手 -->
+  <line x1="44" y1="34" x2="44" y2="40" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+  <line x1="56" y1="34" x2="56" y2="40" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- 冷冻室把手 -->
+  <line x1="44" y1="51" x2="44" y2="57" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+  <line x1="56" y1="51" x2="56" y2="57" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- 果蔬室把手 -->
+  <line x1="44" y1="68" x2="44" y2="74" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+  <line x1="56" y1="68" x2="56" y2="74" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- 底部抽屉 -->
+  <line x1="38" y1="82" x2="62" y2="82" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+</svg>

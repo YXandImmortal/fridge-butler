@@ -3,7 +3,7 @@
     <!-- 页面标题栏 -->
     <div class="page-header">
       <h2 class="page-title">单位分类一览</h2>
-      <CustomButton type="primary" @click="handleCreate" class="create-btn">
+      <CustomButton type="primary" @click="handleCreate">
         新建单位分类
       </CustomButton>
     </div>
@@ -356,12 +356,6 @@ onMounted(() => {
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
-}
-
-.create-btn {
-  border-radius: var(--radius-md);
-  padding: 10px var(--space-5);
-  font-weight: 200;
 }
 
 .unit-type-list-wrapper {

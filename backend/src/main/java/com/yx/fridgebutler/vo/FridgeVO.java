@@ -63,4 +63,14 @@ public class FridgeVO {
      * 物品数量
      */
     private Integer itemCount;
+
+    /**
+     * 冰箱类型ID
+     */
+    private Long fridgeTypeId;
+
+    /**
+     * 冰箱类型名称
+     */
+    private String fridgeTypeName;
 }

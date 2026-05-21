@@ -1,6 +1,7 @@
 <template>
   <div class="custom-select" ref="selectRef" :class="{ 'is-open': isOpen, 'is-grid': grid, 'is-full-width': fullWidth }">
     <div class="select-trigger" :class="{ 'is-disabled': disabled }" @click="toggleOpen">
+      <slot name="prefix" :selected="selectedOption" />
       <span class="select-label" :class="{ 'is-placeholder': !selectedLabel }">
         {{ selectedLabel || placeholder }}
       </span>
@@ -20,8 +21,10 @@
           :class="{ 'is-selected': String(modelValue) === String(option.value) }"
           @click.stop="handleSelect(option)"
         >
-          <span class="option-label">{{ option.label }}</span>
-          <i v-if="!grid && String(modelValue) === String(option.value)" class="iconfont icon-check" />
+          <slot name="option" :option="option" :selected="String(modelValue) === String(option.value)">
+            <span class="option-label">{{ option.label }}</span>
+            <i v-if="!grid && String(modelValue) === String(option.value)" class="iconfont icon-check" />
+          </slot>
         </div>
       </div>
     </transition>
@@ -80,9 +83,12 @@ const hasValue = computed(() => {
   return props.modelValue !== '' && props.modelValue !== null && props.modelValue !== undefined
 })
 
+const selectedOption = computed(() => {
+  return props.options.find(opt => String(opt.value) === String(props.modelValue))
+})
+
 const selectedLabel = computed(() => {
-  const found = props.options.find(opt => String(opt.value) === String(props.modelValue))
-  return found ? found.label : ''
+  return selectedOption.value ? selectedOption.value.label : ''
 })
 
 const toggleOpen = () => {

@@ -29,4 +29,9 @@ public class FridgeSearchRequest {
      */
     @Pattern(regexp = "asc|desc", message = "排序方向只能是 asc 或 desc")
     private String sortOrder = "desc";
+
+    /**
+     * 冰箱类型ID，可选筛选条件
+     */
+    private Long fridgeTypeId;
 }

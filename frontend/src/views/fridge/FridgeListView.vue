@@ -3,9 +3,12 @@
     <!-- 页面标题栏 -->
     <div class="page-header">
       <h2 class="page-title">冰箱一览</h2>
-      <CustomButton type="primary" @click="handleCreate" class="create-btn">
-        新建冰箱
-      </CustomButton>
+      <div class="create-btn-container">
+        <LogoButton type="primary">AI帮我创建</LogoButton>
+        <CustomButton type="primary" @click="handleCreate">
+          新建冰箱
+        </CustomButton>
+      </div>
     </div>
 
     <!-- 搜索栏 -->
@@ -22,6 +25,27 @@
         :field-options="sortFieldOptions"
         @change="handleSearch"
       />
+      <CustomSelect
+        v-model="searchForm.fridgeTypeId"
+        placeholder="冰箱类型"
+        clearable
+        :options="fridgeTypeOptions"
+        @change="handleSearch"
+      >
+        <template #prefix="{ selected }">
+          <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt="" />
+        </template>
+        <template #option="{ option, selected }">
+          <div class="fridge-type-option-content">
+            <img :src="option.icon" class="fridge-type-icon-trigger" alt="" />
+            <span class="option-label">{{ option.label }}</span>
+          </div>
+          <i v-if="selected" class="iconfont icon-check" />
+        </template>
+      </CustomSelect>
+      <CustomButton @click="handleReset">
+        重置
+      </CustomButton>
     </SearchBar>
 
     <!-- 冰箱列表 -->
@@ -108,6 +132,8 @@ import { listMyFridges, deleteFridge, searchFridges, createFridge } from '@/api/
 import CustomButton from "@/components/CustomButton.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import SortControl from "@/components/SortControl.vue";
+import CustomSelect from '@/components/CustomSelect.vue'
+import { FRIDGE_TYPE_LIST } from '@/utils/fridgeTypeMap.js'
 
 const router = useRouter()
 
@@ -121,8 +147,15 @@ const fridgeList = ref([])
 const searchForm = reactive({
   keyword: '',
   sortField: 'createTime',
-  sortOrder: 'asc'
+  sortOrder: 'asc',
+  fridgeTypeId: null
 })
+
+const fridgeTypeOptions = FRIDGE_TYPE_LIST.map(item => ({
+  label: item.name,
+  value: item.id,
+  icon: item.icon
+}))
 
 // 排序选项
 const sortFieldOptions = [
@@ -160,13 +193,23 @@ const fetchFridgeList = async () => {
   }
 }
 
+// 重置
+const handleReset = () => {
+  searchForm.keyword = ''
+  searchForm.sortField = 'createTime'
+  searchForm.sortOrder = 'asc'
+  searchForm.fridgeTypeId = null
+  handleSearch()
+}
+
 // 搜索
 const handleSearch = async () => {
   try {
     const params = {
       keyword: searchForm.keyword,
       sortField: searchForm.sortField,
-      sortOrder: searchForm.sortOrder
+      sortOrder: searchForm.sortOrder,
+      fridgeTypeId: searchForm.fridgeTypeId || undefined
     }
     const res = await searchFridges(params)
     if (res.code === 200 && Array.isArray(res.data)) {
@@ -196,13 +239,14 @@ const handleCreate = () => {
 }
 
 // 创建提交
-const handleCreateSubmit = async ({ fridgeName, remark, fridgeAddress }) => {
+const handleCreateSubmit = async ({ fridgeName, remark, fridgeAddress, fridgeTypeId }) => {
   createLoading.value = true
   try {
     const res = await createFridge({
       fridgeName,
       remark,
-      fridgeAddress
+      fridgeAddress,
+      fridgeTypeId
     })
 
     if (res.code === 200) {
@@ -279,6 +323,11 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--space-6);
+
+  .create-btn-container {
+    display: flex;
+    gap: 24px;
+  }
 }
 
 .page-title {
@@ -286,17 +335,6 @@ onMounted(() => {
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
-}
-
-.create-btn {
-  border-radius: var(--radius-md);
-  padding: 10px var(--space-5);
-  font-weight: 200;
-}
-
-.create-btn :deep(.iconfont) {
-  margin-right: 6px;
-  font-size: 14px;
 }
 
 .search-bar {
@@ -478,5 +516,20 @@ onMounted(() => {
   .search-bar :deep(.search-input-group) {
     width: 100%;
   }
+}
+
+.fridge-type-icon-trigger {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.fridge-type-option-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
 }
 </style>

@@ -57,4 +57,9 @@ public class FridgeUpdateRequest {
      * 状态
      */
     private Boolean status;
+
+    /**
+     * 冰箱类型ID
+     */
+    private Long fridgeTypeId;
 }

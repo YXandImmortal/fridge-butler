@@ -33,5 +33,9 @@ public class FridgeCreateRequest {
     @Size(max = 200, message = "备注长度不能超过200")
     private String remark;
 
+    /**
+     * 冰箱类型ID
+     */
+    private Long fridgeTypeId;
 
 }

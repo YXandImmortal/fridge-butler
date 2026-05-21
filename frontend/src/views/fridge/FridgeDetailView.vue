@@ -54,6 +54,27 @@
           <EnhancedInput v-model="fridgeForm.fridgeName" placeholder="请输入冰箱名称" maxlength="30" show-word-limit />
         </el-form-item>
 
+        <el-form-item label="冰箱类型">
+          <CustomSelect
+            v-model="fridgeForm.fridgeTypeId"
+            :options="fridgeTypeOptions"
+            placeholder="请选择冰箱类型"
+            :full-width="true"
+            clearable
+          >
+            <template #prefix="{ selected }">
+              <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt="" />
+            </template>
+            <template #option="{ option, selected }">
+              <div class="fridge-type-option-content">
+                <img :src="option.icon" class="fridge-type-icon-trigger" alt="" />
+                <span class="option-label">{{ option.label }}</span>
+              </div>
+              <i v-if="selected" class="iconfont icon-check" />
+            </template>
+          </CustomSelect>
+        </el-form-item>
+
         <el-form-item label="默认冰箱" required>
           <el-switch v-model="fridgeForm.isDefault" active-text="是" inactive-text="否" />
         </el-form-item>
@@ -138,6 +159,8 @@ import showMessage from '@/utils/message'
 import { getFridgeDetail, deleteFridge, listMyFridges, updateFridge, getDefaultFridge } from '@/api/fridge'
 import CustomButton from "@/components/CustomButton.vue";
 import EnhancedInput from "@/components/EnhancedInput.vue";
+import CustomSelect from '@/components/CustomSelect.vue'
+import { FRIDGE_TYPE_LIST } from '@/utils/fridgeTypeMap.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -156,6 +179,12 @@ const showSelectFridgeDialog = ref(false)
 const fridgeList = ref([])
 const selectedFridgeId = ref(null)
 const fridgeListLoading = ref(false)
+
+const fridgeTypeOptions = FRIDGE_TYPE_LIST.map(item => ({
+  label: item.name,
+  value: item.id,
+  icon: item.icon
+}))
 
 // 打开选择冰箱对话框
 const openSelectFridgeDialog = async () => {
@@ -260,6 +289,7 @@ const handleSave = async () => {
       remark: fridgeForm.value.remark,
       totalCapacity: fridgeForm.value.totalCapacity,
       status: fridgeForm.value.status,
+      fridgeTypeId: fridgeForm.value.fridgeTypeId || undefined
     })
     if (res.code === 200) {
       showMessage.success('保存成功')
@@ -569,6 +599,21 @@ watch(
   font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.5;
+}
+
+.fridge-type-icon-trigger {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.fridge-type-option-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
 }
 
 /* 小屏幕适配 */

@@ -124,6 +124,21 @@ public class SystemController {
 
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
+                    .version("beta 0.1.4")
+                    .date("2026-5-21")
+                    .changes(Arrays.asList(
+                            "新增冰箱类型系统：支持单门、双门、三门、对开门、十字对开门等常见冰箱类型，创建与搜索时可选",
+                            "冰箱创建弹窗、详情页编辑与列表搜索全面集成冰箱类型选择，支持类型图标可视化展示",
+                            "AI 容量估算增强：估算时关联冰箱类型与备注信息，提升空间利用率估算准确度",
+                            "容量统计缓存策略升级：冰箱类型变更将触发容量利用率重新计算，确保数据实时性",
+                            "物品管理新增新鲜度排序：按 r 值（剩余天数/保质期×100）排序，直观查看食材新鲜程度",
+                            "前端 CustomSelect 组件增强，支持 prefix 插槽与更灵活的选项展示",
+                            "冰箱列表页新增搜索重置按钮，筛选操作更便捷",
+                            "临期物品表、物品分类与单位管理页面交互细节优化",
+                            "前后端版本号同步升级至 beta 0.1.4"
+                    ))
+                    .build(),
+            UpdateLogVO.builder()
                     .version("beta 0.1.3")
                     .date("2026-5-21")
                     .changes(Arrays.asList(

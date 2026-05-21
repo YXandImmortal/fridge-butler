@@ -71,13 +71,14 @@ public interface BizFridgeRepository extends JpaRepository<BizFridge, Long> {
                    OR f.fridgeName LIKE :keyword
                    OR f.fridgeAddress LIKE :keyword
                    OR f.remark LIKE :keyword)
+              AND (:fridgeTypeId IS NULL OR f.fridgeTypeId = :fridgeTypeId)
             ORDER BY
                 CASE WHEN f.fridgeName LIKE :keyword THEN 3 ELSE 0 END DESC,
                 CASE WHEN f.fridgeAddress LIKE :keyword THEN 2 ELSE 0 END DESC,
                 CASE WHEN f.remark LIKE :keyword THEN 1 ELSE 0 END DESC,
                 f.createTime DESC
             """)
-    List<BizFridge> searchByKeyword(@Param("ownerId") Long ownerId, @Param("keyword") String keyword);
+    List<BizFridge> searchByKeyword(@Param("ownerId") Long ownerId, @Param("keyword") String keyword, @Param("fridgeTypeId") Long fridgeTypeId);
 
     /**
      * 根据所有者ID和关键字搜索冰箱（自定义排序）。
@@ -96,8 +97,9 @@ public interface BizFridgeRepository extends JpaRepository<BizFridge, Long> {
                    OR f.fridgeName LIKE :keyword
                    OR f.fridgeAddress LIKE :keyword
                    OR f.remark LIKE :keyword)
+              AND (:fridgeTypeId IS NULL OR f.fridgeTypeId = :fridgeTypeId)
             """)
-    List<BizFridge> searchByKeyword(@Param("ownerId") Long ownerId, @Param("keyword") String keyword, Sort sort);
+    List<BizFridge> searchByKeyword(@Param("ownerId") Long ownerId, @Param("keyword") String keyword, @Param("fridgeTypeId") Long fridgeTypeId, Sort sort);
 
     /**
      * 查询指定用户未删除的默认冰箱。

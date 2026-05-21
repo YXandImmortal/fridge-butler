@@ -10,6 +10,7 @@ import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.BizFridgeCapacityRateRepository;
 import com.yx.fridgebutler.repository.BizFridgeItemRepository;
 import com.yx.fridgebutler.repository.BizFridgeRepository;
+import com.yx.fridgebutler.repository.BizFridgeTypeRepository;
 import com.yx.fridgebutler.repository.BizItemAddRecordRepository;
 import com.yx.fridgebutler.repository.BizItemCategoryRepository;
 import com.yx.fridgebutler.repository.BizItemChangeRecordRepository;
@@ -76,6 +77,9 @@ public class CapacityStatsServiceImpl implements CapacityStatsService {
 
     @Autowired
     private SysUserRepository userRepository;
+
+    @Autowired
+    private BizFridgeTypeRepository fridgeTypeRepository;
 
     @Autowired
     private DeepSeekService deepSeekService;
@@ -306,9 +310,22 @@ public class CapacityStatsServiceImpl implements CapacityStatsService {
                                Map<Long, String> categoryMap, Map<Long, String> unitMap) {
         StringBuilder sb = new StringBuilder();
         sb.append("请估算以下冰箱的空间占用率。\n\n");
+
+        // 追加冰箱类型信息
+        if (fridge.getFridgeTypeId() != null) {
+            fridgeTypeRepository.findByIdAndIsDeletedFalse(fridge.getFridgeTypeId())
+                    .ifPresent(type -> sb.append("冰箱类型：").append(type.getTypeName()).append("\n"));
+        }
+
         sb.append("冰箱总容积：").append(fridge.getTotalCapacity()).append(" 升\n");
-        sb.append("冰箱名称：").append(fridge.getFridgeName()).append("\n\n");
-        sb.append("冰箱内物品清单（共 ").append(items.size()).append(" 种）：\n");
+        sb.append("冰箱名称：").append(fridge.getFridgeName()).append("\n");
+
+        // 追加备注信息（仅供参考）
+        if (fridge.getRemark() != null && !fridge.getRemark().isBlank()) {
+            sb.append("冰箱备注（仅供参考）：").append(fridge.getRemark()).append("\n");
+        }
+
+        sb.append("\n冰箱内物品清单（共 ").append(items.size()).append(" 种）：\n");
 
         for (int i = 0; i < items.size(); i++) {
             BizFridgeItem item = items.get(i);
@@ -389,6 +406,7 @@ public class CapacityStatsServiceImpl implements CapacityStatsService {
         cache.setRate(rate);
         cache.setItemCount(itemCount);
         cache.setTotalCapacity(fridge.getTotalCapacity());
+        cache.setFridgeTypeId(fridge.getFridgeTypeId());
         cache.setLastCalculateTime(Instant.now());
         cache.setUpdateTime(Instant.now());
 
@@ -397,9 +415,10 @@ public class CapacityStatsServiceImpl implements CapacityStatsService {
 
     /**
      * 判断是否需要重新计算冰箱容量利用率。
-     * <p>基于「总容量比对 + 记录表兜底」策略：</p>
+     * <p>基于「总容量比对 + 冰箱类型比对 + 记录表兜底」策略：</p>
      * <ol>
      *   <li>冰箱总容量发生变化</li>
+     *   <li>冰箱类型发生变化</li>
      *   <li>上次计算后有新增物品记录</li>
      *   <li>上次计算后有取出物品记录</li>
      *   <li>上次计算后有数量变更记录（UPDATE_NUM）</li>
@@ -417,21 +436,28 @@ public class CapacityStatsServiceImpl implements CapacityStatsService {
             return true;
         }
 
+        // 2. 冰箱类型发生变化（不同类型冷藏/冷冻区域布局不同，直接影响空间利用率判断）
+        if (!Objects.equals(cache.getFridgeTypeId(), fridge.getFridgeTypeId())) {
+            log.info("冰箱类型变化，需要重新计算，冰箱ID：{}，旧类型ID：{}，新类型ID：{}",
+                    fridge.getId(), cache.getFridgeTypeId(), fridge.getFridgeTypeId());
+            return true;
+        }
+
         Instant lastTime = cache.getLastCalculateTime();
 
-        // 2. 上次计算后有新增物品记录
+        // 3. 上次计算后有新增物品记录
         if (addRecordRepository.existsByFridgeIdAndCreateTimeAfter(fridge.getId(), lastTime)) {
             log.info("冰箱有新增物品记录，需要重新计算，冰箱ID：{}", fridge.getId());
             return true;
         }
 
-        // 3. 上次计算后有取出物品记录
+        // 4. 上次计算后有取出物品记录
         if (takeOutRecordRepository.existsByFridgeIdAndCreateTimeAfter(fridge.getId(), lastTime)) {
             log.info("冰箱有取出物品记录，需要重新计算，冰箱ID：{}", fridge.getId());
             return true;
         }
 
-        // 4. 上次计算后有数量变更记录
+        // 5. 上次计算后有数量变更记录
         if (changeRecordRepository.existsByFridgeIdAndCreateTimeAfterAndChangeType(
                 fridge.getId(), lastTime, "UPDATE_NUM")) {
             log.info("冰箱有数量变更记录，需要重新计算，冰箱ID：{}", fridge.getId());

@@ -358,7 +358,8 @@ const unitOptions = computed(() => {
 
 const sortFieldOptions = [
   { label: '入库时间', value: 'storedDate' },
-  { label: '数量', value: 'itemNum' }
+  { label: '数量', value: 'itemNum' },
+  { label: '新鲜度', value: 'freshness' }
 ]
 
 const sortField = ref('storedDate')

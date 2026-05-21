@@ -34,7 +34,7 @@
                   placeholder="请输入新单位名称，如：千克、升、个"
                   maxlength="20"
                   show-word-limit
-                  icon="icon-item"
+                  icon="icon-inbox"
                   @keyup.enter="handleAddUnit"
                 />
               </el-form-item>
@@ -96,7 +96,7 @@
     title="编辑单位名称"
     label="单位名称"
     placeholder="请输入单位名称"
-    icon="icon-item"
+    icon="icon-inbox"
     value-prop="unitName"
     confirm-text="确认修改"
     :data="selectedUnit"
