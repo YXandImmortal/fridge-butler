@@ -19,6 +19,7 @@ import com.yx.fridgebutler.repository.BizItemUnitRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.service.CapacityStatsService;
 import com.yx.fridgebutler.service.DeepSeekService;
+import com.yx.fridgebutler.service.NotificationService;
 import com.yx.fridgebutler.vo.CapacityStatsVO;
 import com.yx.fridgebutler.vo.FridgeCapacityRateVO;
 import lombok.extern.slf4j.Slf4j;
@@ -83,6 +84,9 @@ public class CapacityStatsServiceImpl implements CapacityStatsService {
 
     @Autowired
     private DeepSeekService deepSeekService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     @Qualifier("capacityStatsExecutor")
@@ -411,6 +415,13 @@ public class CapacityStatsServiceImpl implements CapacityStatsService {
         cache.setUpdateTime(Instant.now());
 
         capacityRateRepository.save(cache);
+
+        // 容量预警判断：利用率超过 80% 时生成预警通知，恢复至 80% 及以下时清除预警
+        if (rate > 80) {
+            notificationService.createCapacityWarningIfAbsent(fridge, rate);
+        } else {
+            notificationService.clearCapacityWarning(fridge.getId());
+        }
     }
 
     /**

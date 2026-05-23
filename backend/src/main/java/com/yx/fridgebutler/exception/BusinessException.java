@@ -361,6 +361,17 @@ public class BusinessException extends RuntimeException {
         return new BusinessException(ResultCode.UNIT_TYPE_NOT_EDITABLE);
     }
 
+    // ======================== 消息通知相关 ========================
+
+    /**
+     * 创建消息不存在异常
+     *
+     * @return 消息不存在业务异常
+     */
+    public static BusinessException notificationNotFound() {
+        return new BusinessException(ResultCode.NOTIFICATION_NOT_FOUND);
+    }
+
     // ======================== AI 服务相关 ========================
 
     /**

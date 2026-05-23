@@ -21,11 +21,65 @@
       <ThemeToggle />
 
       <!-- 通知图标 -->
-      <div class="notification-icon">
-        <el-badge :value="3">
-          <i class="iconfont icon-notification" />
-        </el-badge>
-      </div>
+      <el-popover
+        trigger="click"
+        :width="420"
+        popper-class="notification-popover"
+        :teleported="true"
+        @show="handlePopoverShow"
+      >
+        <template #reference>
+          <div class="notification-icon">
+            <el-badge :value="notificationStore.unreadCount" :hidden="!notificationStore.hasUnread" :max="99">
+              <i class="iconfont icon-notification" />
+            </el-badge>
+          </div>
+        </template>
+
+        <!-- 下拉面板内容 -->
+        <div class="notification-dropdown">
+          <div class="dropdown-header">
+            <span class="dropdown-title">消息通知</span>
+            <div class="dropdown-actions">
+              <CustomButton
+                v-if="notificationStore.unreadCount > 0"
+                type="link"
+                size="small"
+                @click="handleReadAll"
+              >
+                全部已读
+              </CustomButton>
+              <CustomButton
+                type="link"
+                size="small"
+                @click="goToNotificationCenter"
+              >
+                查看全部
+              </CustomButton>
+            </div>
+          </div>
+
+          <!-- 最近未读消息列表 -->
+          <div v-loading="dropdownLoading" class="dropdown-list">
+            <template v-if="recentNotifications.length > 0">
+              <div
+                v-for="n in recentNotifications"
+                :key="n.id"
+                :class="['dropdown-item', { unread: n.status === 'UNREAD' }]"
+                @click="handleNotificationClick(n)"
+              >
+                <div v-if="n.status === 'UNREAD'" class="dropdown-item-unread-bar" />
+                <div class="dropdown-item-dot" :style="{ backgroundColor: getPriorityColor(n.priority) }" />
+                <div class="dropdown-item-content">
+                  <div class="dropdown-item-title">{{ n.title }}</div>
+                  <div class="dropdown-item-time">{{ formatTime(n.createTime) }}</div>
+                </div>
+              </div>
+            </template>
+            <el-empty v-else description="暂无新消息" :image-size="60" class="dropdown-empty" />
+          </div>
+        </div>
+      </el-popover>
 
       <!-- 用户信息 -->
       <el-dropdown trigger="hover" @command="handleCommand" @visible-change="(visible) => showUserMenu = visible">
@@ -54,16 +108,20 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 import { useUserStore } from "@/stores/user.js"
 import { useSystemStore } from "@/stores/system.js"
+import { useNotificationStore } from "@/stores/notification.js"
+import { getNotificationList, markAllAsRead, markAsRead } from "@/api/notification.js"
 import Logo from './Logo.vue'
 import Avatar from './Avatar.vue'
 import ThemeToggle from './ThemeToggle.vue'
+import CustomButton from '@/components/CustomButton.vue'
 import router from "@/router/index.js";
 
 const userStore = useUserStore()
 const systemStore = useSystemStore()
+const notificationStore = useNotificationStore()
 const { username, initUser } = userStore;
 const { systemName, getSystemInfo } = systemStore;
 
@@ -76,11 +134,92 @@ const showUserMenu = ref(false);
 // 定义事件
 const emit = defineEmits(['show-logout-dialog']);
 
+// 下拉面板相关
+const dropdownLoading = ref(false)
+const recentNotifications = ref([])
+
 // 初始化用户信息和系统信息
 onMounted(async () => {
   initUser()
   await getSystemInfo()
+  notificationStore.init()
 })
+
+onUnmounted(() => {
+  notificationStore.stopPolling()
+})
+
+// ========== 通知下拉面板 ==========
+const handlePopoverShow = async () => {
+  dropdownLoading.value = true
+  try {
+    const res = await getNotificationList({ status: 0, page: 1, size: 5 })
+    if (res.code === 200) {
+      recentNotifications.value = Array.isArray(res.data) ? res.data : (res.data?.list || [])
+    }
+    await notificationStore.fetchSummary()
+  } catch (error) {
+    console.error('加载最近消息失败:', error)
+  } finally {
+    dropdownLoading.value = false
+  }
+}
+
+const getPriorityColor = (priority) => {
+  switch (priority) {
+    case 2: return 'var(--danger-color)'
+    case 1: return 'var(--warn-color)'
+    default: return 'var(--text-tertiary)'
+  }
+}
+
+const formatTime = (timeStr) => {
+  if (!timeStr) return ''
+  const date = new Date(timeStr.replace(' ', 'T'))
+  const now = new Date()
+  const diff = now - date
+  const oneMinute = 60 * 1000
+  const oneHour = 60 * oneMinute
+  const oneDay = 24 * oneHour
+
+  if (diff < oneMinute) return '刚刚'
+  if (diff < oneHour) return `${Math.floor(diff / oneMinute)} 分钟前`
+  if (diff < oneDay && date.getDate() === now.getDate()) {
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+  }
+  if (diff < 2 * oneDay && date.getDate() === now.getDate() - 1) {
+    return `昨天`
+  }
+  return `${date.getMonth() + 1}/${date.getDate()}`
+}
+
+const handleNotificationClick = async (notification) => {
+  // 标记已读
+  if (notification.status === 'UNREAD') {
+    await markAsRead(notification.id)
+    notification.status = 'READ'
+    notificationStore.fetchUnreadCount()
+    notificationStore.fetchSummary()
+  }
+  // 跳转
+  const route = notificationStore.getActionRoute(notification)
+  if (route) {
+    router.push(route)
+  } else {
+    goToNotificationCenter()
+  }
+}
+
+const handleReadAll = async () => {
+  await markAllAsRead()
+  notificationStore.fetchUnreadCount()
+  notificationStore.fetchSummary()
+  recentNotifications.value.forEach(n => n.status = 'READ')
+}
+
+const goToNotificationCenter = () => {
+  router.push('/notification/list')
+}
 
 // 下拉菜单命令处理
 const handleCommand = (command) => {
@@ -173,15 +312,18 @@ const handleCommand = (command) => {
   cursor: pointer;
   color: var(--text-secondary);
   transition: all 0.3s ease;
-  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .notification-icon:hover {
   color: var(--primary-color);
 }
 
-.notification-icon:hover .iconfont {
+.notification-icon:hover :deep(.el-badge) {
   transform: scale(1.1);
+  transition: transform 0.3s ease;
 }
 
 .notification-icon .iconfont {
@@ -189,7 +331,6 @@ const handleCommand = (command) => {
   height: 30px;
   font-size: 30px;
   display: inline-block;
-  transition: transform 0.3s ease;
 }
 
 .user-info {
@@ -229,6 +370,109 @@ const handleCommand = (command) => {
 .user-info:hover .user-arrow,
 .rotate-180 {
   transform: rotate(180deg);
+}
+
+/* ========== 通知下拉面板样式 ========== */
+.notification-dropdown {
+  padding: 0;
+}
+
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dropdown-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dropdown-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.dropdown-list {
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-2) 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--gray-30);
+    transform: translateX(2px);
+  }
+
+  &.unread {
+    background: transparent;
+
+    .dropdown-item-title {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+  }
+}
+
+.dropdown-item-unread-bar {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: var(--primary-color);
+  border-radius: 0 2px 2px 0;
+}
+
+.dropdown-item-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dropdown-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.dropdown-item-title {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.dropdown-item-time {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.dropdown-empty {
+  padding: var(--space-6) 0;
 }
 
 /* 响应式设计 */

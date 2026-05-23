@@ -3,6 +3,7 @@ package com.yx.fridgebutler.service.impl;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.yx.fridgebutler.dto.aichat.AIChatAttachment;
 import com.yx.fridgebutler.dto.aichat.AIChatHistoryMessage;
 import com.yx.fridgebutler.dto.aichat.AIChatRequest;
 import com.yx.fridgebutler.dto.deepseek.DeepSeekChatMessage;
@@ -61,13 +62,15 @@ public class AIChatServiceImpl implements AIChatService {
     private static final DateTimeFormatter CHART_DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd");
 
     private static final String INTENT_SYSTEM_PROMPT = """
-            你是一个冰箱管理助手的意图识别系统。请严格分析用户输入，返回纯JSON，不要包含任何其他文字（包括markdown代码块标记、解释说明等）。
+            你是一个冰箱管理助手的意图识别系统。请严格分析用户输入与用户引用的上下文，返回纯JSON，不要包含任何其他文字（包括markdown代码块标记、解释说明等）。
+
+            用户引用的上下文是用户主动指定的重点对象，分析意图时必须优先考虑用户引用的内容，不能忽略。
 
             支持的意图类型：
             - fridge_list: 查看冰箱列表，如"我的冰箱有哪些"
             - item_list: 查看物品/库存/食材列表，可能包含关键词和冰箱名称，如"冰箱里还有什么鸡蛋"
             - expiring_alert: 查看临期/过期提醒，如"有什么快过期的"
-            - recipe_recommend: 根据库存推荐菜谱，如"今天吃什么""推荐菜谱"
+            - recipe_recommend: 根据用户描述或用户引用的食材推荐菜谱，如"今天吃什么""用西冷牛排做什么菜"
             - trend_chart: 查看趋势/统计图表，如"近7天取出趋势"
             - action_confirm: 删除/清空/移除等需要确认的操作，如"删除厨房冰箱"
             - text: 通用对话、问候、闲聊、无法识别的意图
@@ -91,14 +94,16 @@ public class AIChatServiceImpl implements AIChatService {
             """;
 
     private static final String RECIPE_SYSTEM_PROMPT = """
-            你是一位擅长家常菜的厨师。根据用户提供的冰箱库存食材，推荐2-3道适合的家常菜。
+            你是一位擅长家常菜的厨师。请根据用户的需求推荐合适的菜谱。
 
             要求：
-            1. 优先推荐用户库存食材能满足大部分需求的菜
-            2. 每道菜包含：名称、难度（简单/中等/困难）、预计烹饪时间、已匹配的库存食材列表、缺少的食材列表（如有）、简短描述
-            3. 返回严格JSON格式，不要包含任何其他文字（包括markdown代码块标记）：
+            1. 如果用户指定了特定食材，优先基于这些食材推荐菜谱，不要把全量库存当作唯一依据
+            2. 如果用户没有指定食材，基于冰箱整体库存推荐
+            3. 尊重用户要求的数量（如用户说"两个"就推荐两道，不要说2-3道）
+            4. 每道菜包含：名称、难度（简单/中等/困难）、预计烹饪时间、已匹配的食材列表、缺少的食材列表（如有）、简短描述
+            5. 返回严格JSON格式，不要包含任何其他文字（包括markdown代码块标记）：
 
-            {"recipes":[{"name":"菜名","difficulty":"简单","cookTime":"10分钟","matchedItems":["食材1","食材2"],"missingItems":["食材3"],"description":"描述"}],"text":"根据你的库存，为你推荐以下x道菜："}
+            {"recipes":[{"name":"菜名","difficulty":"简单","cookTime":"10分钟","matchedItems":["食材1","食材2"],"missingItems":["食材3"],"description":"描述"}],"text":"根据你的需求，为你推荐以下x道菜："}
             """;
 
     @Autowired
@@ -171,11 +176,18 @@ public class AIChatServiceImpl implements AIChatService {
         // 2. 从数据库加载历史（优先于前端传的 history，支持跨页面刷新）
         List<AIChatHistoryMessage> dbHistory = buildHistoryFromDb(sessionId);
 
-        // 3. 保存用户消息
-        saveUserMessage(sessionId, request.getMessage());
+        // 3. 校验附件权限
+        validateAttachments(request.getAttachments(), currentUserId);
 
-        // 4. 意图识别（使用数据库历史）
-        IntentResult intent = recognizeIntent(request.getMessage(), dbHistory);
+        // 4. 处理空消息并构建附件上下文
+        String userMessage = resolveUserMessage(request.getMessage(), request.getAttachments());
+        String attachmentContext = buildAttachmentContext(request.getAttachments());
+
+        // 5. 保存用户消息
+        saveUserMessage(sessionId, userMessage, request.getAttachments());
+
+        // 6. 意图识别（使用数据库历史）
+        IntentResult intent = recognizeIntent(userMessage, dbHistory, attachmentContext);
         log.info("AI 意图识别结果：intent={}, params={}, confidence={}",
                 intent.intent, intent.params, intent.confidence);
 
@@ -186,10 +198,10 @@ public class AIChatServiceImpl implements AIChatService {
                 case "fridge_list" -> handleFridgeList();
                 case "item_list" -> handleItemList(intent.params);
                 case "expiring_alert" -> handleExpiringAlert();
-                case "recipe_recommend" -> handleRecipeRecommend();
+                case "recipe_recommend" -> handleRecipeRecommend(userMessage, request.getAttachments());
                 case "trend_chart" -> handleTrendChart(intent.params);
                 case "action_confirm" -> handleActionConfirm(intent.params);
-                default -> handleText(request.getMessage(), dbHistory);
+                default -> handleText(userMessage, dbHistory, attachmentContext);
             };
         } catch (Exception e) {
             log.error("AI 聊天业务处理异常，intent={}", intent.intent, e);
@@ -222,11 +234,12 @@ public class AIChatServiceImpl implements AIChatService {
     /**
      * 调用 DeepSeek 进行意图识别。
      *
-     * @param userMessage 用户当前输入
-     * @param history     对话历史
+     * @param userMessage        用户当前输入
+     * @param history            对话历史
+     * @param attachmentContext  附件上下文文本（已格式化的引用信息）
      * @return 意图识别结果
      */
-    private IntentResult recognizeIntent(String userMessage, List<AIChatHistoryMessage> history) {
+    private IntentResult recognizeIntent(String userMessage, List<AIChatHistoryMessage> history, String attachmentContext) {
         List<DeepSeekChatMessage> messages = new ArrayList<>();
         messages.add(DeepSeekChatMessage.builder().role("system").content(INTENT_SYSTEM_PROMPT).build());
 
@@ -242,7 +255,10 @@ public class AIChatServiceImpl implements AIChatService {
             }
         }
 
-        messages.add(DeepSeekChatMessage.builder().role("user").content(userMessage).build());
+        String fullMessage = userMessage + attachmentContext;
+        messages.add(DeepSeekChatMessage.builder().role("user").content(fullMessage).build());
+
+        log.info("AI 意图识别 Prompt：\n{}", JSONUtil.toJsonStr(messages));
 
         String response = deepSeekService.chat(messages);
         return parseIntentJson(response);
@@ -490,12 +506,25 @@ public class AIChatServiceImpl implements AIChatService {
 
     /**
      * 处理菜谱推荐。
-     * <p>获取用户库存食材列表，交由 DeepSeek 生成推荐菜谱。</p>
+     * <p>优先基于用户指定的附件食材推荐，全量库存作为补充参考。将用户原话传入，使 LLM 能理解数量要求。</p>
+     *
+     * @param userMessage 用户原始输入（含数量要求等）
+     * @param attachments 用户引用的附件列表
      */
-    private AIChatReplyVO handleRecipeRecommend() {
+    private AIChatReplyVO handleRecipeRecommend(String userMessage, List<AIChatAttachment> attachments) {
         Long currentUserId = getCurrentUserId();
 
-        // 获取所有库存物品名称（去重）
+        // 1. 提取用户指定的食材（附件中的 item）
+        List<String> specifiedItems = new ArrayList<>();
+        if (attachments != null && !attachments.isEmpty()) {
+            for (AIChatAttachment att : attachments) {
+                if ("item".equals(att.getType()) && att.getName() != null && !att.getName().isBlank()) {
+                    specifiedItems.add(att.getName());
+                }
+            }
+        }
+
+        // 2. 获取全量库存作为补充参考
         List<Long> fridgeIds = fridgeRepository.findByOwnerIdAndIsDeletedFalse(currentUserId, Sort.unsorted())
                 .stream().map(BizFridge::getId).toList();
 
@@ -508,11 +537,24 @@ public class AIChatServiceImpl implements AIChatService {
                     .collect(Collectors.toSet());
         }
 
-        String inventoryText = inventoryItems.isEmpty()
-                ? "用户冰箱目前没有食材。"
-                : "用户冰箱中的食材有：" + String.join("、", inventoryItems) + "。";
+        // 3. 构建 Prompt
+        StringBuilder promptBuilder = new StringBuilder();
+        if (!specifiedItems.isEmpty()) {
+            promptBuilder.append("用户特别指定了以下食材，请优先基于这些食材推荐菜谱：")
+                    .append(String.join("、", specifiedItems)).append("。\n");
+        }
+        if (!inventoryItems.isEmpty()) {
+            promptBuilder.append("用户冰箱中的其他食材还有：")
+                    .append(String.join("、", inventoryItems)).append("。\n");
+        }
+        if (specifiedItems.isEmpty() && inventoryItems.isEmpty()) {
+            promptBuilder.append("用户冰箱目前没有食材。\n");
+        }
+        promptBuilder.append("用户原话：").append(userMessage).append("\n");
+        promptBuilder.append("请根据以上信息推荐适合的家常菜。");
 
-        String userPrompt = inventoryText + "请根据这些食材推荐2-3道适合的家常菜。如果食材很少或没有，也给出合理建议。";
+        String userPrompt = promptBuilder.toString();
+        log.info("AI 菜谱推荐 Prompt：\n{}", userPrompt);
 
         String response = deepSeekService.chat(RECIPE_SYSTEM_PROMPT, userPrompt);
         String cleaned = cleanJsonResponse(response);
@@ -708,7 +750,7 @@ public class AIChatServiceImpl implements AIChatService {
     /**
      * 处理通用文本对话。
      */
-    private AIChatReplyVO handleText(String userMessage, List<AIChatHistoryMessage> history) {
+    private AIChatReplyVO handleText(String userMessage, List<AIChatHistoryMessage> history, String attachmentContext) {
         List<DeepSeekChatMessage> messages = new ArrayList<>();
 
         String systemPrompt = "你是冰箱管家，一个智能冰箱管理助手。你可以帮助用户查询冰箱库存、查看临期提醒、推荐菜谱。回答要简洁友好，不要太长。";
@@ -726,7 +768,10 @@ public class AIChatServiceImpl implements AIChatService {
             }
         }
 
-        messages.add(DeepSeekChatMessage.builder().role("user").content(userMessage).build());
+        String fullMessage = userMessage + attachmentContext;
+        messages.add(DeepSeekChatMessage.builder().role("user").content(fullMessage).build());
+
+        log.info("AI 通用对话 Prompt：\n{}", JSONUtil.toJsonStr(messages));
 
         String response = deepSeekService.chat(messages);
 
@@ -792,6 +837,7 @@ public class AIChatServiceImpl implements AIChatService {
                         .content(m.getContent())
                         .messageType(m.getMessageType())
                         .data(m.getStructuredData())
+                        .attachments(m.getAttachments())
                         .createTime(formatInstant(m.getCreateTime()))
                         .build())
                 .toList();
@@ -818,13 +864,31 @@ public class AIChatServiceImpl implements AIChatService {
     }
 
     /**
-     * 保存用户消息到数据库。
+     * 保存用户消息到数据库（支持附件）。
      */
-    private void saveUserMessage(String sessionId, String content) {
+    private void saveUserMessage(String sessionId, String content, List<AIChatAttachment> attachments) {
+        List<Map<String, Object>> attachmentMaps = null;
+        if (attachments != null && !attachments.isEmpty()) {
+            attachmentMaps = attachments.stream().map(att -> {
+                Map<String, Object> map = new LinkedHashMap<>();
+                map.put("type", att.getType());
+                map.put("id", att.getId());
+                map.put("name", att.getName());
+                if (att.getFridgeId() != null) {
+                    map.put("fridgeId", att.getFridgeId());
+                }
+                if (att.getFridgeName() != null) {
+                    map.put("fridgeName", att.getFridgeName());
+                }
+                return map;
+            }).toList();
+        }
+
         AiChatMessage msg = AiChatMessage.builder()
                 .sessionId(sessionId)
                 .role("user")
                 .content(content)
+                .attachments(attachmentMaps)
                 .createTime(Instant.now())
                 .build();
         messageRepository.save(msg);
@@ -855,14 +919,21 @@ public class AIChatServiceImpl implements AIChatService {
 
     /**
      * 从数据库加载指定会话的历史消息，转换为前端 history 格式。
+     * <p>用户历史消息若包含附件，会将附件上下文还原到 content 中，确保 LLM 理解完整上下文。</p>
      */
     private List<AIChatHistoryMessage> buildHistoryFromDb(String sessionId) {
         List<AiChatMessage> messages = messageRepository.findBySessionIdOrderByCreateTimeAsc(sessionId);
         return messages.stream()
-                .map(m -> AIChatHistoryMessage.builder()
-                        .role(m.getRole())
-                        .content(m.getContent() != null ? m.getContent() : "")
-                        .build())
+                .map(m -> {
+                    String content = m.getContent() != null ? m.getContent() : "";
+                    if ("user".equals(m.getRole()) && m.getAttachments() != null && !m.getAttachments().isEmpty()) {
+                        content = content + formatAttachmentContextFromDb(m.getAttachments());
+                    }
+                    return AIChatHistoryMessage.builder()
+                            .role(m.getRole())
+                            .content(content)
+                            .build();
+                })
                 .toList();
     }
 
@@ -918,6 +989,141 @@ public class AIChatServiceImpl implements AIChatService {
             case "action_confirm" -> List.of();
             default -> List.of("查看冰箱", "临期提醒", "推荐菜谱");
         };
+    }
+
+    // ======================== 附件相关方法 ========================
+
+    /**
+     * 校验用户引用的附件是否属于当前登录用户。
+     *
+     * @param attachments 附件列表
+     * @param userId      当前用户ID
+     */
+    private void validateAttachments(List<AIChatAttachment> attachments, Long userId) {
+        if (attachments == null || attachments.isEmpty()) {
+            return;
+        }
+
+        List<BizFridge> myFridges = fridgeRepository.findByOwnerIdAndIsDeletedFalse(userId, Sort.unsorted());
+        Set<Long> myFridgeIdSet = myFridges.stream().map(BizFridge::getId).collect(Collectors.toSet());
+
+        for (AIChatAttachment att : attachments) {
+            if ("fridge".equals(att.getType())) {
+                if (!myFridgeIdSet.contains(att.getId())) {
+                    throw BusinessException.forbidden();
+                }
+            } else if ("item".equals(att.getType())) {
+                BizFridgeItem item = itemRepository.findById(att.getId()).orElse(null);
+                if (item == null || Boolean.TRUE.equals(item.getIsDeleted()) || !myFridgeIdSet.contains(item.getFridgeId())) {
+                    throw BusinessException.forbidden();
+                }
+            }
+        }
+    }
+
+    /**
+     * 将附件列表格式化为 LLM 可读的上下文文本。
+     * <p>基于附件 ID 查询数据库补充实时业务数据（物品保质期、冰箱库存等），使 AI 回答更精准。</p>
+     *
+     * @param attachments 附件列表
+     * @return 格式化后的上下文文本，无附件时返回空字符串
+     */
+    private String buildAttachmentContext(List<AIChatAttachment> attachments) {
+        if (attachments == null || attachments.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder("\n\n【用户引用的上下文】\n");
+        LocalDate today = LocalDate.now(ZONE_ID_SHANGHAI);
+
+        for (AIChatAttachment att : attachments) {
+            if ("fridge".equals(att.getType())) {
+                BizFridge fridge = fridgeRepository.findById(att.getId()).orElse(null);
+                if (fridge != null && !Boolean.TRUE.equals(fridge.getIsDeleted())) {
+                    long itemCount = itemRepository.countByFridgeIdAndIsDeletedFalse(fridge.getId());
+                    sb.append("- 冰箱：").append(fridge.getFridgeName()).append(" (ID: ").append(fridge.getId()).append(")\n");
+                    sb.append("  物品总数：").append(itemCount).append(" 件\n");
+                } else {
+                    sb.append("- 冰箱：").append(att.getName()).append(" (ID: ").append(att.getId()).append(")\n");
+                }
+            } else if ("item".equals(att.getType())) {
+                BizFridgeItem item = itemRepository.findById(att.getId()).orElse(null);
+                if (item != null && !Boolean.TRUE.equals(item.getIsDeleted())) {
+                    String unitName = "";
+                    if (item.getItemUnitId() != null) {
+                        unitName = unitRepository.findById(item.getItemUnitId())
+                                .filter(u -> !Boolean.TRUE.equals(u.getIsDeleted()))
+                                .map(BizItemUnit::getUnitName).orElse("");
+                    }
+                    String fridgeName = "";
+                    if (item.getFridgeId() != null) {
+                        fridgeName = fridgeRepository.findById(item.getFridgeId())
+                                .filter(f -> !Boolean.TRUE.equals(f.getIsDeleted()))
+                                .map(BizFridge::getFridgeName).orElse("未知");
+                    }
+
+                    sb.append("- 物品：").append(item.getItemName())
+                            .append("，数量：").append(item.getItemNum()).append(" ").append(unitName);
+
+                    if (item.getProductionDate() != null && item.getShelfLifeDays() != null) {
+                        long diffDays = ChronoUnit.DAYS.between(item.getProductionDate(), today);
+                        int remainingDays = item.getShelfLifeDays() - (int) diffDays;
+                        FreshnessStatus fs = calculateFreshnessStatus(item.getProductionDate(), item.getShelfLifeDays());
+                        sb.append("，生产日期：").append(item.getProductionDate())
+                                .append("，保质期：").append(item.getShelfLifeDays()).append(" 天")
+                                .append("，剩余：").append(remainingDays).append(" 天")
+                                .append("（").append(fs.label()).append("）");
+                    }
+                    sb.append("，所属冰箱：").append(fridgeName).append("\n");
+                } else {
+                    sb.append("- 物品：").append(att.getName()).append(" (ID: ").append(att.getId()).append(")\n");
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 从数据库附件快照还原为 LLM 上下文文本（用于历史消息）。
+     *
+     * @param attachments 数据库中的附件快照列表
+     * @return 格式化后的上下文文本
+     */
+    private String formatAttachmentContextFromDb(List<Map<String, Object>> attachments) {
+        StringBuilder sb = new StringBuilder("\n\n【用户引用的上下文】\n");
+        for (Map<String, Object> att : attachments) {
+            String type = (String) att.get("type");
+            Object id = att.get("id");
+            String name = (String) att.get("name");
+            if ("fridge".equals(type)) {
+                sb.append("- 冰箱：").append(name).append(" (ID: ").append(id).append(")\n");
+            } else if ("item".equals(type)) {
+                String fridgeName = (String) att.get("fridgeName");
+                sb.append("- 物品：").append(name).append(" (ID: ").append(id).append(")");
+                if (fridgeName != null && !fridgeName.isBlank()) {
+                    sb.append("，所属冰箱：").append(fridgeName);
+                }
+                sb.append("\n");
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 处理空消息场景：若用户未输入文字但携带附件，自动补充默认提示。
+     *
+     * @param message     原始消息
+     * @param attachments 附件列表
+     * @return 处理后的消息内容
+     */
+    private String resolveUserMessage(String message, List<AIChatAttachment> attachments) {
+        if (message != null && !message.isBlank()) {
+            return message;
+        }
+        if (attachments != null && !attachments.isEmpty()) {
+            return "请帮我分析一下这些信息。";
+        }
+        return message != null ? message : "";
     }
 
     /**
@@ -1048,11 +1254,18 @@ public class AIChatServiceImpl implements AIChatService {
         // 2. 加载历史
         List<AIChatHistoryMessage> dbHistory = buildHistoryFromDb(sessionId);
 
-        // 3. 保存用户消息
-        saveUserMessage(sessionId, request.getMessage());
+        // 3. 校验附件权限
+        validateAttachments(request.getAttachments(), currentUserId);
 
-        // 4. 同步意图识别
-        IntentResult intent = recognizeIntent(request.getMessage(), dbHistory);
+        // 4. 处理空消息并构建附件上下文
+        String userMessage = resolveUserMessage(request.getMessage(), request.getAttachments());
+        String attachmentContext = buildAttachmentContext(request.getAttachments());
+
+        // 5. 保存用户消息
+        saveUserMessage(sessionId, userMessage, request.getAttachments());
+
+        // 6. 同步意图识别
+        IntentResult intent = recognizeIntent(userMessage, dbHistory, attachmentContext);
         log.info("AI 流式聊天意图识别结果：intent={}, params={}, confidence={}",
                 intent.intent, intent.params, intent.confidence);
 
@@ -1078,7 +1291,7 @@ public class AIChatServiceImpl implements AIChatService {
                     yield r;
                 }
                 case "recipe_recommend" -> {
-                    AIChatReplyVO r = handleRecipeRecommend();
+                    AIChatReplyVO r = handleRecipeRecommend(userMessage, request.getAttachments());
                     streamStructuredReply(emitter, r, fullText);
                     yield r;
                 }
@@ -1092,7 +1305,7 @@ public class AIChatServiceImpl implements AIChatService {
                     streamStructuredReply(emitter, r, fullText);
                     yield r;
                 }
-                default -> streamTextReply(request.getMessage(), dbHistory, emitter, fullText);
+                default -> streamTextReply(userMessage, dbHistory, emitter, fullText, attachmentContext);
             };
         } catch (Exception e) {
             log.error("AI 流式聊天业务处理异常，intent={}", intent.intent, e);
@@ -1136,7 +1349,8 @@ public class AIChatServiceImpl implements AIChatService {
     }
 
     private AIChatReplyVO streamTextReply(String userMessage, List<AIChatHistoryMessage> history,
-                                          SseEmitter emitter, StringBuilder fullText) throws IOException {
+                                          SseEmitter emitter, StringBuilder fullText,
+                                          String attachmentContext) throws IOException {
         List<DeepSeekChatMessage> messages = new ArrayList<>();
 
         String systemPrompt = "你是冰箱管家，一个智能冰箱管理助手。你可以帮助用户查询冰箱库存、查看临期提醒、推荐菜谱。回答要简洁友好，不要太长。";
@@ -1154,7 +1368,10 @@ public class AIChatServiceImpl implements AIChatService {
             }
         }
 
-        messages.add(DeepSeekChatMessage.builder().role("user").content(userMessage).build());
+        String fullMessage = userMessage + attachmentContext;
+        messages.add(DeepSeekChatMessage.builder().role("user").content(fullMessage).build());
+
+        log.info("AI 流式对话 Prompt：\n{}", JSONUtil.toJsonStr(messages));
 
         deepSeekService.chatStream(messages, chunk -> {
             try {

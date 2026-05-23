@@ -78,6 +78,19 @@
               <span />
             </div>
 
+            <!-- 用户附件标签 -->
+            <div v-if="msg.role === 'user' && msg.attachments && msg.attachments.length > 0" class="message-attachments">
+              <span
+                v-for="att in msg.attachments"
+                :key="att.type + '-' + att.id"
+                class="message-attach-tag"
+                @click="$router.push(att.type === 'fridge' ? '/fridge/detail/' + att.id : '/fridge/items/' + att.fridgeId)"
+              >
+                <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-inbox'" />
+                {{ att.name }}
+              </span>
+            </div>
+
             <!-- 结构化数据渲染 -->
             <div v-if="msg.messageType === 'fridge_list' && msg.data" class="struct-content">
               <div class="fridge-list-inline">
@@ -203,6 +216,102 @@
             </button>
           </div>
         </transition>
+
+        <div class="attach-container">
+
+          <!-- 已引用标签栏 -->
+          <transition
+            name="el-zoom-in-center"
+          >
+            <transition-group
+                v-if="attachments.length > 0"
+                name="el-zoom-in-center"
+                tag="div"
+                class="attachments-bar"
+            >
+            <span
+                v-for="att in attachments"
+                :key="att.type + '-' + att.id"
+                class="attach-tag"
+            >
+              <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-inbox'" />
+              {{ att.name }}
+              <i class="iconfont icon-close attach-tag-close" @click="removeAttachment(att)" />
+            </span>
+            </transition-group>
+          </transition>
+
+          <!-- 附件按钮 -->
+          <el-popover
+              v-model:visible="attachPopoverVisible"
+              placement="top-end"
+              :width="280"
+              trigger="click"
+              popper-class="attach-popover"
+              popper-style="padding: 0;"
+          >
+            <template #reference>
+              <button
+                  class="attach-btn"
+                  :class="{ 'attach-btn-active': attachments.length > 0 }"
+                  title="添加附件"
+              >
+                <i class="iconfont icon-attachment" />
+                <span v-if="attachments.length > 0" class="attach-badge">{{ attachments.length }}</span>
+              </button>
+            </template>
+
+            <el-scrollbar
+                max-height="320px"
+                class="attach-popover-content"
+                view-style="padding: var(--space-3);"
+            >
+              <div class="attach-section">
+                <div class="attach-section-title">
+                  <i class="iconfont icon-fridge-line" />
+                  <span>选择冰箱</span>
+                </div>
+                <div v-if="fridgeList.length === 0" class="attach-empty">暂无冰箱</div>
+                <div v-else class="attach-option-list">
+                  <button
+                      v-for="fridge in fridgeList"
+                      :key="fridge.id"
+                      class="attach-option"
+                      :class="{ 'attach-option-selected': isAttached('fridge', fridge.id) }"
+                      @click="toggleAttachment('fridge', fridge)"
+                  >
+                    <span class="attach-option-name">{{ fridge.fridgeName }}</span>
+                    <i v-if="isAttached('fridge', fridge.id)" class="iconfont icon-check" />
+                  </button>
+                </div>
+              </div>
+
+              <div class="attach-divider" />
+
+              <div class="attach-section">
+                <div class="attach-section-title">
+                  <i class="iconfont icon-inbox" />
+                  <span>选择物品</span>
+                </div>
+                <div v-if="itemList.length === 0" class="attach-empty">暂无物品</div>
+                <div v-else class="attach-option-list">
+                  <button
+                      v-for="item in itemList.slice(0, 20)"
+                      :key="item.id"
+                      class="attach-option"
+                      :class="{ 'attach-option-selected': isAttached('item', item.id) }"
+                      @click="toggleAttachment('item', item)"
+                  >
+                    <span class="attach-option-name">{{ item.itemName }}</span>
+                    <span class="attach-option-meta">{{ item.fridgeName }}</span>
+                    <i v-if="isAttached('item', item.id)" class="iconfont icon-check" />
+                  </button>
+                </div>
+                <div v-if="itemList.length > 20" class="attach-more-tip">仅展示前 20 个物品</div>
+              </div>
+            </el-scrollbar>
+          </el-popover>
+        </div>
       </div>
 
       <!-- 输入区 -->
@@ -443,6 +552,44 @@ const aiTyping = ref(false)
 const chatMessagesRef = ref(null)
 const abortController = ref(null)
 
+// 附件状态
+const attachPopoverVisible = ref(false)
+const attachments = ref([])
+
+function isAttached(type, id) {
+  return attachments.value.some(a => a.type === type && a.id === id)
+}
+
+function toggleAttachment(type, data) {
+  const existingIndex = attachments.value.findIndex(a => a.type === type && a.id === data.id)
+  if (existingIndex !== -1) {
+    attachments.value.splice(existingIndex, 1)
+    return
+  }
+  if (type === 'fridge') {
+    attachments.value.push({
+      type: 'fridge',
+      id: data.id,
+      name: data.fridgeName
+    })
+  } else if (type === 'item') {
+    attachments.value.push({
+      type: 'item',
+      id: data.id,
+      name: data.itemName,
+      fridgeId: data.fridgeId || null,
+      fridgeName: data.fridgeName || null
+    })
+  }
+}
+
+function removeAttachment(att) {
+  const idx = attachments.value.findIndex(a => a.type === att.type && a.id === att.id)
+  if (idx !== -1) {
+    attachments.value.splice(idx, 1)
+  }
+}
+
 const defaultQuickActions = [
   { text: '查看冰箱' },
   { text: '有什么食材' },
@@ -479,13 +626,16 @@ async function sendMessage() {
   if (!text || aiTyping.value) return
 
   // 用户消息
+  const currentAttachments = attachments.value.map(a => ({ ...a }))
   messages.value.push({
     id: generateMsgId(),
     role: 'user',
     content: text,
+    attachments: currentAttachments,
     time: formatTime(new Date())
   })
   inputMessage.value = ''
+  attachments.value = []  // 发送后清空附件
   scrollToBottom()
 
   // AI 回复占位
@@ -524,7 +674,7 @@ async function sendMessage() {
     await sendChatMessageStream({
       message: text,
       sessionId: sessionId.value,
-      signal: abortController.value.signal,
+      attachments: currentAttachments,
       onText: (chunk) => {
         assistantMsg.content += chunk
         scheduleScroll()
@@ -588,7 +738,8 @@ async function sendMessage() {
     try {
       const res = await sendChatMessage({
         message: text,
-        sessionId: sessionId.value
+        sessionId: sessionId.value,
+        attachments: currentAttachments
       })
 
       if (res.code === 200 && res.data) {
@@ -2103,6 +2254,289 @@ onUnmounted(() => {
 
   .iconfont {
     font-size: 14px;
+  }
+}
+
+/* ==================== 附件功能样式 ==================== */
+.attach-container {
+  margin-left: auto;
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* 附件按钮 */
+.attach-btn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--input-bg);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+  }
+
+  &.attach-btn-active {
+    background: var(--primary-light);
+    color: var(--primary-color);
+  }
+
+  .iconfont {
+    font-size: 18px;
+  }
+}
+
+.attach-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--danger-color);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 已引用标签栏 */
+.attachments-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.attach-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--primary-30);
+  transition: all 0.2s ease;
+
+  .iconfont {
+    font-size: 12px;
+  }
+
+  .attach-tag-close {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+/* 消息内附件标签 */
+.message-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+}
+
+.message-user .message-attachments {
+  border-top-color: rgba(255, 255, 255, 0.25);
+}
+
+.message-ai .message-attachments {
+  border-top-color: var(--border-color);
+}
+
+.message-attach-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  .iconfont {
+    font-size: 11px;
+  }
+}
+
+.message-ai .message-attach-tag {
+  background: var(--primary-10);
+  color: var(--primary-dark);
+
+  &:hover {
+    background: var(--primary-light);
+  }
+}
+
+/* Popover 内容 */
+.attach-popover {
+  .el-popover__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-3);
+  }
+}
+
+.attach-popover-content {
+
+}
+
+.attach-section {
+  margin-bottom: var(--space-3);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.attach-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+
+  .iconfont {
+    font-size: 14px;
+    color: var(--primary-color);
+  }
+}
+
+.attach-empty {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  padding: var(--space-2) 0;
+  text-align: center;
+}
+
+.attach-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attach-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+
+  &:hover {
+    background: var(--primary-10);
+    border-color: var(--primary-30);
+  }
+
+  &.attach-option-selected {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+    color: var(--primary-dark);
+    font-weight: 500;
+  }
+
+  .icon-check {
+    margin-left: auto;
+    font-size: 14px;
+    color: var(--primary-color);
+  }
+}
+
+.attach-option-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attach-option-meta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.attach-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: var(--space-3) 0;
+}
+
+.attach-more-tip {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding-top: var(--space-1);
+}
+
+/* Popover 滚动条 */
+.attach-popover-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.attach-popover-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.attach-popover-content::-webkit-scrollbar-thumb {
+  background: var(--primary-20);
+  border-radius: 2px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .attachments-bar {
+    padding: var(--space-2) var(--space-4) 0;
+  }
+
+  .attach-btn {
+    width: 28px;
+    height: 28px;
+
+    .iconfont {
+      font-size: 16px;
+    }
   }
 }
 </style>

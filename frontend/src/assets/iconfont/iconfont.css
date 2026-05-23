@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 5163375 */
-  src: url('iconfont.woff2?t=1779024580793') format('woff2'),
-       url('iconfont.woff?t=1779024580793') format('woff'),
-       url('iconfont.ttf?t=1779024580793') format('truetype');
+  src: url('iconfont.woff2?t=1779506491995') format('woff2'),
+       url('iconfont.woff?t=1779506491995') format('woff'),
+       url('iconfont.ttf?t=1779506491995') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,18 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-attachment:before {
+  content: "\eb27";
+}
+
+.icon-mail-check:before {
+  content: "\eb3a";
+}
+
+.icon-reload:before {
+  content: "\eb53";
 }
 
 .icon-cloud-moon:before {

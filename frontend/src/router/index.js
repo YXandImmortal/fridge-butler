@@ -11,6 +11,7 @@ const ItemManageView = () => import('@/views/fridge/ItemManageView.vue')
 const ItemCategoryListView = () => import('@/views/item/ItemCategoryListView.vue')
 const DataCenterView = () => import('@/views/data-center/DataCenterView.vue')
 const AboutView = () => import('@/views/AboutView.vue')
+const NotificationListView = () => import('@/views/notification/NotificationListView.vue')
 
 const LoginView = () => import('@/views/LoginView.vue')
 const RegisterView = () => import('@/views/RegisterView.vue')
@@ -135,6 +136,22 @@ const router = createRouter({
             roles: [USER_PERMISSION]
           }
         },
+      ]
+    },
+    // 消息中心路由（使用主布局）
+    {
+      path: '/notification',
+      component: MainLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'list',
+          name: 'notification-list',
+          component: NotificationListView,
+          meta: {
+            roles: [USER_PERMISSION]
+          }
+        }
       ]
     },
     // 超级管理员路由（使用主布局）

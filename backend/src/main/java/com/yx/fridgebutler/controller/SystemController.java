@@ -124,6 +124,24 @@ public class SystemController {
 
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
+                    .version("beta 0.1.5")
+                    .date("2026-5-23")
+                    .changes(Arrays.asList(
+                            "全新上线消息通知系统：支持临期/过期自动提醒、容量预警与系统通知，消息中心集中管理",
+                            "后端新增完整消息通知模块：实体、枚举、Repository、Service、Controller 与定时任务",
+                            "新增 NotificationGenerateJob 定时任务，每天凌晨 2:00 自动生成临期/过期消息提醒，自动去重",
+                            "前端新增消息中心页面，支持按类型筛选、未读统计、一键已读与消息跳转",
+                            "Header 通知图标升级为下拉面板，实时展示最近未读消息，支持快捷标记已读与跳转",
+                            "前端新增通知 Store，支持 30 秒轮询未读数，消息状态实时同步",
+                            "AI 聊天支持引用附件上下文：用户可引用冰箱或物品，AI 回答时关联实时业务数据",
+                            "AI 菜谱推荐增强：优先基于用户指定的食材推荐，尊重用户数量要求，全量库存作为补充参考",
+                            "AI 聊天空消息场景优化：仅携带附件时自动补充默认提示语",
+                            "AI 消息历史支持附件快照还原，跨会话上下文完整性提升",
+                            "物品新增记录实体新增 remark 备注字段，支持记录补充信息",
+                            "前后端版本号同步升级至 beta 0.1.5"
+                    ))
+                    .build(),
+            UpdateLogVO.builder()
                     .version("beta 0.1.4")
                     .date("2026-5-21")
                     .changes(Arrays.asList(

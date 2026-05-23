@@ -8,6 +8,7 @@ import showMessage from '@/utils/message'
  * @param {Object} params
  * @param {string} params.message - 用户输入内容
  * @param {string} [params.sessionId] - 会话ID，首次可不传
+ * @param {Array} [params.attachments] - 附件列表 [{type, id, name, fridgeId?, fridgeName?}]
  */
 export function sendChatMessage(params) {
     return request({
@@ -49,6 +50,7 @@ function parseSSEEvent(raw) {
  * @param {Object} options
  * @param {string} options.message - 用户输入内容
  * @param {string} [options.sessionId] - 会话ID
+ * @param {Array} [options.attachments] - 附件列表 [{type, id, name, fridgeId?, fridgeName?}]
  * @param {Function} [options.onText] - 文本片段回调 (chunk: string) => void
  * @param {Function} [options.onCard] - 卡片数据回调 (messageType: string, data: any) => void
  * @param {Function} [options.onDone] - 结束回调 (sessionId: string, suggestions: string[]) => void
@@ -58,6 +60,7 @@ function parseSSEEvent(raw) {
 export async function sendChatMessageStream({
     message,
     sessionId,
+    attachments,
     onText,
     onCard,
     onDone,
@@ -83,7 +86,7 @@ export async function sendChatMessageStream({
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ message, sessionId }),
+        body: JSON.stringify({ message, sessionId, attachments }),
         signal
     })
 

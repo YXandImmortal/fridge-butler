@@ -87,5 +87,9 @@ public class BizItemAddRecord {
     @ColumnDefault("CURRENT_TIMESTAMP(6)")
     @Column(name = "create_time")
     private Instant createTime;
+    @Size(max = 255)
+    @ColumnDefault("''")
+    @Column(name = "remark")
+    private String remark;
 
 }

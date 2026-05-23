@@ -38,6 +38,12 @@ public class AIChatMessageVO {
     private Object data;
 
     /**
+     * 用户引用的附件列表（用户消息特有）。
+     * <p>包含引用的冰箱或物品快照信息。</p>
+     */
+    private Object attachments;
+
+    /**
      * 消息创建时间，格式：yyyy-MM-dd HH:mm:ss
      */
     private String createTime;

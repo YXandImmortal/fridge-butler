@@ -93,7 +93,13 @@ public enum ResultCode {
      * AI 服务状态码
      * <p>DeepSeek AI 大模型调用相关</p>
      */
-    DEEPSEEK_API_ERROR(503, "AI 服务调用失败");
+    DEEPSEEK_API_ERROR(503, "AI 服务调用失败"),
+
+    /**
+     * 消息通知状态码
+     * <p>消息提醒模块使用</p>
+     */
+    NOTIFICATION_NOT_FOUND(404, "消息不存在");
 
     /**
      * 状态码数值
