@@ -413,12 +413,6 @@ const handleLogout = (msg) => {
   font-size: 16px;
 }
 
-/* 验证错误时的 focus 样式 */
-.el-form-item.is-error :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
-  border-color: var(--el-color-danger);
-}
-
 .profile-card {
   max-width: 600px;
   width: 100%;

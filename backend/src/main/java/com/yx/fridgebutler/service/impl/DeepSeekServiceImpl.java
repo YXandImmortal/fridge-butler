@@ -94,13 +94,19 @@ public class DeepSeekServiceImpl implements DeepSeekService {
     @Override
     public String chat(List<DeepSeekChatMessage> messages) {
         DeepSeekChatRequest request = DeepSeekChatRequest.builder()
-                .model(defaultModel)
                 .messages(messages)
-                .temperature(defaultTemperature)
-                .maxTokens(defaultMaxTokens)
-                .stream(false)
                 .build();
+        return chat(request);
+    }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 对请求中未设置的字段自动填充服务端默认值。
+     */
+    @Override
+    public String chat(DeepSeekChatRequest request) {
+        fillDefaults(request);
         DeepSeekChatResponse response = chatComplete(request);
 
         if (response.getChoices() == null || response.getChoices().isEmpty()) {
@@ -154,23 +160,32 @@ public class DeepSeekServiceImpl implements DeepSeekService {
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public void chatStream(List<DeepSeekChatMessage> messages, Consumer<String> onChunk) throws IOException {
+        DeepSeekChatRequest request = DeepSeekChatRequest.builder()
+                .messages(messages)
+                .stream(true)
+                .build();
+        chatStream(request, onChunk);
+    }
+
+    /**
+     * {@inheritDoc}
      * <p>
      * 使用 {@link RestTemplate#execute} 配合 {@link RequestCallback} 与 {@link ResponseExtractor}
      * 实现流式 HTTP 请求。请求体由 Spring 的 Jackson MessageConverter 自动序列化，
      * 响应体通过 Hutool JSON 逐行解析 SSE 数据块。
      */
     @Override
-    public void chatStream(List<DeepSeekChatMessage> messages, Consumer<String> onChunk) throws IOException {
-        String url = baseUrl + CHAT_COMPLETIONS_PATH;
-        log.debug("调用 DeepSeek 流式 API，URL：{}，模型：{}", url, defaultModel);
+    public void chatStream(DeepSeekChatRequest request, Consumer<String> onChunk) throws IOException {
+        fillDefaults(request);
+        if (!Boolean.TRUE.equals(request.getStream())) {
+            request.setStream(true);
+        }
 
-        DeepSeekChatRequest request = DeepSeekChatRequest.builder()
-                .model(defaultModel)
-                .messages(messages)
-                .temperature(defaultTemperature)
-                .maxTokens(defaultMaxTokens)
-                .stream(true)
-                .build();
+        String url = baseUrl + CHAT_COMPLETIONS_PATH;
+        log.debug("调用 DeepSeek 流式 API，URL：{}，模型：{}", url, request.getModel());
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -225,5 +240,23 @@ public class DeepSeekServiceImpl implements DeepSeekService {
         };
 
         restTemplate.execute(url, HttpMethod.POST, requestCallback, responseExtractor);
+    }
+
+    /**
+     * 对请求中未设置的字段填充服务端默认值。
+     */
+    private void fillDefaults(DeepSeekChatRequest request) {
+        if (request.getModel() == null || request.getModel().isBlank()) {
+            request.setModel(defaultModel);
+        }
+        if (request.getTemperature() == null) {
+            request.setTemperature(defaultTemperature);
+        }
+        if (request.getMaxTokens() == null) {
+            request.setMaxTokens(defaultMaxTokens);
+        }
+        if (request.getStream() == null) {
+            request.setStream(false);
+        }
     }
 }

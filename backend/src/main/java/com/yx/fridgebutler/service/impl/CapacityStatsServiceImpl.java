@@ -17,6 +17,7 @@ import com.yx.fridgebutler.repository.BizItemChangeRecordRepository;
 import com.yx.fridgebutler.repository.BizItemTakeOutRecordRepository;
 import com.yx.fridgebutler.repository.BizItemUnitRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
+import com.yx.fridgebutler.config.PromptTemplateLoader;
 import com.yx.fridgebutler.service.CapacityStatsService;
 import com.yx.fridgebutler.service.DeepSeekService;
 import com.yx.fridgebutler.service.NotificationService;
@@ -87,6 +88,9 @@ public class CapacityStatsServiceImpl implements CapacityStatsService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private PromptTemplateLoader promptLoader;
 
     @Autowired
     @Qualifier("capacityStatsExecutor")
@@ -248,7 +252,8 @@ public class CapacityStatsServiceImpl implements CapacityStatsService {
 
         String prompt = buildPrompt(fridge, items, categoryMap, unitMap);
 
-        String systemMessage = "你是一位家庭收纳专家，擅长根据冰箱内的物品种类、数量和规格，估算它们占用的空间比例。请根据生活常识进行合理估算，考虑物品的实际形状、包装方式以及冰箱内部空间的实际利用情况（并非100%填满）。只返回一个0-100之间的整数，表示容量占用百分比，不要有任何额外解释。";
+        String fallbackSystemMessage = "你是一位家庭收纳专家，擅长根据冰箱内的物品种类、数量和规格，估算它们占用的空间比例。请根据生活常识进行合理估算，考虑物品的实际形状、包装方式以及冰箱内部空间的实际利用情况（并非100%填满）。只返回一个0-100之间的整数，表示容量占用百分比，不要有任何额外解释。";
+        String systemMessage = promptLoader.getPrompt("capacity-estimate-system", fallbackSystemMessage);
 
         try {
             String response = deepSeekService.chat(systemMessage, prompt);

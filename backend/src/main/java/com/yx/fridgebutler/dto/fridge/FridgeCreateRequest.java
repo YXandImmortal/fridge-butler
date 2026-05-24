@@ -38,4 +38,14 @@ public class FridgeCreateRequest {
      */
     private Long fridgeTypeId;
 
+    /**
+     * 总容量（升）
+     */
+    private Integer totalCapacity;
+
+    /**
+     * 是否设为默认冰箱
+     */
+    private Boolean isDefault;
+
 }

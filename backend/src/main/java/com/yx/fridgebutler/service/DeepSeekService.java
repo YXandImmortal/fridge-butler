@@ -38,6 +38,15 @@ public interface DeepSeekService {
     String chat(List<DeepSeekChatMessage> messages);
 
     /**
+     * 发送自定义对话请求并返回回复文本。
+     * <p>未设置的字段（如 model、temperature、maxTokens）将自动使用服务端默认值。</p>
+     *
+     * @param request 自定义对话请求参数
+     * @return 模型生成的回复文本
+     */
+    String chat(DeepSeekChatRequest request);
+
+    /**
      * 发送完整的对话请求并返回原始响应对象。
      * <p>适用于需要获取 token 用量、finish_reason 等详细信息的场景。</p>
      *
@@ -55,4 +64,14 @@ public interface DeepSeekService {
      * @throws java.io.IOException 网络或流式读取异常
      */
     void chatStream(List<DeepSeekChatMessage> messages, java.util.function.Consumer<String> onChunk) throws java.io.IOException;
+
+    /**
+     * 流式对话请求（自定义请求参数）。
+     * <p>未设置的字段将自动使用服务端默认值。</p>
+     *
+     * @param request 自定义对话请求参数
+     * @param onChunk 每个文本片段的回调
+     * @throws java.io.IOException 网络或流式读取异常
+     */
+    void chatStream(DeepSeekChatRequest request, java.util.function.Consumer<String> onChunk) throws java.io.IOException;
 }

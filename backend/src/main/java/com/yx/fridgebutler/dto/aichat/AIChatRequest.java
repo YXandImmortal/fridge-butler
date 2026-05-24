@@ -41,4 +41,11 @@ public class AIChatRequest {
      * <p>支持引用冰箱或物品，最多建议 5 个。</p>
      */
     private List<AIChatAttachment> attachments;
+
+    /**
+     * 向导上下文（可选）。
+     * <p>当用户处于多步骤向导流程中时，前端自动附加此字段。
+     * 普通聊天消息中此字段为 null 或不存在。</p>
+     */
+    private AIChatWizardContext wizardContext;
 }

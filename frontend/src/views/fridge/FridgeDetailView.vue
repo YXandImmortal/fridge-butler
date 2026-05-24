@@ -91,7 +91,7 @@
               placeholder="请输入总容量（L）"
               show-input
               :step="10"
-              style="margin-left: 12px" />
+              style="padding-left: 12px; --el-border-radius-base: var(--radius-md);" />
         </el-form-item>
 
         <el-form-item label="状态">

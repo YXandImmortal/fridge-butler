@@ -66,6 +66,13 @@ public class DeepSeekChatRequest {
     private Double topP;
 
     /**
+     * 强制指定输出格式（OpenAI 兼容，如 {"type": "json_object"}）。
+     * <p>设置后模型将强制返回合法 JSON，可极大降低输出格式失控的概率。</p>
+     */
+    @JsonProperty("response_format")
+    private Map<String, String> responseFormat;
+
+    /**
      * 停止生成的标识序列，最多 4 个
      */
     private List<String> stop;

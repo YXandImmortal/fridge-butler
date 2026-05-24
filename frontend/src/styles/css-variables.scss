@@ -320,4 +320,11 @@ html.dark {
   --el-table-header-bg-color: var(--gray-20);
   --el-table-row-hover-bg-color: var(--primary-10);
   --el-table-striped-row-bg-color: var(--white-10);
+
+  /* 冰箱类型 SVG 图标在暗色模式下反色，确保可见 */
+  .fridge-type-icon-trigger,
+  .fridge-type-icon-option,
+  .confirm-icon img {
+    filter: invert(1) brightness(1.2);
+  }
 }

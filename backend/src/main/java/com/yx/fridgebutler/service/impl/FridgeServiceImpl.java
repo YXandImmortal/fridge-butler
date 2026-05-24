@@ -101,13 +101,19 @@ public class FridgeServiceImpl implements FridgeService {
             throw BusinessException.fridgeNameExists();
         }
 
+        // 如果设置为默认冰箱，取消其他默认冰箱
+        if (Boolean.TRUE.equals(request.getIsDefault())) {
+            fridgeRepository.unsetDefaultByOwnerId(currentUserId);
+        }
+
         BizFridge fridge = new BizFridge();
         fridge.setFridgeName(request.getFridgeName());
         fridge.setFridgeAddress(request.getFridgeAddress());
         fridge.setRemark(request.getRemark());
         fridge.setFridgeTypeId(request.getFridgeTypeId());
+        fridge.setTotalCapacity(request.getTotalCapacity());
+        fridge.setIsDefault(request.getIsDefault() != null ? request.getIsDefault() : false);
         fridge.setOwnerId(currentUserId);
-        fridge.setIsDefault(false);
         fridge.setStatus(true);
         fridge.setIsDeleted(false);
 

@@ -52,6 +52,28 @@
         </div>
       </div>
 
+      <!-- 顶部向导面板（独立于消息列表） -->
+      <transition name="wizard-panel">
+        <div v-if="activeWizard && activeWizard.type === 'fridge_creation'" class="chat-wizard-panel">
+          <div class="wizard-panel-header">
+            <div class="wizard-panel-title">
+              <i class="iconfont icon-fridge-line" />
+              <span>创建冰箱向导</span>
+            </div>
+            <button class="wizard-panel-close" title="关闭向导" @click="handleWizardCancel">
+              <i class="iconfont icon-close" />
+            </button>
+          </div>
+          <FridgeCreationWizard
+            :data="activeWizardData"
+            @step-submit="handleWizardStepSubmit"
+            @confirm="handleWizardConfirm"
+            @cancel="handleWizardCancel"
+            @skip="handleWizardSkip"
+          />
+        </div>
+      </transition>
+
       <div ref="chatMessagesRef" class="chat-messages">
         <div
           v-for="(msg, idx) in messages"
@@ -184,6 +206,14 @@
               <div class="action-confirm-btns">
                 <button class="confirm-btn cancel" @click="handleActionCancel(msg)">取消</button>
                 <button class="confirm-btn confirm" @click="handleActionConfirm(msg)">确认</button>
+              </div>
+            </div>
+
+            <div v-else-if="msg.messageType === 'fridge_creation_wizard' && msg.data" class="struct-content">
+              <div class="wizard-history-summary">
+                <i class="iconfont icon-fridge-line" />
+                <span>AI 正在引导您创建冰箱</span>
+                <span v-if="msg.data.formData?.name" class="wizard-history-name">「{{ msg.data.formData.name }}」</span>
               </div>
             </div>
 
@@ -407,11 +437,13 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useThemeStore } from '@/stores/theme'
 import Logo from '@/components/Logo.vue'
 import AiMessageContent from '@/components/ai/AiMessageContent.vue'
+import FridgeCreationWizard from '@/components/ai/FridgeCreationWizard.vue'
+import { getFridgeTypeById } from '@/utils/fridgeTypeMap.js'
 import { listMyFridges } from '@/api/fridge'
 import { searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats, getExpiringSummary } from '@/api/item'
 import { sendChatMessage, sendChatMessageStream, getChatSessions, deleteChatSession, getChatSessionMessages } from '@/api/ai'
@@ -425,6 +457,7 @@ import { getChartThemeColors } from '@/utils/data-analysis'
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent])
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const themeStore = useThemeStore()
 
@@ -443,6 +476,23 @@ const suggestions = ref([])
 const drawerVisible = ref(false)
 const sessions = ref([])
 const sessionLoading = ref(false)
+
+// 向导状态（当前激活的AI向导）
+const activeWizard = ref(null) // { type: 'fridge_creation', currentStep, totalSteps, steps, formData, currentInput }
+const wizardCompleted = ref(false)
+
+const activeWizardData = computed(() => {
+  if (!activeWizard.value) return null
+  const { type, ...data } = activeWizard.value
+  return data
+})
+
+// 是否处于冰箱创建向导的确认页（最后一步）
+const isWizardConfirmStep = computed(() => {
+  if (!activeWizard.value || activeWizard.value.type !== 'fridge_creation') return false
+  const total = activeWizard.value.totalSteps || 3
+  return activeWizard.value.currentStep >= total - 1
+})
 
 // ==================== 欢迎语 ====================
 const greeting = computed(() => {
@@ -621,12 +671,8 @@ function sendQuickMessage(text) {
   sendMessage()
 }
 
-async function sendMessage() {
-  const text = inputMessage.value.trim()
-  if (!text || aiTyping.value) return
-
+async function doSendChat(text, currentAttachments) {
   // 用户消息
-  const currentAttachments = attachments.value.map(a => ({ ...a }))
   messages.value.push({
     id: generateMsgId(),
     role: 'user',
@@ -634,8 +680,6 @@ async function sendMessage() {
     attachments: currentAttachments,
     time: formatTime(new Date())
   })
-  inputMessage.value = ''
-  attachments.value = []  // 发送后清空附件
   scrollToBottom()
 
   // AI 回复占位
@@ -669,12 +713,26 @@ async function sendMessage() {
     }
   }
 
+  const payload = {
+    message: text,
+    sessionId: sessionId.value,
+    attachments: currentAttachments
+  }
+
+  // 如果处于向导模式，附加向导上下文
+  if (activeWizard.value) {
+    payload.wizardContext = {
+      type: activeWizard.value.type,
+      currentStep: activeWizard.value.currentStep,
+      formData: activeWizard.value.formData
+    }
+  }
+
   // 先尝试 SSE 流式接口
   try {
     await sendChatMessageStream({
-      message: text,
-      sessionId: sessionId.value,
-      attachments: currentAttachments,
+      ...payload,
+      signal: abortController.value.signal,
       onText: (chunk) => {
         assistantMsg.content += chunk
         scheduleScroll()
@@ -682,6 +740,19 @@ async function sendMessage() {
       onCard: (messageType, data) => {
         assistantMsg.messageType = messageType
         assistantMsg.data = data
+        if (messageType === 'fridge_creation_wizard') {
+          wizardCompleted.value = false
+          activeWizard.value = {
+            type: 'fridge_creation',
+            currentStep: data.currentStep,
+            totalSteps: data.totalSteps,
+            steps: data.steps || [],
+            formData: data.formData || {},
+            currentInput: data.currentInput || null
+          }
+        } else {
+          activeWizard.value = null
+        }
         scrollToBottom()
       },
       onDone: (newSid, newSuggestions) => {
@@ -736,11 +807,7 @@ async function sendMessage() {
   if (useFallback) {
     aiTyping.value = true
     try {
-      const res = await sendChatMessage({
-        message: text,
-        sessionId: sessionId.value,
-        attachments: currentAttachments
-      })
+      const res = await sendChatMessage(payload)
 
       if (res.code === 200 && res.data) {
         const { sessionId: newSid, reply, suggestions: newSuggestions } = res.data
@@ -762,6 +829,20 @@ async function sendMessage() {
           time: formatTime(new Date())
         })
 
+        if (reply.messageType === 'fridge_creation_wizard') {
+          wizardCompleted.value = false
+          activeWizard.value = {
+            type: 'fridge_creation',
+            currentStep: reply.data.currentStep,
+            totalSteps: reply.data.totalSteps,
+            steps: reply.data.steps || [],
+            formData: reply.data.formData || {},
+            currentInput: reply.data.currentInput || null
+          }
+        } else {
+          activeWizard.value = null
+        }
+
         // 刷新会话列表（新会话可能已生成标题）
         loadSessions()
       } else {
@@ -774,6 +855,7 @@ async function sendMessage() {
           time: formatTime(new Date())
         })
         suggestions.value = []
+        activeWizard.value = null
       }
     } catch (err) {
       console.error('AI 聊天请求失败:', err)
@@ -786,11 +868,20 @@ async function sendMessage() {
         time: formatTime(new Date())
       })
       suggestions.value = []
+      activeWizard.value = null
     } finally {
       aiTyping.value = false
       scrollToBottom()
     }
   }
+}
+
+async function sendMessage() {
+  const text = inputMessage.value.trim()
+  if (!text || aiTyping.value) return
+  await doSendChat(text, attachments.value.map(a => ({ ...a })))
+  inputMessage.value = ''
+  attachments.value = []  // 发送后清空附件
 }
 
 // ==================== 结构化消息渲染辅助 ====================
@@ -897,6 +988,137 @@ function handleActionCancel(msg) {
   scrollToBottom()
 }
 
+// ==================== fridge_creation_wizard 处理 ====================
+function handleWizardStepSubmit({ field, value, formData }) {
+  // 只更新 formData，不乐观更新 currentStep，避免后端根据 currentStep 推断下一步时跳过步骤
+  activeWizard.value = {
+    ...(activeWizard.value || {}),
+    type: 'fridge_creation',
+    formData
+  }
+
+  let messageText
+  if (field === 'fridgeTypeId') {
+    const type = getFridgeTypeById(Number(value))
+    messageText = type ? `我选择${type.name}` : String(value)
+  } else if (field === 'isDefault') {
+    messageText = value ? '设为默认冰箱' : '不设为默认冰箱'
+  } else if (field === 'totalCapacity') {
+    messageText = value ? `${value}升` : '跳过容量'
+  } else if (field === 'address') {
+    const remark = formData.remark
+    if (value && remark) {
+      messageText = `地址：${value}，备注：${remark}`
+    } else if (value) {
+      messageText = value
+    } else if (remark) {
+      messageText = `备注：${remark}`
+    } else {
+      messageText = '跳过地址和备注'
+    }
+  } else {
+    messageText = String(value || '')
+  }
+
+  doSendChat(messageText, [])
+}
+
+function handleWizardSkip({ field, formData }) {
+  activeWizard.value = {
+    ...(activeWizard.value || {}),
+    type: 'fridge_creation',
+    formData
+  }
+
+  let messageText
+  if (field === 'fridgeTypeId') {
+    messageText = '跳过冰箱类型'
+  } else if (field === 'totalCapacity') {
+    messageText = '跳过容量'
+  } else if (field === 'isDefault') {
+    messageText = '跳过默认设置'
+  } else if (field === 'address') {
+    messageText = '跳过地址和备注'
+  } else {
+    messageText = `跳过${field}`
+  }
+
+  doSendChat(messageText, [])
+}
+
+async function handleWizardConfirm(formData) {
+  if (!formData.name || !formData.name.trim()) {
+    messages.value.push({
+      id: generateMsgId(),
+      role: 'assistant',
+      content: '❌ 冰箱名称不能为空，请重新输入。',
+      messageType: 'text',
+      data: null,
+      time: formatTime(new Date())
+    })
+    scrollToBottom()
+    return
+  }
+  // 验证通过后收起向导面板
+  wizardCompleted.value = true
+  activeWizard.value = null
+  try {
+    const { createFridge } = await import('@/api/fridge')
+    const res = await createFridge({
+      fridgeName: formData.name,
+      fridgeTypeId: formData.fridgeTypeId || undefined,
+      totalCapacity: formData.totalCapacity || undefined,
+      isDefault: formData.isDefault || undefined,
+      fridgeAddress: formData.address || undefined,
+      remark: formData.remark || undefined
+    })
+    if (res.code === 200) {
+      messages.value.push({
+        id: generateMsgId(),
+        role: 'assistant',
+        content: `✅ 冰箱「${formData.name}」创建成功！现在你可以向里面添加食材了~`,
+        messageType: 'text',
+        data: null,
+        time: formatTime(new Date())
+      })
+      await fetchPageData()
+    } else {
+      messages.value.push({
+        id: generateMsgId(),
+        role: 'assistant',
+        content: `❌ 创建失败：${res.message || '未知错误'}`,
+        messageType: 'text',
+        data: null,
+        time: formatTime(new Date())
+      })
+    }
+  } catch (err) {
+    console.error('创建冰箱失败:', err)
+    messages.value.push({
+      id: generateMsgId(),
+      role: 'assistant',
+      content: '❌ 创建冰箱失败，请稍后重试。',
+      messageType: 'text',
+      data: null,
+      time: formatTime(new Date())
+    })
+  }
+  scrollToBottom()
+}
+
+function handleWizardCancel() {
+  activeWizard.value = null
+  messages.value.push({
+    id: generateMsgId(),
+    role: 'assistant',
+    content: '已取消创建冰箱。如需创建，请随时告诉我~',
+    messageType: 'text',
+    data: null,
+    time: formatTime(new Date())
+  })
+  scrollToBottom()
+}
+
 // ==================== 会话管理 ====================
 async function loadSessions() {
   try {
@@ -925,6 +1147,7 @@ async function switchSession(sid) {
     abortController.value = null
   }
   aiTyping.value = false
+  activeWizard.value = null
   sessionId.value = sid
   localStorage.setItem(SESSION_STORAGE_KEY, sid)
   messages.value = []
@@ -958,6 +1181,7 @@ function createNewSession() {
   }
   aiTyping.value = false
   sessionId.value = null
+  activeWizard.value = null
   messages.value = [{
     id: generateMsgId(),
     role: 'assistant',
@@ -1249,6 +1473,13 @@ onMounted(() => {
         console.error('恢复历史消息失败:', err)
       })
   }
+
+  // 处理从其他页面跳转过来的 AI 快捷指令（如冰箱列表页的「AI帮我创建」）
+  const aiMessage = route.query.aiMessage
+  if (aiMessage && typeof aiMessage === 'string') {
+    router.replace({ path: '/user/index' })
+    doSendChat(aiMessage, [])
+  }
 })
 
 onUnmounted(() => {
@@ -1501,7 +1732,7 @@ onUnmounted(() => {
 }
 
 .message-content {
-  white-space: pre-wrap;
+  white-space: normal;
 }
 
 .message-user .message-time {
@@ -1832,6 +2063,90 @@ onUnmounted(() => {
 
   .chat-quick-actions {
     padding: 0 var(--space-4) var(--space-3);
+  }
+}
+
+/* ==================== 向导面板 ==================== */
+.chat-wizard-panel {
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: var(--space-4) var(--space-5);
+  animation: wizard-slide-down 0.3s ease-out;
+}
+
+@keyframes wizard-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wizard-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.wizard-panel-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+
+  i {
+    font-size: 18px;
+    color: var(--primary-color);
+  }
+}
+
+.wizard-panel-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--input-bg);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--danger-light);
+    color: var(--danger-color);
+  }
+
+  i {
+    font-size: 14px;
+  }
+}
+
+.wizard-history-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--primary-10);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+
+  i {
+    font-size: 14px;
+    color: var(--primary-color);
+  }
+
+  .wizard-history-name {
+    font-weight: 600;
+    color: var(--text-primary);
   }
 }
 

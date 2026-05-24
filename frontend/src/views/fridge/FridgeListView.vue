@@ -4,7 +4,7 @@
     <div class="page-header">
       <h2 class="page-title">冰箱一览</h2>
       <div class="create-btn-container">
-        <LogoButton type="primary">AI帮我创建</LogoButton>
+        <LogoButton type="primary" @click="handleAiCreate">AI帮我创建</LogoButton>
         <CustomButton type="primary" @click="handleCreate">
           新建冰箱
         </CustomButton>
@@ -236,6 +236,14 @@ const handleViewDetail = (id) => {
 // 创建冰箱
 const handleCreate = () => {
   showCreateDialog.value = true
+}
+
+// AI 帮我创建
+const handleAiCreate = () => {
+  router.push({
+    path: '/user/index',
+    query: { aiMessage: '帮我创建一个冰箱' }
+  })
 }
 
 // 创建提交

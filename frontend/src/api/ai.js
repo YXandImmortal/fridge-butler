@@ -51,6 +51,7 @@ function parseSSEEvent(raw) {
  * @param {string} options.message - 用户输入内容
  * @param {string} [options.sessionId] - 会话ID
  * @param {Array} [options.attachments] - 附件列表 [{type, id, name, fridgeId?, fridgeName?}]
+ * @param {Object} [options.wizardContext] - 向导上下文 {type, currentStep, formData, inputField?}
  * @param {Function} [options.onText] - 文本片段回调 (chunk: string) => void
  * @param {Function} [options.onCard] - 卡片数据回调 (messageType: string, data: any) => void
  * @param {Function} [options.onDone] - 结束回调 (sessionId: string, suggestions: string[]) => void
@@ -61,6 +62,7 @@ export async function sendChatMessageStream({
     message,
     sessionId,
     attachments,
+    wizardContext,
     onText,
     onCard,
     onDone,
@@ -86,7 +88,7 @@ export async function sendChatMessageStream({
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ message, sessionId, attachments }),
+        body: JSON.stringify({ message, sessionId, attachments, wizardContext }),
         signal
     })
 

@@ -5,8 +5,10 @@ import com.yx.fridgebutler.dto.dailytip.DailyTipGenerateResult;
 import com.yx.fridgebutler.entity.DailyTip;
 import com.yx.fridgebutler.enums.DailyTipType;
 import com.yx.fridgebutler.repository.DailyTipRepository;
+import com.yx.fridgebutler.config.PromptTemplateLoader;
 import com.yx.fridgebutler.service.DeepSeekService;
 import com.yx.fridgebutler.service.DailyTipService;
+import com.yx.fridgebutler.util.AiResponseUtils;
 import com.yx.fridgebutler.vo.dailytip.DailyTipVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +53,9 @@ public class DailyTipServiceImpl implements DailyTipService {
 
     @Autowired
     private DailyTipRepository dailyTipRepository;
+
+    @Autowired
+    private PromptTemplateLoader promptLoader;
 
     @Autowired
     private DeepSeekService deepSeekService;
@@ -114,7 +119,8 @@ public class DailyTipServiceImpl implements DailyTipService {
         String userPrompt = String.format("今天是 %s（%s），请生成一条\"%s\"类别的冰箱每日小贴士。",
                 dateStr, weekday, type.name());
 
-        String response = deepSeekService.chat(SYSTEM_PROMPT, userPrompt);
+        String systemPrompt = promptLoader.getPrompt("daily-tip", SYSTEM_PROMPT);
+        String response = deepSeekService.chat(systemPrompt, userPrompt);
         DailyTipGenerateResult result = parseResponse(response);
 
         DailyTip tip = DailyTip.builder()
@@ -135,7 +141,7 @@ public class DailyTipServiceImpl implements DailyTipService {
      * 解析 DeepSeek 返回的 JSON 响应。
      */
     private DailyTipGenerateResult parseResponse(String response) {
-        String cleaned = cleanJsonResponse(response);
+        String cleaned = AiResponseUtils.cleanJsonResponse(response);
         try {
             return JSONUtil.toBean(cleaned, DailyTipGenerateResult.class);
         } catch (Exception e) {
@@ -150,23 +156,6 @@ public class DailyTipServiceImpl implements DailyTipService {
             fallback.setAnswer("");
             return fallback;
         }
-    }
-
-    /**
-     * 清理 DeepSeek 可能返回的 markdown 代码块等包装。
-     */
-    private String cleanJsonResponse(String response) {
-        String cleaned = response.trim();
-        if (cleaned.startsWith("```")) {
-            int firstNewline = cleaned.indexOf('\n');
-            if (firstNewline != -1) {
-                cleaned = cleaned.substring(firstNewline + 1);
-            }
-            if (cleaned.endsWith("```")) {
-                cleaned = cleaned.substring(0, cleaned.lastIndexOf("```")).trim();
-            }
-        }
-        return cleaned;
     }
 
     /**

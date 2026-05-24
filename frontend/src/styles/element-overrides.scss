@@ -10,6 +10,25 @@
   --el-scrollbar-hover-opacity: 1;
 }
 
+/* =========================================================
+ * 验证错误时的 focus 样式（统一全局覆盖）
+ * 优先级高于 EnhancedInput 的 scoped 样式
+ * ========================================================= */
+
+/* Input（default + search） */
+.el-form-item.is-error .el-input .el-input__wrapper.is-focus,
+.el-form-item.is-error .el-input .el-input__wrapper.is-error.is-focus {
+  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+  border-color: var(--el-color-danger);
+}
+
+/* Textarea */
+.el-form-item.is-error .el-textarea .el-textarea__inner:focus,
+.el-form-item.is-error .el-textarea .el-textarea__inner.is-error:focus {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
+  border-color: var(--el-color-danger);
+}
+
 /* 表单项目默认间距 */
 .el-form-item {
   align-items: center;

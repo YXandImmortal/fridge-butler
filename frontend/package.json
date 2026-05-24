@@ -1,6 +1,6 @@
 {
   "name": "fridge-butler",
-  "version": "beta 0.1.5",
+  "version": "beta 0.1.6",
   "private": true,
   "type": "module",
   "scripts": {

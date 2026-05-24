@@ -86,7 +86,7 @@ export function aggregateByCategory(items) {
   const map = new Map()
   items.forEach(item => {
     const key = item.categoryName || '未分类'
-    map.set(key, (map.get(key) || 0) + (item.itemNum || 1))
+    map.set(key, (map.get(key) || 0) + 1)
   })
   return Array.from(map.entries()).map(([name, value]) => ({ name, value }))
 }

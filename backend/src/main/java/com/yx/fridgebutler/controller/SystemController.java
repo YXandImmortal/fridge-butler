@@ -124,6 +124,28 @@ public class SystemController {
 
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
+                    .version("beta 0.1.6")
+                    .date("2026-5-24")
+                    .changes(Arrays.asList(
+                            "全新上线AI冰箱创建向导：用户可通过AI聊天以引导式交互创建冰箱，支持名称、类型、容量、默认设置、地址与备注6步流程",
+                            "后端新增 fridge_creation_wizard 意图识别与纯后端状态驱动推进机制，无需LLM参与向导流程，响应更稳定",
+                            "前端新增 FridgeCreationWizard 组件：步骤条、表单摘要、多种输入类型（文本/选择/滑块/开关/组合输入）与确认卡片",
+                            "冰箱列表页「AI帮我创建」按钮接入向导，点击自动跳转AI聊天并触发创建流程",
+                            "新增 PromptTemplateLoader 提示词模板加载器：从 classpath:prompts/*.md 加载AI提示词，支持60秒定时热刷新",
+                            "AI意图识别、通用对话、菜谱推荐、容量估算、每日小贴士等提示词全面模板化，修改无需重启服务",
+                            "新增 AiResponseUtils 工具类：统一处理模型响应清洗与JSON子串提取，提升AI响应解析鲁棒性",
+                            "DeepSeek服务接口增强：新增 chat(DeepSeekChatRequest) 与 chatStream(DeepSeekChatRequest)，支持自定义temperature与responseFormat",
+                            "AI聊天历史新增滑动窗口截断策略：单会话默认保留最近10轮对话，避免上下文过长导致Token消耗激增",
+                            "AI附件上下文增强：用户引用冰箱时，AI可感知已过期/临期/一般/新鲜/长保质期分类统计与具体物品明细",
+                            "前端暗色模式下冰箱类型SVG图标自动反色，确保视觉可见性",
+                            "Element Plus表单验证错误focus样式统一提取至全局覆盖，移除组件级重复代码",
+                            "物品管理页容量卡片显示逻辑优化：改为展示基于利用率的已用容量（升），数据更准确",
+                            "数据中心分类聚合逻辑修正：按物品种类计数替代数量累加，避免同一分类多数量物品失真",
+                            "数据库初始化脚本全面补充：涵盖AI聊天会话/消息、冰箱容量利用率缓存、冰箱类型、通知、每日小贴士等全部新增表",
+                            "前后端版本号同步升级至 beta 0.1.6"
+                    ))
+                    .build(),
+            UpdateLogVO.builder()
                     .version("beta 0.1.5")
                     .date("2026-5-23")
                     .changes(Arrays.asList(

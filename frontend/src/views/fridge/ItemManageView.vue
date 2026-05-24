@@ -24,7 +24,7 @@
               <i class="iconfont icon-info-box info-icon" style="margin-left: -6px"/>
             </el-tooltip>
           </div>
-          <span class="capacity-text">{{ capacityData.itemCount }} / {{ capacityData.totalCapacity }} L</span>
+          <span class="capacity-text">{{ ((capacityData.rate * capacityData.totalCapacity) / 100).toFixed(1) }} / {{ capacityData.totalCapacity }} L</span>
         </div>
         <div v-loading="capacityLoading" class="capacity-body">
           <el-progress
