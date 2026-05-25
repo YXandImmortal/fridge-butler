@@ -64,6 +64,27 @@
         </div>
       </transition>
 
+      <transition name="wizard-panel">
+        <div v-if="activeWizard && activeWizard.type === 'item_creation'" class="chat-wizard-panel">
+          <div class="wizard-panel-header">
+            <div class="wizard-panel-title">
+              <i class="iconfont icon-item" />
+              <span>添加物品向导</span>
+            </div>
+            <button class="wizard-panel-close" title="关闭向导" @click="handleWizardCancel">
+              <i class="iconfont icon-close" />
+            </button>
+          </div>
+          <ItemCreationWizard
+            :data="activeWizardData"
+            @step-submit="handleWizardStepSubmit"
+            @confirm="handleWizardConfirm"
+            @cancel="handleWizardCancel"
+            @skip="handleWizardSkip"
+          />
+        </div>
+      </transition>
+
       <div ref="chatMessagesRef" class="chat-messages">
         <div
           v-for="(msg, idx) in messages"
@@ -183,6 +204,7 @@ import { useUserStore } from '@/stores/user'
 import { useThemeStore } from '@/stores/theme'
 import Logo from '@/components/Logo.vue'
 import FridgeCreationWizard from '@/components/ai/FridgeCreationWizard.vue'
+import ItemCreationWizard from '@/components/ai/ItemCreationWizard.vue'
 import StatsOverview from '@/components/ai/StatsOverview.vue'
 import ChatStructuredMessage from '@/components/ai/ChatStructuredMessage.vue'
 import AttachmentSelector from '@/components/ai/AttachmentSelector.vue'
@@ -370,6 +392,12 @@ async function doSendChat(text, currentAttachments) {
     attachments: currentAttachments
   }
 
+  // 如果 URL 中有 fridgeId（来自物品管理页面跳转），传递给后端
+  const queryFridgeId = route.query.fridgeId
+  if (queryFridgeId) {
+    payload.fridgeId = Number(queryFridgeId)
+  }
+
   // 如果处于向导模式，附加向导上下文
   if (activeWizard.value) {
     payload.wizardContext = {
@@ -395,6 +423,16 @@ async function doSendChat(text, currentAttachments) {
           wizardCompleted.value = false
           activeWizard.value = {
             type: 'fridge_creation',
+            currentStep: data.currentStep,
+            totalSteps: data.totalSteps,
+            steps: data.steps || [],
+            formData: data.formData || {},
+            currentInput: data.currentInput || null
+          }
+        } else if (messageType === 'item_creation_wizard') {
+          wizardCompleted.value = false
+          activeWizard.value = {
+            type: 'item_creation',
             currentStep: data.currentStep,
             totalSteps: data.totalSteps,
             steps: data.steps || [],
@@ -490,6 +528,16 @@ async function doSendChat(text, currentAttachments) {
             formData: reply.data.formData || {},
             currentInput: reply.data.currentInput || null
           }
+        } else if (reply.messageType === 'item_creation_wizard') {
+          wizardCompleted.value = false
+          activeWizard.value = {
+            type: 'item_creation',
+            currentStep: reply.data.currentStep,
+            totalSteps: reply.data.totalSteps,
+            steps: reply.data.steps || [],
+            formData: reply.data.formData || {},
+            currentInput: reply.data.currentInput || null
+          }
         } else {
           activeWizard.value = null
         }
@@ -579,130 +627,234 @@ function handleActionCancel(msg) {
   scrollToBottom()
 }
 
-// ==================== fridge_creation_wizard 处理 ====================
+// ==================== wizard 处理（冰箱 + 物品）====================
 function handleWizardStepSubmit({ field, value, formData }) {
+  const wizardType = activeWizard.value?.type || 'fridge_creation'
   // 只更新 formData，不乐观更新 currentStep，避免后端根据 currentStep 推断下一步时跳过步骤
   activeWizard.value = {
     ...(activeWizard.value || {}),
-    type: 'fridge_creation',
+    type: wizardType,
     formData
   }
 
   let messageText
-  if (field === 'fridgeTypeId') {
-    const type = getFridgeTypeById(Number(value))
-    messageText = type ? `我选择${type.name}` : String(value)
-  } else if (field === 'isDefault') {
-    messageText = value ? '设为默认冰箱' : '不设为默认冰箱'
-  } else if (field === 'totalCapacity') {
-    messageText = value ? `${value}升` : '跳过容量'
-  } else if (field === 'address') {
-    const remark = formData.remark
-    if (value && remark) {
-      messageText = `地址：${value}，备注：${remark}`
-    } else if (value) {
-      messageText = value
-    } else if (remark) {
-      messageText = `备注：${remark}`
+  if (wizardType === 'fridge_creation') {
+    if (field === 'fridgeTypeId') {
+      const type = getFridgeTypeById(Number(value))
+      messageText = type ? `我选择${type.name}` : String(value)
+    } else if (field === 'isDefault') {
+      messageText = value ? '设为默认冰箱' : '不设为默认冰箱'
+    } else if (field === 'totalCapacity') {
+      messageText = value ? `${value}升` : '跳过容量'
+    } else if (field === 'address') {
+      const remark = formData.remark
+      if (value && remark) {
+        messageText = `地址：${value}，备注：${remark}`
+      } else if (value) {
+        messageText = value
+      } else if (remark) {
+        messageText = `备注：${remark}`
+      } else {
+        messageText = '跳过地址和备注'
+      }
     } else {
-      messageText = '跳过地址和备注'
+      messageText = String(value || '')
     }
-  } else {
-    messageText = String(value || '')
+  } else if (wizardType === 'item_creation') {
+    if (field === 'categoryId') {
+      messageText = value ? `分类：${value}` : '跳过分类'
+    } else if (field === 'itemUnitId') {
+      messageText = value ? `数量${formData.itemNum || 1}，单位已选` : '跳过单位'
+    } else if (field === 'productionDate') {
+      const pd = formData.productionDate
+      const sl = formData.shelfLifeDays
+      if (pd && sl) {
+        messageText = `生产日期：${pd}，保质期：${sl}天`
+      } else if (pd) {
+        messageText = `生产日期：${pd}`
+      } else if (sl) {
+        messageText = `保质期：${sl}天`
+      } else {
+        messageText = '跳过生产日期和保质期'
+      }
+    } else if (field === 'remark') {
+      messageText = value ? `备注：${value}` : '跳过备注'
+    } else {
+      messageText = String(value || '')
+    }
   }
 
   doSendChat(messageText, [])
 }
 
-function handleWizardSkip({ field, formData }) {
+function handleWizardSkip({ field, formData, messageText: customText }) {
+  const wizardType = activeWizard.value?.type || 'fridge_creation'
   activeWizard.value = {
     ...(activeWizard.value || {}),
-    type: 'fridge_creation',
+    type: wizardType,
     formData
   }
 
-  let messageText
-  if (field === 'fridgeTypeId') {
-    messageText = '跳过冰箱类型'
-  } else if (field === 'totalCapacity') {
-    messageText = '跳过容量'
-  } else if (field === 'isDefault') {
-    messageText = '跳过默认设置'
-  } else if (field === 'address') {
-    messageText = '跳过地址和备注'
-  } else {
-    messageText = `跳过${field}`
+  let messageText = customText
+  if (!messageText) {
+    if (wizardType === 'fridge_creation') {
+      if (field === 'fridgeTypeId') {
+        messageText = '跳过冰箱类型'
+      } else if (field === 'totalCapacity') {
+        messageText = '跳过容量'
+      } else if (field === 'isDefault') {
+        messageText = '跳过默认设置'
+      } else if (field === 'address') {
+        messageText = '跳过地址和备注'
+      } else {
+        messageText = `跳过${field}`
+      }
+    } else if (wizardType === 'item_creation') {
+      if (field === 'productionDate') {
+        messageText = '跳过生产日期和保质期'
+      } else if (field === 'remark') {
+        messageText = '跳过备注'
+      } else {
+        messageText = `跳过${field}`
+      }
+    }
   }
 
   doSendChat(messageText, [])
 }
 
 async function handleWizardConfirm(formData) {
-  if (!formData.name || !formData.name.trim()) {
-    messages.value.push({
-      id: generateMsgId(),
-      role: 'assistant',
-      content: '❌ 冰箱名称不能为空，请重新输入。',
-      messageType: 'text',
-      data: null,
-      time: formatTime(new Date())
-    })
-    scrollToBottom()
-    return
-  }
-  // 验证通过后收起向导面板
-  wizardCompleted.value = true
-  activeWizard.value = null
-  try {
-    const { createFridge } = await import('@/api/fridge')
-    const res = await createFridge({
-      fridgeName: formData.name,
-      fridgeTypeId: formData.fridgeTypeId || undefined,
-      totalCapacity: formData.totalCapacity || undefined,
-      isDefault: formData.isDefault || undefined,
-      fridgeAddress: formData.address || undefined,
-      remark: formData.remark || undefined
-    })
-    if (res.code === 200) {
+  const wizardType = activeWizard.value?.type || 'fridge_creation'
+
+  if (wizardType === 'fridge_creation') {
+    if (!formData.name || !formData.name.trim()) {
       messages.value.push({
         id: generateMsgId(),
         role: 'assistant',
-        content: `✅ 冰箱「${formData.name}」创建成功！现在你可以向里面添加食材了~`,
+        content: '❌ 冰箱名称不能为空，请重新输入。',
         messageType: 'text',
         data: null,
         time: formatTime(new Date())
       })
-      await fetchPageData()
-    } else {
+      scrollToBottom()
+      return
+    }
+    wizardCompleted.value = true
+    activeWizard.value = null
+    try {
+      const { createFridge } = await import('@/api/fridge')
+      const res = await createFridge({
+        fridgeName: formData.name,
+        fridgeTypeId: formData.fridgeTypeId || undefined,
+        totalCapacity: formData.totalCapacity || undefined,
+        isDefault: formData.isDefault || undefined,
+        fridgeAddress: formData.address || undefined,
+        remark: formData.remark || undefined
+      })
+      if (res.code === 200) {
+        messages.value.push({
+          id: generateMsgId(),
+          role: 'assistant',
+          content: `✅ 冰箱「${formData.name}」创建成功！现在你可以向里面添加食材了~`,
+          messageType: 'text',
+          data: null,
+          time: formatTime(new Date())
+        })
+        await fetchPageData()
+      } else {
+        messages.value.push({
+          id: generateMsgId(),
+          role: 'assistant',
+          content: `❌ 创建失败：${res.message || '未知错误'}`,
+          messageType: 'text',
+          data: null,
+          time: formatTime(new Date())
+        })
+      }
+    } catch (err) {
+      console.error('创建冰箱失败:', err)
       messages.value.push({
         id: generateMsgId(),
         role: 'assistant',
-        content: `❌ 创建失败：${res.message || '未知错误'}`,
+        content: '❌ 创建冰箱失败，请稍后重试。',
         messageType: 'text',
         data: null,
         time: formatTime(new Date())
       })
     }
-  } catch (err) {
-    console.error('创建冰箱失败:', err)
-    messages.value.push({
-      id: generateMsgId(),
-      role: 'assistant',
-      content: '❌ 创建冰箱失败，请稍后重试。',
-      messageType: 'text',
-      data: null,
-      time: formatTime(new Date())
-    })
+  } else if (wizardType === 'item_creation') {
+    if (!formData.itemName || !String(formData.itemName).trim()) {
+      messages.value.push({
+        id: generateMsgId(),
+        role: 'assistant',
+        content: '❌ 物品名称不能为空，请重新输入。',
+        messageType: 'text',
+        data: null,
+        time: formatTime(new Date())
+      })
+      scrollToBottom()
+      return
+    }
+    wizardCompleted.value = true
+    activeWizard.value = null
+    try {
+      const { createItem } = await import('@/api/item')
+      const res = await createItem({
+        itemName: formData.itemName,
+        categoryId: formData.categoryId || undefined,
+        itemNum: formData.itemNum || 1,
+        itemUnitId: formData.itemUnitId || undefined,
+        fridgeId: Number(route.query.fridgeId) || undefined,
+        storedDate: new Date().toISOString().split('T')[0],
+        productionDate: formData.productionDate || null,
+        shelfLifeDays: formData.shelfLifeDays || null,
+        remark: formData.remark || null
+      })
+      if (res.code === 200) {
+        messages.value.push({
+          id: generateMsgId(),
+          role: 'assistant',
+          content: `✅ 物品「${formData.itemName}」添加成功！`,
+          messageType: 'text',
+          data: null,
+          time: formatTime(new Date())
+        })
+        await fetchPageData()
+      } else {
+        messages.value.push({
+          id: generateMsgId(),
+          role: 'assistant',
+          content: `❌ 添加失败：${res.message || '未知错误'}`,
+          messageType: 'text',
+          data: null,
+          time: formatTime(new Date())
+        })
+      }
+    } catch (err) {
+      console.error('添加物品失败:', err)
+      messages.value.push({
+        id: generateMsgId(),
+        role: 'assistant',
+        content: '❌ 添加物品失败，请稍后重试。',
+        messageType: 'text',
+        data: null,
+        time: formatTime(new Date())
+      })
+    }
   }
   scrollToBottom()
 }
 
 function handleWizardCancel() {
+  const wizardType = activeWizard.value?.type || 'fridge_creation'
   activeWizard.value = null
+  const cancelText = wizardType === 'fridge_creation'
+    ? '已取消创建冰箱。如需创建，请随时告诉我~'
+    : '已取消添加物品。如需添加，请随时告诉我~'
   messages.value.push({
     id: generateMsgId(),
     role: 'assistant',
-    content: '已取消创建冰箱。如需创建，请随时告诉我~',
+    content: cancelText,
     messageType: 'text',
     data: null,
     time: formatTime(new Date())
@@ -744,6 +896,12 @@ async function switchSession(sid) {
   messages.value = []
   suggestions.value = []
   drawerVisible.value = false
+  // 切换会话时清除 fridgeId，避免历史会话受当前页面上下文影响
+  if (route.query.fridgeId) {
+    const query = { ...route.query }
+    delete query.fridgeId
+    router.replace({ path: '/user/index', query })
+  }
 
   // 尝试加载历史消息
   try {
@@ -782,6 +940,12 @@ function createNewSession() {
   suggestions.value = []
   localStorage.removeItem(SESSION_STORAGE_KEY)
   drawerVisible.value = false
+  // 清除 URL 中的 fridgeId，避免新建会话后仍绑定到特定冰箱
+  if (route.query.fridgeId) {
+    const query = { ...route.query }
+    delete query.fridgeId
+    router.replace({ path: '/user/index', query })
+  }
 }
 
 async function handleDeleteSession(sid) {
@@ -812,7 +976,7 @@ const navActions = [
     name: '物品管理',
     desc: '管理冰箱内的食材',
     path: '/fridge/items',
-    icon: 'icon-inbox',
+    icon: 'icon-item',
     iconBg: 'linear-gradient(135deg, rgba(129,199,132,0.15) 0%, rgba(165,214,167,0.1) 100%)',
     iconColor: '#81C784'
   },
@@ -1049,10 +1213,13 @@ onMounted(() => {
       })
   }
 
-  // 处理从其他页面跳转过来的 AI 快捷指令（如冰箱列表页的「AI帮我创建」）
+  // 处理从其他页面跳转过来的 AI 快捷指令（如冰箱列表页的「AI帮我创建」、物品管理页的「AI帮我添加」）
   const aiMessage = route.query.aiMessage
   if (aiMessage && typeof aiMessage === 'string') {
-    router.replace({ path: '/user/index' })
+    // 保留 fridgeId query（物品向导场景需要），仅移除 aiMessage
+    const query = { ...route.query }
+    delete query.aiMessage
+    router.replace({ path: '/user/index', query })
     doSendChat(aiMessage, [])
   }
 })

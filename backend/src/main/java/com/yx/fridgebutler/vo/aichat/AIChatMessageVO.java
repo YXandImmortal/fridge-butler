@@ -27,7 +27,8 @@ public class AIChatMessageVO {
 
     /**
      * 消息类型（仅 assistant 消息有）。
-     * <p>可选值：text, fridge_list, item_list, expiring_alert, recipe_recommend, trend_chart, action_confirm</p>
+     * <p>可选值：text, fridge_list, item_list, expiring_alert,
+     * recipe_recommend, calorie_calculation, trend_chart, action_confirm, fridge_creation_wizard</p>
      */
     private String messageType;
 

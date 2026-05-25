@@ -6,6 +6,7 @@
       <div class="create-btn-container">
         <LogoButton type="primary" @click="handleAiCreate">AI帮我创建</LogoButton>
         <CustomButton type="primary" @click="handleCreate">
+          <i class="iconfont icon-add-box" />
           新建冰箱
         </CustomButton>
       </div>
@@ -43,7 +44,7 @@
           <i v-if="selected" class="iconfont icon-check" />
         </template>
       </CustomSelect>
-      <CustomButton @click="handleReset">
+      <CustomButton @click="handleReset" type="search-reset">
         重置
       </CustomButton>
     </SearchBar>

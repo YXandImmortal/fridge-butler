@@ -43,6 +43,7 @@
                 :loading="adding"
                 @click="handleAddUnit"
                 class="add-unit-btn"
+                size="large"
               >添加
               </CustomButton>
             </el-form>
@@ -82,7 +83,7 @@
         </div>
 
         <div class="dialog-footer">
-          <CustomButton class="dialog-btn dialog-btn-close" @click="handleClose">
+          <CustomButton @click="handleClose">
             关闭
           </CustomButton>
         </div>
@@ -392,13 +393,6 @@ const confirmDeleteUnit = async () => {
   margin-bottom: 0 !important;
 }
 
-.add-unit-btn {
-  flex-shrink: 0;
-  margin-top: 0;
-  height: 44px;
-  padding: 0 var(--space-5);
-}
-
 /* 单位列表 */
 .unit-list {
   display: grid;
@@ -526,25 +520,6 @@ const confirmDeleteUnit = async () => {
   flex-shrink: 0;
 }
 
-.dialog-btn {
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-}
-
-.dialog-btn-close {
-  background: var(--gray-20);
-  color: var(--text-secondary);
-}
-
-.dialog-btn-close:hover {
-  background: var(--gray-30);
-  transform: translateY(-2px);
-}
-
 @keyframes dialog-slide-in {
   from {
     opacity: 0;
@@ -594,10 +569,6 @@ const confirmDeleteUnit = async () => {
 
   .add-unit-form {
     flex-direction: column;
-  }
-
-  .add-unit-btn {
-    width: 100%;
   }
 
   .unit-item {

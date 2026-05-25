@@ -23,7 +23,7 @@
         class="message-attach-tag"
         @click="$router.push(att.type === 'fridge' ? '/fridge/detail/' + att.id : '/fridge/items/' + att.fridgeId)"
       >
-        <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-inbox'" />
+        <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-item'" />
         {{ att.name }}
       </span>
     </div>
@@ -129,6 +129,69 @@
         <i class="iconfont icon-fridge-line" />
         <span>AI 正在引导您创建冰箱</span>
         <span v-if="msg.data.formData?.name" class="wizard-history-name">「{{ msg.data.formData.name }}」</span>
+      </div>
+    </div>
+
+    <div v-else-if="msg.messageType === 'item_creation_wizard' && msg.data" class="struct-content">
+      <div class="wizard-history-summary">
+        <i class="iconfont icon-item" />
+        <span>AI 正在引导您添加物品</span>
+        <span v-if="msg.data.formData?.itemName" class="wizard-history-name">「{{ msg.data.formData.itemName }}」</span>
+      </div>
+    </div>
+
+    <div v-else-if="msg.messageType === 'calorie_calculation' && msg.data" class="struct-content">
+      <div class="calorie-card">
+        <!-- 总热量头部 -->
+        <div class="calorie-header">
+          <div class="calorie-total">
+            <span class="calorie-icon">🔥</span>
+            <div class="calorie-number-wrapper">
+              <span class="calorie-number">{{ msg.data.totalCalories }}</span>
+              <span class="calorie-unit">{{ msg.data.unit || '千卡' }}</span>
+            </div>
+          </div>
+          <div v-if="msg.data.serving" class="calorie-serving">{{ msg.data.serving }}</div>
+        </div>
+
+        <!-- 食材明细列表 -->
+        <div v-if="msg.data.items && msg.data.items.length > 0" class="calorie-items">
+          <div
+            v-for="(item, index) in msg.data.items"
+            :key="index"
+            class="calorie-item"
+          >
+            <span v-if="item.icon" class="calorie-item-icon">{{ item.icon }}</span>
+            <span v-else class="calorie-item-icon">🥗</span>
+            <div class="calorie-item-info">
+              <span class="calorie-item-name">{{ item.name }}</span>
+              <span v-if="item.amount" class="calorie-item-amount">{{ item.amount }}</span>
+            </div>
+            <span class="calorie-item-kcal">{{ item.calories }}{{ msg.data.unit || '千卡' }}</span>
+          </div>
+        </div>
+
+        <!-- 营养成分概览 -->
+        <div v-if="msg.data.nutrition" class="calorie-nutrition">
+          <div v-if="msg.data.nutrition.protein" class="nutrition-tag nutrition-protein">
+            <span class="nutrition-label">蛋白质</span>
+            <span class="nutrition-value">{{ msg.data.nutrition.protein }}</span>
+          </div>
+          <div v-if="msg.data.nutrition.carbs" class="nutrition-tag nutrition-carbs">
+            <span class="nutrition-label">碳水</span>
+            <span class="nutrition-value">{{ msg.data.nutrition.carbs }}</span>
+          </div>
+          <div v-if="msg.data.nutrition.fat" class="nutrition-tag nutrition-fat">
+            <span class="nutrition-label">脂肪</span>
+            <span class="nutrition-value">{{ msg.data.nutrition.fat }}</span>
+          </div>
+        </div>
+
+        <!-- AI 总结 -->
+        <div v-if="msg.data.summary" class="calorie-summary">
+          <i class="iconfont icon-info" />
+          <span>{{ msg.data.summary }}</span>
+        </div>
       </div>
     </div>
 
@@ -573,6 +636,171 @@ function hexToRgba(hex, alpha) {
   .wizard-history-name {
     font-weight: 600;
     color: var(--text-primary);
+  }
+}
+
+/* ==================== 热量计算卡片 ==================== */
+.calorie-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.calorie-header {
+  background: linear-gradient(135deg, var(--color-orange-500, #FF9800) 0%, var(--color-pink-500, #F06292) 100%);
+  padding: var(--space-4) var(--space-5);
+  text-align: center;
+  color: white;
+}
+
+.calorie-total {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.calorie-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.calorie-number-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.calorie-number {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.calorie-unit {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.calorie-serving {
+  font-size: 12px;
+  margin-top: 6px;
+  opacity: 0.85;
+}
+
+.calorie-items {
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.calorie-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--card-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--primary-30);
+    background: var(--primary-10);
+  }
+}
+
+.calorie-item-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.calorie-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.calorie-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.calorie-item-amount {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.calorie-item-kcal {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-orange-500, #FF9800);
+  flex-shrink: 0;
+}
+
+.calorie-nutrition {
+  display: flex;
+  gap: var(--space-3);
+  padding: 0 var(--space-4) var(--space-3);
+  justify-content: center;
+}
+
+.nutrition-tag {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  border: 1px solid var(--border-light);
+}
+
+.nutrition-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.nutrition-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.nutrition-protein .nutrition-value {
+  color: var(--color-emerald, #66BB6A);
+}
+
+.nutrition-carbs .nutrition-value {
+  color: var(--color-cyan-500, #26C6DA);
+}
+
+.nutrition-fat .nutrition-value {
+  color: var(--color-purple-500, #AB47BC);
+}
+
+.calorie-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--primary-10);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+
+  i {
+    font-size: 14px;
+    color: var(--primary-color);
+    margin-top: 1px;
+    flex-shrink: 0;
   }
 }
 </style>

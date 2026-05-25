@@ -51,11 +51,21 @@
           <span v-if="!itemLoading" class="card-subtitle">
             共 {{ itemList.length }} 件物品
           </span>
-          <el-tooltip :disabled="hasFridgeId" content="请选择冰箱" placement="top">
-            <CustomButton type="primary" :disabled="!hasFridgeId" @click="showCreateDialog = true">
-              添加物品
-            </CustomButton>
-          </el-tooltip>
+          <div class="header-actions">
+            <LogoButton
+              type="primary"
+              :disabled="!hasFridgeId"
+              @click="handleAiCreate"
+            >
+              AI帮我添加
+            </LogoButton>
+            <el-tooltip :disabled="hasFridgeId" content="请选择冰箱" placement="top">
+              <CustomButton type="primary" :disabled="!hasFridgeId" @click="showCreateDialog = true">
+                <i class="iconfont icon-item" />
+                添加物品
+              </CustomButton>
+            </el-tooltip>
+          </div>
         </div>
 
         <!-- 搜索区域 -->
@@ -101,7 +111,7 @@
               :options="unitOptions"
               @change="handleSortChange"
             />
-            <CustomButton @click="handleReset">
+            <CustomButton @click="handleReset" type="search-reset">
               重置
             </CustomButton>
           </SearchBar>
@@ -198,21 +208,26 @@
               <el-table-column label="操作" width="160" align="center" fixed="right">
                 <template #default="{ row }">
                   <div class="action-btns">
-                    <el-dropdown size="small" @command="(cmd) => handleTakeOutCommand(cmd, row)">
-                      <CustomButton type="primary" size="small">
-                        取出<i class="iconfont icon-arrow-right-box" />
-                      </CustomButton>
-                      <template #dropdown>
-                        <el-dropdown-menu>
-                          <el-dropdown-item command="all">取出全部</el-dropdown-item>
-                          <el-dropdown-item command="half">取出一半</el-dropdown-item>
-                          <el-dropdown-item command="custom">自定义数量...</el-dropdown-item>
-                        </el-dropdown-menu>
+                    <el-popover
+                        :ref="(el) => setPopoverRef(el, row.id)"
+                        trigger="click"
+                        :show-arrow="false"
+                        popper-style="border-radius: var(--radius-md); padding: var(--space-2);"
+                    >
+                      <template #reference>
+                        <CustomButton type="primary" size="small">
+                          取出<i class="iconfont icon-arrow-right-box" />
+                        </CustomButton>
                       </template>
-                    </el-dropdown>
+                      <div>
+                        <div class="take-out-menu-item" @click="handleTakeOutClick('all', row)">取出全部</div>
+                        <div class="take-out-menu-item" @click="handleTakeOutClick('half', row)">取出一半</div>
+                        <div class="take-out-menu-item" @click="handleTakeOutClick('custom', row)">自定义数量...</div>
+                      </div>
+                    </el-popover>
                     <el-tooltip content="编辑" placement="top">
                       <CustomButton type="link" size="small" @click="handleEditItem(row)">
-                        <i class="iconfont icon-edit" />
+                        <i class="iconfont icon-edit-box" />
                       </CustomButton>
                     </el-tooltip>
                     <el-tooltip content="删除" placement="top">
@@ -384,6 +399,21 @@ const showTakeOutDialog = ref(false)
 const currentTakeOutItem = ref(null)
 const showDeleteDialog = ref(false)
 const currentDeleteItem = ref(null)
+
+// 存储每行的 popover 实例
+const popoverRefs = ref({})
+
+const setPopoverRef = (el, id) => {
+  if (el) {
+    popoverRefs.value[id] = el
+  }
+}
+
+// 点击菜单项：先关闭 popover，再执行原逻辑
+const handleTakeOutClick = (cmd, row) => {
+  popoverRefs.value[row.id]?.hide?.()
+  handleTakeOutCommand(cmd, row)
+}
 
 // 冰箱选择列表
 const fridgeList = ref([])
@@ -631,6 +661,17 @@ const handleDeleteConfirm = async () => {
   }
 }
 
+// AI 帮我添加
+const handleAiCreate = () => {
+  router.push({
+    path: '/user/index',
+    query: {
+      aiMessage: '帮我添加一个物品',
+      fridgeId: currentFridgeId.value
+    }
+  })
+}
+
 // 返回冰箱详情
 const handleBack = () => {
   const fridgeId = route.query.fridgeId
@@ -839,6 +880,11 @@ watch(
   color: var(--text-tertiary);
 }
 
+.header-actions {
+  display: flex;
+  gap: var(--space-6);
+}
+
 /* 容量卡片 */
 .capacity-card {
   animation: fade-in-up 0.5s ease-out;
@@ -1009,6 +1055,26 @@ watch(
 
 .action-btns .danger-link:hover {
   color: var(--danger-dark);
+}
+
+/* 取出菜单 */
+.take-out-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+
+  &:hover {
+    background: var(--primary-10);
+    color: var(--primary-color);
+  }
+
 }
 
 /* 响应式设计 */

@@ -4,6 +4,7 @@
     <div class="page-header">
       <h2 class="page-title">物品分类一览</h2>
       <CustomButton type="primary" @click="handleCreate">
+        <i class="iconfont icon-add-box" />
         新建分类
       </CustomButton>
     </div>
@@ -37,7 +38,7 @@
 
             <div class="card-actions">
               <CustomButton type="primary" size="small" @click.stop="handleEdit(category)">
-                <i class="iconfont icon-edit" />
+                <i class="iconfont icon-edit-box" />
                 编辑
               </CustomButton>
               <CustomButton type="danger" size="small" @click.stop="handleDelete(category)">

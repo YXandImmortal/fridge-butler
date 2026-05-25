@@ -48,4 +48,11 @@ public class AIChatRequest {
      * 普通聊天消息中此字段为 null 或不存在。</p>
      */
     private AIChatWizardContext wizardContext;
+
+    /**
+     * 当前目标冰箱ID（可选）。
+     * <p>当用户从物品管理页跳转过来时，前端会自动携带。
+     * 用于物品创建向导等需要关联冰箱的场景。</p>
+     */
+    private Long fridgeId;
 }

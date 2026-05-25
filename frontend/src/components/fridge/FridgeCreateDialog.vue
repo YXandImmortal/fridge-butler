@@ -69,12 +69,11 @@
           </el-form>
         </div>
         <div class="dialog-footer">
-          <CustomButton class="dialog-btn dialog-btn-cancel" @click="handleClose">
+          <CustomButton @click="handleClose">
             取消
           </CustomButton>
           <CustomButton
             type="primary"
-            class="dialog-btn dialog-btn-confirm"
             :loading="loading"
             @click="handleSubmit"
           >
@@ -258,35 +257,6 @@ const handleSubmit = async () => {
   justify-content: flex-end;
   gap: var(--space-3);
   padding: 0 var(--space-6) var(--space-6);
-}
-
-.dialog-btn {
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-}
-
-.dialog-btn-cancel {
-  background: var(--gray-20);
-  color: var(--text-secondary);
-}
-
-.dialog-btn-cancel:hover {
-  background: var(--gray-30);
-  transform: translateY(-2px);
-}
-
-.dialog-btn-confirm {
-  background: var(--primary-color);
-  color: var(--text-inverse);
-}
-
-.dialog-btn-confirm:hover {
-  box-shadow: 0 6px 20px var(--primary-40);
-  transform: translateY(-2px);
 }
 
 @keyframes dialog-slide-in {

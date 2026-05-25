@@ -27,6 +27,10 @@
         popper-class="notification-popover"
         :teleported="true"
         @show="handlePopoverShow"
+        transition="el-zoom-in-top"
+        popper-style="border-radius: var(--radius-md);"
+        :show-arrow="false"
+        :offset="10"
       >
         <template #reference>
           <div class="notification-icon">
@@ -82,27 +86,36 @@
       </el-popover>
 
       <!-- 用户信息 -->
-      <el-dropdown trigger="hover" @command="handleCommand" @visible-change="(visible) => showUserMenu = visible">
-        <div class="user-info">
-          <div class="user-avatar">
-            <Avatar :avatar-id="currentAvatar" size="small" />
+      <el-popover
+        v-model:visible="showUserMenu"
+        trigger="hover"
+        popper-style="min-width: 140px; max-width: 140px; border-radius: var(--radius-md); padding: var(--space-2);"
+        :teleported="true"
+        transition="el-zoom-in-top"
+        :show-arrow="false"
+        :offset="0"
+      >
+        <template #reference>
+          <div class="user-info">
+            <div class="user-avatar">
+              <Avatar :avatar-id="currentAvatar" size="small" />
+            </div>
+            <span class="user-name">{{ username }}</span>
+            <i class="iconfont icon-chevron-down user-arrow" :class="{ 'rotate-180': showUserMenu }" />
           </div>
-          <span class="user-name">{{ username }}</span>
-          <i class="iconfont icon-chevron-down user-arrow" :class="{ 'rotate-180': showUserMenu }" />
-        </div>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="userCenter">
-              <span>个人中心</span>
-              <i class="iconfont icon-user" style="margin-left: 8px;" />
-            </el-dropdown-item>
-            <el-dropdown-item command="logout" style="color: var(--danger-color)">
-              <span>退出登录</span>
-              <i class="iconfont icon-logout" style="margin-left: 8px;" />
-            </el-dropdown-item>
-          </el-dropdown-menu>
         </template>
-      </el-dropdown>
+
+        <div>
+          <div class="user-menu-item" @click="goToUserCenter">
+            <i class="iconfont icon-user" />
+            <span>个人中心</span>
+          </div>
+          <div class="user-menu-item is-danger" @click="handleLogoutClick">
+            <i class="iconfont icon-logout" />
+            <span>退出登录</span>
+          </div>
+        </div>
+      </el-popover>
     </div>
   </header>
 </template>
@@ -221,13 +234,16 @@ const goToNotificationCenter = () => {
   router.push('/notification/list')
 }
 
-// 下拉菜单命令处理
-const handleCommand = (command) => {
-  if (command === 'userCenter') {
-    router.push('/user/center');
-  } else if (command === 'logout') {
-    emit('show-logout-dialog');
-  }
+// 用户菜单跳转
+const goToUserCenter = () => {
+  showUserMenu.value = false
+  router.push('/user/center')
+}
+
+// 退出登录
+const handleLogoutClick = () => {
+  showUserMenu.value = false
+  emit('show-logout-dialog')
 }
 
 </script>
@@ -338,12 +354,19 @@ const handleCommand = (command) => {
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
   outline: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  color: var(--text-secondary);
 }
 
 .user-info:hover {
-  transform: scale(1.04);
+  color: var(--primary-color);
+}
+
+.user-info:hover .user-avatar {
+  transform: scale(1.1);
 }
 
 .user-avatar {
@@ -352,23 +375,20 @@ const handleCommand = (command) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
 .user-name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary);
 }
 
 .user-arrow {
   font-size: var(--space-5);
-  color: var(--text-secondary);
   transition: transform 0.3s ease;
 }
 
-.user-info:hover .user-arrow,
-.rotate-180 {
+.user-arrow.rotate-180 {
   transform: rotate(180deg);
 }
 
@@ -473,6 +493,31 @@ const handleCommand = (command) => {
 
 .dropdown-empty {
   padding: var(--space-6) 0;
+}
+
+.user-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+
+  .iconfont {
+    font-size: 14px;
+  }
+
+  &.is-danger {
+    color: var(--danger-color);
+  }
+
+  &:hover {
+    background: var(--primary-10);
+  }
 }
 
 /* 响应式设计 */

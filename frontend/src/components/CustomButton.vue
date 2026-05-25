@@ -19,7 +19,7 @@ const props = defineProps({
   type: {
     type: String,
     default: 'default',
-    validator: (val) => ['default', 'primary', 'danger', 'link'].includes(val)
+    validator: (val) => ['default', 'primary', 'danger', 'link', 'search-reset'].includes(val)
   },
   size: {
     type: String,
@@ -141,8 +141,23 @@ const handleClick = (event) => {
   transform: translateY(-1px);
 }
 
+.custom-button--search-reset {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--gray-40);
+  padding: 12px 20px;
+}
+
+.custom-button--search-reset:hover:not(:disabled) {
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--gray-40);
+}
+
 .custom-button--large {
-  padding: 12px 32px;
+  padding: 14px 20px;
   font-size: 16px;
 }
 

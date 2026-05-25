@@ -37,6 +37,8 @@ import com.yx.fridgebutler.vo.aichat.AIChatDataVO;
 import com.yx.fridgebutler.vo.aichat.AIChatMessageVO;
 import com.yx.fridgebutler.vo.aichat.AIChatReplyVO;
 import com.yx.fridgebutler.vo.aichat.AIChatSessionVO;
+import com.yx.fridgebutler.vo.aichat.CalorieCalculationData;
+import com.yx.fridgebutler.vo.aichat.CalorieItem;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,9 +78,11 @@ public class AIChatServiceImpl implements AIChatService {
             - item_list: 查看物品/库存/食材列表，可能包含关键词和冰箱名称，如"冰箱里还有什么鸡蛋"
             - expiring_alert: 查看临期/过期提醒，如"有什么快过期的"
             - recipe_recommend: 根据用户描述或用户引用的食材推荐菜谱，如"今天吃什么""用西冷牛排做什么菜"
+            - calorie_calculation: 热量计算、卡路里估算、营养成分分析，如"这几个东西有多少热量""帮我算一下番茄炒蛋的卡路里"
             - trend_chart: 查看趋势/统计图表，如"近7天取出趋势"
             - action_confirm: 删除/清空/移除等需要确认的操作，如"删除厨房冰箱"
             - fridge_creation_wizard: 用户想要创建新冰箱，如"帮我创建一个冰箱""我要新建冰箱""添加一个冰箱"
+            - item_creation_wizard: 用户想要添加新物品/食材到冰箱，如"帮我添加一个物品""我想往冰箱里放点东西""添加食材""我要入库一些鸡蛋""在冰箱里新增物品"
             - text: 通用对话、问候、闲聊、无法识别的意图
 
             返回格式（严格JSON，不要换行符外的其他格式）：
@@ -89,9 +93,11 @@ public class AIChatServiceImpl implements AIChatService {
             - item_list: {"keyword":"搜索关键词（如'鸡蛋'），没有则null","fridgeName":"冰箱名称（如'厨房冰箱'），没有则null"}
             - expiring_alert: 无参数，params为空对象{}
             - recipe_recommend: 无参数，params为空对象{}
+            - calorie_calculation: 无参数，params为空对象{}
             - trend_chart: {"type":"take_out|add|both","days":7或30}
             - action_confirm: {"action":"delete_fridge|clear_expired|...","targetName":"目标名称"}
             - fridge_creation_wizard: 无参数，params为空对象{}
+            - item_creation_wizard: 无参数，params为空对象{}
             - text: 无参数，params为空对象{}
 
             示例：
@@ -104,6 +110,9 @@ public class AIChatServiceImpl implements AIChatService {
             用户输入："今天吃什么"
             输出：{"intent":"recipe_recommend","params":{},"confidence":0.97}
 
+            用户输入："这几个东西有多少热量"
+            输出：{"intent":"calorie_calculation","params":{},"confidence":0.96}
+
             用户输入："删除厨房冰箱"
             输出：{"intent":"action_confirm","params":{"action":"delete_fridge","targetName":"厨房冰箱"},"confidence":0.96}
 
@@ -112,6 +121,9 @@ public class AIChatServiceImpl implements AIChatService {
 
             用户输入："帮我创建一个冰箱"
             输出：{"intent":"fridge_creation_wizard","params":{},"confidence":0.98}
+
+            用户输入："帮我添加一个物品"
+            输出：{"intent":"item_creation_wizard","params":{},"confidence":0.98}
 
             用户输入："今天天气怎么样"
             输出：{"intent":"text","params":{},"confidence":0.95}
@@ -133,6 +145,27 @@ public class AIChatServiceImpl implements AIChatService {
             5. 返回严格JSON格式，不要包含任何其他文字（包括markdown代码块标记）：
 
             {"recipes":[{"name":"菜名","difficulty":"简单","cookTime":"10分钟","matchedItems":["食材1","食材2"],"missingItems":["食材3"],"description":"描述"}],"text":"根据你的需求，为你推荐以下x道菜："}
+            """;
+
+    private static final String CALORIE_SYSTEM_PROMPT = """
+            你是一位专业的营养师，擅长估算食材和菜品的热量及营养成分。
+
+            要求：
+            1. 如果用户提供的是食材清单，按清单中的食材分别估算热量，并根据常见经验做单位换算（如1个鸡蛋≈50g、1碗米饭≈150g、1个苹果≈200g）
+            2. 如果用户询问的是具体菜品（如"番茄炒蛋"），按菜品估算总热量并拆分各个食材的用量和热量
+            3. 如果用户没有提供任何食材或菜品信息，请在总结中友好提示用户添加食材、指定冰箱或描述菜品
+            4. 所有热量统一使用"千卡"为单位，数值四舍五入到整数
+            5. 返回严格JSON格式，不要包含任何其他文字（包括markdown代码块标记）：
+
+            {"totalCalories":520,"unit":"千卡","serving":"1人份","items":[{"name":"鸡蛋","amount":"2个","calories":140,"icon":"🥚"},{"name":"番茄","amount":"200g","calories":30,"icon":"🍅"}],"nutrition":{"protein":"15g","carbs":"25g","fat":"12g"},"summary":"这份番茄炒蛋约520千卡，营养均衡，适合作为一餐主菜。"}
+
+            字段说明：
+            - totalCalories: 总热量数值（整数，必填）
+            - unit: 热量单位，固定为"千卡"
+            - serving: 份量说明，如"1人份" / "每100g"
+            - items: 食材列表，每个包含 name（必填）、amount、calories（必填）、icon（emoji，选填）
+            - nutrition: 营养成分，包含 protein、carbs、fat（均为字符串，如"15g"）
+            - summary: 总结文字，100字以内，口语化
             """;
 
     /**
@@ -255,6 +288,21 @@ public class AIChatServiceImpl implements AIChatService {
                     .build();
         }
 
+        // === 物品创建向导优先处理 ===
+        if (request.getWizardContext() != null
+                && "item_creation".equals(request.getWizardContext().getType())) {
+            AIChatReplyVO reply = handleItemCreationWizard(request);
+            saveAssistantMessage(sessionId, reply);
+            session.setLastActiveTime(Instant.now());
+            sessionRepository.save(session);
+            List<String> suggestions = generateSuggestions(reply.getMessageType());
+            return AIChatDataVO.builder()
+                    .sessionId(sessionId)
+                    .reply(reply)
+                    .suggestions(suggestions)
+                    .build();
+        }
+
         // 6. 意图识别（使用数据库历史）
         IntentResult intent = recognizeIntent(userMessage, dbHistory, attachmentContext);
         log.info("AI 意图识别结果：intent={}, params={}, confidence={}",
@@ -268,9 +316,11 @@ public class AIChatServiceImpl implements AIChatService {
                 case "item_list" -> handleItemList(intent.params);
                 case "expiring_alert" -> handleExpiringAlert();
                 case "recipe_recommend" -> handleRecipeRecommend(userMessage, request.getAttachments());
+                case "calorie_calculation" -> handleCalorieCalculation(userMessage, request.getAttachments());
                 case "trend_chart" -> handleTrendChart(intent.params);
                 case "action_confirm" -> handleActionConfirm(intent.params);
                 case "fridge_creation_wizard" -> handleFridgeCreationWizardInit();
+                case "item_creation_wizard" -> handleItemCreationWizardInit(request.getFridgeId());
                 default -> handleText(userMessage, dbHistory, attachmentContext);
             };
         } catch (Exception e) {
@@ -669,6 +719,165 @@ public class AIChatServiceImpl implements AIChatService {
     }
 
     /**
+     * 处理热量计算请求。
+     * <p>优先基于用户引用的附件（物品或冰箱）计算热量；无附件时尝试默认冰箱；
+     * 默认冰箱为空/不存在时，降级为让 LLM 直接根据用户原话估算（如询问某道菜的热量）。</p>
+     *
+     * @param userMessage 用户原始输入
+     * @param attachments 用户引用的附件列表
+     */
+    private AIChatReplyVO handleCalorieCalculation(String userMessage, List<AIChatAttachment> attachments) {
+        StringBuilder promptBuilder = new StringBuilder();
+        boolean hasInventoryContext = false;
+
+        // 1. 收集用户引用的物品
+        List<BizFridgeItem> targetItems = new ArrayList<>();
+        if (attachments != null && !attachments.isEmpty()) {
+            for (AIChatAttachment att : attachments) {
+                if ("item".equals(att.getType())) {
+                    BizFridgeItem item = itemRepository.findById(att.getId()).orElse(null);
+                    if (item != null && !Boolean.TRUE.equals(item.getIsDeleted())) {
+                        targetItems.add(item);
+                    }
+                } else if ("fridge".equals(att.getType())) {
+                    List<BizFridgeItem> fridgeItems = itemRepository.findByFridgeIdAndIsDeletedFalse(att.getId());
+                    targetItems.addAll(fridgeItems);
+                }
+            }
+        }
+
+        // 2. 批量查询单位名称
+        Set<Long> unitIds = targetItems.stream()
+                .map(BizFridgeItem::getItemUnitId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, String> unitNameMap = unitRepository.findAllById(unitIds).stream()
+                .filter(u -> !Boolean.TRUE.equals(u.getIsDeleted()))
+                .collect(Collectors.toMap(BizItemUnit::getId, BizItemUnit::getUnitName));
+
+        if (!targetItems.isEmpty()) {
+            hasInventoryContext = true;
+            promptBuilder.append("请计算以下食材的热量：\n");
+            for (BizFridgeItem item : targetItems) {
+                String unitName = unitNameMap.getOrDefault(item.getItemUnitId(), "");
+                promptBuilder.append("- ").append(item.getItemName())
+                        .append("：").append(item.getItemNum()).append(" ").append(unitName).append("\n");
+            }
+            promptBuilder.append("\n请根据常见经验做单位换算（如1个鸡蛋≈50g、1碗米饭≈150g、1个苹果≈200g），估算每种食材的热量并给出总热量汇总。\n");
+        } else {
+            // 尝试默认冰箱
+            FridgeVO defaultFridge = fridgeService.getDefaultFridge();
+            if (defaultFridge != null) {
+                List<BizFridgeItem> fridgeItems = itemRepository.findByFridgeIdAndIsDeletedFalse(defaultFridge.getId());
+                if (!fridgeItems.isEmpty()) {
+                    hasInventoryContext = true;
+                    Set<Long> dfUnitIds = fridgeItems.stream()
+                            .map(BizFridgeItem::getItemUnitId)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toSet());
+                    Map<Long, String> dfUnitNameMap = unitRepository.findAllById(dfUnitIds).stream()
+                            .filter(u -> !Boolean.TRUE.equals(u.getIsDeleted()))
+                            .collect(Collectors.toMap(BizItemUnit::getId, BizItemUnit::getUnitName));
+
+                    promptBuilder.append("请计算默认冰箱「").append(defaultFridge.getFridgeName()).append("」中以下食材的热量：\n");
+                    for (BizFridgeItem item : fridgeItems) {
+                        String unitName = dfUnitNameMap.getOrDefault(item.getItemUnitId(), "");
+                        promptBuilder.append("- ").append(item.getItemName())
+                                .append("：").append(item.getItemNum()).append(" ").append(unitName).append("\n");
+                    }
+                    promptBuilder.append("\n请根据常见经验做单位换算，估算每种食材的热量并给出总热量汇总。\n");
+                }
+            }
+        }
+
+        if (!hasInventoryContext) {
+            promptBuilder.append("用户没有指定具体食材，也没有可用的默认冰箱数据。\n");
+            promptBuilder.append("如果用户询问的是具体菜品的热量，请直接估算该菜品的热量并拆分食材明细；\n");
+            promptBuilder.append("如果用户询问的是冰箱食材热量但无可用数据，请在总结中友好提示用户先添加食材、指定冰箱或设置默认冰箱。\n");
+        }
+
+        promptBuilder.append("\n用户原话：").append(userMessage);
+
+        // 3. 调用 LLM
+        List<DeepSeekChatMessage> messages = new ArrayList<>();
+        String caloriePrompt = promptLoader.getPrompt("calorie-calculation", CALORIE_SYSTEM_PROMPT);
+        messages.add(DeepSeekChatMessage.builder().role("system").content(caloriePrompt).build());
+        messages.add(DeepSeekChatMessage.builder().role("user").content(promptBuilder.toString()).build());
+
+        log.info("AI 热量计算 Prompt：\n{}", JSONUtil.toJsonStr(messages));
+
+        DeepSeekChatRequest request = DeepSeekChatRequest.builder()
+                .messages(messages)
+                .temperature(0.3)
+                .responseFormat(Map.of("type", "json_object"))
+                .build();
+
+        String response = deepSeekService.chat(request);
+        String cleaned = AiResponseUtils.cleanJsonResponse(response);
+
+        // 4. 解析 JSON
+        try {
+            JSONObject root = JSONUtil.parseObj(cleaned);
+            int totalCalories = root.getInt("totalCalories", 0);
+            String unit = root.getStr("unit", "千卡");
+            String serving = root.getStr("serving", null);
+            String summary = root.getStr("summary", null);
+
+            List<CalorieItem> items = new ArrayList<>();
+            if (root.containsKey("items") && root.getJSONArray("items") != null) {
+                JSONArray itemsArray = root.getJSONArray("items");
+                for (int i = 0; i < itemsArray.size(); i++) {
+                    JSONObject itemNode = itemsArray.getJSONObject(i);
+                    items.add(CalorieItem.builder()
+                            .name(getJsonText(itemNode, "name", "未知"))
+                            .amount(getJsonText(itemNode, "amount", ""))
+                            .calories(itemNode.getInt("calories", 0))
+                            .icon(getJsonText(itemNode, "icon", "🥗"))
+                            .build());
+                }
+            }
+
+            Map<String, String> nutrition = new LinkedHashMap<>();
+            if (root.containsKey("nutrition") && root.getJSONObject("nutrition") != null) {
+                JSONObject nutritionNode = root.getJSONObject("nutrition");
+                if (nutritionNode.containsKey("protein")) {
+                    nutrition.put("protein", nutritionNode.getStr("protein"));
+                }
+                if (nutritionNode.containsKey("carbs")) {
+                    nutrition.put("carbs", nutritionNode.getStr("carbs"));
+                }
+                if (nutritionNode.containsKey("fat")) {
+                    nutrition.put("fat", nutritionNode.getStr("fat"));
+                }
+            }
+
+            CalorieCalculationData data = CalorieCalculationData.builder()
+                    .totalCalories(totalCalories)
+                    .unit(unit)
+                    .serving(serving)
+                    .items(items)
+                    .nutrition(nutrition.isEmpty() ? null : nutrition)
+                    .summary(summary)
+                    .build();
+
+            String text = summary != null ? summary : "总热量约 " + totalCalories + " " + unit;
+
+            return AIChatReplyVO.builder()
+                    .messageType("calorie_calculation")
+                    .text(text)
+                    .data(data)
+                    .build();
+        } catch (Exception e) {
+            log.warn("热量计算JSON解析失败，降级为纯文本。原始响应：{}", cleaned, e);
+            return AIChatReplyVO.builder()
+                    .messageType("text")
+                    .text("抱歉，热量计算失败，请稍后再试。")
+                    .data(null)
+                    .build();
+        }
+    }
+
+    /**
      * 处理趋势图表查询。
      */
     private AIChatReplyVO handleTrendChart(Map<String, Object> params) {
@@ -975,10 +1184,15 @@ public class AIChatServiceImpl implements AIChatService {
      */
     private void saveAssistantMessage(String sessionId, AIChatReplyVO reply) {
         Map<String, Object> structuredData = null;
-        if (reply.getData() instanceof Map<?, ?> map) {
-            structuredData = new LinkedHashMap<>();
-            for (Map.Entry<?, ?> entry : map.entrySet()) {
-                structuredData.put(String.valueOf(entry.getKey()), entry.getValue());
+        if (reply.getData() != null) {
+            if (reply.getData() instanceof Map<?, ?> map) {
+                structuredData = new LinkedHashMap<>();
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    structuredData.put(String.valueOf(entry.getKey()), entry.getValue());
+                }
+            } else {
+                // POJO 等非 Map 对象，先序列化为 JSON 再转换为 Map
+                structuredData = JSONUtil.toBean(JSONUtil.toJsonStr(reply.getData()), LinkedHashMap.class);
             }
         }
 
@@ -1073,9 +1287,11 @@ public class AIChatServiceImpl implements AIChatService {
             case "item_list" -> List.of("查看冰箱", "临期提醒", "推荐菜谱");
             case "expiring_alert" -> List.of("查看冰箱", "推荐菜谱处理临期食材");
             case "recipe_recommend" -> List.of("查看冰箱", "还有什么菜谱");
+            case "calorie_calculation" -> List.of("查看冰箱", "推荐菜谱", "临期提醒");
             case "trend_chart" -> List.of("查看冰箱", "临期提醒");
             case "action_confirm" -> List.of();
             case "fridge_creation_wizard" -> List.of();
+            case "item_creation_wizard" -> List.of();
             default -> List.of("查看冰箱", "临期提醒", "推荐菜谱");
         };
     }
@@ -1421,6 +1637,23 @@ public class AIChatServiceImpl implements AIChatService {
             return;
         }
 
+        // === 物品创建向导优先处理 ===
+        if (request.getWizardContext() != null
+                && "item_creation".equals(request.getWizardContext().getType())) {
+            AIChatReplyVO reply = handleItemCreationWizard(request);
+            streamStructuredReply(emitter, reply, fullText);
+            saveAssistantMessage(sessionId, reply);
+            session.setLastActiveTime(Instant.now());
+            sessionRepository.save(session);
+            List<String> suggestions = generateSuggestions(reply.getMessageType());
+            Map<String, Object> doneEvent = new LinkedHashMap<>();
+            doneEvent.put("sessionId", sessionId);
+            doneEvent.put("suggestions", suggestions);
+            emitter.send(SseEmitter.event().name("done").data(doneEvent));
+            emitter.complete();
+            return;
+        }
+
         // 6. 同步意图识别
         IntentResult intent = recognizeIntent(userMessage, dbHistory, attachmentContext);
         log.info("AI 流式聊天意图识别结果：intent={}, params={}, confidence={}",
@@ -1451,6 +1684,11 @@ public class AIChatServiceImpl implements AIChatService {
                     streamStructuredReply(emitter, r, fullText);
                     yield r;
                 }
+                case "calorie_calculation" -> {
+                    AIChatReplyVO r = handleCalorieCalculation(userMessage, request.getAttachments());
+                    streamStructuredReply(emitter, r, fullText);
+                    yield r;
+                }
                 case "trend_chart" -> {
                     AIChatReplyVO r = handleTrendChart(intent.params);
                     streamStructuredReply(emitter, r, fullText);
@@ -1463,6 +1701,11 @@ public class AIChatServiceImpl implements AIChatService {
                 }
                 case "fridge_creation_wizard" -> {
                     AIChatReplyVO r = handleFridgeCreationWizardInit();
+                    streamStructuredReply(emitter, r, fullText);
+                    yield r;
+                }
+                case "item_creation_wizard" -> {
+                    AIChatReplyVO r = handleItemCreationWizardInit(request.getFridgeId());
                     streamStructuredReply(emitter, r, fullText);
                     yield r;
                 }
@@ -1569,6 +1812,196 @@ public class AIChatServiceImpl implements AIChatService {
         } finally {
             emitter.completeWithError(e);
         }
+    }
+
+    // ======================== 物品创建向导方法 ========================
+
+    /**
+     * 创建初始空的物品向导表单数据。
+     */
+    private static Map<String, Object> emptyItemWizardFormData() {
+        Map<String, Object> formData = new LinkedHashMap<>();
+        formData.put("itemName", "");
+        formData.put("categoryId", null);
+        formData.put("itemNum", null);
+        formData.put("unitTypeId", null);
+        formData.put("itemUnitId", null);
+        formData.put("productionDate", null);
+        formData.put("shelfLifeDays", null);
+        formData.put("remark", "");
+        formData.put("fridgeId", null);
+        return formData;
+    }
+
+    /**
+     * 处理物品创建向导的初始触发。
+     * <p>返回步骤0，要求用户输入物品名称。若携带了 fridgeId 则存入 formData。</p>
+     *
+     * @param fridgeId 前端传入的目标冰箱ID（可能为null）
+     */
+    private AIChatReplyVO handleItemCreationWizardInit(Long fridgeId) {
+        Map<String, Object> formData = emptyItemWizardFormData();
+        if (fridgeId != null) {
+            formData.put("fridgeId", fridgeId);
+        }
+        return buildItemWizardReply(0, formData, "好的，让我们开始添加物品吧！请告诉我你想添加什么物品？");
+    }
+
+    /**
+     * 处理物品创建向导的流程推进（纯后端状态驱动，不调用 LLM）。
+     * <p>根据 wizardContext 中的 currentStep 和 formData 推进步骤。</p>
+     *
+     * @param request AI 聊天请求（包含 wizardContext）
+     * @return 向导卡片回复
+     */
+    private AIChatReplyVO handleItemCreationWizard(AIChatRequest request) {
+        AIChatWizardContext ctx = request.getWizardContext();
+        String userMessage = request.getMessage() != null ? request.getMessage().trim() : "";
+
+        // 检查是否取消创建
+        if (isCancelIntent(userMessage)) {
+            return AIChatReplyVO.builder()
+                    .messageType("text")
+                    .text("已取消添加物品，有什么其他可以帮你的吗？")
+                    .data(null)
+                    .build();
+        }
+
+        Map<String, Object> formData = ctx != null && ctx.getFormData() != null
+                ? new LinkedHashMap<>(ctx.getFormData())
+                : emptyItemWizardFormData();
+
+        int currentStep = ctx != null && ctx.getCurrentStep() != null ? ctx.getCurrentStep() : 0;
+
+        // 步骤0：物品名称（必填）
+        String itemName = getString(formData, "itemName");
+        if (itemName == null || itemName.isBlank()) {
+            if (userMessage.isBlank()) {
+                return buildItemWizardReply(0, formData, "物品名称不能为空哦，请告诉我你想添加什么物品？");
+            }
+            formData.put("itemName", userMessage);
+            return buildItemWizardReply(1, formData, "好的，接下来请选择物品的分类。");
+        }
+
+        // 步骤1：分类（必填，选项由前端加载）
+        if (currentStep <= 1) {
+            Long categoryId = getLong(formData, "categoryId");
+            if (categoryId == null) {
+                return buildItemWizardReply(1, formData, "请选择物品的分类。");
+            }
+            return buildItemWizardReply(2, formData, "好的，接下来请填写数量并选择单位。");
+        }
+
+        // 步骤2：数量与单位（combined_unit，必填）
+        if (currentStep <= 2) {
+            if (formData.get("itemNum") == null || formData.get("itemUnitId") == null) {
+                return buildItemWizardReply(2, formData, "请填写数量并选择单位。");
+            }
+            return buildItemWizardReply(3, formData, "好的，接下来请填写生产日期和保质期（选填）。");
+        }
+
+        // 步骤3：生产日期与保质期（combined_date_number，选填）
+        if (currentStep == 3) {
+            if (isSkipIntent(userMessage)) {
+                formData.put("productionDate", null);
+                formData.put("shelfLifeDays", null);
+                return buildItemWizardReply(4, formData, "好的，接下来请填写备注（选填）。");
+            }
+            // 前端已更新 formData，直接推进
+            return buildItemWizardReply(4, formData, "好的，接下来请填写备注（选填）。");
+        }
+
+        // 步骤4：备注（textarea，选填）
+        if (currentStep == 4) {
+            if (isSkipIntent(userMessage)) {
+                formData.put("remark", "");
+                return buildItemWizardReply(5, formData, "请确认以下信息，无误后点击确认添加：");
+            }
+            if (!formData.containsKey("remark")) {
+                formData.put("remark", "");
+            }
+            return buildItemWizardReply(5, formData, "请确认以下信息，无误后点击确认添加：");
+        }
+
+        // 步骤5：确认页（兜底保护）
+        return AIChatReplyVO.builder()
+                .messageType("text")
+                .text("信息已填写完整，请点击确认添加按钮完成添加。如需修改，可以取消后重新开始。")
+                .data(null)
+                .build();
+    }
+
+    /**
+     * 构建物品创建向导的标准回复结构（6 步）。
+     *
+     * @param currentStep 当前步骤索引（0-based）
+     * @param formData    已收集的表单数据
+     * @param text        展示给用户的引导文本
+     * @return AI 回复 VO
+     */
+    private AIChatReplyVO buildItemWizardReply(int currentStep, Map<String, Object> formData, String text) {
+        List<Map<String, Object>> steps = List.of(
+                Map.of("title", "名称", "description", "请告诉我你想添加什么物品？"),
+                Map.of("title", "分类", "description", "请选择物品的分类"),
+                Map.of("title", "数量单位", "description", "请填写数量并选择单位"),
+                Map.of("title", "保质期", "description", "请填写生产日期和保质期（选填）"),
+                Map.of("title", "备注", "description", "还有其他要补充的吗？（选填）"),
+                Map.of("title", "确认", "description", "请确认以下信息无误")
+        );
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("currentStep", currentStep);
+        data.put("totalSteps", 6);
+        data.put("steps", steps);
+        data.put("formData", formData);
+
+        if (currentStep < 5) {
+            Map<String, Object> currentInput = new LinkedHashMap<>();
+            switch (currentStep) {
+                case 0 -> {
+                    currentInput.put("field", "itemName");
+                    currentInput.put("type", "text");
+                    currentInput.put("label", "物品名称");
+                    currentInput.put("required", true);
+                    currentInput.put("placeholder", "例如：鸡蛋、牛奶");
+                }
+                case 1 -> {
+                    currentInput.put("field", "categoryId");
+                    currentInput.put("type", "select");
+                    currentInput.put("label", "物品分类");
+                    currentInput.put("required", true);
+                    currentInput.put("placeholder", "请选择分类");
+                }
+                case 2 -> {
+                    currentInput.put("field", "itemUnitId");
+                    currentInput.put("type", "combined_unit");
+                    currentInput.put("label", "数量与单位");
+                    currentInput.put("required", true);
+                    currentInput.put("placeholder", "填写数量并选择单位");
+                }
+                case 3 -> {
+                    currentInput.put("field", "productionDate");
+                    currentInput.put("type", "combined_date_number");
+                    currentInput.put("label", "生产日期与保质期");
+                    currentInput.put("required", false);
+                    currentInput.put("placeholder", "选择生产日期并填写保质期天数");
+                }
+                case 4 -> {
+                    currentInput.put("field", "remark");
+                    currentInput.put("type", "textarea");
+                    currentInput.put("label", "备注");
+                    currentInput.put("required", false);
+                    currentInput.put("placeholder", "请输入备注（选填）");
+                }
+            }
+            data.put("currentInput", currentInput);
+        }
+
+        return AIChatReplyVO.builder()
+                .messageType("item_creation_wizard")
+                .text(text)
+                .data(data)
+                .build();
     }
 
     // ======================== 冰箱创建向导方法 ========================

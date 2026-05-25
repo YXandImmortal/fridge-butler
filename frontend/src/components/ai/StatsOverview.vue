@@ -69,7 +69,7 @@ const statsList = computed(() => {
       key: 'items',
       value: totalItemNum,
       label: '物品总数',
-      icon: 'icon-inbox',
+      icon: 'icon-item',
       iconBg: 'linear-gradient(135deg, rgba(129,199,132,0.15) 0%, rgba(165,214,167,0.1) 100%)',
       iconColor: '#81C784'
     },

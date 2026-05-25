@@ -6,7 +6,7 @@
         <div class="avatar-wrapper" @click="handleChangeAvatar">
           <Avatar size="x-large" :avatar-id="userForm.avatar"/>
           <div class="avatar-edit-icon">
-            <i class="iconfont icon-edit"></i>
+            <i class="iconfont icon-edit-box" />
           </div>
         </div>
       </div>
@@ -29,9 +29,18 @@
       </el-form>
 
       <div class="profile-actions">
-        <CustomButton type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">保存修改</CustomButton>
-        <CustomButton @click="handleChangePassword">修改密码</CustomButton>
-        <CustomButton type="danger" @click="handleLogout">退出登录</CustomButton>
+        <CustomButton type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">
+          <i class="iconfont icon-save" />
+          保存修改
+        </CustomButton>
+        <CustomButton @click="handleChangePassword">
+          <i class="iconfont icon-edit-box" />
+          修改密码
+        </CustomButton>
+        <CustomButton type="danger" @click="handleLogout">
+          <i class="iconfont icon-logout" />
+          退出登录
+        </CustomButton>
       </div>
     </div>
 
@@ -89,9 +98,13 @@
             :loading="editType === 'password' ? loadingChangePassword : loadingChangeAvatar"
             loading-text="修改中..."
           >
+            <i class="iconfont icon-check" />
             确认
           </CustomButton>
-          <CustomButton @click="showEditCard = false" type="danger">取消</CustomButton>
+          <CustomButton @click="showEditCard = false">
+            <i class="iconfont icon-close" />
+            取消
+          </CustomButton>
         </div>
       </div>
     </Transition>
@@ -457,40 +470,10 @@ const handleLogout = (msg) => {
 
 .profile-actions {
   display: flex;
-  gap: 16px;
+  gap: var(--space-5);
   justify-content: center;
   padding-top: 24px;
   border-top: 1px solid var(--divider-color);
-}
-
-/* 按钮增强样式 */
-.profile-actions .custom-button {
-  border-radius: 12px;
-  padding: 12px 24px;
-  letter-spacing: 0.5px;
-}
-
-.profile-actions .custom-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--gray-40);
-}
-
-.profile-actions .custom-button--primary {
-  background: var(--primary-color);
-  border: none;
-}
-
-.profile-actions .custom-button--primary:hover:not(:disabled) {
-  box-shadow: 0 6px 20px var(--primary-40);
-}
-
-.profile-actions .custom-button--danger {
-  background: var(--danger-color);
-  border: none;
-}
-
-.profile-actions .custom-button--danger:hover:not(:disabled) {
-  box-shadow: 0 6px 20px var(--danger-40);
 }
 
 .edit-content {
@@ -563,35 +546,10 @@ const handleLogout = (msg) => {
 
 .edit-actions {
   display: flex;
-  gap: 16px;
   justify-content: center;
+  gap: var(--space-5);
   padding-top: 24px;
   border-top: 1px solid var(--divider-color);
-}
-
-.edit-actions .custom-button {
-  border-radius: 12px;
-  padding: 12px 24px;
-  letter-spacing: 0.5px;
-  min-width: 120px;
-}
-
-.edit-actions .custom-button--primary {
-  background: var(--primary-color);
-  border: none;
-}
-
-.edit-actions .custom-button--primary:hover:not(:disabled) {
-  box-shadow: 0 6px 20px var(--primary-40);
-}
-
-.edit-actions .custom-button--danger {
-  background: var(--danger-color);
-  border: none;
-}
-
-.edit-actions .custom-button--danger:hover:not(:disabled) {
-  box-shadow: 0 6px 20px var(--danger-40);
 }
 
 /* 响应式设计 */

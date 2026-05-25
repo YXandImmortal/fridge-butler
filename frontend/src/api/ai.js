@@ -9,6 +9,7 @@ import showMessage from '@/utils/message'
  * @param {string} params.message - 用户输入内容
  * @param {string} [params.sessionId] - 会话ID，首次可不传
  * @param {Array} [params.attachments] - 附件列表 [{type, id, name, fridgeId?, fridgeName?}]
+ * @param {number} [params.fridgeId] - 当前冰箱ID（物品向导场景）
  */
 export function sendChatMessage(params) {
     return request({
@@ -52,6 +53,7 @@ function parseSSEEvent(raw) {
  * @param {string} [options.sessionId] - 会话ID
  * @param {Array} [options.attachments] - 附件列表 [{type, id, name, fridgeId?, fridgeName?}]
  * @param {Object} [options.wizardContext] - 向导上下文 {type, currentStep, formData, inputField?}
+ * @param {number} [options.fridgeId] - 当前冰箱ID（物品向导场景）
  * @param {Function} [options.onText] - 文本片段回调 (chunk: string) => void
  * @param {Function} [options.onCard] - 卡片数据回调 (messageType: string, data: any) => void
  * @param {Function} [options.onDone] - 结束回调 (sessionId: string, suggestions: string[]) => void
@@ -63,6 +65,7 @@ export async function sendChatMessageStream({
     sessionId,
     attachments,
     wizardContext,
+    fridgeId,
     onText,
     onCard,
     onDone,
@@ -88,7 +91,7 @@ export async function sendChatMessageStream({
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ message, sessionId, attachments, wizardContext }),
+        body: JSON.stringify({ message, sessionId, attachments, wizardContext, fridgeId }),
         signal
     })
 

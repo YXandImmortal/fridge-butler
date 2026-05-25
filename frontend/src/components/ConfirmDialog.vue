@@ -23,8 +23,8 @@
           <slot />
         </div>
         <div class="dialog-footer">
-          <CustomButton v-if="showCancel" type="danger" class="dialog-btn dialog-btn-cancel" @click="handleCancel">{{ cancelText }}</CustomButton>
-          <CustomButton type="primary" class="dialog-btn dialog-btn-confirm" @click="handleConfirm">{{ confirmText }}</CustomButton>
+          <CustomButton v-if="showCancel" type="danger" @click="handleCancel">{{ cancelText }}</CustomButton>
+          <CustomButton type="primary" @click="handleConfirm">{{ confirmText }}</CustomButton>
         </div>
       </div>
     </div>
@@ -227,35 +227,6 @@ const handleCancel = () => {
   justify-content: flex-end;
   gap: var(--space-3);
   padding: 0 var(--space-6) var(--space-6);
-}
-
-.dialog-btn {
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-}
-
-.dialog-btn-cancel {
-  background: var(--danger-color);
-  color: var(--text-inverse);
-}
-
-.dialog-btn-cancel:hover {
-  box-shadow: 0 6px 20px var(--danger-40);
-  transform: translateY(-2px);
-}
-
-.dialog-btn-confirm {
-  background: var(--primary-color);
-  color: var(--text-inverse);
-}
-
-.dialog-btn-confirm:hover {
-  box-shadow: 0 6px 20px var(--primary-40);
-  transform: translateY(-2px);
 }
 
 @keyframes dialog-slide-in {

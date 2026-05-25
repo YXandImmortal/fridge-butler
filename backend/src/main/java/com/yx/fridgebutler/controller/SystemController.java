@@ -124,6 +124,29 @@ public class SystemController {
 
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
+                    .version("beta 0.2.0")
+                    .date("2026-5-26")
+                    .changes(Arrays.asList(
+                            "全新上线AI热量计算功能：支持基于引用物品/冰箱计算总热量，也可直接询问菜品热量，AI自动估算并给出营养成分分析",
+                            "后端新增 calorie_calculation 意图识别与结构化数据处理：总热量、食材明细、营养成分、份量说明与AI总结",
+                            "全新上线AI物品创建向导：用户可通过AI聊天以引导式交互添加物品，支持名称、分类、数量单位、保质期、备注、确认6步流程",
+                            "后端新增 item_creation_wizard 意图识别与纯后端状态驱动推进机制，无需LLM参与向导流程，响应更稳定",
+                            "前端新增 ItemCreationWizard 组件：步骤条、表单摘要、多种输入类型（文本/选择/组合单位/组合日期/文本域）与确认卡片",
+                            "物品管理页新增「AI帮我添加」按钮接入向导，点击自动跳转AI聊天并携带当前冰箱ID触发创建流程",
+                            "前端新增热量计算卡片UI：渐变总热量头部、食材明细列表、蛋白质/碳水/脂肪营养标签与AI总结",
+                            "ChatStructuredMessage 全面支持 item_creation_wizard 与 calorie_calculation 消息类型渲染",
+                            "关于页面更新日志支持重大更新标识：isMajor 字段驱动金色时间轴高亮与「重大更新」徽章展示",
+                            "系统关于信息卡片支持图标展示，视觉层次更丰富",
+                            "全局图标库扩充：新增物品、编辑框、保存、退出、勾选等图标，按钮与操作区视觉统一",
+                            "物品管理页取出操作交互优化：下拉菜单升级为 Popover 浮层，避免层级遮挡与误触",
+                            "多处按钮组件统一图标前缀与样式规范，移除重复CSS，维护性提升",
+                            "AI聊天请求新增 fridgeId 字段，支持从物品管理页跳转时自动关联目标冰箱",
+                            "意图识别提示词模板热更新支持 calorie_calculation 与 item_creation_wizard 两种新意图",
+                            "前后端版本号同步升级至 beta 0.2.0"
+                    ))
+                    .isMajor(true)
+                    .build(),
+            UpdateLogVO.builder()
                     .version("beta 0.1.6")
                     .date("2026-5-24")
                     .changes(Arrays.asList(
@@ -235,6 +258,7 @@ public class SystemController {
                             "关于页面更新日志升级为 Timeline 时间轴展示，视觉体验更佳",
                             "系统版本正式进入 beta 阶段"
                     ))
+                    .isMajor(true)
                     .build(),
             UpdateLogVO.builder()
                     .version("alpha 0.0.9")
@@ -296,24 +320,28 @@ public class SystemController {
 
     private static final List<AboutItemVO> SYSTEM_ABOUT = List.of(
             AboutItemVO.builder()
-                    .label("技术支持")
-                    .value("support@fridgebutler.com")
-                    .type("email")
+                    .label("问题反馈")
+                    .value("https://github.com/YXandImmortal/fridge-butler/issues/")
+                    .type("url")
+                    .icon("icon-debug")
                     .build(),
             AboutItemVO.builder()
-                    .label("官方网站")
-                    .value("https://fridgebutler.example.com")
+                    .label("Github")
+                    .value("https://github.com/YXandImmortal/fridge-butler/")
                     .type("url")
+                    .icon("icon-github")
                     .build(),
             AboutItemVO.builder()
                     .label("版权所有")
                     .value("© 2026 智鲜引擎团队 版权所有")
                     .type("text")
+                    .icon("icon-attachment")
                     .build(),
             AboutItemVO.builder()
                     .label("开源协议")
                     .value("MIT License")
                     .type("text")
+                    .icon("icon-script-text")
                     .build()
     );
 

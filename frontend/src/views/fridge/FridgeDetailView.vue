@@ -37,9 +37,11 @@
         </div>
         <div class="detail-actions">
           <CustomButton type="primary" :loading="saving" @click="handleSave">
+            <i class="iconfont icon-save" />
             保存信息
           </CustomButton>
           <CustomButton type="danger" @click="handleDelete">
+            <i class="iconfont icon-trash" />
             删除冰箱
           </CustomButton>
         </div>

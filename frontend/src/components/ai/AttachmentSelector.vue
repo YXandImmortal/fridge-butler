@@ -13,7 +13,7 @@
           :key="att.type + '-' + att.id"
           class="attach-tag"
         >
-          <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-inbox'" />
+          <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-item'" />
           {{ att.name }}
           <i class="iconfont icon-close attach-tag-close" @click="removeAttachment(att)" />
         </span>
@@ -27,7 +27,9 @@
       :width="280"
       trigger="click"
       popper-class="attach-popover"
-      popper-style="padding: 0;"
+      popper-style="padding: 0; border-radius: var(--radius-md);"
+      transition="el-zoom-in-bottom"
+      :show-arrow="false"
     >
       <template #reference>
         <button
@@ -69,7 +71,7 @@
 
         <div class="attach-section">
           <div class="attach-section-title">
-            <i class="iconfont icon-inbox" />
+            <i class="iconfont icon-item" />
             <span>选择物品</span>
           </div>
           <div v-if="itemList.length === 0" class="attach-empty">暂无物品</div>

@@ -18,7 +18,7 @@ public class AIChatReplyVO {
     /**
      * 消息类型，决定前端渲染方式。
      * <p>可选值：text, fridge_list, item_list, expiring_alert,
-     * recipe_recommend, trend_chart, action_confirm, fridge_creation_wizard</p>
+     * recipe_recommend, calorie_calculation, trend_chart, action_confirm, fridge_creation_wizard, item_creation_wizard</p>
      */
     private String messageType;
 

@@ -28,4 +28,9 @@ public class AboutItemVO {
      * 类型
      */
     private String type;
+
+    /**
+     *  图标
+     */
+    private String icon;
 }

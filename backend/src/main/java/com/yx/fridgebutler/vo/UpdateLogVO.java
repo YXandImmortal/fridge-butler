@@ -30,4 +30,9 @@ public class UpdateLogVO {
      * 变更内容列表
      */
     private List<String> changes;
+
+    /**
+     *  是否为重大更新
+     */
+    private Boolean isMajor;
 }

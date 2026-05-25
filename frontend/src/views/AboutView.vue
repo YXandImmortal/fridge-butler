@@ -44,12 +44,21 @@
               :key="update.version"
               :timestamp="update.date"
               placement="top"
-              :type="index === 0 ? 'primary' : ''"
+              :type="index === 0 && !update.isMajor ? 'primary' : ''"
+              :class="{ 'major-update': update.isMajor }"
           >
-            <div class="timeline-version">{{ update.version }}</div>
-            <ul class="update-list">
-              <li v-for="(item, idx) in update.changes" :key="idx">{{ item }}</li>
-            </ul>
+            <div class="update-item-content" :class="{ 'major-update-item': update.isMajor }">
+              <div class="timeline-version">
+                {{ update.version }}
+                <span v-if="update.isMajor" class="major-badge">
+                  <i class="iconfont icon-star" />
+                  重大更新
+                </span>
+              </div>
+              <ul class="update-list">
+                <li v-for="(item, idx) in update.changes" :key="idx">{{ item }}</li>
+              </ul>
+            </div>
           </el-timeline-item>
         </el-timeline>
       </el-scrollbar>
@@ -63,7 +72,10 @@
       </h2>
       <div class="info-card">
         <div class="info-row" v-for="(item, index) in about" :key="index">
-          <span class="info-label">{{ item.label }}</span>
+          <span class="info-label">
+            <i :class="['iconfont', item.icon]" />
+            {{ item.label }}
+          </span>
           <span class="info-value">{{ item.value }}</span>
         </div>
       </div>
@@ -284,6 +296,59 @@ const currentYear = computed(() => new Date().getFullYear())
   color: var(--primary-color);
 }
 
+/* 重大更新时间线样式 */
+.major-update :deep(.el-timeline-item__node--normal),
+.major-update :deep(.el-timeline-item__node--primary) {
+  background-color: var(--badge-gold);
+}
+
+.major-update :deep(.el-timeline-item__tail) {
+  border-left-color: var(--badge-gold-shadow);
+}
+
+/* 重大更新内容卡片 */
+.update-item-content {
+  transition: all 0.3s ease;
+}
+
+.major-update-item {
+  background: linear-gradient(135deg, var(--badge-gold-bg) 0%, var(--glass-bg) 60%);
+  border: 1px solid var(--badge-gold);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 16px var(--badge-gold-shadow);
+}
+
+.major-update-item .timeline-version {
+  color: var(--badge-gold-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.major-update-item .update-list li::marker {
+  color: var(--badge-gold);
+}
+
+/* 重大更新徽章 */
+.major-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  background: linear-gradient(135deg, var(--badge-gold) 0%, var(--badge-gold-hover) 100%);
+  color: var(--badge-gold-text-dark);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px var(--badge-gold-shadow);
+}
+
+.major-badge .iconfont {
+  font-size: 12px;
+}
+
 /* 关于我们信息卡片 */
 .info-card {
   background: var(--glass-bg);
@@ -315,6 +380,14 @@ const currentYear = computed(() => new Date().getFullYear())
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-label .iconfont {
+  font-size: 16px;
+  color: var(--primary-color);
 }
 
 .info-value {

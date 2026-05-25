@@ -26,9 +26,9 @@ jwt:
 
 system:
   name: 智鲜·引擎
-  version: beta 0.1.6
+  version: beta 0.2.0
   slogan: 智能管理您的冰箱，让食材更新鲜
-  build-time: 20260524-01
+  build-time: 20260526-01
 
 # AI 聊天历史配置
 ai:
