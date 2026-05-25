@@ -10,22 +10,12 @@
     </section>
 
     <!-- 统计卡片 -->
-    <section class="stats-row">
-      <div
-        v-for="(stat, index) in statsList"
-        :key="stat.key"
-        class="stat-card glass-card animate-in"
-        :style="{ animationDelay: `${0.1 + index * 0.08}s` }"
-      >
-        <div class="stat-icon-wrapper" :style="{ background: stat.iconBg }">
-          <i :class="['iconfont', stat.icon, 'stat-icon']" :style="{ color: stat.iconColor }" />
-        </div>
-        <div class="stat-info">
-          <div class="stat-value">{{ stat.value }}</div>
-          <div class="stat-label">{{ stat.label }}</div>
-        </div>
-      </div>
-    </section>
+    <StatsOverview
+      :fridge-list="fridgeList"
+      :item-list="itemList"
+      :take-out-list="takeOutList"
+      :expiring-summary="expiringSummary"
+    />
 
     <!-- AI 聊天助手 -->
     <section class="ai-chat-section glass-card animate-in" style="animation-delay: 0.42s">
@@ -85,139 +75,13 @@
             <span class="user-avatar-text">{{ userAvatarText }}</span>
           </div>
           <div :class="['message-bubble', { 'typing-bubble': aiTyping && msg.role === 'assistant' && !msg.content && !msg.data && idx === messages.length - 1 }]">
-            <!-- 文本内容（Markdown 渲染） -->
-            <div v-if="msg.content" class="message-content">
-              <AiMessageContent
-                :content="msg.content"
-                :is-streaming="aiTyping && msg.role === 'assistant' && idx === messages.length - 1"
-              />
-            </div>
-
-            <!-- AI 打字中 -->
-            <div v-if="aiTyping && msg.role === 'assistant' && !msg.content && !msg.data && idx === messages.length - 1" class="typing-indicator">
-              <span />
-              <span />
-              <span />
-            </div>
-
-            <!-- 用户附件标签 -->
-            <div v-if="msg.role === 'user' && msg.attachments && msg.attachments.length > 0" class="message-attachments">
-              <span
-                v-for="att in msg.attachments"
-                :key="att.type + '-' + att.id"
-                class="message-attach-tag"
-                @click="$router.push(att.type === 'fridge' ? '/fridge/detail/' + att.id : '/fridge/items/' + att.fridgeId)"
-              >
-                <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-inbox'" />
-                {{ att.name }}
-              </span>
-            </div>
-
-            <!-- 结构化数据渲染 -->
-            <div v-if="msg.messageType === 'fridge_list' && msg.data" class="struct-content">
-              <div class="fridge-list-inline">
-                <div
-                  v-for="fridge in msg.data.fridges"
-                  :key="fridge.id"
-                  class="fridge-mini-card"
-                  @click="$router.push('/fridge/detail/' + fridge.id)"
-                >
-                  <i class="iconfont icon-fridge-line fridge-mini-icon" />
-                  <div class="fridge-mini-name">{{ fridge.name }}</div>
-                  <div class="fridge-mini-meta">
-                    {{ fridge.itemCount }} 件物品
-                    <span v-if="fridge.isDefault" class="default-badge">默认</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-else-if="msg.messageType === 'item_list' && msg.data" class="struct-content">
-              <div class="item-list-inline">
-                <div
-                  v-for="item in msg.data.items"
-                  :key="item.id"
-                  class="item-mini-card"
-                >
-                  <div class="item-mini-header">
-                    <span class="item-mini-name">{{ item.name }}</span>
-                    <el-tag :type="item.freshnessType || 'info'" size="small" class="freshness-tag">
-                      {{ item.freshnessLabel || '-' }}
-                    </el-tag>
-                  </div>
-                  <div class="item-mini-meta">
-                    {{ item.num }}{{ item.unit }} · {{ item.fridgeName }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-else-if="msg.messageType === 'expiring_alert' && msg.data" class="struct-content">
-              <div class="expiring-list-inline">
-                <div
-                  v-for="item in msg.data.items"
-                  :key="item.id"
-                  class="expiring-mini-card"
-                  :class="'expiring-' + item.freshnessType"
-                >
-                  <div class="expiring-mini-header">
-                    <span class="expiring-mini-name">{{ item.name }}</span>
-                    <span class="expiring-mini-days">
-                      {{ item.remainingDays >= 0 ? '剩' + item.remainingDays + '天' : '已过期' + Math.abs(item.remainingDays) + '天' }}
-                    </span>
-                  </div>
-                  <div class="expiring-mini-meta">
-                    {{ item.num }}{{ item.unit }} · {{ item.fridgeName }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-else-if="msg.messageType === 'recipe_recommend' && msg.data" class="struct-content">
-              <div class="recipe-list-inline">
-                <div
-                  v-for="recipe in msg.data.recipes"
-                  :key="recipe.name"
-                  class="recipe-mini-card"
-                >
-                  <div class="recipe-mini-name">{{ recipe.name }}</div>
-                  <div class="recipe-mini-desc">{{ recipe.description }}</div>
-                  <div class="recipe-mini-meta">
-                    <span class="recipe-difficulty">{{ recipe.difficulty }}</span>
-                    <span class="recipe-time">{{ recipe.cookTime }}</span>
-                  </div>
-                  <div class="recipe-items">
-                    <el-tag v-for="m in recipe.matchedItems" :key="m" type="success" size="small" class="recipe-tag">
-                      {{ m }}
-                    </el-tag>
-                    <el-tag v-for="m in recipe.missingItems" :key="m" type="info" size="small" class="recipe-tag">
-                      缺{{ m }}
-                    </el-tag>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-else-if="msg.messageType === 'trend_chart' && msg.data" class="struct-content">
-              <v-chart class="chat-mini-chart" :option="buildChatChartOption(msg.data)" autoresize />
-            </div>
-
-            <div v-else-if="msg.messageType === 'action_confirm' && msg.data" class="struct-content">
-              <div class="action-confirm-btns">
-                <button class="confirm-btn cancel" @click="handleActionCancel(msg)">取消</button>
-                <button class="confirm-btn confirm" @click="handleActionConfirm(msg)">确认</button>
-              </div>
-            </div>
-
-            <div v-else-if="msg.messageType === 'fridge_creation_wizard' && msg.data" class="struct-content">
-              <div class="wizard-history-summary">
-                <i class="iconfont icon-fridge-line" />
-                <span>AI 正在引导您创建冰箱</span>
-                <span v-if="msg.data.formData?.name" class="wizard-history-name">「{{ msg.data.formData.name }}」</span>
-              </div>
-            </div>
-
-            <div v-if="msg.content || msg.data || msg.role === 'user'" class="message-time">{{ msg.time }}</div>
+            <ChatStructuredMessage
+              :msg="msg"
+              :is-last="idx === messages.length - 1"
+              :ai-typing="aiTyping"
+              @action-confirm="handleActionConfirm"
+              @action-cancel="handleActionCancel"
+            />
           </div>
         </div>
 
@@ -247,101 +111,7 @@
           </div>
         </transition>
 
-        <div class="attach-container">
-
-          <!-- 已引用标签栏 -->
-          <transition
-            name="el-zoom-in-center"
-          >
-            <transition-group
-                v-if="attachments.length > 0"
-                name="el-zoom-in-center"
-                tag="div"
-                class="attachments-bar"
-            >
-            <span
-                v-for="att in attachments"
-                :key="att.type + '-' + att.id"
-                class="attach-tag"
-            >
-              <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-inbox'" />
-              {{ att.name }}
-              <i class="iconfont icon-close attach-tag-close" @click="removeAttachment(att)" />
-            </span>
-            </transition-group>
-          </transition>
-
-          <!-- 附件按钮 -->
-          <el-popover
-              v-model:visible="attachPopoverVisible"
-              placement="top-end"
-              :width="280"
-              trigger="click"
-              popper-class="attach-popover"
-              popper-style="padding: 0;"
-          >
-            <template #reference>
-              <button
-                  class="attach-btn"
-                  :class="{ 'attach-btn-active': attachments.length > 0 }"
-                  title="添加附件"
-              >
-                <i class="iconfont icon-attachment" />
-                <span v-if="attachments.length > 0" class="attach-badge">{{ attachments.length }}</span>
-              </button>
-            </template>
-
-            <el-scrollbar
-                max-height="320px"
-                class="attach-popover-content"
-                view-style="padding: var(--space-3);"
-            >
-              <div class="attach-section">
-                <div class="attach-section-title">
-                  <i class="iconfont icon-fridge-line" />
-                  <span>选择冰箱</span>
-                </div>
-                <div v-if="fridgeList.length === 0" class="attach-empty">暂无冰箱</div>
-                <div v-else class="attach-option-list">
-                  <button
-                      v-for="fridge in fridgeList"
-                      :key="fridge.id"
-                      class="attach-option"
-                      :class="{ 'attach-option-selected': isAttached('fridge', fridge.id) }"
-                      @click="toggleAttachment('fridge', fridge)"
-                  >
-                    <span class="attach-option-name">{{ fridge.fridgeName }}</span>
-                    <i v-if="isAttached('fridge', fridge.id)" class="iconfont icon-check" />
-                  </button>
-                </div>
-              </div>
-
-              <div class="attach-divider" />
-
-              <div class="attach-section">
-                <div class="attach-section-title">
-                  <i class="iconfont icon-inbox" />
-                  <span>选择物品</span>
-                </div>
-                <div v-if="itemList.length === 0" class="attach-empty">暂无物品</div>
-                <div v-else class="attach-option-list">
-                  <button
-                      v-for="item in itemList.slice(0, 20)"
-                      :key="item.id"
-                      class="attach-option"
-                      :class="{ 'attach-option-selected': isAttached('item', item.id) }"
-                      @click="toggleAttachment('item', item)"
-                  >
-                    <span class="attach-option-name">{{ item.itemName }}</span>
-                    <span class="attach-option-meta">{{ item.fridgeName }}</span>
-                    <i v-if="isAttached('item', item.id)" class="iconfont icon-check" />
-                  </button>
-                </div>
-                <div v-if="itemList.length > 20" class="attach-more-tip">仅展示前 20 个物品</div>
-              </div>
-            </el-scrollbar>
-          </el-popover>
-        </div>
+        <AttachmentSelector v-model="attachments" :fridge-list="fridgeList" :item-list="itemList" />
       </div>
 
       <!-- 输入区 -->
@@ -350,7 +120,7 @@
           v-model="inputMessage"
           type="text"
           class="chat-input"
-          placeholder="输入你想问的问题，例如：我冰箱里还有什么鸡蛋？"
+          :placeholder="aiTyping ? 'AI思考中(ง •_•)ง' : '输入你想问的问题，例如：我冰箱里还有什么鸡蛋？'"
           :disabled="aiTyping"
           @keydown.enter="sendMessage"
         />
@@ -394,55 +164,29 @@
     </section>
 
     <!-- 会话列表 Drawer -->
-    <el-drawer
-      v-model="drawerVisible"
-      title="会话列表"
-      direction="ltr"
-      size="320px"
-      class="session-drawer"
-      :with-header="true"
-    >
-      <div class="session-drawer-content">
-        <button class="new-session-btn" @click="createNewSession">
-          <i class="iconfont icon-add-box" />
-          <span>新建会话</span>
-        </button>
-
-        <div v-loading="sessionLoading" class="session-list">
-          <div
-            v-for="session in sessions"
-            :key="session.sessionId"
-            :class="['session-item', session.sessionId === sessionId ? 'session-item-active' : '']"
-            @click="switchSession(session.sessionId)"
-          >
-            <div class="session-item-main">
-              <div class="session-title">{{ session.title || '新会话' }}</div>
-              <div class="session-time">{{ formatSessionTime(session.lastActiveTime) }}</div>
-            </div>
-            <button
-              class="session-delete-btn"
-              title="删除会话"
-              @click.stop="handleDeleteSession(session.sessionId)"
-            >
-              <i class="iconfont icon-trash" />
-            </button>
-          </div>
-
-          <el-empty v-if="sessions.length === 0 && !sessionLoading" description="暂无会话记录" />
-        </div>
-      </div>
-    </el-drawer>
+    <ChatSessionDrawer
+      v-model:visible="drawerVisible"
+      :session-id="sessionId"
+      :sessions="sessions"
+      :session-loading="sessionLoading"
+      @new-session="createNewSession"
+      @switch-session="switchSession"
+      @delete-session="handleDeleteSession"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useThemeStore } from '@/stores/theme'
 import Logo from '@/components/Logo.vue'
-import AiMessageContent from '@/components/ai/AiMessageContent.vue'
 import FridgeCreationWizard from '@/components/ai/FridgeCreationWizard.vue'
+import StatsOverview from '@/components/ai/StatsOverview.vue'
+import ChatStructuredMessage from '@/components/ai/ChatStructuredMessage.vue'
+import AttachmentSelector from '@/components/ai/AttachmentSelector.vue'
+import ChatSessionDrawer from '@/components/ai/ChatSessionDrawer.vue'
 import { getFridgeTypeById } from '@/utils/fridgeTypeMap.js'
 import { listMyFridges } from '@/api/fridge'
 import { searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats, getExpiringSummary } from '@/api/item'
@@ -526,64 +270,6 @@ const currentSessionName = computed(() => {
   return session?.title || '新对话'
 })
 
-// ==================== 统计卡片 ====================
-const statsList = computed(() => {
-  // 冰箱数量
-  const fridgeCount = fridgeList.value.length
-
-  // 物品总件数（所有 itemNum 之和）
-  const totalItemNum = itemList.value.reduce((sum, item) => sum + (item.itemNum || 0), 0)
-
-  // 近7天取出总数
-  const now = new Date()
-  const sevenDaysAgo = new Date(now)
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
-  sevenDaysAgo.setHours(0, 0, 0, 0)
-
-  const recentTakeOut = takeOutList.value.reduce((sum, item) => {
-    const itemDate = new Date(item.date)
-    return itemDate >= sevenDaysAgo ? sum + (item.count || 0) : sum
-  }, 0)
-
-  // 临期/过期数量（优先使用后端接口数据）
-  const expiring = expiringSummary.value.totalExpiring || 0
-
-  return [
-    {
-      key: 'fridge',
-      value: fridgeCount,
-      label: '我的冰箱',
-      icon: 'icon-fridge-line',
-      iconBg: 'linear-gradient(135deg, rgba(100,181,246,0.15) 0%, rgba(129,212,250,0.1) 100%)',
-      iconColor: '#64B5F6'
-    },
-    {
-      key: 'items',
-      value: totalItemNum,
-      label: '物品总数',
-      icon: 'icon-inbox',
-      iconBg: 'linear-gradient(135deg, rgba(129,199,132,0.15) 0%, rgba(165,214,167,0.1) 100%)',
-      iconColor: '#81C784'
-    },
-    {
-      key: 'takeout',
-      value: recentTakeOut,
-      label: '7天取出',
-      icon: 'icon-arrow-up-box',
-      iconBg: 'linear-gradient(135deg, rgba(255,183,77,0.15) 0%, rgba(255,202,128,0.1) 100%)',
-      iconColor: '#FFB74D'
-    },
-    {
-      key: 'expiring',
-      value: expiring,
-      label: '临期提醒',
-      icon: 'icon-calendar-alert',
-      iconBg: 'linear-gradient(135deg, rgba(248,113,113,0.15) 0%, rgba(239,154,154,0.1) 100%)',
-      iconColor: '#F87171'
-    }
-  ]
-})
-
 // ==================== AI 聊天 ====================
 function generateMsgId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
@@ -603,42 +289,7 @@ const chatMessagesRef = ref(null)
 const abortController = ref(null)
 
 // 附件状态
-const attachPopoverVisible = ref(false)
 const attachments = ref([])
-
-function isAttached(type, id) {
-  return attachments.value.some(a => a.type === type && a.id === id)
-}
-
-function toggleAttachment(type, data) {
-  const existingIndex = attachments.value.findIndex(a => a.type === type && a.id === data.id)
-  if (existingIndex !== -1) {
-    attachments.value.splice(existingIndex, 1)
-    return
-  }
-  if (type === 'fridge') {
-    attachments.value.push({
-      type: 'fridge',
-      id: data.id,
-      name: data.fridgeName
-    })
-  } else if (type === 'item') {
-    attachments.value.push({
-      type: 'item',
-      id: data.id,
-      name: data.itemName,
-      fridgeId: data.fridgeId || null,
-      fridgeName: data.fridgeName || null
-    })
-  }
-}
-
-function removeAttachment(att) {
-  const idx = attachments.value.findIndex(a => a.type === att.type && a.id === att.id)
-  if (idx !== -1) {
-    attachments.value.splice(idx, 1)
-  }
-}
 
 const defaultQuickActions = [
   { text: '查看冰箱' },
@@ -879,70 +530,10 @@ async function doSendChat(text, currentAttachments) {
 async function sendMessage() {
   const text = inputMessage.value.trim()
   if (!text || aiTyping.value) return
-  await doSendChat(text, attachments.value.map(a => ({ ...a })))
+  const currentAttachments = attachments.value.map(a => ({ ...a }))
   inputMessage.value = ''
   attachments.value = []  // 发送后清空附件
-}
-
-// ==================== 结构化消息渲染辅助 ====================
-function buildChatChartOption(chartData) {
-  const colors = getChartThemeColors(themeStore.theme === 'dark')
-  const series = (chartData.series || []).map(s => ({
-    name: s.name,
-    type: 'line',
-    smooth: true,
-    symbol: 'circle',
-    symbolSize: 5,
-    showSymbol: false,
-    lineStyle: { width: 2.5, color: s.color },
-    areaStyle: {
-      color: new graphic.LinearGradient(0, 0, 0, 1, [
-        { offset: 0, color: hexToRgba(s.color, 0.25) },
-        { offset: 1, color: hexToRgba(s.color, 0.02) }
-      ])
-    },
-    itemStyle: { color: s.color, borderColor: colors.tooltipBg, borderWidth: 2 },
-    data: s.counts || []
-  }))
-
-  return {
-    color: series.map(s => s.lineStyle.color),
-    tooltip: {
-      trigger: 'axis',
-      backgroundColor: colors.tooltipBg,
-      borderColor: colors.tooltipBorder,
-      textStyle: { color: colors.textColor }
-    },
-    legend: {
-      data: series.map(s => s.name),
-      top: '2%',
-      textStyle: { color: colors.subTextColor, fontSize: 11 },
-      itemWidth: 10,
-      itemHeight: 6
-    },
-    grid: {
-      left: '2%',
-      right: '4%',
-      bottom: '2%',
-      top: '22%',
-      containLabel: true
-    },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: chartData.dates || [],
-      axisLine: { lineStyle: { color: colors.axisLineColor } },
-      axisLabel: { color: colors.subTextColor, fontSize: 10 }
-    },
-    yAxis: {
-      type: 'value',
-      minInterval: 1,
-      axisLine: { show: false },
-      splitLine: { lineStyle: { color: colors.splitLineColor, type: 'dashed' } },
-      axisLabel: { color: colors.subTextColor, fontSize: 10 }
-    },
-    series
-  }
+  await doSendChat(text, currentAttachments)
 }
 
 // ==================== action_confirm 处理 ====================
@@ -1205,22 +796,6 @@ async function handleDeleteSession(sid) {
   } catch (err) {
     console.error('删除会话失败:', err)
   }
-}
-
-function formatSessionTime(timeStr) {
-  if (!timeStr) return ''
-  const date = new Date(timeStr)
-  const now = new Date()
-  const diff = now - date
-  const oneDay = 24 * 60 * 60 * 1000
-
-  if (diff < oneDay && date.getDate() === now.getDate()) {
-    return `今天 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-  }
-  if (diff < 2 * oneDay && date.getDate() === now.getDate() - 1) {
-    return `昨天 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-  }
-  return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
 }
 
 // ==================== 快捷导航 ====================
@@ -1543,54 +1118,6 @@ onUnmounted(() => {
   margin: 0;
 }
 
-/* ==================== 统计卡片 ==================== */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
-}
-
-.stat-card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-5) var(--space-5);
-  cursor: default;
-}
-
-.stat-icon-wrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.stat-icon {
-  font-size: 24px;
-}
-
-.stat-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: var(--text-tertiary);
-}
-
 /* ==================== AI 聊天 ==================== */
 .ai-chat-section {
   display: flex;
@@ -1731,45 +1258,8 @@ onUnmounted(() => {
   border-top-right-radius: 4px;
 }
 
-.message-content {
-  white-space: normal;
-}
-
-.message-user .message-time {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.message-time {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  margin-top: 4px;
-  text-align: right;
-}
-
 .typing-bubble {
   padding: 14px 18px;
-}
-
-.typing-indicator {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-
-.typing-indicator span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--text-tertiary);
-  animation: typing-bounce 1.4s ease-in-out infinite both;
-}
-
-.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes typing-bounce {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
-  40% { transform: scale(1); opacity: 1; }
 }
 
 /* 快捷指令 */
@@ -1778,7 +1268,7 @@ onUnmounted(() => {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-5) var(--space-3);
+  padding: var(--space-5) var(--space-5) var(--space-3);
   border-top: 1px solid var(--border-color);
 
   .suggestions-box {
@@ -1965,10 +1455,6 @@ onUnmounted(() => {
 
 /* ==================== 响应式 ==================== */
 @media (max-width: 992px) {
-  .stats-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .quick-actions-row {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1985,28 +1471,6 @@ onUnmounted(() => {
 
   .greeting-emoji {
     font-size: 26px;
-  }
-
-  .stats-row {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-3);
-  }
-
-  .stat-card {
-    padding: var(--space-4);
-  }
-
-  .stat-icon-wrapper {
-    width: 40px;
-    height: 40px;
-  }
-
-  .stat-icon {
-    font-size: 20px;
-  }
-
-  .stat-value {
-    font-size: 20px;
   }
 
   .chat-messages {
@@ -2038,17 +1502,6 @@ onUnmounted(() => {
 }
 
 @media (max-width: 480px) {
-  .stats-row {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-3);
-  }
-
-  .stat-card {
-    flex-direction: column;
-    text-align: center;
-    gap: var(--space-3);
-  }
-
   .quick-actions-row {
     grid-template-columns: 1fr 1fr;
   }
@@ -2150,243 +1603,6 @@ onUnmounted(() => {
   }
 }
 
-/* ==================== 结构化消息样式 ==================== */
-.struct-content {
-  margin-top: var(--space-3);
-}
-
-/* 冰箱列表卡片 */
-.fridge-list-inline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.fridge-mini-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: var(--space-3);
-  background: var(--glass-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  min-width: 100px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    box-shadow: var(--shadow-sm);
-    transform: translateY(-2px);
-  }
-}
-
-.fridge-mini-icon {
-  font-size: 24px;
-  color: var(--primary-color);
-  margin-bottom: 4px;
-}
-
-.fridge-mini-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.fridge-mini-meta {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  margin-top: 2px;
-}
-
-.default-badge {
-  display: inline-block;
-  padding: 0 4px;
-  border-radius: 4px;
-  background: var(--primary-light);
-  color: var(--primary-dark);
-  font-size: 10px;
-  margin-left: 4px;
-}
-
-/* 物品列表卡片 */
-.item-list-inline {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.item-mini-card {
-  padding: var(--space-2) var(--space-3);
-  background: var(--glass-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-}
-
-.item-mini-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.item-mini-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.freshness-tag {
-  flex-shrink: 0;
-}
-
-.item-mini-meta {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  margin-top: 2px;
-}
-
-/* 临期提醒卡片 */
-.expiring-list-inline {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.expiring-mini-card {
-  padding: var(--space-2) var(--space-3);
-  background: var(--glass-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--text-tertiary);
-}
-
-.expiring-mini-card.expiring-warning {
-  border-left-color: var(--warn-color);
-  background: rgba(255, 183, 77, 0.08);
-}
-
-.expiring-mini-card.expiring-danger {
-  border-left-color: var(--danger-color);
-  background: rgba(248, 113, 113, 0.08);
-}
-
-.expiring-mini-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.expiring-mini-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.expiring-mini-days {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--danger-color);
-  flex-shrink: 0;
-}
-
-.expiring-mini-meta {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  margin-top: 2px;
-}
-
-/* 菜谱卡片 */
-.recipe-list-inline {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.recipe-mini-card {
-  padding: var(--space-3);
-  background: var(--glass-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-}
-
-.recipe-mini-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
-
-.recipe-mini-desc {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-}
-
-.recipe-mini-meta {
-  display: flex;
-  gap: var(--space-3);
-  font-size: 11px;
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-2);
-}
-
-.recipe-difficulty {
-  color: var(--primary-color);
-}
-
-.recipe-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.recipe-tag {
-  font-size: 11px;
-}
-
-/* 聊天内嵌图表 */
-.chat-mini-chart {
-  width: 100%;
-  height: 180px;
-}
-
-/* 操作确认按钮 */
-.action-confirm-btns {
-  display: flex;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
-}
-
-.confirm-btn {
-  flex: 1;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &.cancel {
-    background: var(--glass-bg);
-    color: var(--text-secondary);
-
-    &:hover {
-      background: var(--input-bg);
-    }
-  }
-
-  &.confirm {
-    background: var(--danger-color);
-    color: white;
-    border-color: var(--danger-color);
-
-    &:hover {
-      background: var(--danger-dark);
-    }
-  }
-}
-
 /* ==================== 会话列表 Drawer ==================== */
 .chat-header-left {
   display: flex;
@@ -2438,420 +1654,4 @@ onUnmounted(() => {
   }
 }
 
-.session-drawer {
-  :deep(.el-drawer__header) {
-    margin-bottom: 0;
-    padding: var(--space-4) var(--space-5);
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-
-  :deep(.el-drawer__body) {
-    padding: 0;
-    background: var(--main-content-bg);
-  }
-}
-
-.session-drawer-content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: var(--space-4);
-}
-
-.new-session-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  border: 1px dashed var(--border-color);
-  background: var(--glass-bg);
-  color: var(--text-secondary);
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: var(--space-4);
-
-  &:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    background: var(--primary-light);
-  }
-
-  .iconfont {
-    font-size: 18px;
-  }
-}
-
-.session-list {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-2);
-}
-
-.session-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--glass-bg);
-  border: 1px solid var(--border-color);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    box-shadow: var(--shadow-sm);
-    border-color: var(--primary-color);
-    transform: translateY(-2px);
-  }
-}
-
-.session-item-active {
-  border-color: var(--primary-color);
-  background: var(--primary-light);
-
-  .session-title {
-    color: var(--primary-dark);
-    font-weight: 600;
-  }
-}
-
-.session-item-main {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.session-title {
-  font-size: 14px;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.session-time {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  margin-top: 2px;
-}
-
-.session-delete-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  opacity: 0;
-
-  .session-item:hover & {
-    opacity: 1;
-  }
-
-  &:hover {
-    background: var(--danger-light);
-    color: var(--danger-color);
-  }
-
-  .iconfont {
-    font-size: 14px;
-  }
-}
-
-/* ==================== 附件功能样式 ==================== */
-.attach-container {
-  margin-left: auto;
-  display: flex;
-  flex-direction: row;
-  gap: var(--space-3);
-  align-items: center;
-  justify-content: center;
-}
-
-
-/* 附件按钮 */
-.attach-btn {
-  position: relative;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: var(--input-bg);
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: var(--primary-light);
-    color: var(--primary-dark);
-  }
-
-  &.attach-btn-active {
-    background: var(--primary-light);
-    color: var(--primary-color);
-  }
-
-  .iconfont {
-    font-size: 18px;
-  }
-}
-
-.attach-badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 8px;
-  background: var(--danger-color);
-  color: white;
-  font-size: 10px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 已引用标签栏 */
-.attachments-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.attach-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  background: var(--primary-light);
-  color: var(--primary-dark);
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid var(--primary-30);
-  transition: all 0.2s ease;
-
-  .iconfont {
-    font-size: 12px;
-  }
-
-  .attach-tag-close {
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-
-    &:hover {
-      opacity: 1;
-    }
-  }
-}
-
-/* 消息内附件标签 */
-.message-attachments {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: var(--space-2);
-  padding-top: var(--space-2);
-  border-top: 1px dashed rgba(255, 255, 255, 0.3);
-}
-
-.message-user .message-attachments {
-  border-top-color: rgba(255, 255, 255, 0.25);
-}
-
-.message-ai .message-attachments {
-  border-top-color: var(--border-color);
-}
-
-.message-attach-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.35);
-  }
-
-  .iconfont {
-    font-size: 11px;
-  }
-}
-
-.message-ai .message-attach-tag {
-  background: var(--primary-10);
-  color: var(--primary-dark);
-
-  &:hover {
-    background: var(--primary-light);
-  }
-}
-
-/* Popover 内容 */
-.attach-popover {
-  .el-popover__title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--space-3);
-  }
-}
-
-.attach-popover-content {
-
-}
-
-.attach-section {
-  margin-bottom: var(--space-3);
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.attach-section-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-
-  .iconfont {
-    font-size: 14px;
-    color: var(--primary-color);
-  }
-}
-
-.attach-empty {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  padding: var(--space-2) 0;
-  text-align: center;
-}
-
-.attach-option-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.attach-option {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-  width: 100%;
-
-  &:hover {
-    background: var(--primary-10);
-    border-color: var(--primary-30);
-  }
-
-  &.attach-option-selected {
-    background: var(--primary-light);
-    border-color: var(--primary-color);
-    color: var(--primary-dark);
-    font-weight: 500;
-  }
-
-  .icon-check {
-    margin-left: auto;
-    font-size: 14px;
-    color: var(--primary-color);
-  }
-}
-
-.attach-option-name {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.attach-option-meta {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  flex-shrink: 0;
-}
-
-.attach-divider {
-  height: 1px;
-  background: var(--border-color);
-  margin: var(--space-3) 0;
-}
-
-.attach-more-tip {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  text-align: center;
-  padding-top: var(--space-1);
-}
-
-/* Popover 滚动条 */
-.attach-popover-content::-webkit-scrollbar {
-  width: 4px;
-}
-
-.attach-popover-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.attach-popover-content::-webkit-scrollbar-thumb {
-  background: var(--primary-20);
-  border-radius: 2px;
-}
-
-/* 响应式 */
-@media (max-width: 768px) {
-  .attachments-bar {
-    padding: var(--space-2) var(--space-4) 0;
-  }
-
-  .attach-btn {
-    width: 28px;
-    height: 28px;
-
-    .iconfont {
-      font-size: 16px;
-    }
-  }
-}
 </style>
