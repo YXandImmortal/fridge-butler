@@ -10,11 +10,11 @@ const FridgeDetailView = () => import('@/views/fridge/FridgeDetailView.vue')
 const ItemManageView = () => import('@/views/fridge/ItemManageView.vue')
 const ItemCategoryListView = () => import('@/views/item/ItemCategoryListView.vue')
 const DataCenterView = () => import('@/views/data-center/DataCenterView.vue')
-const AboutView = () => import('@/views/AboutView.vue')
+const AboutView = () => import('@/views/user/AboutView.vue')
 const NotificationListView = () => import('@/views/notification/NotificationListView.vue')
 
-const LoginView = () => import('@/views/LoginView.vue')
-const RegisterView = () => import('@/views/RegisterView.vue')
+const LoginView = () => import('@/views/auth/LoginView.vue')
+const RegisterView = () => import('@/views/auth/RegisterView.vue')
 
 const SUPER_ADMIN_PERMISSION = 1
 const USER_PERMISSION = 2

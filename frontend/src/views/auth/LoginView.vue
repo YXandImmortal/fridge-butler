@@ -66,9 +66,9 @@
 <script setup>
 import {ref, onMounted} from 'vue'
 import {useRouter} from 'vue-router'
-import {useUserStore} from '@/stores/user'
-import {useSystemStore} from '@/stores/system'
-import showMessage from '@/utils/message'
+import {useUserStore} from '@/stores/user.js'
+import {useSystemStore} from '@/stores/system.js'
+import showMessage from '@/utils/message.js'
 import AuthLayout from "@/layouts/AuthLayout.vue"
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
 import EnhancedInput from "@/components/EnhancedInput.vue"

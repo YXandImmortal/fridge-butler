@@ -96,10 +96,10 @@
 <script setup>
 import {computed, ref, watch} from 'vue'
 import {useRouter} from 'vue-router'
-import {useSystemStore} from '@/stores/system'
+import {useSystemStore} from '@/stores/system.js'
 import Logo from '@/components/Logo.vue'
 import AboutTour from '@/components/tour/AboutTour.vue'
-import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {useTourStore, TOUR_SCENES} from '@/stores/tour.js'
 
 const router = useRouter()
 const systemStore = useSystemStore()
