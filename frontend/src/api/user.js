@@ -39,7 +39,7 @@ export function updateUserAvatar(avatar) {
     return request({
         url: '/user/update-avatar',
         method: 'patch',
-        data: { avatar }
+        data: {avatar}
     })
 }
 
@@ -66,5 +66,15 @@ export function changePassword(data) {
         url: '/user/change-password',
         method: 'patch',
         data
+    })
+}
+
+/**
+ * 标记新手指引完成
+ */
+export function completeGuide() {
+    return request({
+        url: '/user/guide-complete',
+        method: 'patch'
     })
 }

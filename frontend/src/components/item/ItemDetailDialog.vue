@@ -4,112 +4,112 @@
       <div class="item-create-dialog">
         <div class="dialog-header">
           <div class="dialog-title-container">
-            <i class="iconfont dialog-icon" :class="mode === 'edit' ? 'icon-edit-box' : 'icon-item'" />
+            <i class="iconfont dialog-icon" :class="mode === 'edit' ? 'icon-edit-box' : 'icon-item'"/>
             <h3 class="dialog-title">{{ mode === 'edit' ? '编辑物品' : '添加物品' }}</h3>
           </div>
-          <i class="iconfont icon-close dialog-close" @click="handleClose" />
+          <i class="iconfont icon-close dialog-close" @click="handleClose"/>
         </div>
         <div class="dialog-content">
           <el-form
-            ref="formRef"
-            :model="form"
-            :rules="rules"
-            label-position="top"
-            class="add-form"
+              ref="formRef"
+              :model="form"
+              :rules="rules"
+              label-position="top"
+              class="add-form"
           >
             <el-form-item label="物品名称" prop="itemName">
               <EnhancedInput
-                v-model="form.itemName"
-                placeholder="请输入物品名称"
-                maxlength="50"
-                show-word-limit
+                  v-model="form.itemName"
+                  placeholder="请输入物品名称"
+                  maxlength="50"
+                  show-word-limit
               />
             </el-form-item>
 
             <el-form-item label="分类" prop="categoryId">
               <CustomSelect
-                v-model="form.categoryId"
-                :options="categoryOptions"
-                placeholder="请选择分类"
-                clearable
-                grid
-                full-width
-                class="form-select"
+                  v-model="form.categoryId"
+                  :options="categoryOptions"
+                  placeholder="请选择分类"
+                  clearable
+                  grid
+                  full-width
+                  class="form-select"
               />
             </el-form-item>
 
             <el-form-item label="数量" prop="itemNum">
               <el-input-number
-                v-model="form.itemNum"
-                :min="0"
-                :precision="2"
-                :step="1"
-                placeholder="请输入数量"
-                style="width: 100%;
+                  v-model="form.itemNum"
+                  :min="0"
+                  :precision="2"
+                  :step="1"
+                  placeholder="请输入数量"
+                  style="width: 100%;
                 --el-border-radius-base: var(--radius-md);"
               />
             </el-form-item>
 
             <el-form-item label="单位类型" prop="unitTypeId">
               <CustomSelect
-                v-model="form.unitTypeId"
-                :options="unitTypeOptions"
-                placeholder="请选择单位类型"
-                clearable
-                grid
-                full-width
-                class="form-select"
-                @change="handleUnitTypeChange"
+                  v-model="form.unitTypeId"
+                  :options="unitTypeOptions"
+                  placeholder="请选择单位类型"
+                  clearable
+                  grid
+                  full-width
+                  class="form-select"
+                  @change="handleUnitTypeChange"
               />
             </el-form-item>
 
             <el-form-item label="单位" prop="itemUnitId">
               <CustomSelect
-                v-model="form.itemUnitId"
-                :options="unitOptions"
-                placeholder="请选择单位"
-                clearable
-                grid
-                full-width
-                :disabled="!form.unitTypeId"
-                class="form-select"
+                  v-model="form.itemUnitId"
+                  :options="unitOptions"
+                  placeholder="请选择单位"
+                  clearable
+                  grid
+                  full-width
+                  :disabled="!form.unitTypeId"
+                  class="form-select"
               />
             </el-form-item>
 
             <el-form-item label="生产日期" prop="productionDate">
               <el-date-picker
-                v-model="form.productionDate"
-                type="date"
-                placeholder="请选择生产日期"
-                value-format="YYYY-MM-DD"
-                format="YYYY-MM-DD"
-                style="width: 100%;
+                  v-model="form.productionDate"
+                  type="date"
+                  placeholder="请选择生产日期"
+                  value-format="YYYY-MM-DD"
+                  format="YYYY-MM-DD"
+                  style="width: 100%;
                 --el-border-radius-base: var(--radius-md);
                 --el-input-height: 40px;"
-                clearable
-                :default-value="new Date()"
+                  clearable
+                  :default-value="new Date()"
               />
             </el-form-item>
 
             <el-form-item label="保质期" prop="shelfLifeDays">
               <div class="shelf-life-container">
                 <el-segmented
-                  v-model="shelfLifeMode"
-                  :options="shelfLifeOptions"
-                  size="small"
-                  class="mode-switch"
-                  @change="handleModeChange"
+                    v-model="shelfLifeMode"
+                    :options="shelfLifeOptions"
+                    size="small"
+                    class="mode-switch"
+                    @change="handleModeChange"
                 />
 
                 <el-slider
-                  v-model="sliderValue"
-                  :min="1"
-                  :max="modeMax"
-                  :step="1"
-                  :show-stops="shelfLifeMode === 'year'"
-                  show-input
-                  style="padding-left: 12px; --el-border-radius-base: var(--radius-md);"
-                  @change="handleSliderChange"
+                    v-model="sliderValue"
+                    :min="1"
+                    :max="modeMax"
+                    :step="1"
+                    :show-stops="shelfLifeMode === 'year'"
+                    show-input
+                    style="padding-left: 12px; --el-border-radius-base: var(--radius-md);"
+                    @change="handleSliderChange"
                 />
 
                 <div class="shelf-life-hint">
@@ -120,12 +120,12 @@
 
             <el-form-item v-if="mode === 'edit'" label="入库时间">
               <el-date-picker
-                v-model="form.storedDate"
-                type="date"
-                placeholder="暂无入库时间"
-                value-format="YYYY-MM-DD"
-                format="YYYY-MM-DD"
-                style="width: 100% ;
+                  v-model="form.storedDate"
+                  type="date"
+                  placeholder="暂无入库时间"
+                  value-format="YYYY-MM-DD"
+                  format="YYYY-MM-DD"
+                  style="width: 100% ;
                 --el-border-radius-base: var(--radius-md);
                 --el-input-height: 40px;"
               />
@@ -133,12 +133,12 @@
 
             <el-form-item label="备注" prop="remark">
               <EnhancedInput
-                v-model="form.remark"
-                type="textarea"
-                :rows="3"
-                placeholder="请输入备注信息（选填）"
-                maxlength="200"
-                show-word-limit
+                  v-model="form.remark"
+                  type="textarea"
+                  :rows="3"
+                  placeholder="请输入备注信息（选填）"
+                  maxlength="200"
+                  show-word-limit
               />
             </el-form-item>
           </el-form>
@@ -148,9 +148,9 @@
             取消
           </CustomButton>
           <CustomButton
-            type="primary"
-            :loading="submitting"
-            @click="handleSubmit"
+              type="primary"
+              :loading="submitting"
+              @click="handleSubmit"
           >
             {{ mode === 'edit' ? '确认修改' : '确认添加' }}
           </CustomButton>
@@ -161,11 +161,11 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
+import {computed, reactive, ref, watch} from 'vue'
 import CustomButton from '@/components/CustomButton.vue'
 import EnhancedInput from '@/components/EnhancedInput.vue'
 import CustomSelect from '@/components/CustomSelect.vue'
-import { createItem, updateItem } from '@/api/item'
+import {createItem, updateItem} from '@/api/item'
 import showMessage from '@/utils/message'
 
 const props = defineProps({
@@ -207,9 +207,9 @@ const shelfLifeMode = ref('day')
 const sliderValue = ref(1)
 
 const shelfLifeOptions = [
-  { label: '按天', value: 'day' },
-  { label: '按月', value: 'month' },
-  { label: '按年', value: 'year' }
+  {label: '按天', value: 'day'},
+  {label: '按月', value: 'month'},
+  {label: '按年', value: 'year'}
 ]
 
 const form = reactive({
@@ -226,27 +226,27 @@ const form = reactive({
 
 const rules = {
   itemName: [
-    { required: true, message: '请输入物品名称', trigger: 'blur' },
-    { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
+    {required: true, message: '请输入物品名称', trigger: 'blur'},
+    {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'}
   ],
   categoryId: [
-    { required: true, message: '请选择分类', trigger: 'change' }
+    {required: true, message: '请选择分类', trigger: 'change'}
   ],
   itemNum: [
-    { required: true, message: '请输入数量', trigger: 'change' },
-    { type: 'number', min: 0, message: '数量不能小于0', trigger: 'change' }
+    {required: true, message: '请输入数量', trigger: 'change'},
+    {type: 'number', min: 0, message: '数量不能小于0', trigger: 'change'}
   ],
   unitTypeId: [
-    { required: true, message: '请选择单位类型', trigger: 'change' }
+    {required: true, message: '请选择单位类型', trigger: 'change'}
   ],
   itemUnitId: [
-    { required: true, message: '请选择单位', trigger: 'change' }
+    {required: true, message: '请选择单位', trigger: 'change'}
   ],
   productionDate: [
-    { required: false, message: '请选择生产日期', trigger: 'change' }
+    {required: false, message: '请选择生产日期', trigger: 'change'}
   ],
   shelfLifeDays: [
-    { required: false, type: 'number', min: 1, message: '保质期至少为1天', trigger: 'change' }
+    {required: false, type: 'number', min: 1, message: '保质期至少为1天', trigger: 'change'}
   ]
 }
 
@@ -267,19 +267,23 @@ const unitTypeOptions = computed(() => {
 const unitOptions = computed(() => {
   if (!form.unitTypeId) return []
   return props.unitList
-    .filter(u => u.unitTypeId === form.unitTypeId)
-    .map(unit => ({
-      label: unit.unitName,
-      value: unit.id
-    }))
+      .filter(u => u.unitTypeId === form.unitTypeId)
+      .map(unit => ({
+        label: unit.unitName,
+        value: unit.id
+      }))
 })
 
 const modeMax = computed(() => {
   switch (shelfLifeMode.value) {
-    case 'day': return 100
-    case 'month': return 48
-    case 'year': return 10
-    default: return 100
+    case 'day':
+      return 100
+    case 'month':
+      return 48
+    case 'year':
+      return 10
+    default:
+      return 100
   }
 })
 

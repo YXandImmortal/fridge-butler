@@ -1,44 +1,44 @@
 <template>
   <el-input
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    :placeholder="placeholder"
-    :class="['enhanced-input', variantClass]"
-    :style="inputStyle"
-    :type="type"
-    :show-password="showPassword"
-    :clearable="clearable"
-    :disabled="disabled"
-    :maxlength="maxlength"
-    :show-word-limit="showWordLimit"
-    :rows="rows"
-    size="default"
+      :model-value="modelValue"
+      @update:model-value="$emit('update:modelValue', $event)"
+      :placeholder="placeholder"
+      :class="['enhanced-input', variantClass]"
+      :style="inputStyle"
+      :type="type"
+      :show-password="showPassword"
+      :clearable="clearable"
+      :disabled="disabled"
+      :maxlength="maxlength"
+      :show-word-limit="showWordLimit"
+      :rows="rows"
+      size="default"
   >
     <template v-if="icon" #prefix>
-      <i class="iconfont" :class="icon" />
+      <i class="iconfont" :class="icon"/>
     </template>
-    <slot name="prefix" />
-    <slot name="suffix" />
+    <slot name="prefix"/>
+    <slot name="suffix"/>
   </el-input>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 
 const props = defineProps({
-  modelValue: { type: String, default: '' },
-  placeholder: { type: String, default: '' },
-  icon: { type: String, default: '' },
-  type: { type: String, default: 'text' },
-  showPassword: { type: Boolean, default: false },
-  clearable: { type: Boolean, default: false },
-  disabled: { type: Boolean, default: false },
-  width: { type: String, default: '' },
-  height: { type: String, default: '' },
-  variant: { type: String, default: 'default' }, // 'default' | 'search'
-  maxlength: { type: [String, Number], default: undefined },
-  showWordLimit: { type: Boolean, default: false },
-  rows: { type: [String, Number], default: 2 }
+  modelValue: {type: String, default: ''},
+  placeholder: {type: String, default: ''},
+  icon: {type: String, default: ''},
+  type: {type: String, default: 'text'},
+  showPassword: {type: Boolean, default: false},
+  clearable: {type: Boolean, default: false},
+  disabled: {type: Boolean, default: false},
+  width: {type: String, default: ''},
+  height: {type: String, default: ''},
+  variant: {type: String, default: 'default'}, // 'default' | 'search'
+  maxlength: {type: [String, Number], default: undefined},
+  showWordLimit: {type: Boolean, default: false},
+  rows: {type: [String, Number], default: 2}
 })
 
 const emit = defineEmits(['update:modelValue'])

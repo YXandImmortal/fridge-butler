@@ -1,13 +1,13 @@
 <template>
   <section class="stats-row">
     <div
-      v-for="(stat, index) in statsList"
-      :key="stat.key"
-      class="stat-card glass-card animate-in"
-      :style="{ animationDelay: `${0.1 + index * 0.08}s` }"
+        v-for="(stat, index) in statsList"
+        :key="stat.key"
+        class="stat-card glass-card animate-in"
+        :style="{ animationDelay: `${0.1 + index * 0.08}s` }"
     >
       <div class="stat-icon-wrapper" :style="{ background: stat.iconBg }">
-        <i :class="['iconfont', stat.icon, 'stat-icon']" :style="{ color: stat.iconColor }" />
+        <i :class="['iconfont', stat.icon, 'stat-icon']" :style="{ color: stat.iconColor }"/>
       </div>
       <div class="stat-info">
         <div class="stat-value">{{ stat.value }}</div>
@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 
 const props = defineProps({
   fridgeList: {
@@ -35,7 +35,7 @@ const props = defineProps({
   },
   expiringSummary: {
     type: Object,
-    default: () => ({ expiringCount: 0, expiredCount: 0, totalExpiring: 0 })
+    default: () => ({expiringCount: 0, expiredCount: 0, totalExpiring: 0})
   }
 })
 

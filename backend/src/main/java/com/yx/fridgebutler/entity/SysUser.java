@@ -91,5 +91,9 @@ public class SysUser {
     @ColumnDefault("'bot'")
     @Column(name = "avatar", nullable = false, length = 20)
     private String avatar;
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "guide_completed", nullable = false)
+    private Boolean guideCompleted;
 
 }

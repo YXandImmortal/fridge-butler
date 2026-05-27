@@ -2,30 +2,30 @@
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title-wrapper">
-        <i class="iconfont icon-trending chart-title-icon" />
+        <i class="iconfont icon-trending chart-title-icon"/>
         <h3 class="chart-title">{{ title }}</h3>
       </div>
     </div>
     <v-chart
-      v-if="hasData"
-      class="chart-body"
-      :option="chartOption"
-      autoresize
+        v-if="hasData"
+        class="chart-body"
+        :option="chartOption"
+        autoresize
     />
-    <el-empty v-else :description="emptyText" class="chart-empty" />
+    <el-empty v-else :description="emptyText" class="chart-empty"/>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { use, graphic } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { LineChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-import { LegacyGridContainLabel } from 'echarts/features'
+import {computed} from 'vue'
+import {use, graphic} from 'echarts/core'
+import {CanvasRenderer} from 'echarts/renderers'
+import {LineChart} from 'echarts/charts'
+import {GridComponent, TooltipComponent, LegendComponent} from 'echarts/components'
+import {LegacyGridContainLabel} from 'echarts/features'
 import VChart from 'vue-echarts'
-import { getChartThemeColors } from '@/utils/data-analysis'
-import { useThemeStore } from '@/stores/theme'
+import {getChartThemeColors} from '@/utils/data-analysis'
+import {useThemeStore} from '@/stores/theme'
 
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent, LegacyGridContainLabel])
 
@@ -40,7 +40,7 @@ const props = defineProps({
   },
   data: {
     type: Object,
-    default: () => ({ dates: [], counts: [] })
+    default: () => ({dates: [], counts: []})
   }
 })
 
@@ -67,7 +67,7 @@ const chartOption = computed(() => {
   const isMultiSeries = props.data.series && Array.isArray(props.data.series)
 
   const seriesList = isMultiSeries
-    ? props.data.series.map((s, index) => {
+      ? props.data.series.map((s, index) => {
         const color = s.color || colors.colors[index % colors.colors.length]
         return {
           name: s.name,
@@ -82,8 +82,8 @@ const chartOption = computed(() => {
           },
           areaStyle: {
             color: new graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: hexToRgba(color, 0.35) },
-              { offset: 1, color: hexToRgba(color, 0.02) }
+              {offset: 0, color: hexToRgba(color, 0.35)},
+              {offset: 1, color: hexToRgba(color, 0.02)}
             ])
           },
           itemStyle: {
@@ -93,12 +93,12 @@ const chartOption = computed(() => {
           },
           emphasis: {
             focus: 'series',
-            itemStyle: { borderWidth: 3 }
+            itemStyle: {borderWidth: 3}
           },
           data: s.counts || []
         }
       })
-    : [{
+      : [{
         name: '入库数量',
         type: 'line',
         smooth: true,
@@ -111,8 +111,8 @@ const chartOption = computed(() => {
         },
         areaStyle: {
           color: new graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(100,181,246,0.35)' },
-            { offset: 1, color: 'rgba(100,181,246,0.02)' }
+            {offset: 0, color: 'rgba(100,181,246,0.35)'},
+            {offset: 1, color: 'rgba(100,181,246,0.02)'}
           ])
         },
         itemStyle: {
@@ -122,7 +122,7 @@ const chartOption = computed(() => {
         },
         emphasis: {
           focus: 'series',
-          itemStyle: { borderWidth: 3 }
+          itemStyle: {borderWidth: 3}
         },
         data: props.data.counts || []
       }]
@@ -133,16 +133,16 @@ const chartOption = computed(() => {
       trigger: 'axis',
       backgroundColor: colors.tooltipBg,
       borderColor: colors.tooltipBorder,
-      textStyle: { color: colors.textColor },
+      textStyle: {color: colors.textColor},
       axisPointer: {
         type: 'line',
-        lineStyle: { color: colors.primaryColor, width: 1, type: 'dashed' }
+        lineStyle: {color: colors.primaryColor, width: 1, type: 'dashed'}
       }
     },
     legend: {
       data: seriesList.map(s => s.name),
       top: '2%',
-      textStyle: { color: colors.subTextColor, fontSize: 12 },
+      textStyle: {color: colors.subTextColor, fontSize: 12},
       itemWidth: 12,
       itemHeight: 8
     },
@@ -157,7 +157,7 @@ const chartOption = computed(() => {
       type: 'category',
       boundaryGap: false,
       data: props.data.dates,
-      axisLine: { lineStyle: { color: colors.axisLineColor } },
+      axisLine: {lineStyle: {color: colors.axisLineColor}},
       axisLabel: {
         color: colors.subTextColor,
         fontSize: 11,
@@ -173,9 +173,9 @@ const chartOption = computed(() => {
     yAxis: {
       type: 'value',
       minInterval: 1,
-      axisLine: { show: false },
-      splitLine: { lineStyle: { color: colors.splitLineColor, type: 'dashed' } },
-      axisLabel: { color: colors.subTextColor }
+      axisLine: {show: false},
+      splitLine: {lineStyle: {color: colors.splitLineColor, type: 'dashed'}},
+      axisLabel: {color: colors.subTextColor}
     },
     series: seriesList
   }

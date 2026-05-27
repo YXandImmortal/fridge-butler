@@ -27,6 +27,11 @@ public class UpdateLogVO {
     private String date;
 
     /**
+     * 版本一句话摘要
+     */
+    private String summary;
+
+    /**
      * 变更内容列表
      */
     private List<String> changes;

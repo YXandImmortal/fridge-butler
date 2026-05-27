@@ -14,14 +14,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 
 // 定义系统默认头像映射
 const SYSTEM_AVATARS = {
-  'panda': () => import('@/assets/avatars/panda.svg'),
-  'bot': () => import('@/assets/avatars/bot.svg'),
-  'core': () => import('@/assets/avatars/core.svg'),
-  'fruit': () => import('@/assets/avatars/fruit.svg')
+  'egg': () => import('@/assets/avatars/egg.svg'),
+  'ice': () => import('@/assets/avatars/ice.svg'),
+  'leaf': () => import('@/assets/avatars/leaf.svg'),
+  'milk': () => import('@/assets/avatars/milk.svg'),
+  'orange': () => import('@/assets/avatars/orange.svg'),
+  'snowflake': () => import('@/assets/avatars/snowflake.svg')
 }
 
 // 定义组件属性
@@ -29,7 +31,7 @@ const props = defineProps({
   // 头像ID，可以是系统头像ID或自定义URL
   avatarId: {
     type: String,
-    default: 'bot'
+    default: 'egg'
   },
   // 头像尺寸
   size: {

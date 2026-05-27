@@ -7,9 +7,9 @@
 @font-face {
   font-family: 'MiSans';
   src: url('@/assets/fonts/MiSans-Normal.woff2') format('woff2'),
-       url('@/assets/fonts/MiSans-Normal.woff') format('woff'),
-       url('@/assets/fonts/MiSans-Normal.otf') format('opentype'),
-       url('@/assets/fonts/MiSans-Normal.ttf') format('truetype');
+  url('@/assets/fonts/MiSans-Normal.woff') format('woff'),
+  url('@/assets/fonts/MiSans-Normal.otf') format('opentype'),
+  url('@/assets/fonts/MiSans-Normal.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -83,11 +83,25 @@ body {
 }
 
 /* 图标尺寸预设 — 减少 !important 的使用 */
-.icon-xs { font-size: 14px; }
-.icon-sm { font-size: 16px; }
-.icon-md { font-size: 20px; }
-.icon-lg { font-size: 22px; }
-.icon-xl { font-size: 30px; }
+.icon-xs {
+  font-size: 14px;
+}
+
+.icon-sm {
+  font-size: 16px;
+}
+
+.icon-md {
+  font-size: 20px;
+}
+
+.icon-lg {
+  font-size: 22px;
+}
+
+.icon-xl {
+  font-size: 30px;
+}
 
 /* 文字渐变（主色） */
 .text-gradient-primary {

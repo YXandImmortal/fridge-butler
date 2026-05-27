@@ -1,22 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-  <!-- 十字对开门冰箱 -->
-  <rect x="15" y="10" width="70" height="80" rx="3" ry="3" fill="none" stroke="#333" stroke-width="2"/>
-  
-  <!-- 上面冷藏室对开门 -->
-  <line x1="50" y1="10" x2="50" y2="48" stroke="#333" stroke-width="1.5"/>
-  <line x1="15" y1="48" x2="85" y2="48" stroke="#333" stroke-width="1.5"/>
-  
-  <!-- 下面冷冻室中间分隔 -->
-  <line x1="50" y1="48" x2="50" y2="90" stroke="#333" stroke-width="1.5"/>
-  
-  <!-- 上门把手 -->
-  <line x1="44" y1="25" x2="44" y2="35" stroke="#333" stroke-width="2" stroke-linecap="round"/>
-  <line x1="56" y1="25" x2="56" y2="35" stroke="#333" stroke-width="2" stroke-linecap="round"/>
-  
-  <!-- 下抽屉把手 -->
-  <line x1="56" y1="60" x2="56" y2="75" stroke="#333" stroke-width="2" stroke-linecap="round"/>
-  <line x1="44" y1="60" x2="44" y2="75" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    <!-- 十字对开门冰箱 -->
+    <rect x="15" y="10" width="70" height="80" rx="3" ry="3" fill="none" stroke="#333" stroke-width="2"/>
 
-  <line x1="20" y1="87" x2="46" y2="87" stroke="#999" stroke-width="1"/>
-  <line x1="54" y1="87" x2="80" y2="87" stroke="#999" stroke-width="1"/>
+    <!-- 上面冷藏室对开门 -->
+    <line x1="50" y1="10" x2="50" y2="48" stroke="#333" stroke-width="1.5"/>
+    <line x1="15" y1="48" x2="85" y2="48" stroke="#333" stroke-width="1.5"/>
+
+    <!-- 下面冷冻室中间分隔 -->
+    <line x1="50" y1="48" x2="50" y2="90" stroke="#333" stroke-width="1.5"/>
+
+    <!-- 上门把手 -->
+    <line x1="44" y1="25" x2="44" y2="35" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    <line x1="56" y1="25" x2="56" y2="35" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- 下抽屉把手 -->
+    <line x1="56" y1="60" x2="56" y2="75" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    <line x1="44" y1="60" x2="44" y2="75" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+
+    <line x1="20" y1="87" x2="46" y2="87" stroke="#999" stroke-width="1"/>
+    <line x1="54" y1="87" x2="80" y2="87" stroke="#999" stroke-width="1"/>
 </svg>

@@ -5,9 +5,9 @@
       <ul class="nav-menu">
         <!-- 动态菜单 -->
         <li
-          v-for="feature in userIndexFeatures"
-          :key="feature.id"
-          :class="[
+            v-for="feature in userIndexFeatures"
+            :key="feature.id"
+            :class="[
             'nav-item',
             {
               active: isMenuActive(feature),
@@ -17,29 +17,29 @@
         >
           <!-- 有子菜单的情况：点击展开/收起 -->
           <div
-            v-if="hasChildren(feature)"
-            class="nav-link nav-link--parent"
-            @click="toggleExpand(feature.id)"
+              v-if="hasChildren(feature)"
+              class="nav-link nav-link--parent"
+              @click="toggleExpand(feature.id)"
           >
             <div class="nav-icon">
-              <i v-if="feature.icon" class="iconfont" :class="feature.icon" />
+              <i v-if="feature.icon" class="iconfont" :class="feature.icon"/>
               <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
               </svg>
             </div>
             <span class="nav-text">{{ feature.name }}</span>
             <!-- 展开箭头 -->
-            <i class="iconfont icon-chevron-down arrow-icon" :class="{ expanded: isExpanded(feature.id) }" />
+            <i class="iconfont icon-chevron-down arrow-icon" :class="{ expanded: isExpanded(feature.id) }"/>
           </div>
 
           <!-- 无子菜单的情况：router-link 跳转 -->
           <router-link
-            v-else
-            :to="feature.path"
-            class="nav-link"
+              v-else
+              :to="feature.path"
+              class="nav-link"
           >
             <div class="nav-icon">
-              <i v-if="feature.icon" class="iconfont" :class="feature.icon" />
+              <i v-if="feature.icon" class="iconfont" :class="feature.icon"/>
               <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
               </svg>
@@ -51,9 +51,9 @@
           <transition name="submenu">
             <ul v-if="hasChildren(feature) && isExpanded(feature.id)" class="sub-menu">
               <li
-                v-for="child in feature.children"
-                :key="child.id"
-                :class="['sub-nav-item', { active: isActive(child.path) }]"
+                  v-for="child in feature.children"
+                  :key="child.id"
+                  :class="['sub-nav-item', { active: isActive(child.path) }]"
               >
                 <router-link :to="child.path" class="sub-nav-link">
                   <span class="sub-nav-dot"></span>
@@ -81,8 +81,8 @@
           <div class="tip-header">
             <span class="tip-emoji">{{ tip.emoji }}</span>
             <span
-              class="tip-type-badge"
-              :style="typeBadgeStyle"
+                class="tip-type-badge"
+                :style="typeBadgeStyle"
             >
               {{ tip.typeLabel }}
             </span>
@@ -97,9 +97,9 @@
           <!-- 谜语答案（交互式） -->
           <div v-if="tip.type === 'RIDDLE' && tip.answer" class="tip-riddle-answer">
             <button
-              v-if="!showAnswer"
-              class="tip-answer-btn"
-              @click="showAnswer = true"
+                v-if="!showAnswer"
+                class="tip-answer-btn"
+                @click="showAnswer = true"
             >
               看答案 👀
             </button>
@@ -127,13 +127,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue'
-import { useSystemStore } from "@/stores/system.js"
-import { useRoute } from 'vue-router'
-import { getTodayTip } from '@/api/dailyTip'
+import {onMounted, ref, computed, watch} from 'vue'
+import {useSystemStore} from "@/stores/system.js"
+import {useRoute} from 'vue-router'
+import {getTodayTip} from '@/api/dailyTip'
 
 const systemStore = useSystemStore()
-const { userIndexFeatures, getSystemInfo } = systemStore
+const {userIndexFeatures, getSystemInfo} = systemStore
 const route = useRoute()
 
 // 记录展开的菜单 ID
@@ -186,7 +186,7 @@ const autoExpandActiveParent = () => {
 // 路由变化时自动展开对应的父菜单
 watch(() => route.path, () => {
   autoExpandActiveParent()
-}, { immediate: true })
+}, {immediate: true})
 
 onMounted(async () => {
   await getSystemInfo()
@@ -236,7 +236,7 @@ const loadTodayTip = async () => {
     const cached = localStorage.getItem(TIP_CACHE_KEY)
     if (cached) {
       try {
-        const { date, data } = JSON.parse(cached)
+        const {date, data} = JSON.parse(cached)
         const today = new Date().toISOString().split('T')[0]
         if (date === today && data) {
           tip.value = data

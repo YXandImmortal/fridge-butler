@@ -1,13 +1,13 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import {createApp} from 'vue'
+import {createPinia} from 'pinia'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import App from './App.vue'
 import router from './router'
-import { useUserStore } from "@/stores/user.js";
-import { useThemeStore } from "@/stores/theme.js";
-import { setRouter } from '@/utils/navigate'
+import {useUserStore} from "@/stores/user.js";
+import {useThemeStore} from "@/stores/theme.js";
+import {setRouter} from '@/utils/navigate'
 
 import './styles/index.scss'
 import '@/assets/iconfont/iconfont.css'

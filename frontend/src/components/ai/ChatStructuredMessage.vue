@@ -3,27 +3,27 @@
     <!-- 文本内容（Markdown 渲染） -->
     <div v-if="msg.content" class="message-content">
       <AiMessageContent
-        :content="msg.content"
-        :is-streaming="isStreaming"
+          :content="msg.content"
+          :is-streaming="isStreaming"
       />
     </div>
 
     <!-- AI 打字中 -->
     <div v-if="isTypingIndicator" class="typing-indicator">
-      <span />
-      <span />
-      <span />
+      <span/>
+      <span/>
+      <span/>
     </div>
 
     <!-- 用户附件标签 -->
     <div v-if="msg.role === 'user' && msg.attachments && msg.attachments.length > 0" class="message-attachments">
       <span
-        v-for="att in msg.attachments"
-        :key="att.type + '-' + att.id"
-        class="message-attach-tag"
-        @click="$router.push(att.type === 'fridge' ? '/fridge/detail/' + att.id : '/fridge/items/' + att.fridgeId)"
+          v-for="att in msg.attachments"
+          :key="att.type + '-' + att.id"
+          class="message-attach-tag"
+          @click="$router.push(att.type === 'fridge' ? '/fridge/detail/' + att.id : '/fridge/items/' + att.fridgeId)"
       >
-        <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-item'" />
+        <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-item'"/>
         {{ att.name }}
       </span>
     </div>
@@ -32,12 +32,12 @@
     <div v-if="msg.messageType === 'fridge_list' && msg.data" class="struct-content">
       <div class="fridge-list-inline">
         <div
-          v-for="fridge in msg.data.fridges"
-          :key="fridge.id"
-          class="fridge-mini-card"
-          @click="$router.push('/fridge/detail/' + fridge.id)"
+            v-for="fridge in msg.data.fridges"
+            :key="fridge.id"
+            class="fridge-mini-card"
+            @click="$router.push('/fridge/detail/' + fridge.id)"
         >
-          <i class="iconfont icon-fridge-line fridge-mini-icon" />
+          <i class="iconfont icon-fridge-line fridge-mini-icon"/>
           <div class="fridge-mini-name">{{ fridge.name }}</div>
           <div class="fridge-mini-meta">
             {{ fridge.itemCount }} 件物品
@@ -50,9 +50,9 @@
     <div v-else-if="msg.messageType === 'item_list' && msg.data" class="struct-content">
       <div class="item-list-inline">
         <div
-          v-for="item in msg.data.items"
-          :key="item.id"
-          class="item-mini-card"
+            v-for="item in msg.data.items"
+            :key="item.id"
+            class="item-mini-card"
         >
           <div class="item-mini-header">
             <span class="item-mini-name">{{ item.name }}</span>
@@ -70,15 +70,17 @@
     <div v-else-if="msg.messageType === 'expiring_alert' && msg.data" class="struct-content">
       <div class="expiring-list-inline">
         <div
-          v-for="item in msg.data.items"
-          :key="item.id"
-          class="expiring-mini-card"
-          :class="'expiring-' + item.freshnessType"
+            v-for="item in msg.data.items"
+            :key="item.id"
+            class="expiring-mini-card"
+            :class="'expiring-' + item.freshnessType"
         >
           <div class="expiring-mini-header">
             <span class="expiring-mini-name">{{ item.name }}</span>
             <span class="expiring-mini-days">
-              {{ item.remainingDays >= 0 ? '剩' + item.remainingDays + '天' : '已过期' + Math.abs(item.remainingDays) + '天' }}
+              {{
+                item.remainingDays >= 0 ? '剩' + item.remainingDays + '天' : '已过期' + Math.abs(item.remainingDays) + '天'
+              }}
             </span>
           </div>
           <div class="expiring-mini-meta">
@@ -91,9 +93,9 @@
     <div v-else-if="msg.messageType === 'recipe_recommend' && msg.data" class="struct-content">
       <div class="recipe-list-inline">
         <div
-          v-for="recipe in msg.data.recipes"
-          :key="recipe.name"
-          class="recipe-mini-card"
+            v-for="recipe in msg.data.recipes"
+            :key="recipe.name"
+            class="recipe-mini-card"
         >
           <div class="recipe-mini-name">{{ recipe.name }}</div>
           <div class="recipe-mini-desc">{{ recipe.description }}</div>
@@ -114,7 +116,7 @@
     </div>
 
     <div v-else-if="msg.messageType === 'trend_chart' && msg.data" class="struct-content">
-      <v-chart class="chat-mini-chart" :option="buildChatChartOption(msg.data)" autoresize />
+      <v-chart class="chat-mini-chart" :option="buildChatChartOption(msg.data)" autoresize/>
     </div>
 
     <div v-else-if="msg.messageType === 'action_confirm' && msg.data" class="struct-content">
@@ -126,7 +128,7 @@
 
     <div v-else-if="msg.messageType === 'fridge_creation_wizard' && msg.data" class="struct-content">
       <div class="wizard-history-summary">
-        <i class="iconfont icon-fridge-line" />
+        <i class="iconfont icon-fridge-line"/>
         <span>AI 正在引导您创建冰箱</span>
         <span v-if="msg.data.formData?.name" class="wizard-history-name">「{{ msg.data.formData.name }}」</span>
       </div>
@@ -134,7 +136,7 @@
 
     <div v-else-if="msg.messageType === 'item_creation_wizard' && msg.data" class="struct-content">
       <div class="wizard-history-summary">
-        <i class="iconfont icon-item" />
+        <i class="iconfont icon-item"/>
         <span>AI 正在引导您添加物品</span>
         <span v-if="msg.data.formData?.itemName" class="wizard-history-name">「{{ msg.data.formData.itemName }}」</span>
       </div>
@@ -157,9 +159,9 @@
         <!-- 食材明细列表 -->
         <div v-if="msg.data.items && msg.data.items.length > 0" class="calorie-items">
           <div
-            v-for="(item, index) in msg.data.items"
-            :key="index"
-            class="calorie-item"
+              v-for="(item, index) in msg.data.items"
+              :key="index"
+              class="calorie-item"
           >
             <span v-if="item.icon" class="calorie-item-icon">{{ item.icon }}</span>
             <span v-else class="calorie-item-icon">🥗</span>
@@ -189,7 +191,7 @@
 
         <!-- AI 总结 -->
         <div v-if="msg.data.summary" class="calorie-summary">
-          <i class="iconfont icon-info" />
+          <i class="iconfont icon-info"/>
           <span>{{ msg.data.summary }}</span>
         </div>
       </div>
@@ -200,16 +202,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useThemeStore } from '@/stores/theme'
+import {computed} from 'vue'
+import {useRouter} from 'vue-router'
+import {useThemeStore} from '@/stores/theme'
 import AiMessageContent from './AiMessageContent.vue'
-import { use, graphic } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { LineChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
+import {use, graphic} from 'echarts/core'
+import {CanvasRenderer} from 'echarts/renderers'
+import {LineChart} from 'echarts/charts'
+import {GridComponent, TooltipComponent, LegendComponent} from 'echarts/components'
 import VChart from 'vue-echarts'
-import { getChartThemeColors } from '@/utils/data-analysis'
+import {getChartThemeColors} from '@/utils/data-analysis'
 
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent])
 
@@ -250,14 +252,14 @@ function buildChatChartOption(chartData) {
     symbol: 'circle',
     symbolSize: 5,
     showSymbol: false,
-    lineStyle: { width: 2.5, color: s.color },
+    lineStyle: {width: 2.5, color: s.color},
     areaStyle: {
       color: new graphic.LinearGradient(0, 0, 0, 1, [
-        { offset: 0, color: hexToRgba(s.color, 0.25) },
-        { offset: 1, color: hexToRgba(s.color, 0.02) }
+        {offset: 0, color: hexToRgba(s.color, 0.25)},
+        {offset: 1, color: hexToRgba(s.color, 0.02)}
       ])
     },
-    itemStyle: { color: s.color, borderColor: colors.tooltipBg, borderWidth: 2 },
+    itemStyle: {color: s.color, borderColor: colors.tooltipBg, borderWidth: 2},
     data: s.counts || []
   }))
 
@@ -267,12 +269,12 @@ function buildChatChartOption(chartData) {
       trigger: 'axis',
       backgroundColor: colors.tooltipBg,
       borderColor: colors.tooltipBorder,
-      textStyle: { color: colors.textColor }
+      textStyle: {color: colors.textColor}
     },
     legend: {
       data: series.map(s => s.name),
       top: '2%',
-      textStyle: { color: colors.subTextColor, fontSize: 11 },
+      textStyle: {color: colors.subTextColor, fontSize: 11},
       itemWidth: 10,
       itemHeight: 6
     },
@@ -287,15 +289,15 @@ function buildChatChartOption(chartData) {
       type: 'category',
       boundaryGap: false,
       data: chartData.dates || [],
-      axisLine: { lineStyle: { color: colors.axisLineColor } },
-      axisLabel: { color: colors.subTextColor, fontSize: 10 }
+      axisLine: {lineStyle: {color: colors.axisLineColor}},
+      axisLabel: {color: colors.subTextColor, fontSize: 10}
     },
     yAxis: {
       type: 'value',
       minInterval: 1,
-      axisLine: { show: false },
-      splitLine: { lineStyle: { color: colors.splitLineColor, type: 'dashed' } },
-      axisLabel: { color: colors.subTextColor, fontSize: 10 }
+      axisLine: {show: false},
+      splitLine: {lineStyle: {color: colors.splitLineColor, type: 'dashed'}},
+      axisLabel: {color: colors.subTextColor, fontSize: 10}
     },
     series
   }
@@ -328,12 +330,23 @@ function hexToRgba(hex, alpha) {
   animation: typing-bounce 1.4s ease-in-out infinite both;
 }
 
-.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+.typing-indicator span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: -0.16s;
+}
 
 @keyframes typing-bounce {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
-  40% { transform: scale(1); opacity: 1; }
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .message-time {

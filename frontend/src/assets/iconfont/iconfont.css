@@ -1,535 +1,567 @@
 @font-face {
-  font-family: "iconfont"; /* Project id 5163375 */
-  src: url('iconfont.woff2?t=1779727110939') format('woff2'),
-       url('iconfont.woff?t=1779727110939') format('woff'),
-       url('iconfont.ttf?t=1779727110939') format('truetype');
+    font-family: "iconfont"; /* Project id 5163375 */
+    src: url('iconfont.woff2?t=1779812463666') format('woff2'),
+    url('iconfont.woff?t=1779812463666') format('woff'),
+    url('iconfont.ttf?t=1779812463666') format('truetype');
 }
 
 .iconfont {
-  font-family: "iconfont" !important;
-  font-size: 16px;
-  font-style: normal;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-family: "iconfont" !important;
+    font-size: 16px;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-backburger:before {
+    content: "\eb3c";
+}
+
+.icon-bulletlist:before {
+    content: "\eb3f";
+}
+
+.icon-forwardburger:before {
+    content: "\eb40";
+}
+
+.icon-layout:before {
+    content: "\eb41";
+}
+
+.icon-more-vertical:before {
+    content: "\eb45";
+}
+
+.icon-book-open:before {
+    content: "\eb3d";
+}
+
+.icon-lightbulb-2:before {
+    content: "\eb3e";
+}
+
+.icon-teach:before {
+    content: "\eb67";
 }
 
 .icon-star:before {
-  content: "\ebe1";
+    content: "\ebe1";
 }
 
 .icon-script:before {
-  content: "\eb57";
+    content: "\eb57";
 }
 
 .icon-script-text:before {
-  content: "\eb58";
+    content: "\eb58";
 }
 
 .icon-at:before {
-  content: "\eb30";
+    content: "\eb30";
 }
 
 .icon-debug:before {
-  content: "\eb31";
+    content: "\eb31";
 }
 
 .icon-github:before {
-  content: "\eb3b";
+    content: "\eb3b";
 }
 
 .icon-attachment:before {
-  content: "\eb27";
+    content: "\eb27";
 }
 
 .icon-mail-check:before {
-  content: "\eb3a";
+    content: "\eb3a";
 }
 
 .icon-reload:before {
-  content: "\eb53";
+    content: "\eb53";
 }
 
 .icon-cloud-moon:before {
-  content: "\eb25";
+    content: "\eb25";
 }
 
 .icon-cloud-sun:before {
-  content: "\eb26";
+    content: "\eb26";
 }
 
 .icon-heart:before {
-  content: "\eb2f";
+    content: "\eb2f";
 }
 
 .icon-moon:before {
-  content: "\eb42";
+    content: "\eb42";
 }
 
 .icon-moon-star:before {
-  content: "\eb43";
+    content: "\eb43";
 }
 
 .icon-moon-stars:before {
-  content: "\eb44";
+    content: "\eb44";
 }
 
 .icon-sun:before {
-  content: "\eb64";
+    content: "\eb64";
 }
 
 .icon-sun-alt:before {
-  content: "\eb65";
+    content: "\eb65";
 }
 
 .icon-leaf:before {
-  content: "\e8f5";
+    content: "\e8f5";
 }
 
 .icon-charts-pie:before {
-  content: "\e826";
+    content: "\e826";
 }
 
 .icon-speed-slow:before {
-  content: "\eb62";
+    content: "\eb62";
 }
 
 .icon-trending:before {
-  content: "\eb6b";
+    content: "\eb6b";
 }
 
 .icon-building-community:before {
-  content: "\eb24";
+    content: "\eb24";
 }
 
 .icon-notes:before {
-  content: "\eb48";
+    content: "\eb48";
 }
 
 .icon-chart:before {
-  content: "\eb20";
+    content: "\eb20";
 }
 
 .icon-chart-multiple:before {
-  content: "\eb23";
+    content: "\eb23";
 }
 
 .icon-inbox:before {
-  content: "\eb2c";
+    content: "\eb2c";
 }
 
 .icon-label-alt:before {
-  content: "\eb2d";
+    content: "\eb2d";
 }
 
 .icon-label-alt-multiple:before {
-  content: "\eb2e";
+    content: "\eb2e";
 }
 
 .icon-chart-bar:before {
-  content: "\eb1f";
+    content: "\eb1f";
 }
 
 .icon-hidden:before {
-  content: "\eb22";
+    content: "\eb22";
 }
 
 .icon-visible:before {
-  content: "\eb73";
+    content: "\eb73";
 }
 
 .icon-item:before {
-  content: "\e6fd";
+    content: "\e6fd";
 }
 
 .icon-captcha:before {
-  content: "\e615";
+    content: "\e615";
 }
 
 .icon-edit:before {
-  content: "\eb1d";
+    content: "\eb1d";
 }
 
 .icon-edit-box:before {
-  content: "\eb1e";
+    content: "\eb1e";
 }
 
 .icon-warning-box:before {
-  content: "\eb76";
+    content: "\eb76";
 }
 
 .icon-fridge-line:before {
-  content: "\ec0a";
+    content: "\ec0a";
 }
 
 .icon-trash:before {
-  content: "\eb6a";
+    content: "\eb6a";
 }
 
 .icon-device-phone:before {
-  content: "\eb1c";
+    content: "\eb1c";
 }
 
 .icon-contact-delete:before {
-  content: "\eb16";
+    content: "\eb16";
 }
 
 .icon-contact-plus:before {
-  content: "\eb17";
+    content: "\eb17";
 }
 
 .icon-delete:before {
-  content: "\eb18";
+    content: "\eb18";
 }
 
 .icon-device-tablet:before {
-  content: "\eb19";
+    content: "\eb19";
 }
 
 .icon-draft:before {
-  content: "\eb1a";
+    content: "\eb1a";
 }
 
 .icon-folder-plus:before {
-  content: "\eb1b";
+    content: "\eb1b";
 }
 
 .icon-home:before {
-  content: "\eb21";
+    content: "\eb21";
 }
 
 .icon-inbox-all:before {
-  content: "\eb28";
+    content: "\eb28";
 }
 
 .icon-inbox-full:before {
-  content: "\eb29";
+    content: "\eb29";
 }
 
 .icon-info-box:before {
-  content: "\eb2a";
+    content: "\eb2a";
 }
 
 .icon-label:before {
-  content: "\eb2b";
+    content: "\eb2b";
 }
 
 .icon-list:before {
-  content: "\eb32";
+    content: "\eb32";
 }
 
 .icon-lock:before {
-  content: "\eb33";
+    content: "\eb33";
 }
 
 .icon-loader:before {
-  content: "\eb34";
+    content: "\eb34";
 }
 
 .icon-lock-open:before {
-  content: "\eb35";
+    content: "\eb35";
 }
 
 .icon-login:before {
-  content: "\eb36";
+    content: "\eb36";
 }
 
 .icon-logout:before {
-  content: "\eb37";
+    content: "\eb37";
 }
 
 .icon-mail:before {
-  content: "\eb38";
+    content: "\eb38";
 }
 
 .icon-mail-unread:before {
-  content: "\eb39";
+    content: "\eb39";
 }
 
 .icon-notification:before {
-  content: "\eb49";
+    content: "\eb49";
 }
 
 .icon-save:before {
-  content: "\eb56";
+    content: "\eb56";
 }
 
 .icon-search:before {
-  content: "\eb59";
+    content: "\eb59";
 }
 
 .icon-trash-alt:before {
-  content: "\eb6c";
+    content: "\eb6c";
 }
 
 .icon-user:before {
-  content: "\eb6f";
+    content: "\eb6f";
 }
 
 .icon-user-minus:before {
-  content: "\eb70";
+    content: "\eb70";
 }
 
 .icon-user-plus:before {
-  content: "\eb71";
+    content: "\eb71";
 }
 
 .icon-users:before {
-  content: "\eb72";
+    content: "\eb72";
 }
 
 .icon-ac:before {
-  content: "\ead6";
+    content: "\ead6";
 }
 
 .icon-add-box-multiple:before {
-  content: "\ead7";
+    content: "\ead7";
 }
 
 .icon-add-box:before {
-  content: "\ead8";
+    content: "\ead8";
 }
 
 .icon-add-grid:before {
-  content: "\ead9";
+    content: "\ead9";
 }
 
 .icon-alert:before {
-  content: "\eada";
+    content: "\eada";
 }
 
 .icon-animation:before {
-  content: "\eadb";
+    content: "\eadb";
 }
 
 .icon-archive:before {
-  content: "\eadc";
+    content: "\eadc";
 }
 
 .icon-arrow-down:before {
-  content: "\eadd";
+    content: "\eadd";
 }
 
 .icon-arrow-down-box:before {
-  content: "\eade";
+    content: "\eade";
 }
 
 .icon-arrow-left:before {
-  content: "\eadf";
+    content: "\eadf";
 }
 
 .icon-arrows-horizontal:before {
-  content: "\eae0";
+    content: "\eae0";
 }
 
 .icon-arrow-right-box:before {
-  content: "\eae1";
+    content: "\eae1";
 }
 
 .icon-arrows-vertical:before {
-  content: "\eae2";
+    content: "\eae2";
 }
 
 .icon-arrow-up:before {
-  content: "\eae3";
+    content: "\eae3";
 }
 
 .icon-arrow-right:before {
-  content: "\eae4";
+    content: "\eae4";
 }
 
 .icon-arrow-up-box:before {
-  content: "\eae5";
+    content: "\eae5";
 }
 
 .icon-article-multiple:before {
-  content: "\eae6";
+    content: "\eae6";
 }
 
 .icon-article:before {
-  content: "\eae7";
+    content: "\eae7";
 }
 
 .icon-avatar:before {
-  content: "\eae8";
+    content: "\eae8";
 }
 
 .icon-battery:before {
-  content: "\eae9";
+    content: "\eae9";
 }
 
 .icon-battery-full:before {
-  content: "\eaea";
+    content: "\eaea";
 }
 
 .icon-book:before {
-  content: "\eaeb";
+    content: "\eaeb";
 }
 
 .icon-bookmark:before {
-  content: "\eaec";
+    content: "\eaec";
 }
 
 .icon-bookmarks:before {
-  content: "\eaed";
+    content: "\eaed";
 }
 
 .icon-briefcase:before {
-  content: "\eaee";
+    content: "\eaee";
 }
 
 .icon-briefcase-account:before {
-  content: "\eaef";
+    content: "\eaef";
 }
 
 .icon-bug:before {
-  content: "\eaf0";
+    content: "\eaf0";
 }
 
 .icon-buildings:before {
-  content: "\eaf1";
+    content: "\eaf1";
 }
 
 .icon-cake:before {
-  content: "\eaf2";
+    content: "\eaf2";
 }
 
 .icon-calendar:before {
-  content: "\eaf3";
+    content: "\eaf3";
 }
 
 .icon-calendar-alert:before {
-  content: "\eaf4";
+    content: "\eaf4";
 }
 
 .icon-calendar-arrow-left:before {
-  content: "\eaf5";
+    content: "\eaf5";
 }
 
 .icon-calendar-arrow-right:before {
-  content: "\eaf6";
+    content: "\eaf6";
 }
 
 .icon-calendar-check:before {
-  content: "\eaf7";
+    content: "\eaf7";
 }
 
 .icon-calendar-minus:before {
-  content: "\eaf8";
+    content: "\eaf8";
 }
 
 .icon-calendar-month:before {
-  content: "\eaf9";
+    content: "\eaf9";
 }
 
 .icon-calendar-multiple:before {
-  content: "\eafa";
+    content: "\eafa";
 }
 
 .icon-calendar-multiple-check:before {
-  content: "\eafb";
+    content: "\eafb";
 }
 
 .icon-calendar-plus:before {
-  content: "\eafc";
+    content: "\eafc";
 }
 
 .icon-calendar-range:before {
-  content: "\eafd";
+    content: "\eafd";
 }
 
 .icon-calendar-remove:before {
-  content: "\eafe";
+    content: "\eafe";
 }
 
 .icon-calendar-search:before {
-  content: "\eaff";
+    content: "\eaff";
 }
 
 .icon-calendar-sort-ascending:before {
-  content: "\eb00";
+    content: "\eb00";
 }
 
 .icon-calendar-sort-descending:before {
-  content: "\eb01";
+    content: "\eb01";
 }
 
 .icon-calendar-text:before {
-  content: "\eb02";
+    content: "\eb02";
 }
 
 .icon-calendar-today:before {
-  content: "\eb03";
+    content: "\eb03";
 }
 
 .icon-calendar-week:before {
-  content: "\eb04";
+    content: "\eb04";
 }
 
 .icon-calendar-week-begin:before {
-  content: "\eb05";
+    content: "\eb05";
 }
 
 .icon-calendar-weekend:before {
-  content: "\eb06";
+    content: "\eb06";
 }
 
 .icon-calendar-tomorrow:before {
-  content: "\eb07";
+    content: "\eb07";
 }
 
 .icon-check:before {
-  content: "\eb08";
+    content: "\eb08";
 }
 
 .icon-checkbox-on:before {
-  content: "\eb09";
+    content: "\eb09";
 }
 
 .icon-checkbox:before {
-  content: "\eb0a";
+    content: "\eb0a";
 }
 
 .icon-checklist:before {
-  content: "\eb0b";
+    content: "\eb0b";
 }
 
 .icon-chevron-down:before {
-  content: "\eb0c";
+    content: "\eb0c";
 }
 
 .icon-chevron-left:before {
-  content: "\eb0d";
+    content: "\eb0d";
 }
 
 .icon-chevron-right:before {
-  content: "\eb0e";
+    content: "\eb0e";
 }
 
 .icon-chevrons-horizontal:before {
-  content: "\eb0f";
+    content: "\eb0f";
 }
 
 .icon-chevron-up:before {
-  content: "\eb10";
+    content: "\eb10";
 }
 
 .icon-chevrons-vertical:before {
-  content: "\eb11";
+    content: "\eb11";
 }
 
 .icon-clock:before {
-  content: "\eb12";
+    content: "\eb12";
 }
 
 .icon-close:before {
-  content: "\eb13";
+    content: "\eb13";
 }
 
 .icon-close-box:before {
-  content: "\eb14";
+    content: "\eb14";
 }
 
 .icon-contact:before {
-  content: "\eb15";
+    content: "\eb15";
 }
 

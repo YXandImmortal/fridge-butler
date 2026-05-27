@@ -2,12 +2,12 @@
   <div class="super-admin-container">
     <div class="placeholder-card">
       <div class="placeholder-icon">
-        <i class="iconfont icon-settings" />
+        <i class="iconfont icon-settings"/>
       </div>
       <h1 class="placeholder-title">超级管理员后台</h1>
       <p class="placeholder-text">管理员功能正在开发中</p>
       <div class="placeholder-progress">
-        <div class="progress-bar" />
+        <div class="progress-bar"/>
       </div>
     </div>
   </div>

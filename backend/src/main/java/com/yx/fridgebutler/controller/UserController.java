@@ -75,4 +75,16 @@ public class UserController {
         log.info("更新头像成功，头像ID：{}", request.getAvatar());
         return Result.success(null);
     }
+
+    /**
+     * 标记当前登录用户的新手指引已完成
+     *
+     * @return 标记成功的响应结果
+     */
+    @PatchMapping("/guide-complete")
+    public Result<Void> completeGuide() {
+        userService.completeGuide();
+        log.info("新手指引标记完成");
+        return Result.success(null);
+    }
 }

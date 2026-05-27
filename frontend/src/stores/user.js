@@ -5,7 +5,8 @@ import {
     getUserInfo as getUserInfoApi,
     updateUserAvatar as updateUserAvatarApi,
     updateUserInfo as updateUserInfoApi,
-    changePassword as changePasswordApi
+    changePassword as changePasswordApi,
+    completeGuide as completeGuideApi
 } from '@/api/user'
 
 export const useUserStore = defineStore('user', () => {
@@ -20,9 +21,37 @@ export const useUserStore = defineStore('user', () => {
     const rememberMe = ref(false)
     const avatar = ref('')
     const expireTime = ref(0)
+    const guideCompleted = ref(false)
 
     // 计算属性：是否已登录
     const isLoggedIn = computed(() => !!token.value)
+
+    // 辅助函数：同步指定字段到本地存储
+    const syncFieldToStorage = (field, value) => {
+        let storageInfo = null
+        let storageType = null
+
+        const localInfo = localStorage.getItem('userInfo')
+        if (localInfo) {
+            storageInfo = JSON.parse(localInfo)
+            storageType = 'local'
+        } else {
+            const sessionInfo = sessionStorage.getItem('userInfo')
+            if (sessionInfo) {
+                storageInfo = JSON.parse(sessionInfo)
+                storageType = 'session'
+            }
+        }
+
+        if (storageInfo) {
+            storageInfo[field] = value
+            if (storageType === 'local') {
+                localStorage.setItem('userInfo', JSON.stringify(storageInfo))
+            } else if (storageType === 'session') {
+                sessionStorage.setItem('userInfo', JSON.stringify(storageInfo))
+            }
+        }
+    }
 
     // 初始化：从localStorage加载状态（页面刷新后保留登录状态）
     const initUser = () => {
@@ -47,6 +76,7 @@ export const useUserStore = defineStore('user', () => {
             rememberMe.value = info.rememberMe || false
             avatar.value = info.avatar
             expireTime.value = info.expireTime || 0
+            guideCompleted.value = info.guideCompleted || false
 
             // 检查token是否过期
             if (expireTime.value && Date.now() > expireTime.value) {
@@ -75,7 +105,8 @@ export const useUserStore = defineStore('user', () => {
                 userId: resId,
                 rememberMe: resRememberMe,
                 avatar: resAvatar,
-                expireTime: resExpireTime
+                expireTime: resExpireTime,
+                guideCompleted: resGuideCompleted
             } = res.data
 
             // 更新状态
@@ -89,6 +120,7 @@ export const useUserStore = defineStore('user', () => {
             rememberMe.value = resRememberMe || false
             avatar.value = resAvatar
             expireTime.value = resExpireTime || 0
+            guideCompleted.value = !!resGuideCompleted
 
             // 构建用户信息对象
             const userInfo = {
@@ -100,7 +132,8 @@ export const useUserStore = defineStore('user', () => {
                 roleId: resRoleId,
                 userId: resId,
                 rememberMe: resRememberMe || false,
-                expireTime: resExpireTime || 0
+                expireTime: resExpireTime || 0,
+                guideCompleted: !!resGuideCompleted
             }
 
             // 根据rememberMe决定存储方式
@@ -133,6 +166,7 @@ export const useUserStore = defineStore('user', () => {
         rememberMe.value = false
         avatar.value = ''
         expireTime.value = 0
+        guideCompleted.value = false
         localStorage.removeItem('userInfo')
         sessionStorage.removeItem('userInfo')
     }
@@ -149,6 +183,8 @@ export const useUserStore = defineStore('user', () => {
                     // token已过期，清除存储并请求后端
                     logout();
                 } else {
+                    // 同步本地 guideCompleted 到 store
+                    guideCompleted.value = parsedInfo.guideCompleted || false
                     // 返回本地存储的用户信息
                     return parsedInfo;
                 }
@@ -158,6 +194,11 @@ export const useUserStore = defineStore('user', () => {
             const res = await getUserInfoApi();
 
             if (res.code === 200 && res.data) {
+                // 从后端更新 guideCompleted
+                if (typeof res.data.guideCompleted !== 'undefined') {
+                    guideCompleted.value = !!res.data.guideCompleted
+                    syncFieldToStorage('guideCompleted', guideCompleted.value)
+                }
                 return res.data;
             }
             return null;
@@ -247,7 +288,7 @@ export const useUserStore = defineStore('user', () => {
                 if (storageInfo) {
                     storageInfo.username = userInfo.username;
                     storageInfo.mobile = userInfo.mobile;
-                    
+
                     if (storageType === 'local') {
                         localStorage.setItem('userInfo', JSON.stringify(storageInfo));
                     } else if (storageType === 'session') {
@@ -273,5 +314,41 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
-    return { token, username, mobile, createTime, roleName, roleId, userId, rememberMe, avatar, expireTime, initUser, login, logout, getUserInfo, updateUserInfo, changePassword, updateUserAvatar, isLoggedIn }
+    // 标记新手指引完成
+    const markGuideCompleted = async () => {
+        try {
+            const res = await completeGuideApi()
+            if (res.code === 200) {
+                guideCompleted.value = true
+                syncFieldToStorage('guideCompleted', true)
+            }
+            return res
+        } catch (error) {
+            console.error('标记引导完成失败:', error)
+            throw error
+        }
+    }
+
+    return {
+        token,
+        username,
+        mobile,
+        createTime,
+        roleName,
+        roleId,
+        userId,
+        rememberMe,
+        avatar,
+        expireTime,
+        guideCompleted,
+        initUser,
+        login,
+        logout,
+        getUserInfo,
+        updateUserInfo,
+        changePassword,
+        updateUserAvatar,
+        isLoggedIn,
+        markGuideCompleted
+    }
 })

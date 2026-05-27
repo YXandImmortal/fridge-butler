@@ -38,4 +38,9 @@ public interface UserService {
      * @param request 头像更新请求参数
      */
     void updateAvatar(UserUpdateAvatarRequest request);
+
+    /**
+     * 标记当前登录用户的新手指引已完成。
+     */
+    void completeGuide();
 }

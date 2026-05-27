@@ -8,7 +8,7 @@
 
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-wrapper">
-      <el-skeleton :rows="8" animated />
+      <el-skeleton :rows="8" animated/>
       <p class="loading-hint">数据加载中，首次计算可能需要较长时间，请稍候...</p>
     </div>
 
@@ -16,18 +16,18 @@
       <!-- 顶部概览指标 -->
       <div class="stats-row">
         <StatCard
-          :value="overviewStats.fridgeCount"
-          label="冰箱数量"
-          icon-class="icon-fridge-line"
-          type="default"
-          suffix=" 台"
+            :value="overviewStats.fridgeCount"
+            label="冰箱数量"
+            icon-class="icon-fridge-line"
+            type="default"
+            suffix=" 台"
         />
         <StatCard
-          :value="overviewStats.totalItems"
-          label="物品总件数"
-          icon-class="icon-item"
-          type="default"
-          suffix=" 件"
+            :value="overviewStats.totalItems"
+            label="物品总件数"
+            icon-class="icon-item"
+            type="default"
+            suffix=" 件"
         />
         <StatCard
             :value="overviewStats.capacityRate"
@@ -38,11 +38,11 @@
         />
         <a href="#expiring-table-section" class="stat-link">
           <StatCard
-            :value="overviewStats.expiringCount"
-            label="临期 / 过期预警"
-            icon-class="icon-alert"
-            type="warning"
-            suffix=" 件"
+              :value="overviewStats.expiringCount"
+              label="临期 / 过期预警"
+              icon-class="icon-alert"
+              type="warning"
+              suffix=" 件"
           />
         </a>
       </div>
@@ -50,23 +50,23 @@
       <!-- 第一行图表：冰箱分布 + 分类占比 -->
       <div class="charts-row">
         <div class="chart-col">
-          <FridgeItemBarChart :data="fridgeBarData" />
+          <FridgeItemBarChart :data="fridgeBarData"/>
         </div>
         <div class="chart-col">
-          <CategoryPieChart :data="categoryPieData" />
+          <CategoryPieChart :data="categoryPieData"/>
         </div>
       </div>
 
       <!-- 第二行图表：新鲜度 + 入库趋势 -->
       <div class="charts-row">
         <div class="chart-col">
-          <FreshnessPieChart :data="freshnessPieData" />
+          <FreshnessPieChart :data="freshnessPieData"/>
         </div>
         <div class="chart-col">
           <TrendLineChart
-            title="近30天出入库趋势"
-            empty-text="近30天暂无出入库记录"
-            :data="trendData"
+              title="近30天出入库趋势"
+              empty-text="近30天暂无出入库记录"
+              :data="trendData"
           />
         </div>
       </div>
@@ -74,25 +74,28 @@
       <!-- 第三行图表：保质期分布 + 容量仪表盘 -->
       <div class="charts-row">
         <div class="chart-col">
-          <ShelfLifeBarChart :data="shelfLifeBarData" />
+          <ShelfLifeBarChart :data="shelfLifeBarData"/>
         </div>
         <div class="chart-col">
-          <CapacityGaugeGroup :data="gaugeData" />
+          <CapacityGaugeGroup :data="gaugeData"/>
         </div>
       </div>
 
       <!-- 底部预警清单 -->
       <div id="expiring-table-section" class="table-row">
-        <ExpiringItemTable :data="expiringItems" />
+        <ExpiringItemTable :data="expiringItems"/>
       </div>
     </template>
+    <DataCenterTour ref="tourRef"/>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { listMyFridges, getCapacityStats } from '@/api/fridge'
-import { searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats } from '@/api/item'
+import DataCenterTour from '@/components/tour/DataCenterTour.vue'
+import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {ref, computed, onMounted, watch} from 'vue'
+import {listMyFridges, getCapacityStats} from '@/api/fridge'
+import {searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats} from '@/api/item'
 import showMessage from '@/utils/message'
 import StatCard from '@/components/data-center/StatCard.vue'
 import FridgeItemBarChart from '@/components/data-center/FridgeItemBarChart.vue'
@@ -159,8 +162,8 @@ const trendData = computed(() => {
   return {
     dates,
     series: [
-      { name: '入库数量', counts: inboundCounts, color: '#64B5F6' },
-      { name: '取出数量', counts: takeOutCounts, color: '#FFB74D' }
+      {name: '入库数量', counts: inboundCounts, color: '#64B5F6'},
+      {name: '取出数量', counts: takeOutCounts, color: '#FFB74D'}
     ]
   }
 })
@@ -176,15 +179,15 @@ const fetchData = async () => {
       searchItems({}),
       getRecent30DaysTakeOutStats().catch(err => {
         console.error('获取取出趋势失败:', err)
-        return { code: -1, data: [] }
+        return {code: -1, data: []}
       }),
       getRecent30DaysAddStats().catch(err => {
         console.error('获取入库趋势失败:', err)
-        return { code: -1, data: [] }
+        return {code: -1, data: []}
       }),
       getCapacityStats().catch(err => {
         console.error('获取容量利用率失败:', err)
-        return { code: -1, data: null }
+        return {code: -1, data: null}
       })
     ])
 
@@ -215,8 +218,8 @@ const fetchData = async () => {
     // 保存后端返回的完整容量统计数据
     if (capacityRes.code === 200 && capacityRes.data != null) {
       capacityStats.value = typeof capacityRes.data === 'number'
-        ? { avgRate: capacityRes.data, fridgeRates: [] }
-        : capacityRes.data
+          ? {avgRate: capacityRes.data, fridgeRates: []}
+          : capacityRes.data
     } else {
       capacityStats.value = null
     }
@@ -234,6 +237,15 @@ const fetchData = async () => {
 
 onMounted(() => {
   fetchData()
+})
+// 页面引导
+const tourRef = ref(null)
+const tourStore = useTourStore()
+
+watch(() => tourStore.pendingStartScene, (scene) => {
+  if (scene === TOUR_SCENES.DATA_CENTER) {
+    tourRef.value?.start()
+  }
 })
 </script>
 

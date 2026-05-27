@@ -3,10 +3,13 @@
     <!-- 左侧 Logo 和标题 -->
     <div class="header-left">
       <div class="logo-container">
-        <div class="logo-icon">
-          <Logo />
+        <div class="logo-icon" @click="goToUserIndex">
+          <Logo/>
         </div>
         <h1 class="app-title">{{ systemName || '冰箱管理系统' }}</h1>
+        <div class="quick-guide-btn" @click="handleQuickGuideClick" title="快速上手指南">
+          <i class="iconfont icon-book-open"/>
+        </div>
       </div>
     </div>
 
@@ -18,24 +21,24 @@
     <!-- 右侧用户信息和操作 -->
     <div class="header-right">
       <!-- 主题切换 -->
-      <ThemeToggle />
+      <ThemeToggle/>
 
       <!-- 通知图标 -->
       <el-popover
-        trigger="click"
-        :width="420"
-        popper-class="notification-popover"
-        :teleported="true"
-        @show="handlePopoverShow"
-        transition="el-zoom-in-top"
-        popper-style="border-radius: var(--radius-md);"
-        :show-arrow="false"
-        :offset="10"
+          trigger="click"
+          :width="420"
+          popper-class="notification-popover"
+          :teleported="true"
+          @show="handlePopoverShow"
+          transition="el-zoom-in-top"
+          popper-style="border-radius: var(--radius-md);"
+          :show-arrow="false"
+          :offset="10"
       >
         <template #reference>
           <div class="notification-icon">
             <el-badge :value="notificationStore.unreadCount" :hidden="!notificationStore.hasUnread" :max="99">
-              <i class="iconfont icon-notification" />
+              <i class="iconfont icon-notification"/>
             </el-badge>
           </div>
         </template>
@@ -46,17 +49,17 @@
             <span class="dropdown-title">消息通知</span>
             <div class="dropdown-actions">
               <CustomButton
-                v-if="notificationStore.unreadCount > 0"
-                type="link"
-                size="small"
-                @click="handleReadAll"
+                  v-if="notificationStore.unreadCount > 0"
+                  type="link"
+                  size="small"
+                  @click="handleReadAll"
               >
                 全部已读
               </CustomButton>
               <CustomButton
-                type="link"
-                size="small"
-                @click="goToNotificationCenter"
+                  type="link"
+                  size="small"
+                  @click="goToNotificationCenter"
               >
                 查看全部
               </CustomButton>
@@ -67,51 +70,51 @@
           <div v-loading="dropdownLoading" class="dropdown-list">
             <template v-if="recentNotifications.length > 0">
               <div
-                v-for="n in recentNotifications"
-                :key="n.id"
-                :class="['dropdown-item', { unread: n.status === 'UNREAD' }]"
-                @click="handleNotificationClick(n)"
+                  v-for="n in recentNotifications"
+                  :key="n.id"
+                  :class="['dropdown-item', { unread: n.status === 'UNREAD' }]"
+                  @click="handleNotificationClick(n)"
               >
-                <div v-if="n.status === 'UNREAD'" class="dropdown-item-unread-bar" />
-                <div class="dropdown-item-dot" :style="{ backgroundColor: getPriorityColor(n.priority) }" />
+                <div v-if="n.status === 'UNREAD'" class="dropdown-item-unread-bar"/>
+                <div class="dropdown-item-dot" :style="{ backgroundColor: getPriorityColor(n.priority) }"/>
                 <div class="dropdown-item-content">
                   <div class="dropdown-item-title">{{ n.title }}</div>
                   <div class="dropdown-item-time">{{ formatTime(n.createTime) }}</div>
                 </div>
               </div>
             </template>
-            <el-empty v-else description="暂无新消息" :image-size="60" class="dropdown-empty" />
+            <el-empty v-else description="暂无新消息" :image-size="60" class="dropdown-empty"/>
           </div>
         </div>
       </el-popover>
 
       <!-- 用户信息 -->
       <el-popover
-        v-model:visible="showUserMenu"
-        trigger="hover"
-        popper-style="min-width: 140px; max-width: 140px; border-radius: var(--radius-md); padding: var(--space-2);"
-        :teleported="true"
-        transition="el-zoom-in-top"
-        :show-arrow="false"
-        :offset="0"
+          v-model:visible="showUserMenu"
+          trigger="hover"
+          popper-style="min-width: 140px; max-width: 140px; border-radius: var(--radius-md); padding: var(--space-2);"
+          :teleported="true"
+          transition="el-zoom-in-top"
+          :show-arrow="false"
+          :offset="0"
       >
         <template #reference>
           <div class="user-info">
             <div class="user-avatar">
-              <Avatar :avatar-id="currentAvatar" size="small" />
+              <Avatar :avatar-id="currentAvatar" size="small"/>
             </div>
             <span class="user-name">{{ username }}</span>
-            <i class="iconfont icon-chevron-down user-arrow" :class="{ 'rotate-180': showUserMenu }" />
+            <i class="iconfont icon-chevron-down user-arrow" :class="{ 'rotate-180': showUserMenu }"/>
           </div>
         </template>
 
         <div>
           <div class="user-menu-item" @click="goToUserCenter">
-            <i class="iconfont icon-user" />
+            <i class="iconfont icon-user"/>
             <span>个人中心</span>
           </div>
           <div class="user-menu-item is-danger" @click="handleLogoutClick">
-            <i class="iconfont icon-logout" />
+            <i class="iconfont icon-logout"/>
             <span>退出登录</span>
           </div>
         </div>
@@ -121,11 +124,12 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, computed } from 'vue'
-import { useUserStore } from "@/stores/user.js"
-import { useSystemStore } from "@/stores/system.js"
-import { useNotificationStore } from "@/stores/notification.js"
-import { getNotificationList, markAllAsRead, markAsRead } from "@/api/notification.js"
+import {onMounted, onUnmounted, ref, computed} from 'vue'
+import {useUserStore} from "@/stores/user.js"
+import {useSystemStore} from "@/stores/system.js"
+import {useNotificationStore} from "@/stores/notification.js"
+import {useTourStore, TOUR_SCENES} from "@/stores/tour.js"
+import {getNotificationList, markAllAsRead, markAsRead} from "@/api/notification.js"
 import Logo from './Logo.vue'
 import Avatar from './Avatar.vue'
 import ThemeToggle from './ThemeToggle.vue'
@@ -135,8 +139,8 @@ import router from "@/router/index.js";
 const userStore = useUserStore()
 const systemStore = useSystemStore()
 const notificationStore = useNotificationStore()
-const { username, initUser } = userStore;
-const { systemName, getSystemInfo } = systemStore;
+const {username, initUser} = userStore;
+const {systemName, getSystemInfo} = systemStore;
 
 // 使用computed确保头像响应式更新，直接从userStore访问avatar状态
 const currentAvatar = computed(() => userStore.avatar);
@@ -145,7 +149,7 @@ const currentAvatar = computed(() => userStore.avatar);
 const showUserMenu = ref(false);
 
 // 定义事件
-const emit = defineEmits(['show-logout-dialog']);
+const emit = defineEmits(['show-logout-dialog', 'start-quick-tour', 'show-guide-dialog']);
 
 // 下拉面板相关
 const dropdownLoading = ref(false)
@@ -166,7 +170,7 @@ onUnmounted(() => {
 const handlePopoverShow = async () => {
   dropdownLoading.value = true
   try {
-    const res = await getNotificationList({ status: 0, page: 1, size: 5 })
+    const res = await getNotificationList({status: 0, page: 1, size: 5})
     if (res.code === 200) {
       recentNotifications.value = Array.isArray(res.data) ? res.data : (res.data?.list || [])
     }
@@ -180,9 +184,12 @@ const handlePopoverShow = async () => {
 
 const getPriorityColor = (priority) => {
   switch (priority) {
-    case 2: return 'var(--danger-color)'
-    case 1: return 'var(--warn-color)'
-    default: return 'var(--text-tertiary)'
+    case 2:
+      return 'var(--danger-color)'
+    case 1:
+      return 'var(--warn-color)'
+    default:
+      return 'var(--text-tertiary)'
   }
 }
 
@@ -235,6 +242,10 @@ const goToNotificationCenter = () => {
 }
 
 // 用户菜单跳转
+const goToUserIndex = () => {
+  router.push('/user/index')
+}
+
 const goToUserCenter = () => {
   showUserMenu.value = false
   router.push('/user/center')
@@ -244,6 +255,19 @@ const goToUserCenter = () => {
 const handleLogoutClick = () => {
   showUserMenu.value = false
   emit('show-logout-dialog')
+}
+
+const tourStore = useTourStore()
+
+// 快速上手指南
+const handleQuickGuideClick = () => {
+  if (!tourStore.isSceneCompleted(TOUR_SCENES.GLOBAL_LAYOUT)) {
+    // 未完成：直接启动快速指引，不弹窗
+    emit('start-quick-tour')
+  } else {
+    // 已完成：弹出选择对话框
+    emit('show-guide-dialog')
+  }
 }
 
 </script>
@@ -284,6 +308,7 @@ const handleLogoutClick = () => {
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .logo-icon:hover {
@@ -293,6 +318,28 @@ const handleLogoutClick = () => {
 .logo-icon svg {
   width: 20px;
   height: 20px;
+}
+
+.quick-guide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 12px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.quick-guide-btn:hover {
+  color: var(--primary-color);
+  transform: scale(1.1);
+}
+
+.quick-guide-btn .iconfont {
+  width: 30px;
+  height: 30px;
+  font-size: 30px;
+  display: inline-block;
 }
 
 .app-title {
@@ -355,7 +402,7 @@ const handleLogoutClick = () => {
   gap: 12px;
   cursor: pointer;
   outline: none;
-  padding: 6px 12px;
+  padding: 6px 0;
   border-radius: 8px;
   transition: all 0.3s ease;
   color: var(--text-secondary);

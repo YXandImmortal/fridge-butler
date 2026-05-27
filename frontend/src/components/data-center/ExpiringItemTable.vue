@@ -2,14 +2,14 @@
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title-wrapper">
-        <i class="iconfont icon-alert chart-title-icon" />
+        <i class="iconfont icon-alert chart-title-icon"/>
         <h3 class="chart-title">临期 / 过期物品预警</h3>
       </div>
       <el-tag
-        v-if="data.length > 0"
-        :type="data.some(d => d.freshnessLabel === '已过期') ? 'danger' : 'warning'"
-        size="small"
-        effect="light"
+          v-if="data.length > 0"
+          :type="data.some(d => d.freshnessLabel === '已过期') ? 'danger' : 'warning'"
+          size="small"
+          effect="light"
       >
         共 {{ data.length }} 件
       </el-tag>
@@ -17,16 +17,16 @@
 
     <div v-if="data.length > 0" class="table-wrapper">
       <el-table
-        :data="data"
-        class="expiring-table"
-        :header-cell-style="{ color: 'var(--text-primary)', fontWeight: 600, background: 'var(--primary-10)' }"
-        max-height="400"
+          :data="data"
+          class="expiring-table"
+          :header-cell-style="{ color: 'var(--text-primary)', fontWeight: 600, background: 'var(--primary-10)' }"
+          max-height="400"
       >
         <el-table-column label="物品名称" min-width="140" show-overflow-tooltip>
           <template #default="{ row }">
             <div class="item-name-cell">
               <div class="item-icon-sm">
-                <i class="iconfont icon-item" />
+                <i class="iconfont icon-item"/>
               </div>
               <span class="item-name">{{ row.itemName }}</span>
             </div>
@@ -55,8 +55,8 @@
         <el-table-column label="剩余天数" width="100" align="center">
           <template #default="{ row }">
             <span
-              class="remaining-days"
-              :class="getRemainingClass(row.remainingDays)"
+                class="remaining-days"
+                :class="getRemainingClass(row.remainingDays)"
             >
               {{ row.remainingDays <= 0 ? '已过期' : row.remainingDays + ' 天' }}
             </span>
@@ -66,9 +66,9 @@
         <el-table-column label="状态" width="90" align="center">
           <template #default="{ row }">
             <el-tag
-              size="small"
-              :type="row.freshnessType"
-              :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
+                size="small"
+                :type="row.freshnessType"
+                :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
             >
               {{ row.freshnessLabel }}
             </el-tag>
@@ -85,17 +85,17 @@
       </el-table>
     </div>
 
-    <el-empty v-else description="暂无临期或过期物品，太棒了！" class="chart-empty" />
+    <el-empty v-else description="暂无临期或过期物品，太棒了！" class="chart-empty"/>
   </div>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
-import { useThemeStore } from '@/stores/theme'
+import {useRouter} from 'vue-router'
+import {useThemeStore} from '@/stores/theme'
 import CustomButton from '@/components/CustomButton.vue'
 
 const props = defineProps({
-  data: { type: Array, default: () => [] }
+  data: {type: Array, default: () => []}
 })
 
 const router = useRouter()
@@ -110,7 +110,7 @@ function getRemainingClass(days) {
 function handleManage(row) {
   router.push({
     name: 'fridge-items',
-    params: { id: row.fridgeId }
+    params: {id: row.fridgeId}
   })
 }
 </script>

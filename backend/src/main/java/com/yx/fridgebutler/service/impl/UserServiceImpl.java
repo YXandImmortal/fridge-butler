@@ -72,6 +72,7 @@ public class UserServiceImpl implements UserService {
                 .createTime(user.getCreateTime()
                         .atZone(ZONE_ID_SHANGHAI)
                         .format(DATE_TIME_FORMATTER))
+                .guideCompleted(user.getGuideCompleted())
                 .build();
     }
 
@@ -156,6 +157,20 @@ public class UserServiceImpl implements UserService {
         user.setAvatar(request.getAvatar());
         userRepository.save(user);
         log.info("头像修改成功，用户名：{}，新头像Id：{}", username, request.getAvatar());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>将当前登录用户的 guide_completed 字段设为 true。</p>
+     */
+    @Override
+    public void completeGuide() {
+        String username = getUsernameFromToken();
+        SysUser user = userRepository.findByUsername(username)
+                .orElseThrow(BusinessException::userNotFound);
+        user.setGuideCompleted(true);
+        userRepository.save(user);
+        log.info("新手指引标记完成，用户名：{}", username);
     }
 
     /**

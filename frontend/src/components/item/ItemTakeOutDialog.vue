@@ -4,10 +4,10 @@
       <div class="item-takeout-dialog">
         <div class="dialog-header">
           <div class="dialog-title-container">
-            <i class="iconfont icon-arrow-down dialog-icon" />
+            <i class="iconfont icon-arrow-down dialog-icon"/>
             <h3 class="dialog-title">取出物品</h3>
           </div>
-          <i class="iconfont icon-close dialog-close" @click="handleClose" />
+          <i class="iconfont icon-close dialog-close" @click="handleClose"/>
         </div>
         <div class="dialog-content">
           <div class="current-stock">
@@ -17,22 +17,22 @@
           </div>
 
           <el-form
-            ref="formRef"
-            :model="form"
-            :rules="rules"
-            label-position="top"
-            class="takeout-form"
+              ref="formRef"
+              :model="form"
+              :rules="rules"
+              label-position="top"
+              class="takeout-form"
           >
             <el-form-item label="取出数量" prop="takeOutNum">
               <el-input-number
-                v-model="form.takeOutNum"
-                :min="0.01"
-                :max="maxTakeOut"
-                :precision="2"
-                :step="1"
-                placeholder="请输入取出数量"
-                class="form-input-number"
-                style="--el-border-radius-base: var(--radius-md);"
+                  v-model="form.takeOutNum"
+                  :min="0.01"
+                  :max="maxTakeOut"
+                  :precision="2"
+                  :step="1"
+                  placeholder="请输入取出数量"
+                  class="form-input-number"
+                  style="--el-border-radius-base: var(--radius-md);"
               />
             </el-form-item>
           </el-form>
@@ -60,9 +60,9 @@
             取消
           </CustomButton>
           <CustomButton
-            type="primary"
-            :loading="submitting"
-            @click="handleSubmit"
+              type="primary"
+              :loading="submitting"
+              @click="handleSubmit"
           >
             确认取出
           </CustomButton>
@@ -73,9 +73,9 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
+import {computed, reactive, ref, watch} from 'vue'
 import CustomButton from '@/components/CustomButton.vue'
-import { takeOutItem } from '@/api/item'
+import {takeOutItem} from '@/api/item'
 import showMessage from '@/utils/message'
 
 const props = defineProps({
@@ -109,8 +109,8 @@ const remaining = computed(() => {
 
 const rules = {
   takeOutNum: [
-    { required: true, message: '请输入取出数量', trigger: 'change' },
-    { type: 'number', min: 0.01, message: '取出数量必须大于0', trigger: 'change' }
+    {required: true, message: '请输入取出数量', trigger: 'change'},
+    {type: 'number', min: 0.01, message: '取出数量必须大于0', trigger: 'change'}
   ]
 }
 

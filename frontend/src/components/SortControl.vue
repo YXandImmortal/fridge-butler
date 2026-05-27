@@ -2,11 +2,11 @@
   <div class="sort-control-wrapper">
     <div class="sort-control-group">
       <CustomSelect
-        :model-value="field"
-        @update:model-value="handleFieldChange"
-        :options="fieldOptions"
-        placeholder="排序条件"
-        class="sort-select"
+          :model-value="field"
+          @update:model-value="handleFieldChange"
+          :options="fieldOptions"
+          placeholder="排序条件"
+          class="sort-select"
       />
       <CustomButton type="primary" @click="handleToggleOrder" class="sort-btn">
         {{ orderLabel }}
@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 import CustomSelect from './CustomSelect.vue'
 import CustomButton from './CustomButton.vue'
 

@@ -25,11 +25,11 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
-import { useSystemStore } from "@/stores/system.js"
+import {onMounted} from 'vue'
+import {useSystemStore} from "@/stores/system.js"
 
 const systemStore = useSystemStore()
-const { systemName, systemVersion, getSystemInfo } = systemStore
+const {systemName, systemVersion, getSystemInfo} = systemStore
 
 // 初始化系统信息
 onMounted(async () => {

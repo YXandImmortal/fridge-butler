@@ -3,89 +3,89 @@
     <!-- 已引用标签栏 -->
     <transition name="el-zoom-in-center">
       <transition-group
-        v-if="modelValue.length > 0"
-        name="el-zoom-in-center"
-        tag="div"
-        class="attachments-bar"
+          v-if="modelValue.length > 0"
+          name="el-zoom-in-center"
+          tag="div"
+          class="attachments-bar"
       >
         <span
-          v-for="att in modelValue"
-          :key="att.type + '-' + att.id"
-          class="attach-tag"
+            v-for="att in modelValue"
+            :key="att.type + '-' + att.id"
+            class="attach-tag"
         >
-          <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-item'" />
+          <i class="iconfont" :class="att.type === 'fridge' ? 'icon-fridge-line' : 'icon-item'"/>
           {{ att.name }}
-          <i class="iconfont icon-close attach-tag-close" @click="removeAttachment(att)" />
+          <i class="iconfont icon-close attach-tag-close" @click="removeAttachment(att)"/>
         </span>
       </transition-group>
     </transition>
 
     <!-- 附件按钮 -->
     <el-popover
-      v-model:visible="popoverVisible"
-      placement="top-end"
-      :width="280"
-      trigger="click"
-      popper-class="attach-popover"
-      popper-style="padding: 0; border-radius: var(--radius-md);"
-      transition="el-zoom-in-bottom"
-      :show-arrow="false"
+        v-model:visible="popoverVisible"
+        placement="top-end"
+        :width="280"
+        trigger="click"
+        popper-class="attach-popover"
+        popper-style="padding: 0; border-radius: var(--radius-md);"
+        transition="el-zoom-in-bottom"
+        :show-arrow="false"
     >
       <template #reference>
         <button
-          class="attach-btn"
-          :class="{ 'attach-btn-active': modelValue.length > 0 }"
-          title="添加附件"
+            class="attach-btn"
+            :class="{ 'attach-btn-active': modelValue.length > 0 }"
+            title="添加附件"
         >
-          <i class="iconfont icon-attachment" />
+          <i class="iconfont icon-attachment"/>
           <span v-if="modelValue.length > 0" class="attach-badge">{{ modelValue.length }}</span>
         </button>
       </template>
 
       <el-scrollbar
-        max-height="320px"
-        class="attach-popover-content"
-        view-style="padding: var(--space-3);"
+          max-height="320px"
+          class="attach-popover-content"
+          view-style="padding: var(--space-3);"
       >
         <div class="attach-section">
           <div class="attach-section-title">
-            <i class="iconfont icon-fridge-line" />
+            <i class="iconfont icon-fridge-line"/>
             <span>选择冰箱</span>
           </div>
           <div v-if="fridgeList.length === 0" class="attach-empty">暂无冰箱</div>
           <div v-else class="attach-option-list">
             <button
-              v-for="fridge in fridgeList"
-              :key="fridge.id"
-              class="attach-option"
-              :class="{ 'attach-option-selected': isAttached('fridge', fridge.id) }"
-              @click="toggleAttachment('fridge', fridge)"
+                v-for="fridge in fridgeList"
+                :key="fridge.id"
+                class="attach-option"
+                :class="{ 'attach-option-selected': isAttached('fridge', fridge.id) }"
+                @click="toggleAttachment('fridge', fridge)"
             >
               <span class="attach-option-name">{{ fridge.fridgeName }}</span>
-              <i v-if="isAttached('fridge', fridge.id)" class="iconfont icon-check" />
+              <i v-if="isAttached('fridge', fridge.id)" class="iconfont icon-check"/>
             </button>
           </div>
         </div>
 
-        <div class="attach-divider" />
+        <div class="attach-divider"/>
 
         <div class="attach-section">
           <div class="attach-section-title">
-            <i class="iconfont icon-item" />
+            <i class="iconfont icon-item"/>
             <span>选择物品</span>
           </div>
           <div v-if="itemList.length === 0" class="attach-empty">暂无物品</div>
           <div v-else class="attach-option-list">
             <button
-              v-for="item in itemList.slice(0, 20)"
-              :key="item.id"
-              class="attach-option"
-              :class="{ 'attach-option-selected': isAttached('item', item.id) }"
-              @click="toggleAttachment('item', item)"
+                v-for="item in itemList.slice(0, 20)"
+                :key="item.id"
+                class="attach-option"
+                :class="{ 'attach-option-selected': isAttached('item', item.id) }"
+                @click="toggleAttachment('item', item)"
             >
               <span class="attach-option-name">{{ item.itemName }}</span>
               <span class="attach-option-meta">{{ item.fridgeName }}</span>
-              <i v-if="isAttached('item', item.id)" class="iconfont icon-check" />
+              <i v-if="isAttached('item', item.id)" class="iconfont icon-check"/>
             </button>
           </div>
           <div v-if="itemList.length > 20" class="attach-more-tip">仅展示前 20 个物品</div>
@@ -96,7 +96,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import {ref} from 'vue'
 
 const props = defineProps({
   modelValue: {

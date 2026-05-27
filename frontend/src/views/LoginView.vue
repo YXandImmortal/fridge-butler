@@ -1,7 +1,7 @@
 <template>
   <AuthLayout
-    :title="systemName || '冰箱管理系统'"
-    subtitle="欢迎回来，请登录您的账户"
+      :title="systemName || '冰箱管理系统'"
+      subtitle="欢迎回来，请登录您的账户"
   >
     <el-form
         ref="loginFormRef"
@@ -46,7 +46,7 @@
               effect="light"
               :show-after="200"
           >
-            <i class="tips-icon iconfont icon-info-box" />
+            <i class="tips-icon iconfont icon-info-box"/>
           </el-tooltip>
         </div>
       </el-form-item>
@@ -64,10 +64,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
-import { useSystemStore } from '@/stores/system'
+import {ref, onMounted} from 'vue'
+import {useRouter} from 'vue-router'
+import {useUserStore} from '@/stores/user'
+import {useSystemStore} from '@/stores/system'
 import showMessage from '@/utils/message'
 import AuthLayout from "@/layouts/AuthLayout.vue"
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
@@ -77,7 +77,7 @@ import CaptchaInput from "@/components/CaptchaInput.vue"
 const router = useRouter()
 const userStore = useUserStore()
 const systemStore = useSystemStore()
-const { systemName, getSystemInfo } = systemStore
+const {systemName, getSystemInfo} = systemStore
 const loginFormRef = ref()
 const captchaInputRef = ref()
 const loading = ref(false)
@@ -98,14 +98,14 @@ const loginForm = ref({
 // 表单验证规则
 const loginRules = {
   account: [
-    { required: true, message: '用户名或手机号不能为空', trigger: 'blur' }
+    {required: true, message: '用户名或手机号不能为空', trigger: 'blur'}
   ],
   password: [
-    { required: true, message: '密码不能为空', trigger: 'blur' }
+    {required: true, message: '密码不能为空', trigger: 'blur'}
   ],
   captcha: [
-    { required: true, message: '验证码不能为空', trigger: 'blur' },
-    { min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur' }
+    {required: true, message: '验证码不能为空', trigger: 'blur'},
+    {min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur'}
   ]
 }
 

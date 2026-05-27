@@ -97,6 +97,6 @@ export function getCapacityStats(fridgeId = null) {
     return request({
         url: '/fridge/capacity-stats',
         method: 'get',
-        params: fridgeId ? { fridgeId } : {}
+        params: fridgeId ? {fridgeId} : {}
     })
 }

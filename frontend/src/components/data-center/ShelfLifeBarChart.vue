@@ -2,35 +2,35 @@
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title-wrapper">
-        <i class="iconfont icon-calendar-text chart-title-icon" />
+        <i class="iconfont icon-calendar-text chart-title-icon"/>
         <h3 class="chart-title">保质期剩余天数分布</h3>
       </div>
     </div>
     <v-chart
-      v-if="data.length > 0 && data.some(d => d.value > 0)"
-      class="chart-body"
-      :option="chartOption"
-      autoresize
+        v-if="data.length > 0 && data.some(d => d.value > 0)"
+        class="chart-body"
+        :option="chartOption"
+        autoresize
     />
-    <el-empty v-else description="暂无数据" class="chart-empty" />
+    <el-empty v-else description="暂无数据" class="chart-empty"/>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { use } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { BarChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-import { LegacyGridContainLabel } from 'echarts/features'
+import {computed} from 'vue'
+import {use} from 'echarts/core'
+import {CanvasRenderer} from 'echarts/renderers'
+import {BarChart} from 'echarts/charts'
+import {GridComponent, TooltipComponent, LegendComponent} from 'echarts/components'
+import {LegacyGridContainLabel} from 'echarts/features'
 import VChart from 'vue-echarts'
-import { getChartThemeColors } from '@/utils/data-analysis'
-import { useThemeStore } from '@/stores/theme'
+import {getChartThemeColors} from '@/utils/data-analysis'
+import {useThemeStore} from '@/stores/theme'
 
 use([CanvasRenderer, BarChart, GridComponent, TooltipComponent, LegendComponent, LegacyGridContainLabel])
 
 const props = defineProps({
-  data: { type: Array, default: () => [] }
+  data: {type: Array, default: () => []}
 })
 
 const themeStore = useThemeStore()
@@ -53,8 +53,8 @@ const chartOption = computed(() => {
       trigger: 'axis',
       backgroundColor: colors.tooltipBg,
       borderColor: colors.tooltipBorder,
-      textStyle: { color: colors.textColor },
-      axisPointer: { type: 'shadow' }
+      textStyle: {color: colors.textColor},
+      axisPointer: {type: 'shadow'}
     },
     grid: {
       left: '3%',
@@ -66,15 +66,15 @@ const chartOption = computed(() => {
     xAxis: {
       type: 'category',
       data: names,
-      axisLine: { lineStyle: { color: colors.axisLineColor } },
-      axisLabel: { color: colors.subTextColor, fontSize: 12 }
+      axisLine: {lineStyle: {color: colors.axisLineColor}},
+      axisLabel: {color: colors.subTextColor, fontSize: 12}
     },
     yAxis: {
       type: 'value',
       minInterval: 1,
-      axisLine: { show: false },
-      splitLine: { lineStyle: { color: colors.splitLineColor, type: 'dashed' } },
-      axisLabel: { color: colors.subTextColor }
+      axisLine: {show: false},
+      splitLine: {lineStyle: {color: colors.splitLineColor, type: 'dashed'}},
+      axisLabel: {color: colors.subTextColor}
     },
     series: [{
       name: '物品数量',

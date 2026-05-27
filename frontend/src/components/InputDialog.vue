@@ -4,26 +4,26 @@
       <div class="input-dialog">
         <div class="dialog-header">
           <div class="dialog-title-container">
-            <i class="iconfont icon-edit-box dialog-icon" />
+            <i class="iconfont icon-edit-box dialog-icon"/>
             <h3 class="dialog-title">{{ title }}</h3>
           </div>
-          <i class="iconfont icon-close dialog-close" @click="handleClose" />
+          <i class="iconfont icon-close dialog-close" @click="handleClose"/>
         </div>
         <div class="dialog-content">
           <el-form
-            ref="formRef"
-            :model="form"
-            :rules="rules"
-            label-position="top"
-            class="edit-form"
+              ref="formRef"
+              :model="form"
+              :rules="rules"
+              label-position="top"
+              class="edit-form"
           >
             <el-form-item :label="label" prop="value">
               <EnhancedInput
-                v-model="form.value"
-                :placeholder="placeholder"
-                maxlength="20"
-                show-word-limit
-                :icon="icon"
+                  v-model="form.value"
+                  :placeholder="placeholder"
+                  maxlength="20"
+                  show-word-limit
+                  :icon="icon"
               />
             </el-form-item>
           </el-form>
@@ -33,9 +33,9 @@
             取消
           </CustomButton>
           <CustomButton
-            type="primary"
-            :loading="loading"
-            @click="handleSubmit"
+              type="primary"
+              :loading="loading"
+              @click="handleSubmit"
           >
             {{ confirmText }}
           </CustomButton>
@@ -46,7 +46,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import {reactive, ref, watch} from 'vue'
 import CustomButton from '@/components/CustomButton.vue'
 import EnhancedInput from '@/components/EnhancedInput.vue'
 
@@ -99,8 +99,8 @@ const form = reactive({
 
 const rules = {
   value: [
-    { required: true, message: props.placeholder, trigger: 'blur' },
-    { min: 1, max: 20, message: '长度为1-20个字符', trigger: 'blur' }
+    {required: true, message: props.placeholder, trigger: 'blur'},
+    {min: 1, max: 20, message: '长度为1-20个字符', trigger: 'blur'}
   ]
 }
 

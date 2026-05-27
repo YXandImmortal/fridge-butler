@@ -4,26 +4,26 @@
       <div class="fridge-create-dialog">
         <div class="dialog-header">
           <div class="dialog-title-container">
-            <i class="iconfont icon-fridge-line dialog-icon" />
+            <i class="iconfont icon-fridge-line dialog-icon"/>
             <h3 class="dialog-title">创建冰箱</h3>
           </div>
-          <i class="iconfont icon-close dialog-close" @click="handleClose" />
+          <i class="iconfont icon-close dialog-close" @click="handleClose"/>
         </div>
         <div class="dialog-content">
           <el-form
-            ref="formRef"
-            :model="form"
-            :rules="rules"
-            label-position="top"
-            class="create-form"
+              ref="formRef"
+              :model="form"
+              :rules="rules"
+              label-position="top"
+              class="create-form"
           >
             <el-form-item label="冰箱名称" prop="name">
               <EnhancedInput
-                v-model="form.name"
-                placeholder="请输入冰箱名称，如：家用冰箱、办公室冰箱"
-                maxlength="50"
-                show-word-limit
-                icon="icon-notes"
+                  v-model="form.name"
+                  placeholder="请输入冰箱名称，如：家用冰箱、办公室冰箱"
+                  maxlength="50"
+                  show-word-limit
+                  icon="icon-notes"
               />
             </el-form-item>
 
@@ -37,10 +37,10 @@
                   clearable
               >
                 <template #prefix="{ selected }">
-                  <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt="" />
+                  <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt=""/>
                 </template>
                 <template #option="{ option }">
-                  <img :src="option.icon" class="fridge-type-icon-option" alt="" />
+                  <img :src="option.icon" class="fridge-type-icon-option" alt=""/>
                   <span class="option-label">{{ option.label }}</span>
                 </template>
               </CustomSelect>
@@ -48,11 +48,11 @@
 
             <el-form-item label="地址" prop="address">
               <EnhancedInput
-                v-model="form.address"
-                placeholder="请输入冰箱地址（选填）"
-                maxlength="100"
-                show-word-limit
-                icon="icon-building-community"
+                  v-model="form.address"
+                  placeholder="请输入冰箱地址（选填）"
+                  maxlength="100"
+                  show-word-limit
+                  icon="icon-building-community"
               />
             </el-form-item>
 
@@ -73,9 +73,9 @@
             取消
           </CustomButton>
           <CustomButton
-            type="primary"
-            :loading="loading"
-            @click="handleSubmit"
+              type="primary"
+              :loading="loading"
+              @click="handleSubmit"
           >
             {{ loading ? '创建中...' : '创建冰箱' }}
           </CustomButton>
@@ -86,11 +86,11 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import {reactive, ref, watch} from 'vue'
 import CustomButton from '@/components/CustomButton.vue'
 import EnhancedInput from '@/components/EnhancedInput.vue'
 import CustomSelect from '@/components/CustomSelect.vue'
-import { FRIDGE_TYPE_LIST } from '@/utils/fridgeTypeMap.js'
+import {FRIDGE_TYPE_LIST} from '@/utils/fridgeTypeMap.js'
 
 const props = defineProps({
   visible: {
@@ -122,14 +122,14 @@ const fridgeTypeOptions = FRIDGE_TYPE_LIST.map(item => ({
 
 const rules = {
   name: [
-    { required: true, message: '请输入冰箱名称', trigger: 'blur' },
-    { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
+    {required: true, message: '请输入冰箱名称', trigger: 'blur'},
+    {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'}
   ],
   description: [
-    { max: 200, message: '描述最多 200 个字符', trigger: 'blur' }
+    {max: 200, message: '描述最多 200 个字符', trigger: 'blur'}
   ],
   address: [
-    { max: 100, message: '地址最多 100 个字符', trigger: 'blur' }
+    {max: 100, message: '地址最多 100 个字符', trigger: 'blur'}
   ]
 }
 
@@ -193,7 +193,7 @@ const handleSubmit = async () => {
   width: 90%;
   animation: dialog-slide-in 0.3s ease-out;
   transition: background-color 0.3s ease, color 0.3s ease,
-    border-color 0.3s ease, box-shadow 0.3s ease;
+  border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .dialog-header {

@@ -2,21 +2,21 @@
   <div class="search-bar-wrapper">
     <div class="search-input-group">
       <EnhancedInput
-        :model-value="modelValue"
-        @update:model-value="$emit('update:modelValue', $event)"
-        :placeholder="placeholder"
-        variant="search"
-        clearable
-        @keyup.enter="handleSearch"
-        @clear="handleClear"
-        class="search-input"
-        height="28px"
+          :model-value="modelValue"
+          @update:model-value="$emit('update:modelValue', $event)"
+          :placeholder="placeholder"
+          variant="search"
+          clearable
+          @keyup.enter="handleSearch"
+          @clear="handleClear"
+          class="search-input"
+          height="28px"
       />
       <CustomButton type="primary" @click="handleSearch" class="search-btn">
-        <i class="iconfont icon-search" />
+        <i class="iconfont icon-search"/>
       </CustomButton>
     </div>
-    <slot />
+    <slot/>
   </div>
 </template>
 

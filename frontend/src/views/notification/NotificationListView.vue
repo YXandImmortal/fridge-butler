@@ -3,7 +3,7 @@
     <!-- 页面标题栏 -->
     <div class="page-header animate-in">
       <div class="page-header-left">
-        <i class="iconfont icon-notification page-header-icon" />
+        <i class="iconfont icon-notification page-header-icon"/>
         <h2 class="page-title">消息中心</h2>
         <el-tag v-if="unreadCount > 0" type="danger" size="small" class="unread-tag">
           {{ unreadCount }} 条未读
@@ -11,17 +11,17 @@
       </div>
       <div class="page-header-actions">
         <CustomButton
-          class="refresh-btn"
-          @click="handleRefresh"
+            class="refresh-btn"
+            @click="handleRefresh"
         >
-          <i class="iconfont icon-reload" />刷新
+          <i class="iconfont icon-reload"/>刷新
         </CustomButton>
         <CustomButton
-          v-if="unreadCount > 0"
-          type="primary"
-          @click="handleReadAll"
+            v-if="unreadCount > 0"
+            type="primary"
+            @click="handleReadAll"
         >
-          <i class="iconfont icon-mail-check" />全部已读
+          <i class="iconfont icon-mail-check"/>全部已读
         </CustomButton>
       </div>
     </div>
@@ -32,13 +32,13 @@
       <aside class="category-panel animate-in" style="animation-delay: 0.08s">
         <div class="category-list">
           <div
-            v-for="item in summaryItems"
-            :key="item.key"
-            :class="['category-card', { active: currentType === item.key }]"
-            @click="handleTypeChange(item.key)"
+              v-for="item in summaryItems"
+              :key="item.key"
+              :class="['category-card', { active: currentType === item.key }]"
+              @click="handleTypeChange(item.key)"
           >
             <div class="category-icon-wrapper" :style="{ background: `${item.color}15` }">
-              <i :class="['iconfont', item.icon]" :style="{ color: item.color }" />
+              <i :class="['iconfont', item.icon]" :style="{ color: item.color }"/>
             </div>
             <div class="category-info">
               <div class="category-label">{{ item.label }}</div>
@@ -46,7 +46,7 @@
                 <span style="margin-right: 8px; font-weight: 200;">未读消息</span>{{ item.count }}
               </div>
             </div>
-            <div v-if="currentType === item.key" class="active-indicator" />
+            <div v-if="currentType === item.key" class="active-indicator"/>
           </div>
         </div>
       </aside>
@@ -54,16 +54,16 @@
       <!-- 右侧消息列表 -->
       <main class="notification-list-panel animate-in" style="animation-delay: 0.16s">
         <!-- 加载中 -->
-        <div v-if="loading && notificationList.length === 0" v-loading="true" class="loading-wrapper" />
+        <div v-if="loading && notificationList.length === 0" v-loading="true" class="loading-wrapper"/>
 
         <!-- 空状态 -->
         <el-empty
-          v-else-if="notificationList.length === 0"
-          description="暂无消息"
-          class="notification-empty"
+            v-else-if="notificationList.length === 0"
+            description="暂无消息"
+            class="notification-empty"
         >
           <template #image>
-            <i class="iconfont icon-notification empty-icon" />
+            <i class="iconfont icon-notification empty-icon"/>
           </template>
         </el-empty>
 
@@ -75,33 +75,33 @@
           gap: var(--space-3);
           padding-right: var(--space-4); ">
             <div
-              v-for="(notification, index) in notificationList"
-              :key="notification.id"
-              :class="[
+                v-for="(notification, index) in notificationList"
+                :key="notification.id"
+                :class="[
                 'notification-card',
                 { unread: notification.status === 'UNREAD' },
                 { clickable: getActionRoute(notification) }
               ]"
-              :style="{ animationDelay: `${0.2 + index * 0.05}s` }"
-              @click="handleCardClick(notification)"
+                :style="{ animationDelay: `${0.2 + index * 0.05}s` }"
+                @click="handleCardClick(notification)"
             >
               <!-- 左侧优先级色条 -->
               <div
-                class="priority-bar"
-                :style="{ backgroundColor: getPriorityColor(notification.priority) }"
+                  class="priority-bar"
+                  :style="{ backgroundColor: getPriorityColor(notification.priority) }"
               />
 
               <!-- 未读指示点 -->
-              <div v-if="notification.status === 'UNREAD'" class="unread-dot" />
+              <div v-if="notification.status === 'UNREAD'" class="unread-dot"/>
 
               <!-- 消息内容区 -->
               <div class="notification-content">
                 <div class="notification-header">
                   <el-tag
-                    :type="getTagType(notification.type)"
-                    size="small"
-                    class="type-tag"
-                    effect="light"
+                      :type="getTagType(notification.type)"
+                      size="small"
+                      class="type-tag"
+                      effect="light"
                   >
                     {{ notification.typeLabel }}
                   </el-tag>
@@ -115,39 +115,42 @@
               <!-- 操作按钮区 -->
               <div class="notification-actions">
                 <CustomButton
-                  v-if="notification.status === 'UNREAD'"
-                  type="link"
-                  size="small"
-                  class="action-btn"
-                  @click.stop="handleMarkRead(notification.id)"
+                    v-if="notification.status === 'UNREAD'"
+                    type="link"
+                    size="small"
+                    class="action-btn"
+                    @click.stop="handleMarkRead(notification.id)"
                 >
                   标为已读
                 </CustomButton>
                 <CustomButton
-                  type="link"
-                  size="small"
-                  class="action-btn danger-link"
-                  @click.stop="handleDelete(notification.id)"
+                    type="link"
+                    size="small"
+                    class="action-btn danger-link"
+                    @click.stop="handleDelete(notification.id)"
                 >
-                  <i class="iconfont icon-trash" />
+                  <i class="iconfont icon-trash"/>
                 </CustomButton>
               </div>
             </div>
           </el-scrollbar>
 
-            </template>
+        </template>
       </main>
     </div>
+    <NotificationTour ref="tourRef"/>
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import { Check, RefreshRight } from '@element-plus/icons-vue'
+import NotificationTour from '@/components/tour/NotificationTour.vue'
+import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {onMounted, onUnmounted, ref, watch} from 'vue'
+import {useRouter} from 'vue-router'
+import {storeToRefs} from 'pinia'
+import {Check, RefreshRight} from '@element-plus/icons-vue'
 import CustomButton from '@/components/CustomButton.vue'
-import { useNotificationStore } from '@/stores/notification'
+import {useNotificationStore} from '@/stores/notification'
 import showMessage from '@/utils/message'
 
 const router = useRouter()
@@ -174,9 +177,12 @@ const {
 // ========== 优先级颜色 ==========
 const getPriorityColor = (priority) => {
   switch (priority) {
-    case 2: return 'var(--danger-color)'
-    case 1: return 'var(--warn-color)'
-    default: return 'var(--text-tertiary)'
+    case 2:
+      return 'var(--danger-color)'
+    case 1:
+      return 'var(--warn-color)'
+    default:
+      return 'var(--text-tertiary)'
   }
 }
 
@@ -223,7 +229,6 @@ const formatTime = (timeStr) => {
 const handleTypeChange = (type) => {
   fetchList(type)
 }
-
 
 
 const handleRefresh = () => {
@@ -275,6 +280,15 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopPolling()
+})
+// 页面引导
+const tourRef = ref(null)
+const tourStore = useTourStore()
+
+watch(() => tourStore.pendingStartScene, (scene) => {
+  if (scene === TOUR_SCENES.NOTIFICATION) {
+    tourRef.value?.start()
+  }
 })
 </script>
 
@@ -484,8 +498,14 @@ onUnmounted(() => {
 }
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.85); }
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.85);
+  }
 }
 
 .notification-content {

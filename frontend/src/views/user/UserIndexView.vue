@@ -11,21 +11,21 @@
 
     <!-- 统计卡片 -->
     <StatsOverview
-      :fridge-list="fridgeList"
-      :item-list="itemList"
-      :take-out-list="takeOutList"
-      :expiring-summary="expiringSummary"
+        :fridge-list="fridgeList"
+        :item-list="itemList"
+        :take-out-list="takeOutList"
+        :expiring-summary="expiringSummary"
     />
 
     <!-- AI 聊天助手 -->
     <section class="ai-chat-section glass-card animate-in" style="animation-delay: 0.42s">
       <div class="chat-header">
         <div class="chat-header-left">
-          <Logo class="ai-logo" />
+          <Logo class="ai-logo"/>
           <div class="chat-title-info">
             <h3 class="chat-title">AI 冰箱管家</h3>
             <span class="chat-status">
-              <span class="status-dot" />
+              <span class="status-dot"/>
               在线
             </span>
           </div>
@@ -34,10 +34,10 @@
 
         <div class="chat-header-actions">
           <button class="header-action-btn" title="新建会话" @click="createNewSession">
-            <i class="iconfont icon-add-box" />
+            <i class="iconfont icon-add-box"/>
           </button>
           <button class="header-action-btn" title="会话列表" @click="drawerVisible = true">
-            <i class="iconfont icon-list" />
+            <i class="iconfont icon-list"/>
           </button>
         </div>
       </div>
@@ -47,19 +47,19 @@
         <div v-if="activeWizard && activeWizard.type === 'fridge_creation'" class="chat-wizard-panel">
           <div class="wizard-panel-header">
             <div class="wizard-panel-title">
-              <i class="iconfont icon-fridge-line" />
+              <i class="iconfont icon-fridge-line"/>
               <span>创建冰箱向导</span>
             </div>
             <button class="wizard-panel-close" title="关闭向导" @click="handleWizardCancel">
-              <i class="iconfont icon-close" />
+              <i class="iconfont icon-close"/>
             </button>
           </div>
           <FridgeCreationWizard
-            :data="activeWizardData"
-            @step-submit="handleWizardStepSubmit"
-            @confirm="handleWizardConfirm"
-            @cancel="handleWizardCancel"
-            @skip="handleWizardSkip"
+              :data="activeWizardData"
+              @step-submit="handleWizardStepSubmit"
+              @confirm="handleWizardConfirm"
+              @cancel="handleWizardCancel"
+              @skip="handleWizardSkip"
           />
         </div>
       </transition>
@@ -68,40 +68,41 @@
         <div v-if="activeWizard && activeWizard.type === 'item_creation'" class="chat-wizard-panel">
           <div class="wizard-panel-header">
             <div class="wizard-panel-title">
-              <i class="iconfont icon-item" />
+              <i class="iconfont icon-item"/>
               <span>添加物品向导</span>
             </div>
             <button class="wizard-panel-close" title="关闭向导" @click="handleWizardCancel">
-              <i class="iconfont icon-close" />
+              <i class="iconfont icon-close"/>
             </button>
           </div>
           <ItemCreationWizard
-            :data="activeWizardData"
-            @step-submit="handleWizardStepSubmit"
-            @confirm="handleWizardConfirm"
-            @cancel="handleWizardCancel"
-            @skip="handleWizardSkip"
+              :data="activeWizardData"
+              @step-submit="handleWizardStepSubmit"
+              @confirm="handleWizardConfirm"
+              @cancel="handleWizardCancel"
+              @skip="handleWizardSkip"
           />
         </div>
       </transition>
 
       <div ref="chatMessagesRef" class="chat-messages">
         <div
-          v-for="(msg, idx) in messages"
-          :key="msg.id"
-          :class="['message', msg.role === 'user' ? 'message-user' : 'message-ai']"
+            v-for="(msg, idx) in messages"
+            :key="msg.id"
+            :class="['message', msg.role === 'user' ? 'message-user' : 'message-ai']"
         >
-          <Logo v-if="msg.role === 'assistant'" class="ai-logo-sm" />
+          <Logo v-if="msg.role === 'assistant'" class="ai-logo-sm"/>
           <div v-else class="message-avatar">
             <span class="user-avatar-text">{{ userAvatarText }}</span>
           </div>
-          <div :class="['message-bubble', { 'typing-bubble': aiTyping && msg.role === 'assistant' && !msg.content && !msg.data && idx === messages.length - 1 }]">
+          <div
+              :class="['message-bubble', { 'typing-bubble': aiTyping && msg.role === 'assistant' && !msg.content && !msg.data && idx === messages.length - 1 }]">
             <ChatStructuredMessage
-              :msg="msg"
-              :is-last="idx === messages.length - 1"
-              :ai-typing="aiTyping"
-              @action-confirm="handleActionConfirm"
-              @action-cancel="handleActionCancel"
+                :msg="msg"
+                :is-last="idx === messages.length - 1"
+                :ai-typing="aiTyping"
+                @action-confirm="handleActionConfirm"
+                @action-cancel="handleActionCancel"
             />
           </div>
         </div>
@@ -111,10 +112,10 @@
       <!-- 快捷指令（后端 suggestions + 固定快捷按钮） -->
       <div class="chat-quick-actions">
         <button
-          v-for="action in defaultQuickActions"
-          :key="action.text"
-          class="quick-action-btn"
-          @click="sendQuickMessage(action.text)"
+            v-for="action in defaultQuickActions"
+            :key="action.text"
+            class="quick-action-btn"
+            @click="sendQuickMessage(action.text)"
         >
           {{ action.text }}
         </button>
@@ -132,25 +133,25 @@
           </div>
         </transition>
 
-        <AttachmentSelector v-model="attachments" :fridge-list="fridgeList" :item-list="itemList" />
+        <AttachmentSelector v-model="attachments" :fridge-list="fridgeList" :item-list="itemList"/>
       </div>
 
       <!-- 输入区 -->
       <div class="chat-input-area">
         <input
-          v-model="inputMessage"
-          type="text"
-          class="chat-input"
-          :placeholder="aiTyping ? 'AI思考中(ง •_•)ง' : '输入你想问的问题，例如：我冰箱里还有什么鸡蛋？'"
-          :disabled="aiTyping"
-          @keydown.enter="sendMessage"
+            v-model="inputMessage"
+            type="text"
+            class="chat-input"
+            :placeholder="aiTyping ? 'AI思考中(ง •_•)ง' : '输入你想问的问题，例如：我冰箱里还有什么鸡蛋？'"
+            :disabled="aiTyping"
+            @keydown.enter="sendMessage"
         />
         <button
-          class="send-btn"
-          :disabled="!inputMessage.trim() || aiTyping"
-          @click="sendMessage"
+            class="send-btn"
+            :disabled="!inputMessage.trim() || aiTyping"
+            @click="sendMessage"
         >
-          <i class="iconfont icon-arrow-right-box" />
+          <i class="iconfont icon-arrow-right-box"/>
         </button>
       </div>
     </section>
@@ -158,14 +159,14 @@
     <!-- 快捷操作入口 -->
     <section class="quick-actions-row">
       <div
-        v-for="(action, index) in navActions"
-        :key="action.name"
-        class="quick-action-card glass-card animate-in"
-        :style="{ animationDelay: `${0.72 + index * 0.08}s` }"
-        @click="$router.push(action.path)"
+          v-for="(action, index) in navActions"
+          :key="action.name"
+          class="quick-action-card glass-card animate-in"
+          :style="{ animationDelay: `${0.72 + index * 0.08}s` }"
+          @click="$router.push(action.path)"
       >
         <div class="quick-action-icon-wrapper" :style="{ background: action.iconBg }">
-          <i :class="['iconfont', action.icon, 'quick-action-icon']" :style="{ color: action.iconColor }" />
+          <i :class="['iconfont', action.icon, 'quick-action-icon']" :style="{ color: action.iconColor }"/>
         </div>
         <div class="quick-action-name">{{ action.name }}</div>
         <div class="quick-action-desc">{{ action.desc }}</div>
@@ -176,32 +177,35 @@
     <section class="trend-section glass-card animate-in" style="animation-delay: 1.04s">
       <div class="trend-header">
         <div class="trend-title-wrapper">
-          <i class="iconfont icon-trending trend-title-icon" />
+          <i class="iconfont icon-trending trend-title-icon"/>
           <h3 class="trend-title">近7天取出/入库趋势</h3>
         </div>
       </div>
-      <v-chart v-if="trendHasData" class="trend-chart" :option="trendOption" autoresize />
-      <el-empty v-else description="近7天暂无数据" class="trend-empty" />
+      <v-chart v-if="trendHasData" class="trend-chart" :option="trendOption" autoresize/>
+      <el-empty v-else description="近7天暂无数据" class="trend-empty"/>
     </section>
 
     <!-- 会话列表 Drawer -->
     <ChatSessionDrawer
-      v-model:visible="drawerVisible"
-      :session-id="sessionId"
-      :sessions="sessions"
-      :session-loading="sessionLoading"
-      @new-session="createNewSession"
-      @switch-session="switchSession"
-      @delete-session="handleDeleteSession"
+        v-model:visible="drawerVisible"
+        :session-id="sessionId"
+        :sessions="sessions"
+        :session-loading="sessionLoading"
+        @new-session="createNewSession"
+        @switch-session="switchSession"
+        @delete-session="handleDeleteSession"
     />
+    <UserIndexTour ref="tourRef"/>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useUserStore } from '@/stores/user'
-import { useThemeStore } from '@/stores/theme'
+import UserIndexTour from '@/components/tour/UserIndexTour.vue'
+import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {ref, computed, onMounted, onUnmounted, nextTick, watch} from 'vue'
+import {useRouter, useRoute} from 'vue-router'
+import {useUserStore} from '@/stores/user'
+import {useThemeStore} from '@/stores/theme'
 import Logo from '@/components/Logo.vue'
 import FridgeCreationWizard from '@/components/ai/FridgeCreationWizard.vue'
 import ItemCreationWizard from '@/components/ai/ItemCreationWizard.vue'
@@ -209,16 +213,22 @@ import StatsOverview from '@/components/ai/StatsOverview.vue'
 import ChatStructuredMessage from '@/components/ai/ChatStructuredMessage.vue'
 import AttachmentSelector from '@/components/ai/AttachmentSelector.vue'
 import ChatSessionDrawer from '@/components/ai/ChatSessionDrawer.vue'
-import { getFridgeTypeById } from '@/utils/fridgeTypeMap.js'
-import { listMyFridges } from '@/api/fridge'
-import { searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats, getExpiringSummary } from '@/api/item'
-import { sendChatMessage, sendChatMessageStream, getChatSessions, deleteChatSession, getChatSessionMessages } from '@/api/ai'
-import { use, graphic } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { LineChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
+import {getFridgeTypeById} from '@/utils/fridgeTypeMap.js'
+import {listMyFridges} from '@/api/fridge'
+import {searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats, getExpiringSummary} from '@/api/item'
+import {
+  sendChatMessage,
+  sendChatMessageStream,
+  getChatSessions,
+  deleteChatSession,
+  getChatSessionMessages
+} from '@/api/ai'
+import {use, graphic} from 'echarts/core'
+import {CanvasRenderer} from 'echarts/renderers'
+import {LineChart} from 'echarts/charts'
+import {GridComponent, TooltipComponent, LegendComponent} from 'echarts/components'
 import VChart from 'vue-echarts'
-import { getChartThemeColors } from '@/utils/data-analysis'
+import {getChartThemeColors} from '@/utils/data-analysis'
 
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent])
 
@@ -233,7 +243,7 @@ const fridgeList = ref([])
 const itemList = ref([])
 const takeOutList = ref([])
 const addList = ref([])
-const expiringSummary = ref({ expiringCount: 0, expiredCount: 0, totalExpiring: 0 })
+const expiringSummary = ref({expiringCount: 0, expiredCount: 0, totalExpiring: 0})
 
 // AI 聊天状态
 const SESSION_STORAGE_KEY = 'ai_chat_session_id'
@@ -249,7 +259,7 @@ const wizardCompleted = ref(false)
 
 const activeWizardData = computed(() => {
   if (!activeWizard.value) return null
-  const { type, ...data } = activeWizard.value
+  const {type, ...data} = activeWizard.value
   return data
 })
 
@@ -314,14 +324,14 @@ const abortController = ref(null)
 const attachments = ref([])
 
 const defaultQuickActions = [
-  { text: '查看冰箱' },
-  { text: '有什么食材' },
-  { text: '临期提醒' },
-  { text: '推荐菜谱' }
+  {text: '查看冰箱'},
+  {text: '有什么食材'},
+  {text: '临期提醒'},
+  {text: '推荐菜谱'}
 ]
 
 const defaultQuickActionsTextArr = [
-    '查看冰箱','有什么食材','临期提醒','推荐菜谱'
+  '查看冰箱', '有什么食材', '临期提醒', '推荐菜谱'
 ]
 
 function formatTime(date) {
@@ -454,7 +464,7 @@ async function doSendChat(text, currentAttachments) {
           localStorage.setItem(SESSION_STORAGE_KEY, sessionId.value)
         }
         suggestions.value = (newSuggestions || []).filter(
-          item => !defaultQuickActionsTextArr.includes(item)
+            item => !defaultQuickActionsTextArr.includes(item)
         )
         aiTyping.value = false
         abortController.value = null
@@ -499,7 +509,7 @@ async function doSendChat(text, currentAttachments) {
       const res = await sendChatMessage(payload)
 
       if (res.code === 200 && res.data) {
-        const { sessionId: newSid, reply, suggestions: newSuggestions } = res.data
+        const {sessionId: newSid, reply, suggestions: newSuggestions} = res.data
         sessionId.value = newSid || sessionId.value
         if (sessionId.value) {
           localStorage.setItem(SESSION_STORAGE_KEY, sessionId.value)
@@ -578,7 +588,7 @@ async function doSendChat(text, currentAttachments) {
 async function sendMessage() {
   const text = inputMessage.value.trim()
   if (!text || aiTyping.value) return
-  const currentAttachments = attachments.value.map(a => ({ ...a }))
+  const currentAttachments = attachments.value.map(a => ({...a}))
   inputMessage.value = ''
   attachments.value = []  // 发送后清空附件
   await doSendChat(text, currentAttachments)
@@ -598,7 +608,7 @@ async function handleActionConfirm(msg) {
   try {
     switch (actionData.action) {
       case 'delete_fridge': {
-        const { deleteFridge } = await import('@/api/fridge')
+        const {deleteFridge} = await import('@/api/fridge')
         const res = await deleteFridge(actionData.targetId)
         if (res.code === 200) {
           msg.content = `✅ 已删除「${actionData.targetName}」。`
@@ -628,7 +638,7 @@ function handleActionCancel(msg) {
 }
 
 // ==================== wizard 处理（冰箱 + 物品）====================
-function handleWizardStepSubmit({ field, value, formData }) {
+function handleWizardStepSubmit({field, value, formData}) {
   const wizardType = activeWizard.value?.type || 'fridge_creation'
   // 只更新 formData，不乐观更新 currentStep，避免后端根据 currentStep 推断下一步时跳过步骤
   activeWizard.value = {
@@ -687,7 +697,7 @@ function handleWizardStepSubmit({ field, value, formData }) {
   doSendChat(messageText, [])
 }
 
-function handleWizardSkip({ field, formData, messageText: customText }) {
+function handleWizardSkip({field, formData, messageText: customText}) {
   const wizardType = activeWizard.value?.type || 'fridge_creation'
   activeWizard.value = {
     ...(activeWizard.value || {}),
@@ -742,7 +752,7 @@ async function handleWizardConfirm(formData) {
     wizardCompleted.value = true
     activeWizard.value = null
     try {
-      const { createFridge } = await import('@/api/fridge')
+      const {createFridge} = await import('@/api/fridge')
       const res = await createFridge({
         fridgeName: formData.name,
         fridgeTypeId: formData.fridgeTypeId || undefined,
@@ -798,7 +808,7 @@ async function handleWizardConfirm(formData) {
     wizardCompleted.value = true
     activeWizard.value = null
     try {
-      const { createItem } = await import('@/api/item')
+      const {createItem} = await import('@/api/item')
       const res = await createItem({
         itemName: formData.itemName,
         categoryId: formData.categoryId || undefined,
@@ -849,8 +859,8 @@ function handleWizardCancel() {
   const wizardType = activeWizard.value?.type || 'fridge_creation'
   activeWizard.value = null
   const cancelText = wizardType === 'fridge_creation'
-    ? '已取消创建冰箱。如需创建，请随时告诉我~'
-    : '已取消添加物品。如需添加，请随时告诉我~'
+      ? '已取消创建冰箱。如需创建，请随时告诉我~'
+      : '已取消添加物品。如需添加，请随时告诉我~'
   messages.value.push({
     id: generateMsgId(),
     role: 'assistant',
@@ -898,9 +908,9 @@ async function switchSession(sid) {
   drawerVisible.value = false
   // 切换会话时清除 fridgeId，避免历史会话受当前页面上下文影响
   if (route.query.fridgeId) {
-    const query = { ...route.query }
+    const query = {...route.query}
     delete query.fridgeId
-    router.replace({ path: '/user/index', query })
+    router.replace({path: '/user/index', query})
   }
 
   // 尝试加载历史消息
@@ -942,9 +952,9 @@ function createNewSession() {
   drawerVisible.value = false
   // 清除 URL 中的 fridgeId，避免新建会话后仍绑定到特定冰箱
   if (route.query.fridgeId) {
-    const query = { ...route.query }
+    const query = {...route.query}
     delete query.fridgeId
-    router.replace({ path: '/user/index', query })
+    router.replace({path: '/user/index', query})
   }
 }
 
@@ -1053,16 +1063,16 @@ const trendOption = computed(() => {
       trigger: 'axis',
       backgroundColor: colors.tooltipBg,
       borderColor: colors.tooltipBorder,
-      textStyle: { color: colors.textColor },
+      textStyle: {color: colors.textColor},
       axisPointer: {
         type: 'line',
-        lineStyle: { color: colors.primaryColor, width: 1, type: 'dashed' }
+        lineStyle: {color: colors.primaryColor, width: 1, type: 'dashed'}
       }
     },
     legend: {
       data: ['取出', '入库'],
       top: '2%',
-      textStyle: { color: colors.subTextColor, fontSize: 12 },
+      textStyle: {color: colors.subTextColor, fontSize: 12},
       itemWidth: 12,
       itemHeight: 8
     },
@@ -1080,15 +1090,15 @@ const trendOption = computed(() => {
         const date = new Date(d)
         return `${date.getMonth() + 1}/${date.getDate()}`
       }),
-      axisLine: { lineStyle: { color: colors.axisLineColor } },
-      axisLabel: { color: colors.subTextColor, fontSize: 11 }
+      axisLine: {lineStyle: {color: colors.axisLineColor}},
+      axisLabel: {color: colors.subTextColor, fontSize: 11}
     },
     yAxis: {
       type: 'value',
       minInterval: 1,
-      axisLine: { show: false },
-      splitLine: { lineStyle: { color: colors.splitLineColor, type: 'dashed' } },
-      axisLabel: { color: colors.subTextColor }
+      axisLine: {show: false},
+      splitLine: {lineStyle: {color: colors.splitLineColor, type: 'dashed'}},
+      axisLabel: {color: colors.subTextColor}
     },
     series: [
       {
@@ -1098,14 +1108,14 @@ const trendOption = computed(() => {
         symbol: 'circle',
         symbolSize: 6,
         showSymbol: false,
-        lineStyle: { width: 3, color: takeOutColor },
+        lineStyle: {width: 3, color: takeOutColor},
         areaStyle: {
           color: new graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: hexToRgba(takeOutColor, 0.3) },
-            { offset: 1, color: hexToRgba(takeOutColor, 0.02) }
+            {offset: 0, color: hexToRgba(takeOutColor, 0.3)},
+            {offset: 1, color: hexToRgba(takeOutColor, 0.02)}
           ])
         },
-        itemStyle: { color: takeOutColor, borderColor: colors.tooltipBg, borderWidth: 2 },
+        itemStyle: {color: takeOutColor, borderColor: colors.tooltipBg, borderWidth: 2},
         data: takeOutCounts
       },
       {
@@ -1115,14 +1125,14 @@ const trendOption = computed(() => {
         symbol: 'circle',
         symbolSize: 6,
         showSymbol: false,
-        lineStyle: { width: 3, color: addColor },
+        lineStyle: {width: 3, color: addColor},
         areaStyle: {
           color: new graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: hexToRgba(addColor, 0.3) },
-            { offset: 1, color: hexToRgba(addColor, 0.02) }
+            {offset: 0, color: hexToRgba(addColor, 0.3)},
+            {offset: 1, color: hexToRgba(addColor, 0.02)}
           ])
         },
-        itemStyle: { color: addColor, borderColor: colors.tooltipBg, borderWidth: 2 },
+        itemStyle: {color: addColor, borderColor: colors.tooltipBg, borderWidth: 2},
         data: addCounts
       }
     ]
@@ -1138,15 +1148,15 @@ async function fetchPageData() {
       searchItems({}),
       getRecent30DaysTakeOutStats().catch(err => {
         console.error('获取取出趋势失败:', err)
-        return { code: -1, data: [] }
+        return {code: -1, data: []}
       }),
       getRecent30DaysAddStats().catch(err => {
         console.error('获取入库趋势失败:', err)
-        return { code: -1, data: [] }
+        return {code: -1, data: []}
       }),
       getExpiringSummary().catch(err => {
         console.error('获取临期汇总失败:', err)
-        return { code: -1, data: null }
+        return {code: -1, data: null}
       })
     ])
 
@@ -1177,7 +1187,7 @@ async function fetchPageData() {
     if (expiringRes.code === 200 && expiringRes.data) {
       expiringSummary.value = expiringRes.data
     } else {
-      expiringSummary.value = { expiringCount: 0, expiredCount: 0, totalExpiring: 0 }
+      expiringSummary.value = {expiringCount: 0, expiredCount: 0, totalExpiring: 0}
     }
   } catch (error) {
     console.error('获取首页数据失败:', error)
@@ -1197,29 +1207,29 @@ onMounted(() => {
   // 如果本地有保存的 sessionId，自动恢复该会话的历史消息
   if (sessionId.value) {
     getChatSessionMessages(sessionId.value)
-      .then(res => {
-        if (res.code === 200 && Array.isArray(res.data) && res.data.length > 0) {
-          messages.value = res.data.map(m => ({
-            role: m.role,
-            content: m.content || '',
-            messageType: m.messageType || 'text',
-            data: m.data || null,
-            time: m.createTime ? formatTime(new Date(m.createTime.replace(' ', 'T'))) : formatTime(new Date())
-          }))
-        }
-      })
-      .catch(err => {
-        console.error('恢复历史消息失败:', err)
-      })
+        .then(res => {
+          if (res.code === 200 && Array.isArray(res.data) && res.data.length > 0) {
+            messages.value = res.data.map(m => ({
+              role: m.role,
+              content: m.content || '',
+              messageType: m.messageType || 'text',
+              data: m.data || null,
+              time: m.createTime ? formatTime(new Date(m.createTime.replace(' ', 'T'))) : formatTime(new Date())
+            }))
+          }
+        })
+        .catch(err => {
+          console.error('恢复历史消息失败:', err)
+        })
   }
 
   // 处理从其他页面跳转过来的 AI 快捷指令（如冰箱列表页的「AI帮我创建」、物品管理页的「AI帮我添加」）
   const aiMessage = route.query.aiMessage
   if (aiMessage && typeof aiMessage === 'string') {
     // 保留 fridgeId query（物品向导场景需要），仅移除 aiMessage
-    const query = { ...route.query }
+    const query = {...route.query}
     delete query.aiMessage
-    router.replace({ path: '/user/index', query })
+    router.replace({path: '/user/index', query})
     doSendChat(aiMessage, [])
   }
 })
@@ -1228,6 +1238,15 @@ onUnmounted(() => {
   if (abortController.value) {
     abortController.value.abort()
     abortController.value = null
+  }
+})
+// 页面引导
+const tourRef = ref(null)
+const tourStore = useTourStore()
+
+watch(() => tourStore.pendingStartScene, (scene) => {
+  if (scene === TOUR_SCENES.USER_INDEX) {
+    tourRef.value?.start()
   }
 })
 </script>
@@ -1356,13 +1375,17 @@ onUnmounted(() => {
 }
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .chat-messages {
   min-height: 280px;
-  max-height: 600px;
+  max-height: 420px;
   padding: var(--space-4) var(--space-5);
   flex: 1;
   display: flex;
@@ -1787,6 +1810,7 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 0 var(--space-3);
+  margin-right: 64px;
 }
 
 .chat-header-actions {
@@ -1795,7 +1819,6 @@ onUnmounted(() => {
   justify-content: end;
   gap: var(--space-2);
   margin-left: auto;
-  min-width: 144px;
 }
 
 .header-action-btn {

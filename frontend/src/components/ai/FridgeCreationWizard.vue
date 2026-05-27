@@ -3,9 +3,9 @@
     <!-- 步骤条 -->
     <el-steps :active="data.currentStep" finish-status="success" simple class="wizard-steps">
       <el-step
-        v-for="(step, index) in data.steps"
-        :key="index"
-        :title="step.title"
+          v-for="(step, index) in data.steps"
+          :key="index"
+          :title="step.title"
       />
     </el-steps>
 
@@ -47,44 +47,44 @@
       <!-- 文本输入 -->
       <template v-if="inputComponentType === 'text'">
         <EnhancedInput
-          v-model="inputValue"
-          :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
-          type="text"
-          clearable
-          maxlength="50"
-          show-word-limit
-          :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
+            v-model="inputValue"
+            :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
+            type="text"
+            clearable
+            maxlength="50"
+            show-word-limit
+            :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
         />
       </template>
 
       <!-- 文本域 -->
       <template v-else-if="inputComponentType === 'textarea'">
         <EnhancedInput
-          v-model="inputValue"
-          :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
-          type="textarea"
-          :rows="2"
-          maxlength="200"
-          show-word-limit
-          :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
+            v-model="inputValue"
+            :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
+            type="textarea"
+            :rows="2"
+            maxlength="200"
+            show-word-limit
+            :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
         />
       </template>
 
       <!-- 选择器 -->
       <template v-else-if="inputComponentType === 'select'">
         <CustomSelect
-          v-model="inputValue"
-          :options="selectOptions"
-          :placeholder="currentInputConfig.placeholder || `请选择${currentInputConfig.label}`"
-          :grid="true"
-          :full-width="true"
-          class="wizard-custom-select"
+            v-model="inputValue"
+            :options="selectOptions"
+            :placeholder="currentInputConfig.placeholder || `请选择${currentInputConfig.label}`"
+            :grid="true"
+            :full-width="true"
+            class="wizard-custom-select"
         >
           <template #prefix="{ selected }">
-            <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt="" />
+            <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt=""/>
           </template>
           <template #option="{ option }">
-            <img :src="option.icon" class="fridge-type-icon-option" alt="" />
+            <img :src="option.icon" class="fridge-type-icon-option" alt=""/>
             <span class="option-label">{{ option.label }}</span>
           </template>
         </CustomSelect>
@@ -93,12 +93,12 @@
       <!-- 数字输入 -->
       <template v-else-if="inputComponentType === 'number'">
         <el-slider
-          v-model="inputValueNum"
-          :min="1"
-          :max="1000"
-          placeholder="请输入总容量（L）"
-          style="width: 100%; padding-left: 12px; --el-border-radius-base: var(--radius-md);"
-          show-input
+            v-model="inputValueNum"
+            :min="1"
+            :max="1000"
+            placeholder="请输入总容量（L）"
+            style="width: 100%; padding-left: 12px; --el-border-radius-base: var(--radius-md);"
+            show-input
         />
       </template>
 
@@ -106,36 +106,36 @@
       <template v-else-if="inputComponentType === 'switch'">
         <div class="wizard-switch-row">
           <span class="wizard-switch-label">{{ currentInputConfig.label }}</span>
-          <el-switch v-model="inputValueBool" size="large" />
+          <el-switch v-model="inputValueBool" size="large"/>
         </div>
       </template>
 
       <!-- 组合输入（地址+备注） -->
       <template v-else-if="inputComponentType === 'combined'">
         <EnhancedInput
-          v-model="inputValue"
-          :placeholder="currentInputConfig.placeholder || '请输入地址（选填）'"
-          clearable
-          maxlength="100"
-          show-word-limit
-          class="combined-input-first"
+            v-model="inputValue"
+            :placeholder="currentInputConfig.placeholder || '请输入地址（选填）'"
+            clearable
+            maxlength="100"
+            show-word-limit
+            class="combined-input-first"
         />
         <EnhancedInput
-          v-model="remarkValue"
-          placeholder="请输入备注（选填）"
-          type="textarea"
-          :rows="2"
-          maxlength="200"
-          show-word-limit
-          class="combined-input-second"
+            v-model="remarkValue"
+            placeholder="请输入备注（选填）"
+            type="textarea"
+            :rows="2"
+            maxlength="200"
+            show-word-limit
+            class="combined-input-second"
         />
       </template>
 
       <div
-        v-if="currentInputConfig.required && !isInputValid"
-        class="wizard-input-hint is-error"
+          v-if="currentInputConfig.required && !isInputValid"
+          class="wizard-input-hint is-error"
       >
-        <i class="iconfont icon-info" /> 此项为必填
+        <i class="iconfont icon-info"/> 此项为必填
       </div>
     </div>
 
@@ -143,18 +143,19 @@
     <div v-if="isLastStep" class="wizard-confirm-area">
       <div class="confirm-card">
         <div class="confirm-icon">
-          <img v-if="fridgeTypeIcon" :src="fridgeTypeIcon" alt="" />
-          <i v-else class="iconfont icon-fridge-line" />
+          <img v-if="fridgeTypeIcon" :src="fridgeTypeIcon" alt=""/>
+          <i v-else class="iconfont icon-fridge-line"/>
         </div>
         <div class="confirm-info">
           <div class="confirm-name">{{ data.formData.name || '未命名冰箱' }}</div>
           <div class="confirm-meta">
             <span v-if="fridgeTypeName" class="confirm-meta-item">{{ fridgeTypeName }}</span>
-            <span v-if="data.formData.totalCapacity != null && data.formData.totalCapacity !== ''" class="confirm-meta-item">{{ data.formData.totalCapacity }}L</span>
+            <span v-if="data.formData.totalCapacity != null && data.formData.totalCapacity !== ''"
+                  class="confirm-meta-item">{{ data.formData.totalCapacity }}L</span>
             <span v-if="data.formData.isDefault" class="confirm-meta-item confirm-meta-default">默认</span>
           </div>
           <div v-if="data.formData.address" class="confirm-address">
-            <i class="iconfont icon-building-community" /> {{ data.formData.address }}
+            <i class="iconfont icon-building-community"/> {{ data.formData.address }}
           </div>
           <div v-if="data.formData.remark" class="confirm-desc">{{ data.formData.remark }}</div>
         </div>
@@ -167,29 +168,29 @@
         取消
       </CustomButton>
       <CustomButton
-        v-if="canSkip"
-        class="dialog-btn dialog-btn-cancel"
-        :disabled="stepSubmitting"
-        @click="handleSkip"
+          v-if="canSkip"
+          class="dialog-btn dialog-btn-cancel"
+          :disabled="stepSubmitting"
+          @click="handleSkip"
       >
         跳过
       </CustomButton>
       <CustomButton
-        v-if="!isLastStep"
-        type="primary"
-        class="dialog-btn dialog-btn-confirm"
-        :loading="stepSubmitting"
-        :disabled="!canGoNext"
-        @click="handleNext"
+          v-if="!isLastStep"
+          type="primary"
+          class="dialog-btn dialog-btn-confirm"
+          :loading="stepSubmitting"
+          :disabled="!canGoNext"
+          @click="handleNext"
       >
         {{ stepSubmitting ? '处理中...' : '下一步' }}
       </CustomButton>
       <CustomButton
-        v-else
-        type="primary"
-        class="dialog-btn dialog-btn-confirm"
-        :loading="creating"
-        @click="handleConfirm"
+          v-else
+          type="primary"
+          class="dialog-btn dialog-btn-confirm"
+          :loading="creating"
+          @click="handleConfirm"
       >
         确认创建
       </CustomButton>
@@ -198,8 +199,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { getFridgeTypeById, FRIDGE_TYPE_LIST } from '@/utils/fridgeTypeMap.js'
+import {ref, computed, watch} from 'vue'
+import {getFridgeTypeById, FRIDGE_TYPE_LIST} from '@/utils/fridgeTypeMap.js'
 import CustomButton from '@/components/CustomButton.vue'
 import CustomSelect from '@/components/CustomSelect.vue'
 
@@ -337,13 +338,13 @@ function initInputFromFormData() {
 }
 
 watch(
-  () => [props.data.currentStep, props.data.currentInput?.field],
-  () => {
-    stepSubmitting.value = false
-    resetInput()
-    initInputFromFormData()
-  },
-  { immediate: true }
+    () => [props.data.currentStep, props.data.currentInput?.field],
+    () => {
+      stepSubmitting.value = false
+      resetInput()
+      initInputFromFormData()
+    },
+    {immediate: true}
 )
 
 function handleNext() {
@@ -352,7 +353,7 @@ function handleNext() {
   const config = currentInputConfig.value
   const field = config?.field
   let value
-  const formData = { ...props.data.formData }
+  const formData = {...props.data.formData}
 
   if (inputComponentType.value === 'number') {
     value = inputValueNum.value
@@ -372,14 +373,14 @@ function handleNext() {
     formData[field] = value
   }
 
-  emit('step-submit', { field, value, formData })
+  emit('step-submit', {field, value, formData})
 }
 
 function handleSkip() {
   if (stepSubmitting.value) return
   stepSubmitting.value = true
   const field = currentInputConfig.value?.field
-  emit('skip', { field, formData: props.data.formData })
+  emit('skip', {field, formData: props.data.formData})
 }
 
 function handleConfirm() {

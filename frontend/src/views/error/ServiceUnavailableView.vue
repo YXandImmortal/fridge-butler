@@ -1,7 +1,7 @@
 <template>
   <div class="error-page">
     <div class="maintenance-icons">
-      <span v-for="i in 8" :key="i" class="floating-icon" />
+      <span v-for="i in 8" :key="i" class="floating-icon"/>
     </div>
 
     <div class="content-wrapper">
@@ -9,30 +9,39 @@
       <div class="fridge-illustration">
         <svg viewBox="0 0 200 280" class="fridge-svg">
           <!-- 冰箱主体 -->
-          <rect x="30" y="20" width="140" height="240" rx="12" fill="var(--color-primary-50)" stroke="var(--color-primary-300)" stroke-width="3" />
+          <rect x="30" y="20" width="140" height="240" rx="12" fill="var(--color-primary-50)"
+                stroke="var(--color-primary-300)" stroke-width="3"/>
           <!-- 上门 -->
-          <rect x="30" y="20" width="140" height="100" rx="12" fill="var(--color-primary-50)" stroke="var(--color-primary-300)" stroke-width="2" />
-          <line x1="30" y1="120" x2="170" y2="120" stroke="var(--color-primary-300)" stroke-width="2" />
+          <rect x="30" y="20" width="140" height="100" rx="12" fill="var(--color-primary-50)"
+                stroke="var(--color-primary-300)" stroke-width="2"/>
+          <line x1="30" y1="120" x2="170" y2="120" stroke="var(--color-primary-300)" stroke-width="2"/>
           <!-- 下门 -->
-          <rect x="30" y="120" width="140" height="140" rx="12" fill="var(--color-primary-50)" stroke="var(--color-primary-300)" stroke-width="2" />
+          <rect x="30" y="120" width="140" height="140" rx="12" fill="var(--color-primary-50)"
+                stroke="var(--color-primary-300)" stroke-width="2"/>
           <!-- 把手 -->
-          <rect x="145" y="55" width="8" height="30" rx="4" fill="var(--color-primary-200)" />
-          <rect x="145" y="155" width="8" height="30" rx="4" fill="var(--color-primary-200)" />
+          <rect x="145" y="55" width="8" height="30" rx="4" fill="var(--color-primary-200)"/>
+          <rect x="145" y="155" width="8" height="30" rx="4" fill="var(--color-primary-200)"/>
           <!-- 维护标签 -->
-          <rect x="50" y="80" width="100" height="36" rx="6" fill="var(--color-purple-400)" opacity="0.15" />
-          <rect x="53" y="83" width="94" height="30" rx="4" fill="none" stroke="var(--color-purple-500)" stroke-width="1.5" stroke-dasharray="4 2" />
-          <text x="100" y="104" font-size="11" fill="var(--color-purple-500)" font-family="MiSans, sans-serif" font-weight="bold" text-anchor="middle">维护中</text>
+          <rect x="50" y="80" width="100" height="36" rx="6" fill="var(--color-purple-400)" opacity="0.15"/>
+          <rect x="53" y="83" width="94" height="30" rx="4" fill="none" stroke="var(--color-purple-500)"
+                stroke-width="1.5" stroke-dasharray="4 2"/>
+          <text x="100" y="104" font-size="11" fill="var(--color-purple-500)" font-family="MiSans, sans-serif"
+                font-weight="bold" text-anchor="middle">维护中
+          </text>
           <!-- 扳手图标 -->
           <g transform="translate(85, 155)">
-            <rect x="12" y="0" width="6" height="20" rx="2" fill="var(--color-purple-400)" transform="rotate(45 15 10)" />
-            <circle cx="22" cy="16" r="5" fill="none" stroke="var(--color-purple-400)" stroke-width="2.5" />
-            <circle cx="8" cy="4" r="5" fill="none" stroke="var(--color-purple-400)" stroke-width="2.5" />
-            <animateTransform attributeName="transform" type="rotate" values="0 100 155; 10 100 155; 0 100 155; -10 100 155; 0 100 155" dur="4s" repeatCount="indefinite" />
+            <rect x="12" y="0" width="6" height="20" rx="2" fill="var(--color-purple-400)"
+                  transform="rotate(45 15 10)"/>
+            <circle cx="22" cy="16" r="5" fill="none" stroke="var(--color-purple-400)" stroke-width="2.5"/>
+            <circle cx="8" cy="4" r="5" fill="none" stroke="var(--color-purple-400)" stroke-width="2.5"/>
+            <animateTransform attributeName="transform" type="rotate"
+                              values="0 100 155; 10 100 155; 0 100 155; -10 100 155; 0 100 155" dur="4s"
+                              repeatCount="indefinite"/>
           </g>
           <!-- 进度条 -->
-          <rect x="55" y="220" width="90" height="6" rx="3" fill="var(--color-primary-100)" />
+          <rect x="55" y="220" width="90" height="6" rx="3" fill="var(--color-primary-100)"/>
           <rect x="55" y="220" width="60" height="6" rx="3" fill="var(--color-purple-400)">
-            <animate attributeName="width" values="0;90;60;80;60" dur="4s" repeatCount="indefinite" />
+            <animate attributeName="width" values="0;90;60;80;60" dur="4s" repeatCount="indefinite"/>
           </rect>
         </svg>
       </div>
@@ -42,10 +51,10 @@
         <span class="digit">5</span>
         <span class="digit fridge-o">
           <svg viewBox="0 0 60 80" class="mini-fridge">
-            <rect x="8" y="4" width="44" height="72" rx="6" fill="none" stroke="currentColor" stroke-width="4" />
-            <line x1="8" y1="30" x2="52" y2="30" stroke="currentColor" stroke-width="3" />
-            <rect x="42" y="14" width="4" height="12" rx="2" fill="currentColor" />
-            <rect x="42" y="40" width="4" height="12" rx="2" fill="currentColor" />
+            <rect x="8" y="4" width="44" height="72" rx="6" fill="none" stroke="currentColor" stroke-width="4"/>
+            <line x1="8" y1="30" x2="52" y2="30" stroke="currentColor" stroke-width="3"/>
+            <rect x="42" y="14" width="4" height="12" rx="2" fill="currentColor"/>
+            <rect x="42" y="40" width="4" height="12" rx="2" fill="currentColor"/>
           </svg>
         </span>
         <span class="digit">3</span>
@@ -60,11 +69,11 @@
       <!-- 操作按钮 -->
       <div class="actions">
         <el-button type="primary" size="large" class="home-btn" @click="goHome">
-          <i class="iconfont icon-home" />
+          <i class="iconfont icon-home"/>
           返回首页
         </el-button>
         <el-button size="large" class="back-btn" @click="goBack">
-          <i class="iconfont icon-arrow-left" />
+          <i class="iconfont icon-arrow-left"/>
           上一页
         </el-button>
       </div>
@@ -73,7 +82,7 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
+import {useRouter} from 'vue-router'
 
 const router = useRouter()
 
@@ -118,14 +127,81 @@ const goBack = () => {
   animation: float ease-in-out infinite;
 }
 
-.floating-icon:nth-child(1) { left: 10%; top: 20%; animation-duration: 6s; animation-delay: 0s; width: 8px; height: 8px; }
-.floating-icon:nth-child(2) { left: 20%; top: 70%; animation-duration: 8s; animation-delay: 1s; width: 12px; height: 12px; border-radius: 50%; }
-.floating-icon:nth-child(3) { left: 35%; top: 15%; animation-duration: 7s; animation-delay: 2s; width: 6px; height: 6px; }
-.floating-icon:nth-child(4) { left: 50%; top: 80%; animation-duration: 9s; animation-delay: 0.5s; width: 10px; height: 10px; border-radius: 50%; }
-.floating-icon:nth-child(5) { left: 65%; top: 25%; animation-duration: 7.5s; animation-delay: 3s; width: 8px; height: 8px; }
-.floating-icon:nth-child(6) { left: 75%; top: 65%; animation-duration: 8.5s; animation-delay: 1.5s; width: 11px; height: 11px; border-radius: 50%; }
-.floating-icon:nth-child(7) { left: 85%; top: 30%; animation-duration: 6.5s; animation-delay: 2.5s; width: 7px; height: 7px; }
-.floating-icon:nth-child(8) { left: 45%; top: 45%; animation-duration: 10s; animation-delay: 0.8s; width: 9px; height: 9px; border-radius: 50%; }
+.floating-icon:nth-child(1) {
+  left: 10%;
+  top: 20%;
+  animation-duration: 6s;
+  animation-delay: 0s;
+  width: 8px;
+  height: 8px;
+}
+
+.floating-icon:nth-child(2) {
+  left: 20%;
+  top: 70%;
+  animation-duration: 8s;
+  animation-delay: 1s;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.floating-icon:nth-child(3) {
+  left: 35%;
+  top: 15%;
+  animation-duration: 7s;
+  animation-delay: 2s;
+  width: 6px;
+  height: 6px;
+}
+
+.floating-icon:nth-child(4) {
+  left: 50%;
+  top: 80%;
+  animation-duration: 9s;
+  animation-delay: 0.5s;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.floating-icon:nth-child(5) {
+  left: 65%;
+  top: 25%;
+  animation-duration: 7.5s;
+  animation-delay: 3s;
+  width: 8px;
+  height: 8px;
+}
+
+.floating-icon:nth-child(6) {
+  left: 75%;
+  top: 65%;
+  animation-duration: 8.5s;
+  animation-delay: 1.5s;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.floating-icon:nth-child(7) {
+  left: 85%;
+  top: 30%;
+  animation-duration: 6.5s;
+  animation-delay: 2.5s;
+  width: 7px;
+  height: 7px;
+}
+
+.floating-icon:nth-child(8) {
+  left: 45%;
+  top: 45%;
+  animation-duration: 10s;
+  animation-delay: 0.8s;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
 
 @keyframes float {
   0%, 100% {

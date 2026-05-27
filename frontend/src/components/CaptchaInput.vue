@@ -1,27 +1,27 @@
 <template>
   <div class="captcha-input-wrapper">
     <EnhancedInput
-      :model-value="modelValue"
-      @update:model-value="$emit('update:modelValue', $event)"
-      :placeholder="placeholder"
-      icon="icon-captcha"
-      :width="inputWidth"
+        :model-value="modelValue"
+        @update:model-value="$emit('update:modelValue', $event)"
+        :placeholder="placeholder"
+        icon="icon-captcha"
+        :width="inputWidth"
     />
     <div class="captcha-image-box">
       <img
-        :src="captchaUrl"
-        alt="验证码"
-        class="captcha-image"
-        :style="{ height: `${height}px` }"
-        @click="refreshCaptcha"
-        title="点击刷新验证码"
+          :src="captchaUrl"
+          alt="验证码"
+          class="captcha-image"
+          :style="{ height: `${height}px` }"
+          @click="refreshCaptcha"
+          title="点击刷新验证码"
       />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import {ref, onMounted} from 'vue'
 import axios from 'axios'
 import EnhancedInput from './EnhancedInput.vue'
 

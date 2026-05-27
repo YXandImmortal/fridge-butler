@@ -1,7 +1,7 @@
 <template>
   <div class="stat-card" :class="[`stat-card--${type}`]">
     <div class="stat-icon">
-      <i class="iconfont" :class="iconClass" />
+      <i class="iconfont" :class="iconClass"/>
     </div>
     <div class="stat-content">
       <div class="stat-value">{{ displayValue }}</div>
@@ -14,15 +14,15 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 
 const props = defineProps({
-  value: { type: Number, required: true },
-  label: { type: String, required: true },
-  iconClass: { type: String, default: 'icon-item' },
-  type: { type: String, default: 'default' }, // default, warning, danger, success
-  trend: { type: Number, default: null },
-  suffix: { type: String, default: '' }
+  value: {type: Number, required: true},
+  label: {type: String, required: true},
+  iconClass: {type: String, default: 'icon-item'},
+  type: {type: String, default: 'default'}, // default, warning, danger, success
+  trend: {type: Number, default: null},
+  suffix: {type: String, default: ''}
 })
 
 const displayValue = computed(() => {
@@ -93,17 +93,26 @@ const displayValue = computed(() => {
 
 .stat-card--warning .stat-icon {
   background: rgba(255, 183, 77, 0.15);
-  .iconfont { color: var(--warn-color); }
+
+  .iconfont {
+    color: var(--warn-color);
+  }
 }
 
 .stat-card--danger .stat-icon {
   background: var(--danger-light);
-  .iconfont { color: var(--danger-color); }
+
+  .iconfont {
+    color: var(--danger-color);
+  }
 }
 
 .stat-card--success .stat-icon {
   background: var(--success-light);
-  .iconfont { color: var(--success-color); }
+
+  .iconfont {
+    color: var(--success-color);
+  }
 }
 
 .stat-content {

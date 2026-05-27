@@ -3,25 +3,25 @@
     <!-- 返回按钮 -->
     <div class="back-bar">
       <CustomButton type="link" @click="handleBack">
-        <i class="iconfont icon-arrow-left" />
+        <i class="iconfont icon-arrow-left"/>
         返回列表
       </CustomButton>
       <CustomButton type="link" @click="openSelectFridgeDialog">
-        <i class="iconfont icon-switch" />
+        <i class="iconfont icon-switch"/>
         切换冰箱
       </CustomButton>
     </div>
 
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-wrapper">
-      <el-skeleton :rows="6" animated />
+      <el-skeleton :rows="6" animated/>
     </div>
 
     <!-- 详情内容 -->
     <div v-else-if="fridgeForm" class="detail-card">
       <div class="detail-header">
         <div class="detail-icon">
-          <i class="iconfont icon-fridge-line" />
+          <i class="iconfont icon-fridge-line"/>
         </div>
         <div class="detail-info">
           <h2 class="detail-name">{{ fridgeForm.fridgeName }}</h2>
@@ -30,18 +30,18 @@
         <div class="item-management-wrapper">
           <CustomButton class="item-management" @click="handleItemManage">
             <div class="item-management-inner">
-              <i class="iconfont icon-inbox-full" />
+              <i class="iconfont icon-inbox-full"/>
               <span>物品管理</span>
             </div>
           </CustomButton>
         </div>
         <div class="detail-actions">
           <CustomButton type="primary" :loading="saving" @click="handleSave">
-            <i class="iconfont icon-save" />
+            <i class="iconfont icon-save"/>
             保存信息
           </CustomButton>
           <CustomButton type="danger" @click="handleDelete">
-            <i class="iconfont icon-trash" />
+            <i class="iconfont icon-trash"/>
             删除冰箱
           </CustomButton>
         </div>
@@ -53,36 +53,37 @@
 
         <!-- 可编辑字段 -->
         <el-form-item label="冰箱名称" required>
-          <EnhancedInput v-model="fridgeForm.fridgeName" placeholder="请输入冰箱名称" maxlength="30" show-word-limit />
+          <EnhancedInput v-model="fridgeForm.fridgeName" placeholder="请输入冰箱名称" maxlength="30" show-word-limit/>
         </el-form-item>
 
         <el-form-item label="冰箱类型">
           <CustomSelect
-            v-model="fridgeForm.fridgeTypeId"
-            :options="fridgeTypeOptions"
-            placeholder="请选择冰箱类型"
-            :full-width="true"
-            clearable
+              v-model="fridgeForm.fridgeTypeId"
+              :options="fridgeTypeOptions"
+              placeholder="请选择冰箱类型"
+              :full-width="true"
+              clearable
           >
             <template #prefix="{ selected }">
-              <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt="" />
+              <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt=""/>
             </template>
             <template #option="{ option, selected }">
               <div class="fridge-type-option-content">
-                <img :src="option.icon" class="fridge-type-icon-trigger" alt="" />
+                <img :src="option.icon" class="fridge-type-icon-trigger" alt=""/>
                 <span class="option-label">{{ option.label }}</span>
               </div>
-              <i v-if="selected" class="iconfont icon-check" />
+              <i v-if="selected" class="iconfont icon-check"/>
             </template>
           </CustomSelect>
         </el-form-item>
 
         <el-form-item label="默认冰箱" required>
-          <el-switch v-model="fridgeForm.isDefault" active-text="是" inactive-text="否" />
+          <el-switch v-model="fridgeForm.isDefault" active-text="是" inactive-text="否"/>
         </el-form-item>
 
         <el-form-item label="冰箱地址">
-          <EnhancedInput v-model="fridgeForm.fridgeAddress" placeholder="请输入冰箱地址" maxlength="200" show-word-limit />
+          <EnhancedInput v-model="fridgeForm.fridgeAddress" placeholder="请输入冰箱地址" maxlength="200"
+                         show-word-limit/>
         </el-form-item>
 
         <el-form-item label="总容量">
@@ -93,76 +94,81 @@
               placeholder="请输入总容量（L）"
               show-input
               :step="10"
-              style="padding-left: 12px; --el-border-radius-base: var(--radius-md);" />
+              style="padding-left: 12px; --el-border-radius-base: var(--radius-md);"/>
         </el-form-item>
 
         <el-form-item label="状态">
-          <el-switch v-model="fridgeForm.status" :active-value="true" :inactive-value="false" active-text="启用" inactive-text="停用" />
+          <el-switch v-model="fridgeForm.status" :active-value="true" :inactive-value="false" active-text="启用"
+                     inactive-text="停用"/>
         </el-form-item>
 
         <el-form-item label="备注">
-          <EnhancedInput v-model="fridgeForm.remark" type="textarea" :rows="3" placeholder="请输入备注" maxlength="200" show-word-limit />
+          <EnhancedInput v-model="fridgeForm.remark" type="textarea" :rows="3" placeholder="请输入备注" maxlength="200"
+                         show-word-limit/>
         </el-form-item>
 
         <!-- 不可编辑字段 -->
         <el-form-item label="物品数量">
-          <EnhancedInput :model-value="fridgeForm.itemCount + ' 件'" disabled />
+          <EnhancedInput :model-value="fridgeForm.itemCount + ' 件'" disabled/>
         </el-form-item>
         <el-form-item label="创建时间">
-          <EnhancedInput :model-value="formatDateTime(fridgeForm.createTime)" disabled />
+          <EnhancedInput :model-value="formatDateTime(fridgeForm.createTime)" disabled/>
         </el-form-item>
         <el-form-item label="更新时间">
-          <EnhancedInput :model-value="formatDateTime(fridgeForm.updateTime)" disabled />
+          <EnhancedInput :model-value="formatDateTime(fridgeForm.updateTime)" disabled/>
         </el-form-item>
       </el-form>
     </div>
 
     <!-- 未找到 -->
-    <el-empty v-else description="冰箱不存在或已被删除" />
+    <el-empty v-else description="冰箱不存在或已被删除"/>
 
     <!-- 删除确认对话框 -->
     <ConfirmDialog
-      v-model:visible="showDeleteDialog"
-      title="删除冰箱"
-      :message="`确定要删除冰箱「${fridgeForm?.fridgeName || ''}」吗？删除后可在后台恢复。`"
-      confirm-text="确定删除"
-      cancel-text="取消"
-      @confirm="confirmDelete"
+        v-model:visible="showDeleteDialog"
+        title="删除冰箱"
+        :message="`确定要删除冰箱「${fridgeForm?.fridgeName || ''}」吗？删除后可在后台恢复。`"
+        confirm-text="确定删除"
+        cancel-text="取消"
+        @confirm="confirmDelete"
     />
 
     <!-- 选择冰箱对话框 -->
     <ConfirmDialog
-      v-model:visible="showSelectFridgeDialog"
-      v-model:select-value="selectedFridgeId"
-      title="选择冰箱"
-      message="请选择一个冰箱："
-      confirm-text="确定"
-      cancel-text="取消"
-      type="select"
-      :persistent="true"
-      :show-close="false"
-      width="420px"
-      :options="fridgeList"
-      option-label="fridgeName"
-      option-value="id"
-      select-placeholder="请选择冰箱"
-      :select-loading="fridgeListLoading"
-      @confirm="handleSelectFridgeConfirm"
-      @cancel="handleSelectFridgeCancel"
+        v-model:visible="showSelectFridgeDialog"
+        v-model:select-value="selectedFridgeId"
+        title="选择冰箱"
+        message="请选择一个冰箱："
+        confirm-text="确定"
+        cancel-text="取消"
+        type="select"
+        :persistent="true"
+        :show-close="false"
+        width="420px"
+        :options="fridgeList"
+        option-label="fridgeName"
+        option-value="id"
+        select-placeholder="请选择冰箱"
+        :select-loading="fridgeListLoading"
+        @confirm="handleSelectFridgeConfirm"
+        @cancel="handleSelectFridgeCancel"
     />
+    <FridgeDetailTour ref="tourRef"/>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import FridgeDetailTour from '@/components/tour/FridgeDetailTour.vue'
+import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {onMounted, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
-import { getFridgeDetail, deleteFridge, listMyFridges, updateFridge, getDefaultFridge } from '@/api/fridge'
+import {getFridgeDetail, deleteFridge, listMyFridges, updateFridge, getDefaultFridge} from '@/api/fridge'
 import CustomButton from "@/components/CustomButton.vue";
 import EnhancedInput from "@/components/EnhancedInput.vue";
 import CustomSelect from '@/components/CustomSelect.vue'
-import { FRIDGE_TYPE_LIST } from '@/utils/fridgeTypeMap.js'
+import {FRIDGE_TYPE_LIST} from '@/utils/fridgeTypeMap.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -215,7 +221,7 @@ const handleSelectFridgeConfirm = () => {
     console.log(selectedFridgeId.value)
     router.push({
       name: 'fridge-detail',
-      params: { id: selectedFridgeId.value },
+      params: {id: selectedFridgeId.value},
     })
   } else {
     showMessage.warning('请选择一个冰箱')
@@ -238,7 +244,7 @@ const fetchFridgeDetail = async () => {
         id = res.data.id
         await router.replace({
           name: 'fridge-detail',
-          params: { id }
+          params: {id}
         })
         return
       }
@@ -254,7 +260,7 @@ const fetchFridgeDetail = async () => {
     const res = await getFridgeDetail(id)
     if (res.code === 200 && res.data) {
       fridge.value = res.data
-      fridgeForm.value = { ...res.data }
+      fridgeForm.value = {...res.data}
     } else {
       showMessage.error(res.message || '获取冰箱详情失败')
       fridge.value = null
@@ -316,7 +322,7 @@ const handleBack = () => {
 const handleItemManage = () => {
   router.push({
     name: 'fridge-items',
-    query: { fridgeId: fridge.value?.id }
+    query: {fridgeId: fridge.value?.id}
   })
 }
 
@@ -364,13 +370,22 @@ onMounted(() => {
 
 // 监听路由参数变化，切换冰箱时重新获取详情
 watch(
-  () => route.params.id,
-  (newId, oldId) => {
-    if (newId && newId !== oldId) {
-      fetchFridgeDetail()
+    () => route.params.id,
+    (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        fetchFridgeDetail()
+      }
     }
-  }
 )
+// 页面引导
+const tourRef = ref(null)
+const tourStore = useTourStore()
+
+watch(() => tourStore.pendingStartScene, (scene) => {
+  if (scene === TOUR_SCENES.FRIDGE_DETAIL) {
+    tourRef.value?.start()
+  }
+})
 </script>
 
 <style scoped lang="scss">

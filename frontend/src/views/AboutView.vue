@@ -2,9 +2,9 @@
   <div class="about-container">
     <!-- 顶部系统信息卡片 -->
     <div class="about-hero-card">
-      <div class="about-logo">
+      <div class="about-logo" @click="goToUserIndex">
         <div class="logo-icon">
-          <Logo />
+          <Logo/>
         </div>
       </div>
       <h1 class="about-title">{{ systemName || '冰箱管理系统' }}</h1>
@@ -17,13 +17,13 @@
     <!-- 功能特性区域 -->
     <div class="about-section">
       <h2 class="section-title">
-        <i class="iconfont icon-bookmark" />
+        <i class="iconfont icon-bookmark"/>
         核心功能
       </h2>
       <div class="feature-grid">
         <div class="feature-card" v-for="(feature, index) in features" :key="index">
           <div class="feature-icon">
-            <i :class="['iconfont', feature.icon]" />
+            <i :class="['iconfont', feature.icon]"/>
           </div>
           <h3 class="feature-title">{{ feature.title }}</h3>
           <p class="feature-desc">{{ feature.description }}</p>
@@ -34,7 +34,7 @@
     <!-- 更新日志 -->
     <div class="about-section">
       <h2 class="section-title">
-        <i class="iconfont icon-calendar-check" />
+        <i class="iconfont icon-calendar-check"/>
         最近更新
       </h2>
       <el-scrollbar height="500px" class="update-card" view-style="padding: 24px 32px;">
@@ -51,10 +51,11 @@
               <div class="timeline-version">
                 {{ update.version }}
                 <span v-if="update.isMajor" class="major-badge">
-                  <i class="iconfont icon-star" />
+                  <i class="iconfont icon-star"/>
                   重大更新
                 </span>
               </div>
+              <div v-if="update.summary" class="update-summary">{{ update.summary }}</div>
               <ul class="update-list">
                 <li v-for="(item, idx) in update.changes" :key="idx">{{ item }}</li>
               </ul>
@@ -67,32 +68,58 @@
     <!-- 技术支持与版权 -->
     <div class="about-section">
       <h2 class="section-title">
-        <i class="iconfont icon-info-box" />
+        <i class="iconfont icon-info-box"/>
         关于我们
       </h2>
       <div class="info-card">
         <div class="info-row" v-for="(item, index) in about" :key="index">
           <span class="info-label">
-            <i :class="['iconfont', item.icon]" />
+            <i :class="['iconfont', item.icon]"/>
             {{ item.label }}
           </span>
-          <span class="info-value">{{ item.value }}</span>
+          <span class="info-value">
+            <template v-if="item.type === 'url'">
+              <a :href="item.value" target="_blank" rel="noopener noreferrer" class="info-link">{{ item.value }}</a>
+            </template>
+            <template v-else-if="item.type === 'email'">
+              <a :href="'mailto:' + item.value" class="info-link">{{ item.value }}</a>
+            </template>
+            <template v-else>{{ item.value }}</template>
+          </span>
         </div>
       </div>
     </div>
+    <AboutTour ref="tourRef"/>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useSystemStore } from '@/stores/system'
+import {computed, ref, watch} from 'vue'
+import {useRouter} from 'vue-router'
+import {useSystemStore} from '@/stores/system'
 import Logo from '@/components/Logo.vue'
+import AboutTour from '@/components/tour/AboutTour.vue'
+import {useTourStore, TOUR_SCENES} from '@/stores/tour'
 
+const router = useRouter()
 const systemStore = useSystemStore()
-const { systemName, systemVersion, slogan, features, updates, about } = systemStore
+const {systemName, systemVersion, slogan, features, updates, about} = systemStore
+
+const goToUserIndex = () => {
+  router.push('/user/index')
+}
 
 // 当前年份
 const currentYear = computed(() => new Date().getFullYear())
+
+const tourRef = ref(null)
+const tourStore = useTourStore()
+
+watch(() => tourStore.pendingStartScene, (scene) => {
+  if (scene === TOUR_SCENES.ABOUT) {
+    tourRef.value?.start()
+  }
+})
 </script>
 
 <style scoped lang="scss">
@@ -124,6 +151,12 @@ const currentYear = computed(() => new Date().getFullYear())
 
 .about-logo {
   margin-bottom: 20px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.about-logo:hover {
+  transform: scale(1.05);
 }
 
 .logo-icon {
@@ -262,6 +295,14 @@ const currentYear = computed(() => new Date().getFullYear())
   margin-bottom: 8px;
 }
 
+.update-summary {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
 /* Timeline 样式适配主题 */
 .update-card :deep(.el-timeline) {
   padding-left: 4px;
@@ -325,6 +366,10 @@ const currentYear = computed(() => new Date().getFullYear())
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.major-update-item .update-summary {
+  color: var(--badge-gold-text);
 }
 
 .major-update-item .update-list li::marker {
@@ -395,6 +440,35 @@ const currentYear = computed(() => new Date().getFullYear())
   color: var(--text-secondary);
   line-height: 1.5;
   word-break: break-all;
+}
+
+.info-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.info-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+  transition: width 0.3s ease;
+  border-radius: 1px;
+}
+
+.info-link:hover {
+  color: var(--primary-dark);
+}
+
+.info-link:hover::after {
+  width: 100%;
 }
 
 /* 响应式设计 */

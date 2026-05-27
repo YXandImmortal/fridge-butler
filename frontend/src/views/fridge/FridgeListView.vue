@@ -6,7 +6,7 @@
       <div class="create-btn-container">
         <LogoButton type="primary" @click="handleAiCreate">AI帮我创建</LogoButton>
         <CustomButton type="primary" @click="handleCreate">
-          <i class="iconfont icon-add-box" />
+          <i class="iconfont icon-add-box"/>
           新建冰箱
         </CustomButton>
       </div>
@@ -14,34 +14,34 @@
 
     <!-- 搜索栏 -->
     <SearchBar
-      v-model="searchForm.keyword"
-      placeholder="请输入搜索内容"
-      @search="handleSearch"
-      @clear="handleSearch"
-      class="search-bar"
+        v-model="searchForm.keyword"
+        placeholder="请输入搜索内容"
+        @search="handleSearch"
+        @clear="handleSearch"
+        class="search-bar"
     >
       <SortControl
-        v-model:field="searchForm.sortField"
-        v-model:order="searchForm.sortOrder"
-        :field-options="sortFieldOptions"
-        @change="handleSearch"
+          v-model:field="searchForm.sortField"
+          v-model:order="searchForm.sortOrder"
+          :field-options="sortFieldOptions"
+          @change="handleSearch"
       />
       <CustomSelect
-        v-model="searchForm.fridgeTypeId"
-        placeholder="冰箱类型"
-        clearable
-        :options="fridgeTypeOptions"
-        @change="handleSearch"
+          v-model="searchForm.fridgeTypeId"
+          placeholder="冰箱类型"
+          clearable
+          :options="fridgeTypeOptions"
+          @change="handleSearch"
       >
         <template #prefix="{ selected }">
-          <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt="" />
+          <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt=""/>
         </template>
         <template #option="{ option, selected }">
           <div class="fridge-type-option-content">
-            <img :src="option.icon" class="fridge-type-icon-trigger" alt="" />
+            <img :src="option.icon" class="fridge-type-icon-trigger" alt=""/>
             <span class="option-label">{{ option.label }}</span>
           </div>
-          <i v-if="selected" class="iconfont icon-check" />
+          <i v-if="selected" class="iconfont icon-check"/>
         </template>
       </CustomSelect>
       <CustomButton @click="handleReset" type="search-reset">
@@ -53,8 +53,8 @@
     <div v-loading="loading" class="fridge-list-wrapper">
       <!-- 空状态 -->
       <el-empty
-        v-if="!loading && fridgeList.length === 0"
-        description="暂无冰箱，快去创建一个吧"
+          v-if="!loading && fridgeList.length === 0"
+          description="暂无冰箱，快去创建一个吧"
       >
         <CustomButton type="primary" @click="handleCreate">立即创建</CustomButton>
       </el-empty>
@@ -62,19 +62,19 @@
       <!-- 卡片列表 -->
       <div v-else class="fridge-grid">
         <div
-          v-for="fridge in fridgeList"
-          :key="fridge.id"
-          class="fridge-card"
-          :class="{ 'fridge-card--default': fridge.isDefault }"
-          @click="handleViewDetail(fridge.id)"
+            v-for="fridge in fridgeList"
+            :key="fridge.id"
+            class="fridge-card"
+            :class="{ 'fridge-card--default': fridge.isDefault }"
+            @click="handleViewDetail(fridge.id)"
         >
           <div v-if="fridge.isDefault" class="default-badge">
-            <i class="iconfont icon-star-fill" />
+            <i class="iconfont icon-star-fill"/>
             默认冰箱
           </div>
           <div class="card-header">
             <div class="fridge-icon">
-              <i class="iconfont icon-fridge-line" />
+              <i class="iconfont icon-fridge-line"/>
             </div>
             <div class="fridge-basic-info">
               <h3 class="fridge-name">{{ fridge.fridgeName }}</h3>
@@ -84,19 +84,20 @@
 
           <div class="fridge-meta">
             <span v-if="fridge.itemCount !== undefined" class="meta-item">
-              <i class="iconfont icon-item" />
+              <i class="iconfont icon-item"/>
               {{ fridge.itemCount }} 件物品
             </span>
           </div>
           <div class="fridge-meta">
             <span class="meta-item">
-              <i class="iconfont icon-calendar" />
+              <i class="iconfont icon-calendar"/>
               {{ formatDate(fridge.createTime) }}
             </span>
             <span v-if="fridge.totalCapacity === null" class="meta-item">
               未设置容量
             </span>
             <span v-else class="meta-item">
+              <i class="iconfont icon-speed-slow"/>
               容量 {{ fridge.totalCapacity }} L
             </span>
           </div>
@@ -106,35 +107,38 @@
 
     <!-- 创建冰箱对话框 -->
     <FridgeCreateDialog
-      v-model:visible="showCreateDialog"
-      :loading="createLoading"
-      @submit="handleCreateSubmit"
+        v-model:visible="showCreateDialog"
+        :loading="createLoading"
+        @submit="handleCreateSubmit"
     />
 
     <!-- 删除确认对话框 -->
     <ConfirmDialog
-      v-model:visible="showDeleteDialog"
-      title="删除冰箱"
-      :message="`确定要删除冰箱「${selectedFridge?.fridgeName || ''}」吗？删除后可在后台恢复。`"
-      confirm-text="确定删除"
-      cancel-text="取消"
-      @confirm="confirmDelete"
+        v-model:visible="showDeleteDialog"
+        title="删除冰箱"
+        :message="`确定要删除冰箱「${selectedFridge?.fridgeName || ''}」吗？删除后可在后台恢复。`"
+        confirm-text="确定删除"
+        cancel-text="取消"
+        @confirm="confirmDelete"
     />
+    <FridgeListTour ref="tourRef"/>
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import FridgeListTour from '@/components/tour/FridgeListTour.vue'
+import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {onMounted, reactive, ref, watch} from 'vue'
+import {useRouter} from 'vue-router'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import FridgeCreateDialog from '@/components/fridge/FridgeCreateDialog.vue'
 import showMessage from '@/utils/message'
-import { listMyFridges, deleteFridge, searchFridges, createFridge } from '@/api/fridge'
+import {listMyFridges, deleteFridge, searchFridges, createFridge} from '@/api/fridge'
 import CustomButton from "@/components/CustomButton.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import SortControl from "@/components/SortControl.vue";
 import CustomSelect from '@/components/CustomSelect.vue'
-import { FRIDGE_TYPE_LIST } from '@/utils/fridgeTypeMap.js'
+import {FRIDGE_TYPE_LIST} from '@/utils/fridgeTypeMap.js'
 
 const router = useRouter()
 
@@ -160,14 +164,14 @@ const fridgeTypeOptions = FRIDGE_TYPE_LIST.map(item => ({
 
 // 排序选项
 const sortFieldOptions = [
-  { label: '创建日期', value: 'createTime' },
-  { label: '冰箱名称', value: 'name' },
-  { label: '容量大小', value: 'totalCapacity' }
+  {label: '创建日期', value: 'createTime'},
+  {label: '冰箱名称', value: 'name'},
+  {label: '容量大小', value: 'totalCapacity'}
 ]
 
 const sortOrderOptions = [
-  { label: '升序', value: 'asc' },
-  { label: '降序', value: 'desc' }
+  {label: '升序', value: 'asc'},
+  {label: '降序', value: 'desc'}
 ]
 
 // 对话框控制
@@ -243,12 +247,12 @@ const handleCreate = () => {
 const handleAiCreate = () => {
   router.push({
     path: '/user/index',
-    query: { aiMessage: '帮我创建一个冰箱' }
+    query: {aiMessage: '帮我创建一个冰箱'}
   })
 }
 
 // 创建提交
-const handleCreateSubmit = async ({ fridgeName, remark, fridgeAddress, fridgeTypeId }) => {
+const handleCreateSubmit = async ({fridgeName, remark, fridgeAddress, fridgeTypeId}) => {
   createLoading.value = true
   try {
     const res = await createFridge({
@@ -263,7 +267,7 @@ const handleCreateSubmit = async ({ fridgeName, remark, fridgeAddress, fridgeTyp
       showCreateDialog.value = false
       await router.push({
         name: 'fridge-detail',
-        params: { id: res.data ? res.data : '' }
+        params: {id: res.data ? res.data : ''}
       })
     } else {
       showMessage.error(res.message || '创建失败')
@@ -316,6 +320,15 @@ const formatDate = (dateStr) => {
 
 onMounted(() => {
   fetchFridgeList()
+})
+// 页面引导
+const tourRef = ref(null)
+const tourStore = useTourStore()
+
+watch(() => tourStore.pendingStartScene, (scene) => {
+  if (scene === TOUR_SCENES.FRIDGE_LIST) {
+    tourRef.value?.start()
+  }
 })
 </script>
 
@@ -479,7 +492,7 @@ onMounted(() => {
   display: flex;
   gap: var(--space-4);
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: space-between;
 }
 
 .meta-item {

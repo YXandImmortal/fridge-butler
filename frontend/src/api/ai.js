@@ -1,6 +1,6 @@
 import request from '@/utils/request'
-import { useUserStore } from '@/stores/user'
-import { replaceToLogin } from '@/utils/navigate'
+import {useUserStore} from '@/stores/user'
+import {replaceToLogin} from '@/utils/navigate'
 import showMessage from '@/utils/message'
 
 /**
@@ -40,9 +40,9 @@ function parseSSEEvent(raw) {
     if (!event || !data) return null
 
     try {
-        return { event, data: JSON.parse(data) }
+        return {event, data: JSON.parse(data)}
     } catch {
-        return { event, data }
+        return {event, data}
     }
 }
 
@@ -61,17 +61,17 @@ function parseSSEEvent(raw) {
  * @param {AbortSignal} [options.signal] - 用于中断请求
  */
 export async function sendChatMessageStream({
-    message,
-    sessionId,
-    attachments,
-    wizardContext,
-    fridgeId,
-    onText,
-    onCard,
-    onDone,
-    onError,
-    signal
-}) {
+                                                message,
+                                                sessionId,
+                                                attachments,
+                                                wizardContext,
+                                                fridgeId,
+                                                onText,
+                                                onCard,
+                                                onDone,
+                                                onError,
+                                                signal
+                                            }) {
     const userStore = useUserStore()
 
     // Token 过期检查（与 axios 拦截器保持一致）
@@ -91,7 +91,7 @@ export async function sendChatMessageStream({
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ message, sessionId, attachments, wizardContext, fridgeId }),
+        body: JSON.stringify({message, sessionId, attachments, wizardContext, fridgeId}),
         signal
     })
 
@@ -112,10 +112,10 @@ export async function sendChatMessageStream({
 
     try {
         while (true) {
-            const { done, value } = await reader.read()
+            const {done, value} = await reader.read()
             if (done) break
 
-            buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n')
+            buffer += decoder.decode(value, {stream: true}).replace(/\r\n/g, '\n')
             const events = buffer.split('\n\n')
             buffer = events.pop() || ''
 

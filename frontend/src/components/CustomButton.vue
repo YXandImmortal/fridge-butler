@@ -1,9 +1,9 @@
 <template>
   <button
-    :type="nativeType"
-    :class="buttonClasses"
-    :disabled="disabled || loading"
-    @click="handleClick"
+      :type="nativeType"
+      :class="buttonClasses"
+      :disabled="disabled || loading"
+      @click="handleClick"
   >
     <i v-if="loading" class="iconfont icon-loader custom-button__loading-icon"></i>
     <span class="custom-button__content">
@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 
 const props = defineProps({
   type: {

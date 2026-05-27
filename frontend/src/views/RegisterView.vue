@@ -1,7 +1,7 @@
 <template>
   <AuthLayout
-    title="用户注册"
-    :subtitle="`创建您的账户，开启${systemName || '冰箱管理系统'}之旅`"
+      title="用户注册"
+      :subtitle="`创建您的账户，开启${systemName || '冰箱管理系统'}之旅`"
   >
     <el-form
         ref="registerFormRef"
@@ -66,11 +66,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import {ref, reactive, onMounted} from 'vue'
+import {useRouter} from 'vue-router'
 import request from '@/utils/request'
 import showMessage from '@/utils/message'
-import { useSystemStore } from '@/stores/system'
+import {useSystemStore} from '@/stores/system'
 import AuthLayout from "@/layouts/AuthLayout.vue"
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
 import EnhancedInput from "@/components/EnhancedInput.vue"
@@ -78,7 +78,7 @@ import CaptchaInput from "@/components/CaptchaInput.vue"
 
 const router = useRouter()
 const systemStore = useSystemStore()
-const { systemName, getSystemInfo } = systemStore;
+const {systemName, getSystemInfo} = systemStore;
 const registerFormRef = ref()
 const captchaInputRef = ref()
 const loading = ref(false)
@@ -111,21 +111,21 @@ const validateConfirmPassword = (rule, value, callback) => {
 // 表单验证规则
 const registerRules = {
   username: [
-    { required: true, message: '用户名不能为空', trigger: 'blur' },
-    { max: 50, message: '用户名长度不能超过50', trigger: 'blur' }
+    {required: true, message: '用户名不能为空', trigger: 'blur'},
+    {max: 50, message: '用户名长度不能超过50', trigger: 'blur'}
   ],
   password: [
-    { required: true, message: '密码不能为空', trigger: 'blur' }
+    {required: true, message: '密码不能为空', trigger: 'blur'}
   ],
   confirmPassword: [
-    { required: true, validator: validateConfirmPassword, trigger: 'blur' }
+    {required: true, validator: validateConfirmPassword, trigger: 'blur'}
   ],
   mobile: [
-    { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }
+    {pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur'}
   ],
   captcha: [
-    { required: true, message: '验证码不能为空', trigger: 'blur' },
-    { min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur' }
+    {required: true, message: '验证码不能为空', trigger: 'blur'},
+    {min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur'}
   ]
 }
 

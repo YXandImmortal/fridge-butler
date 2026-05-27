@@ -22,6 +22,6 @@ export function getTipByDate(date) {
     return request({
         url: '/daily-tip/by-date',
         method: 'get',
-        params: { date }
+        params: {date}
     })
 }

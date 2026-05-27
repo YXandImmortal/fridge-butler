@@ -12,7 +12,7 @@ export function setRouter(router) {
  */
 export function toLogin() {
     if (routerInstance) {
-        routerInstance.push({ name: 'login' })
+        routerInstance.push({name: 'login'})
     } else {
         window.location.href = '/login'
     }
@@ -23,7 +23,7 @@ export function toLogin() {
  */
 export function replaceToLogin() {
     if (routerInstance) {
-        routerInstance.replace({ name: 'login' })
+        routerInstance.replace({name: 'login'})
     } else {
         window.location.href = '/login'
     }

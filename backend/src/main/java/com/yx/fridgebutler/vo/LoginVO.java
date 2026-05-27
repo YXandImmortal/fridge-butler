@@ -63,4 +63,9 @@ public class LoginVO {
      * 过期时间
      */
     private Long expireTime;
+
+    /**
+     * 是否已完成新手指引
+     */
+    private Boolean guideCompleted;
 }

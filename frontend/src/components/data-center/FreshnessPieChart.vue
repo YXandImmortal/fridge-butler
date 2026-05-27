@@ -2,34 +2,34 @@
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title-wrapper">
-        <i class="iconfont icon-leaf chart-title-icon" />
+        <i class="iconfont icon-leaf chart-title-icon"/>
         <h3 class="chart-title">新鲜度状态分布</h3>
       </div>
     </div>
     <v-chart
-      v-if="data.length > 0"
-      class="chart-body"
-      :option="chartOption"
-      autoresize
+        v-if="data.length > 0"
+        class="chart-body"
+        :option="chartOption"
+        autoresize
     />
-    <el-empty v-else description="暂无数据" class="chart-empty" />
+    <el-empty v-else description="暂无数据" class="chart-empty"/>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { use } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { PieChart } from 'echarts/charts'
-import { TooltipComponent, LegendComponent } from 'echarts/components'
+import {computed} from 'vue'
+import {use} from 'echarts/core'
+import {CanvasRenderer} from 'echarts/renderers'
+import {PieChart} from 'echarts/charts'
+import {TooltipComponent, LegendComponent} from 'echarts/components'
 import VChart from 'vue-echarts'
-import { getChartThemeColors } from '@/utils/data-analysis'
-import { useThemeStore } from '@/stores/theme'
+import {getChartThemeColors} from '@/utils/data-analysis'
+import {useThemeStore} from '@/stores/theme'
 
 use([CanvasRenderer, PieChart, TooltipComponent, LegendComponent])
 
 const props = defineProps({
-  data: { type: Array, default: () => [] }
+  data: {type: Array, default: () => []}
 })
 
 const themeStore = useThemeStore()
@@ -46,7 +46,7 @@ const chartOption = computed(() => {
   const colors = getChartThemeColors(themeStore.theme === 'dark')
   const mappedData = props.data.map(d => ({
     ...d,
-    itemStyle: { color: statusColors[d.name] || colors.colors[0] }
+    itemStyle: {color: statusColors[d.name] || colors.colors[0]}
   }))
 
   return {
@@ -54,13 +54,13 @@ const chartOption = computed(() => {
       trigger: 'item',
       backgroundColor: colors.tooltipBg,
       borderColor: colors.tooltipBorder,
-      textStyle: { color: colors.textColor },
+      textStyle: {color: colors.textColor},
       formatter: '{b}: {c} ({d}%)'
     },
     legend: {
       bottom: '5%',
       left: 'center',
-      textStyle: { color: colors.subTextColor, fontSize: 12 },
+      textStyle: {color: colors.subTextColor, fontSize: 12},
       itemWidth: 12,
       itemHeight: 12,
       itemGap: 20

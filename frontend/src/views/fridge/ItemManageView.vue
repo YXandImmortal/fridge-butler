@@ -3,11 +3,11 @@
     <!-- 返回栏 -->
     <div class="back-bar">
       <CustomButton type="link" @click="handleBack">
-        <i class="iconfont icon-arrow-left" />
+        <i class="iconfont icon-arrow-left"/>
         返回冰箱详情
       </CustomButton>
       <CustomButton type="link" @click="openSelectFridgeDialog">
-        <i class="iconfont icon-switch" />
+        <i class="iconfont icon-switch"/>
         切换冰箱
       </CustomButton>
     </div>
@@ -18,24 +18,26 @@
       <div v-if="capacityData && capacityData.totalCapacity != null" class="card capacity-card">
         <div class="card-header">
           <div class="card-title-wrapper">
-            <i class="iconfont icon-speed-slow card-title-icon" />
+            <i class="iconfont icon-speed-slow card-title-icon"/>
             <h3 class="card-title">冰箱已用容量</h3>
             <el-tooltip content="该数据每小时刷新" placement="right" :offset="6">
               <i class="iconfont icon-info-box info-icon" style="margin-left: -6px"/>
             </el-tooltip>
           </div>
-          <span class="capacity-text">{{ ((capacityData.rate * capacityData.totalCapacity) / 100).toFixed(1) }} / {{ capacityData.totalCapacity }} L</span>
+          <span class="capacity-text">{{
+              ((capacityData.rate * capacityData.totalCapacity) / 100).toFixed(1)
+            }} / {{ capacityData.totalCapacity }} L</span>
         </div>
         <div v-loading="capacityLoading" class="capacity-body">
           <el-progress
-            :percentage="capacityData.rate"
-            :color="[
+              :percentage="capacityData.rate"
+              :color="[
               { color: '#67C23A', percentage: 50 },
               { color: '#E6A23C', percentage: 80 },
               { color: '#F56C6C', percentage: 100 }
             ]"
-            :stroke-width="16"
-            class="capacity-progress"
+              :stroke-width="16"
+              class="capacity-progress"
           />
           <div class="capacity-rate">{{ capacityData.rate }}%</div>
         </div>
@@ -45,7 +47,7 @@
       <div class="card search-card">
         <div class="card-header">
           <div class="card-title-wrapper">
-            <i class="iconfont icon-search-list card-title-icon" />
+            <i class="iconfont icon-search-list card-title-icon"/>
             <h3 class="card-title">物品列表</h3>
           </div>
           <span v-if="!itemLoading" class="card-subtitle">
@@ -53,15 +55,15 @@
           </span>
           <div class="header-actions">
             <LogoButton
-              type="primary"
-              :disabled="!hasFridgeId"
-              @click="handleAiCreate"
+                type="primary"
+                :disabled="!hasFridgeId"
+                @click="handleAiCreate"
             >
               AI帮我添加
             </LogoButton>
             <el-tooltip :disabled="hasFridgeId" content="请选择冰箱" placement="top">
               <CustomButton type="primary" :disabled="!hasFridgeId" @click="showCreateDialog = true">
-                <i class="iconfont icon-item" />
+                <i class="iconfont icon-item"/>
                 添加物品
               </CustomButton>
             </el-tooltip>
@@ -71,45 +73,45 @@
         <!-- 搜索区域 -->
         <div class="search-section">
           <SearchBar
-            v-model="searchForm.keyword"
-            placeholder="搜索物品名称"
-            @search="handleSearch"
-            @clear="handleReset"
+              v-model="searchForm.keyword"
+              placeholder="搜索物品名称"
+              @search="handleSearch"
+              @clear="handleReset"
           >
             <SortControl
-              v-model:field="sortField"
-              v-model:order="sortOrder"
-              :field-options="sortFieldOptions"
-              @change="handleSortChange"
+                v-model:field="sortField"
+                v-model:order="sortOrder"
+                :field-options="sortFieldOptions"
+                @change="handleSortChange"
             />
             <CustomSelect
-              v-model="searchForm.categoryId"
-              placeholder="全部分类"
-              clearable
-              grid
-              class="filter-select"
-              :options="categoryOptions"
-              @change="handleSortChange"
+                v-model="searchForm.categoryId"
+                placeholder="全部分类"
+                clearable
+                grid
+                class="filter-select"
+                :options="categoryOptions"
+                @change="handleSortChange"
             />
             <CustomSelect
-              v-model="searchForm.unitTypeId"
-              placeholder="全部单位类型"
-              clearable
-              grid
-              class="filter-select"
-              :options="unitTypeOptions"
-              @change="handleSortChange"
+                v-model="searchForm.unitTypeId"
+                placeholder="全部单位类型"
+                clearable
+                grid
+                class="filter-select"
+                :options="unitTypeOptions"
+                @change="handleSortChange"
             />
             <CustomSelect
-              v-model="searchForm.unitId"
-              placeholder="全部单位"
-              clearable
-              grid
-              dropdown-align="right"
-              class="filter-select"
-              :disabled="!searchForm.unitTypeId"
-              :options="unitOptions"
-              @change="handleSortChange"
+                v-model="searchForm.unitId"
+                placeholder="全部单位"
+                clearable
+                grid
+                dropdown-align="right"
+                class="filter-select"
+                :disabled="!searchForm.unitTypeId"
+                :options="unitOptions"
+                @change="handleSortChange"
             />
             <CustomButton @click="handleReset" type="search-reset">
               重置
@@ -121,9 +123,9 @@
         <div v-loading="itemLoading" class="list-section">
           <!-- 空状态 -->
           <el-empty
-            v-if="!itemLoading && itemList.length === 0"
-            description="暂无物品"
-            class="item-empty"
+              v-if="!itemLoading && itemList.length === 0"
+              description="暂无物品"
+              class="item-empty"
           />
 
           <!-- 物品表格列表 -->
@@ -139,7 +141,7 @@
                 <template #default="{ row }">
                   <div class="item-name-cell">
                     <div class="item-icon-sm">
-                      <i class="iconfont icon-item" />
+                      <i class="iconfont icon-item"/>
                     </div>
                     <div class="item-name-info">
                       <span class="item-name-text">{{ row.itemName }}</span>
@@ -216,7 +218,7 @@
                     >
                       <template #reference>
                         <CustomButton type="primary" size="small">
-                          取出<i class="iconfont icon-arrow-right-box" />
+                          取出<i class="iconfont icon-arrow-right-box"/>
                         </CustomButton>
                       </template>
                       <div>
@@ -227,12 +229,12 @@
                     </el-popover>
                     <el-tooltip content="编辑" placement="top">
                       <CustomButton type="link" size="small" @click="handleEditItem(row)">
-                        <i class="iconfont icon-edit-box" />
+                        <i class="iconfont icon-edit-box"/>
                       </CustomButton>
                     </el-tooltip>
                     <el-tooltip content="删除" placement="top">
                       <CustomButton type="link" size="small" class="danger-link" @click="handleDeleteItem(row)">
-                        <i class="iconfont icon-delete" />
+                        <i class="iconfont icon-delete"/>
                       </CustomButton>
                     </el-tooltip>
                   </div>
@@ -248,72 +250,75 @@
 
     <!-- 选择冰箱对话框 -->
     <ConfirmDialog
-      v-model:visible="showSelectFridgeDialog"
-      v-model:select-value="selectedFridgeId"
-      title="选择冰箱"
-      message="请选择一个冰箱："
-      confirm-text="确定"
-      cancel-text="取消"
-      type="select"
-      :persistent="true"
-      :show-close="false"
-      width="420px"
-      :options="fridgeList"
-      option-label="fridgeName"
-      option-value="id"
-      select-placeholder="请选择冰箱"
-      :select-loading="fridgeListLoading"
-      @confirm="handleSelectFridgeConfirm"
-      @cancel="handleSelectFridgeCancel"
+        v-model:visible="showSelectFridgeDialog"
+        v-model:select-value="selectedFridgeId"
+        title="选择冰箱"
+        message="请选择一个冰箱："
+        confirm-text="确定"
+        cancel-text="取消"
+        type="select"
+        :persistent="true"
+        :show-close="false"
+        width="420px"
+        :options="fridgeList"
+        option-label="fridgeName"
+        option-value="id"
+        select-placeholder="请选择冰箱"
+        :select-loading="fridgeListLoading"
+        @confirm="handleSelectFridgeConfirm"
+        @cancel="handleSelectFridgeCancel"
     />
 
     <!-- 添加物品弹窗 -->
     <ItemDetailDialog
-      v-model:visible="showCreateDialog"
-      :category-list="categoryList"
-      :unit-list="unitList"
-      :unit-type-list="unitTypeList"
-      :fridge-id="currentFridgeId"
-      @success="fetchItems"
+        v-model:visible="showCreateDialog"
+        :category-list="categoryList"
+        :unit-list="unitList"
+        :unit-type-list="unitTypeList"
+        :fridge-id="currentFridgeId"
+        @success="fetchItems"
     />
 
     <!-- 编辑物品弹窗 -->
     <ItemDetailDialog
-      v-model:visible="showEditDialog"
-      mode="edit"
-      :item-data="currentEditItem"
-      :category-list="categoryList"
-      :unit-list="unitList"
-      :unit-type-list="unitTypeList"
-      @success="fetchItems"
+        v-model:visible="showEditDialog"
+        mode="edit"
+        :item-data="currentEditItem"
+        :category-list="categoryList"
+        :unit-list="unitList"
+        :unit-type-list="unitTypeList"
+        @success="fetchItems"
     />
 
     <!-- 取出物品弹窗 -->
     <ItemTakeOutDialog
-      v-model:visible="showTakeOutDialog"
-      :item="currentTakeOutItem"
-      @success="fetchItems"
+        v-model:visible="showTakeOutDialog"
+        :item="currentTakeOutItem"
+        @success="fetchItems"
     />
 
     <!-- 删除确认对话框 -->
     <ConfirmDialog
-      v-model:visible="showDeleteDialog"
-      title="删除物品"
-      :message="`确定要删除 ${currentDeleteItem?.itemName || ''} 吗？`"
-      confirm-text="确定"
-      cancel-text="取消"
-      @confirm="handleDeleteConfirm"
+        v-model:visible="showDeleteDialog"
+        title="删除物品"
+        :message="`确定要删除 ${currentDeleteItem?.itemName || ''} 吗？`"
+        confirm-text="确定"
+        cancel-text="取消"
+        @confirm="handleDeleteConfirm"
     />
+    <ItemManageTour ref="tourRef"/>
   </div>
 </template>
 
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import ItemManageTour from '@/components/tour/ItemManageTour.vue'
+import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {computed, onMounted, reactive, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
-import { useThemeStore } from '@/stores/theme'
+import {useThemeStore} from '@/stores/theme'
 import {
   listItemCategories,
   listItemUnits,
@@ -322,7 +327,7 @@ import {
   deleteItem,
   takeOutItem
 } from '@/api/item'
-import { listMyFridges, getDefaultFridge, getCapacityStats } from '@/api/fridge'
+import {listMyFridges, getDefaultFridge, getCapacityStats} from '@/api/fridge'
 import CustomButton from '@/components/CustomButton.vue'
 import CustomSelect from '@/components/CustomSelect.vue'
 import SortControl from '@/components/SortControl.vue'
@@ -357,24 +362,24 @@ const searchForm = reactive({
 })
 
 const categoryOptions = computed(() => {
-  return categoryList.value.map(cat => ({ label: cat.categoryName, value: cat.id }))
+  return categoryList.value.map(cat => ({label: cat.categoryName, value: cat.id}))
 })
 
 const unitTypeOptions = computed(() => {
-  return unitTypeList.value.map(t => ({ label: t.unitTypeName, value: t.id }))
+  return unitTypeList.value.map(t => ({label: t.unitTypeName, value: t.id}))
 })
 
 const unitOptions = computed(() => {
   if (!searchForm.unitTypeId) return []
   return unitList.value
-    .filter(u => u.unitTypeId === searchForm.unitTypeId)
-    .map(u => ({ label: u.unitName, value: u.id }))
+      .filter(u => u.unitTypeId === searchForm.unitTypeId)
+      .map(u => ({label: u.unitName, value: u.id}))
 })
 
 const sortFieldOptions = [
-  { label: '入库时间', value: 'storedDate' },
-  { label: '数量', value: 'itemNum' },
-  { label: '新鲜度', value: 'freshness' }
+  {label: '入库时间', value: 'storedDate'},
+  {label: '数量', value: 'itemNum'},
+  {label: '新鲜度', value: 'freshness'}
 ]
 
 const sortField = ref('storedDate')
@@ -446,7 +451,7 @@ const handleSelectFridgeConfirm = () => {
     showSelectFridgeDialog.value = false
     router.push({
       name: 'fridge-items',
-      params: { id: selectedFridgeId.value }
+      params: {id: selectedFridgeId.value}
     })
   } else {
     showMessage.warning('请选择一个冰箱')
@@ -678,21 +683,21 @@ const handleBack = () => {
   if (fridgeId) {
     router.push({
       name: 'fridge-detail',
-      params: { id: fridgeId }
+      params: {id: fridgeId}
     })
   } else {
-    router.push({ name: 'fridge-list' })
+    router.push({name: 'fridge-list'})
   }
 }
 
 // 计算物品新鲜度
 const getFreshnessStatus = (row) => {
   if (row.shelfLifeDays > 30) {
-    return { label: '长保质期', type: 'info' }
+    return {label: '长保质期', type: 'info'}
   }
 
   if (!row.productionDate || !row.shelfLifeDays) {
-    return { label: '-', type: 'info' }
+    return {label: '-', type: 'info'}
   }
 
   const productionDate = new Date(row.productionDate)
@@ -704,13 +709,13 @@ const getFreshnessStatus = (row) => {
   const R = (remainingDays / row.shelfLifeDays) * 100
 
   if (R <= 0) {
-    return { label: '已过期', type: 'danger' }
+    return {label: '已过期', type: 'danger'}
   } else if (R < 20) {
-    return { label: '临期', type: 'warning' }
+    return {label: '临期', type: 'warning'}
   } else if (R < 50) {
-    return { label: '一般', type: 'primary' }
+    return {label: '一般', type: 'primary'}
   } else {
-    return { label: '新鲜', type: 'success' }
+    return {label: '新鲜', type: 'success'}
   }
 }
 
@@ -724,7 +729,7 @@ const resolveFridgeId = async () => {
         fridgeId = res.data.id
         await router.replace({
           name: 'fridge-items',
-          params: { id: fridgeId }
+          params: {id: fridgeId}
         })
       }
     } catch (error) {
@@ -787,22 +792,31 @@ onMounted(async () => {
 
 // 监听单位类别变化，清空单位选择
 watch(
-  () => searchForm.unitTypeId,
-  () => {
-    searchForm.unitId = ''
-  }
+    () => searchForm.unitTypeId,
+    () => {
+      searchForm.unitId = ''
+    }
 )
 
 // 监听路由参数变化，切换冰箱时重新获取物品
 watch(
-  () => route.params.id,
-  (newId, oldId) => {
-    if (newId && newId !== oldId) {
-      fetchItems()
-      fetchCapacityStats()
+    () => route.params.id,
+    (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        fetchItems()
+        fetchCapacityStats()
+      }
     }
-  }
 )
+// 页面引导
+const tourRef = ref(null)
+const tourStore = useTourStore()
+
+watch(() => tourStore.pendingStartScene, (scene) => {
+  if (scene === TOUR_SCENES.ITEM_MANAGE) {
+    tourRef.value?.start()
+  }
+})
 </script>
 
 

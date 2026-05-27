@@ -4,7 +4,7 @@
     <div class="page-header">
       <h2 class="page-title">单位分类一览</h2>
       <CustomButton type="primary" @click="handleCreate">
-        <i class="iconfont icon-add-box" />
+        <i class="iconfont icon-add-box"/>
         新建单位分类
       </CustomButton>
     </div>
@@ -15,21 +15,21 @@
       <div class="unit-type-section">
         <h3 class="section-title">我的单位分类</h3>
         <el-empty
-          v-if="!loading && customUnitTypes.length === 0"
-          description="您还没有创建自定义单位分类"
+            v-if="!loading && customUnitTypes.length === 0"
+            description="您还没有创建自定义单位分类"
         >
           <CustomButton type="primary" @click="handleCreate">立即创建</CustomButton>
         </el-empty>
         <div v-else class="unit-type-grid">
           <div
-            v-for="unitType in customUnitTypes"
-            :key="unitType.id"
-            class="unit-type-card"
-            @click="handleExpand(unitType)"
+              v-for="unitType in customUnitTypes"
+              :key="unitType.id"
+              class="unit-type-card"
+              @click="handleExpand(unitType)"
           >
             <div class="card-header">
               <div class="unit-type-icon">
-                <i class="iconfont icon-inbox-all" />
+                <i class="iconfont icon-inbox-all"/>
               </div>
               <div class="unit-type-info">
                 <h3 class="unit-type-name">{{ unitType.unitTypeName || unitType.typeName }}</h3>
@@ -42,11 +42,11 @@
 
             <div class="card-actions">
               <CustomButton type="primary" size="small" @click.stop="handleEdit(unitType)">
-                <i class="iconfont icon-edit-box" />
+                <i class="iconfont icon-edit-box"/>
                 编辑
               </CustomButton>
               <CustomButton type="danger" size="small" @click.stop="handleDelete(unitType)">
-                <i class="iconfont icon-delete" />
+                <i class="iconfont icon-delete"/>
                 删除
               </CustomButton>
             </div>
@@ -58,23 +58,23 @@
       <div class="unit-type-section unit-type-section--system" v-if="systemUnitTypes.length > 0">
         <div class="section-header" @click="isSystemCollapsed = !isSystemCollapsed">
           <h3 class="section-title">系统默认单位分类</h3>
-          <i class="iconfont icon-chevron-down toggle-icon" :class="{ 'is-collapsed': isSystemCollapsed }" />
+          <i class="iconfont icon-chevron-down toggle-icon" :class="{ 'is-collapsed': isSystemCollapsed }"/>
         </div>
         <el-collapse-transition>
           <div v-show="!isSystemCollapsed" class="unit-type-grid">
             <div
-              v-for="unitType in systemUnitTypes"
-              :key="unitType.id"
-              class="unit-type-card unit-type-card--system"
-              @click="handleExpand(unitType)"
+                v-for="unitType in systemUnitTypes"
+                :key="unitType.id"
+                class="unit-type-card unit-type-card--system"
+                @click="handleExpand(unitType)"
             >
               <div class="system-badge">
-                <i class="iconfont icon-shield-fill" />
+                <i class="iconfont icon-bookmark"/>
                 系统默认
               </div>
               <div class="card-header">
                 <div class="unit-type-icon">
-                  <i class="iconfont icon-inbox-full" />
+                  <i class="iconfont icon-inbox-full"/>
                 </div>
                 <div class="unit-type-info">
                   <h3 class="unit-type-name">{{ unitType.unitTypeName || unitType.typeName }}</h3>
@@ -95,59 +95,62 @@
 
     <!-- 删除确认对话框 -->
     <ConfirmDialog
-      v-model:visible="showDeleteDialog"
-      title="删除单位分类"
-      :message="`确定要删除单位分类「${selectedUnitType?.unitTypeName || selectedUnitType?.typeName || ''}」吗？删除后无法恢复，且会影响使用该分类下单位的物品。`"
-      confirm-text="确定删除"
-      cancel-text="取消"
-      @confirm="confirmDelete"
-      width="450px"
+        v-model:visible="showDeleteDialog"
+        title="删除单位分类"
+        :message="`确定要删除单位分类「${selectedUnitType?.unitTypeName || selectedUnitType?.typeName || ''}」吗？删除后无法恢复，且会影响使用该分类下单位的物品。`"
+        confirm-text="确定删除"
+        cancel-text="取消"
+        @confirm="confirmDelete"
+        width="450px"
     />
 
     <!-- 创建单位分类对话框 -->
     <InputDialog
-      v-model:visible="showCreateDialog"
-      title="创建单位分类"
-      label="分类名称"
-      placeholder="请输入单位分类名称，如：重量、容量、数量"
-      icon="icon-inbox"
-      value-prop="typeName"
-      confirm-text="创建分类"
-      :loading="createLoading"
-      @submit="handleCreateSubmit"
+        v-model:visible="showCreateDialog"
+        title="创建单位分类"
+        label="分类名称"
+        placeholder="请输入单位分类名称，如：重量、容量、数量"
+        icon="icon-inbox"
+        value-prop="typeName"
+        confirm-text="创建分类"
+        :loading="createLoading"
+        @submit="handleCreateSubmit"
     />
 
     <!-- 编辑单位分类对话框 -->
     <InputDialog
-      v-model:visible="showEditDialog"
-      title="编辑单位分类"
-      label="分类名称"
-      placeholder="请输入单位分类名称"
-      icon="icon-inbox"
-      value-prop="unitTypeName"
-      confirm-text="确认修改"
-      :data="selectedUnitType"
-      :loading="editLoading"
-      @submit="handleEditSubmit"
+        v-model:visible="showEditDialog"
+        title="编辑单位分类"
+        label="分类名称"
+        placeholder="请输入单位分类名称"
+        icon="icon-inbox"
+        value-prop="unitTypeName"
+        confirm-text="确认修改"
+        :data="selectedUnitType"
+        :loading="editLoading"
+        @submit="handleEditSubmit"
     />
 
     <!-- 展开单位分类对话框 -->
     <UnitListDialog
-      v-model:visible="showExpandDialog"
-      :unit-type="selectedUnitType"
-      :unit-list="filteredUnitList"
-      @success="handleExpandSuccess"
+        v-model:visible="showExpandDialog"
+        :unit-type="selectedUnitType"
+        :unit-list="filteredUnitList"
+        @success="handleExpandSuccess"
     />
+    <ItemUnitTypeTour ref="tourRef"/>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import ItemUnitTypeTour from '@/components/tour/ItemUnitTypeTour.vue'
+import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {onMounted, ref, computed, watch} from 'vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import InputDialog from '@/components/InputDialog.vue'
 import UnitListDialog from '@/components/unit/UnitListDialog.vue'
 import showMessage from '@/utils/message'
-import { listUnitTypes, listItemUnits, deleteUnitType, updateUnitType, createUnitType } from '@/api/item'
+import {listUnitTypes, listItemUnits, deleteUnitType, updateUnitType, createUnitType} from '@/api/item'
 import CustomButton from '@/components/CustomButton.vue'
 
 // 加载状态
@@ -164,16 +167,16 @@ const isSystemCollapsed = ref(true)
 
 // 自定义单位类型
 const customUnitTypes = computed(() =>
-  unitTypeList.value
-    .filter(t => !t.isSystemDefault)
-    .sort((a, b) => a.id - b.id)
+    unitTypeList.value
+        .filter(t => !t.isSystemDefault)
+        .sort((a, b) => a.id - b.id)
 )
 
 // 系统默认单位类型
 const systemUnitTypes = computed(() =>
-  unitTypeList.value
-    .filter(t => t.isSystemDefault)
-    .sort((a, b) => a.id - b.id)
+    unitTypeList.value
+        .filter(t => t.isSystemDefault)
+        .sort((a, b) => a.id - b.id)
 )
 
 // 对话框控制
@@ -236,7 +239,7 @@ const handleCreate = () => {
 }
 
 // 创建提交
-const handleCreateSubmit = async ({ value }) => {
+const handleCreateSubmit = async ({value}) => {
   createLoading.value = true
   try {
     const res = await createUnitType({
@@ -274,7 +277,7 @@ const handleEdit = (unitType) => {
 }
 
 // 编辑提交
-const handleEditSubmit = async ({ id, value }) => {
+const handleEditSubmit = async ({id, value}) => {
   editLoading.value = true
   try {
     const res = await updateUnitType({
@@ -334,6 +337,15 @@ const confirmDelete = async () => {
 onMounted(() => {
   fetchUnitTypeList()
   fetchUnitList()
+})
+// 页面引导
+const tourRef = ref(null)
+const tourStore = useTourStore()
+
+watch(() => tourStore.pendingStartScene, (scene) => {
+  if (scene === TOUR_SCENES.ITEM_UNIT_TYPE) {
+    tourRef.value?.start()
+  }
 })
 </script>
 

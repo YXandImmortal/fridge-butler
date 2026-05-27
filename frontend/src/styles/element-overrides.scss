@@ -193,3 +193,150 @@ html.dark .el-carousel__arrow {
     background-color: rgba(255, 255, 255, 0.35);
   }
 }
+
+/* =========================================================
+ * Tour 漫游引导主题适配
+ * ========================================================= */
+
+/* Tour 核心 CSS 变量覆盖 — 确保浅色/深色模式下文字颜色正确 */
+.el-tour {
+  --el-tour-bg-color: var(--glass-bg);
+  --el-tour-border-radius: var(--radius-md);
+
+
+  /* 遮罩层 */
+  .el-tour__mask rect {
+    fill: rgba(0, 0, 0, 0.45);
+  }
+
+  /* 弹窗背景与玻璃态效果 */
+  .el-tour__content {
+    color: var(--text-primary);
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+
+    .el-tour__header {
+      --el-tour-title-text-color: var(--text-primary);
+      --el-tour-title-font-weight: 600;
+    }
+
+    .el-tour__body {
+      --el-tour-text-color: var(--text-primary);
+    }
+
+    .el-tour__closebtn {
+      --el-tour-close-color: var(--text-secondary);
+
+      .el-tour__close {
+        --el-tour-title-text-color: var(--text-primary);
+      }
+
+      &:hover {
+        /* 关闭按钮 */
+        .el-tour__close {
+          transition: all 0.3s ease;
+          color: var(--danger-color) !important;
+          transform: scale(1.1);
+        }
+      }
+    }
+
+    .el-tour__arrow {
+      display: none;
+    }
+
+    /* 底部按钮区 — 统一为 CustomButton 风格 */
+    .el-tour__footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      padding-top: 8px;
+
+      /* 步骤指示器（dots） */
+      .el-tour-indicators {
+        display: flex;
+        gap: 8px;
+
+        .el-tour-indicator {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--gray-40);
+          transition: all 0.3s ease;
+
+          &.is-active {
+            background: var(--primary-color);
+            width: 16px;
+            border-radius: 4px;
+          }
+        }
+      }
+
+      /* 所有按钮基础样式 */
+      .el-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border-radius: var(--radius-md);
+        padding: 8px 16px;
+        font-weight: 200;
+        font-size: 14px;
+        line-height: 1;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease,
+        box-shadow 0.3s ease, border-color 0.3s ease,
+        filter 0.3s ease, opacity 0.3s ease;
+        border: 1px solid transparent;
+        outline: none;
+        white-space: nowrap;
+        user-select: none;
+        font-family: var(--el-font-family);
+
+        /* 覆盖 el-button 默认 padding */
+        --el-button-padding-vertical: 8px;
+        --el-button-padding-horizontal: 16px;
+      }
+
+      /* 普通按钮（Previous）— custom-button--default 风格 */
+      .el-button:not(.el-button--primary) {
+        background: transparent;
+        color: var(--text-primary);
+        border-color: var(--gray-40);
+
+        &:hover:not(:disabled) {
+          background: var(--primary-light);
+          border-color: var(--primary-color);
+          color: var(--primary-dark);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px var(--gray-40);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+
+      /* 主按钮（Next / Finish）— custom-button--primary 风格 */
+      .el-button--primary {
+        background: var(--primary-color);
+        color: var(--text-inverse);
+        border: none;
+
+        &:hover:not(:disabled) {
+          background: var(--primary-dark);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px var(--primary-40);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+}

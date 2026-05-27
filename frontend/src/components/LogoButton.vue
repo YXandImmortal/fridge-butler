@@ -1,13 +1,13 @@
 <template>
   <button
-    :type="nativeType"
-    :class="buttonClasses"
-    :disabled="disabled || loading"
-    @click="handleClick"
+      :type="nativeType"
+      :class="buttonClasses"
+      :disabled="disabled || loading"
+      @click="handleClick"
   >
     <!-- 六边形 Logo 区域 -->
     <span class="logo-button__logo-wrap">
-      <Logo class="logo-button__logo" />
+      <Logo class="logo-button__logo"/>
     </span>
 
     <!-- 按钮内容区域 -->
@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 import Logo from './Logo.vue'
 
 const props = defineProps({
@@ -95,8 +95,8 @@ const handleClick = (event) => {
   letter-spacing: 0.5px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.3s ease,
-    box-shadow 0.3s ease, border-color 0.3s ease,
-    filter 0.3s ease, opacity 0.3s ease;
+  box-shadow 0.3s ease, border-color 0.3s ease,
+  filter 0.3s ease, opacity 0.3s ease;
   border: 1px solid transparent;
   outline: none;
   font-family: var(--el-font-family);
@@ -106,7 +106,7 @@ const handleClick = (event) => {
   /* ---- Logo 容器 ---- */
   &__logo-wrap {
     position: absolute;
-    left: -18px;           /* 向左突出，与按钮重叠 */
+    left: -18px; /* 向左突出，与按钮重叠 */
     top: 50%;
     transform: translateY(-50%);
     width: 50px;
@@ -153,6 +153,7 @@ const handleClick = (event) => {
   color: var(--text-primary);
   border-color: var(--gray-40);
 }
+
 .logo-button--default:hover:not(:disabled) {
   background: var(--primary-light);
   border-color: var(--primary-color);
@@ -160,6 +161,7 @@ const handleClick = (event) => {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--gray-40);
 }
+
 .logo-button--default:hover:not(:disabled) .logo-button__logo-wrap {
   transform: translateY(-50%) scale(1.08);
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.2));
@@ -171,11 +173,13 @@ const handleClick = (event) => {
   color: var(--text-inverse);
   border: none;
 }
+
 .logo-button--primary:hover:not(:disabled) {
   background: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--primary-40);
 }
+
 .logo-button--primary:hover:not(:disabled) .logo-button__logo-wrap {
   transform: translateY(-50%) scale(1.08);
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
@@ -187,11 +191,13 @@ const handleClick = (event) => {
   color: var(--text-inverse);
   border: none;
 }
+
 .logo-button--danger:hover:not(:disabled) {
   filter: brightness(0.95);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--danger-40);
 }
+
 .logo-button--danger:hover:not(:disabled) .logo-button__logo-wrap {
   transform: translateY(-50%) scale(1.08);
 }
@@ -203,10 +209,12 @@ const handleClick = (event) => {
   border: none;
   padding: 4px 8px 4px 32px;
 }
+
 .logo-button--link:hover:not(:disabled) {
   color: var(--primary-color);
   transform: translateY(-1px);
 }
+
 .logo-button--link .logo-button__logo-wrap {
   width: 28px;
   height: 28px;

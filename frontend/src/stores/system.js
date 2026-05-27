@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { getSystemInfo as fetchSystemInfo, getSystemBuildTime } from '@/api/system'
+import {defineStore} from 'pinia'
+import {ref} from 'vue'
+import {getSystemInfo as fetchSystemInfo, getSystemBuildTime} from '@/api/system'
 
 export const useSystemStore = defineStore('system', () => {
     const systemName = ref('')
@@ -81,11 +81,11 @@ export const useSystemStore = defineStore('system', () => {
         }
 
         isLoading.value = true
-        
+
         try {
             // 先从后端获取构建版本标识
             const backendBuildTime = await fetchBuildTimeFromBackend()
-            
+
             if (!backendBuildTime) {
                 // 如果后端请求失败，使用本地数据
                 return buildReturnData()
@@ -95,7 +95,7 @@ export const useSystemStore = defineStore('system', () => {
             if (buildTime.value !== backendBuildTime) {
                 // 构建版本标识变更，获取完整的系统信息
                 const backendInfo = await fetchSystemInfoFromBackend()
-                
+
                 if (backendInfo) {
                     systemName.value = backendInfo.systemName || ''
                     systemVersion.value = backendInfo.systemVersion || ''
@@ -105,7 +105,7 @@ export const useSystemStore = defineStore('system', () => {
                     updates.value = backendInfo.updates || []
                     about.value = backendInfo.about || []
                     buildTime.value = backendBuildTime
-                    
+
                     // 保存到localStorage
                     saveToLocalStorage()
                 }
@@ -132,8 +132,8 @@ export const useSystemStore = defineStore('system', () => {
     // 初始化时加载数据
     loadFromLocalStorage()
 
-    return { 
-        systemName, 
+    return {
+        systemName,
         systemVersion,
         slogan,
         userIndexFeatures,

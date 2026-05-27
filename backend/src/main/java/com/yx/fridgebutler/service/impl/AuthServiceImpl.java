@@ -129,6 +129,7 @@ public class AuthServiceImpl implements AuthService {
                 .rememberMe(rememberMe)
                 .avatar(user.getAvatar())
                 .expireTime(expireTime)
+                .guideCompleted(user.getGuideCompleted())
                 .build();
     }
 

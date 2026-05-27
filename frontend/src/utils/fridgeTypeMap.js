@@ -19,14 +19,14 @@ import japaneseMultiIcon from '@/assets/icons/fridge-japanese-multi.svg'
  * @type {Array<{id: number, name: string, icon: string}>}
  */
 export const FRIDGE_TYPE_LIST = [
-    { id: 1, name: '单门冰箱', icon: singleDoorIcon },
-    { id: 2, name: '双门冰箱', icon: doubleDoorIcon },
-    { id: 3, name: '三门冰箱', icon: tripleDoorIcon },
-    { id: 4, name: '对开门冰箱', icon: sideBySideIcon },
-    { id: 5, name: '十字对开门', icon: crossDoorIcon },
-    { id: 6, name: 'T型三门', icon: tTypeIcon },
-    { id: 7, name: '法式多门冰箱', icon: frenchDoorIcon },
-    { id: 8, name: '日式多门冰箱', icon: japaneseMultiIcon }
+    {id: 1, name: '单门冰箱', icon: singleDoorIcon},
+    {id: 2, name: '双门冰箱', icon: doubleDoorIcon},
+    {id: 3, name: '三门冰箱', icon: tripleDoorIcon},
+    {id: 4, name: '对开门冰箱', icon: sideBySideIcon},
+    {id: 5, name: '十字对开门', icon: crossDoorIcon},
+    {id: 6, name: 'T型三门', icon: tTypeIcon},
+    {id: 7, name: '法式多门冰箱', icon: frenchDoorIcon},
+    {id: 8, name: '日式多门冰箱', icon: japaneseMultiIcon}
 ]
 
 /**

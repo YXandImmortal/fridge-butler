@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import {defineStore} from 'pinia'
+import {ref, watch} from 'vue'
 
 const THEME_STORAGE_KEY = 'app-theme'
 

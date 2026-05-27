@@ -1,29 +1,31 @@
 <template>
-  <div class="custom-select" ref="selectRef" :class="{ 'is-open': isOpen, 'is-grid': grid, 'is-full-width': fullWidth }">
+  <div class="custom-select" ref="selectRef"
+       :class="{ 'is-open': isOpen, 'is-grid': grid, 'is-full-width': fullWidth }">
     <div class="select-trigger" :class="{ 'is-disabled': disabled }" @click="toggleOpen">
-      <slot name="prefix" :selected="selectedOption" />
+      <slot name="prefix" :selected="selectedOption"/>
       <span class="select-label" :class="{ 'is-placeholder': !selectedLabel }">
         {{ selectedLabel || placeholder }}
       </span>
       <i
-        v-if="clearable && hasValue"
-        class="iconfont icon-close select-clear"
-        @click.stop="handleClear"
+          v-if="clearable && hasValue"
+          class="iconfont icon-close select-clear"
+          @click.stop="handleClear"
       />
-      <i v-else class="iconfont icon-chevron-down select-arrow" />
+      <i v-else class="iconfont icon-chevron-down select-arrow"/>
     </div>
     <transition name="dropdown">
-      <div v-show="isOpen" class="select-dropdown" :class="{ 'is-grid': grid, 'align-right': dropdownAlign === 'right' }">
+      <div v-show="isOpen" class="select-dropdown"
+           :class="{ 'is-grid': grid, 'align-right': dropdownAlign === 'right' }">
         <div
-          v-for="option in options"
-          :key="option.value"
-          class="select-option"
-          :class="{ 'is-selected': String(modelValue) === String(option.value) }"
-          @click.stop="handleSelect(option)"
+            v-for="option in options"
+            :key="option.value"
+            class="select-option"
+            :class="{ 'is-selected': String(modelValue) === String(option.value) }"
+            @click.stop="handleSelect(option)"
         >
           <slot name="option" :option="option" :selected="String(modelValue) === String(option.value)">
             <span class="option-label">{{ option.label }}</span>
-            <i v-if="!grid && String(modelValue) === String(option.value)" class="iconfont icon-check" />
+            <i v-if="!grid && String(modelValue) === String(option.value)" class="iconfont icon-check"/>
           </slot>
         </div>
       </div>
@@ -32,7 +34,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import {ref, computed, onMounted, onUnmounted} from 'vue'
 
 const props = defineProps({
   modelValue: {

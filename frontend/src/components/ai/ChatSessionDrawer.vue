@@ -1,40 +1,40 @@
 <template>
   <el-drawer
-    :model-value="visible"
-    title="会话列表"
-    direction="ltr"
-    size="320px"
-    class="session-drawer"
-    :with-header="true"
-    @update:model-value="$emit('update:visible', $event)"
+      :model-value="visible"
+      title="会话列表"
+      direction="ltr"
+      size="320px"
+      class="session-drawer"
+      :with-header="true"
+      @update:model-value="$emit('update:visible', $event)"
   >
     <div class="session-drawer-content">
       <button class="new-session-btn" @click="$emit('new-session')">
-        <i class="iconfont icon-add-box" />
+        <i class="iconfont icon-add-box"/>
         <span>新建会话</span>
       </button>
 
       <div v-loading="sessionLoading" class="session-list">
         <div
-          v-for="session in sessions"
-          :key="session.sessionId"
-          :class="['session-item', session.sessionId === sessionId ? 'session-item-active' : '']"
-          @click="$emit('switch-session', session.sessionId)"
+            v-for="session in sessions"
+            :key="session.sessionId"
+            :class="['session-item', session.sessionId === sessionId ? 'session-item-active' : '']"
+            @click="$emit('switch-session', session.sessionId)"
         >
           <div class="session-item-main">
             <div class="session-title">{{ session.title || '新会话' }}</div>
             <div class="session-time">{{ formatSessionTime(session.lastActiveTime) }}</div>
           </div>
           <button
-            class="session-delete-btn"
-            title="删除会话"
-            @click.stop="$emit('delete-session', session.sessionId)"
+              class="session-delete-btn"
+              title="删除会话"
+              @click.stop="$emit('delete-session', session.sessionId)"
           >
-            <i class="iconfont icon-trash" />
+            <i class="iconfont icon-trash"/>
           </button>
         </div>
 
-        <el-empty v-if="sessions.length === 0 && !sessionLoading" description="暂无会话记录" />
+        <el-empty v-if="sessions.length === 0 && !sessionLoading" description="暂无会话记录"/>
       </div>
     </div>
   </el-drawer>

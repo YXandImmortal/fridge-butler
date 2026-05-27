@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import {defineProps, defineEmits} from 'vue'
 import CustomButton from "@/components/CustomButton.vue";
 
 const props = defineProps({
@@ -79,34 +79,34 @@ const secondaryAction = () => {
 
 /* 主要按钮（登录/注册） */
 :deep(button.custom-button.auth-primary-btn) {
-    flex: 1;
-    background: radial-gradient(ellipse, var(--primary-color), var(--primary-dark));
-    border: none;
+  flex: 1;
+  background: radial-gradient(ellipse, var(--primary-color), var(--primary-dark));
+  border: none;
 }
 
 :deep(button.custom-button.auth-primary-btn:hover:not(:disabled)) {
-    background: radial-gradient(ellipse, var(--primary-color), var(--primary-dark));
-    filter: brightness(1.05);
+  background: radial-gradient(ellipse, var(--primary-color), var(--primary-dark));
+  filter: brightness(1.05);
 }
 
 /* 次要按钮（返回/跳转） */
 :deep(button.custom-button.auth-secondary-btn) {
-    flex: 1;
-    background: var(--card-bg);
-    border: 2px solid var(--primary-color);
-    color: var(--primary-color);
+  flex: 1;
+  background: var(--card-bg);
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
 }
 
 :deep(button.custom-button.auth-secondary-btn:hover:not(:disabled)) {
-    background: var(--primary-light);
-    border-color: var(--primary-dark);
-    color: var(--primary-dark);
+  background: var(--primary-light);
+  border-color: var(--primary-dark);
+  color: var(--primary-dark);
 }
 
 /* 响应式设计 */
 @media (max-width: 480px) {
-    .button-group :deep(.el-form-item__content) {
-        flex-direction: column;
-    }
+  .button-group :deep(.el-form-item__content) {
+    flex-direction: column;
+  }
 }
 </style>

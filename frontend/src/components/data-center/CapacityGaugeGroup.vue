@@ -2,7 +2,7 @@
   <div class="chart-card">
     <div class="chart-header">
       <div class="chart-title-wrapper">
-        <i class="iconfont icon-speed-slow chart-title-icon" />
+        <i class="iconfont icon-speed-slow chart-title-icon"/>
         <h3 class="chart-title">冰箱容量利用率</h3>
         <el-tooltip content="该数据每小时刷新" placement="right" :offset="6">
           <i class="iconfont icon-info-box info-icon" style="margin-left: -6px"/>
@@ -10,54 +10,54 @@
       </div>
     </div>
     <el-carousel
-      v-if="data.length > 0"
-      class="gauge-carousel"
-      :interval="10000"
-      arrow="hover"
-      indicator-position="outside"
-      height="280px"
-      @change="handleChange"
+        v-if="data.length > 0"
+        class="gauge-carousel"
+        :interval="10000"
+        arrow="hover"
+        indicator-position="outside"
+        height="280px"
+        @change="handleChange"
     >
       <el-carousel-item v-for="(group, gIndex) in groupedData" :key="gIndex">
         <div class="gauge-slide">
           <div v-for="(item, index) in group" :key="index" class="gauge-item">
             <v-chart
-              v-if="gIndex === activeIndex"
-              class="gauge-chart"
-              :option="getGaugeOption(item)"
-              :init-options="chartInitOptions"
-              autoresize
+                v-if="gIndex === activeIndex"
+                class="gauge-chart"
+                :option="getGaugeOption(item)"
+                :init-options="chartInitOptions"
+                autoresize
             />
-            <div v-else class="gauge-chart gauge-chart-placeholder" />
+            <div v-else class="gauge-chart gauge-chart-placeholder"/>
             <div class="gauge-name">{{ item.name }}</div>
             <div v-if="!item.totalCapacity" class="gauge-hint">未设置容量</div>
           </div>
         </div>
       </el-carousel-item>
     </el-carousel>
-    <el-empty v-else description="暂无冰箱数据" class="chart-empty" />
+    <el-empty v-else description="暂无冰箱数据" class="chart-empty"/>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-import { use } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { GaugeChart } from 'echarts/charts'
-import { TooltipComponent } from 'echarts/components'
+import {computed, ref} from 'vue'
+import {use} from 'echarts/core'
+import {CanvasRenderer} from 'echarts/renderers'
+import {GaugeChart} from 'echarts/charts'
+import {TooltipComponent} from 'echarts/components'
 import VChart from 'vue-echarts'
-import { getChartThemeColors } from '@/utils/data-analysis'
-import { useThemeStore } from '@/stores/theme'
+import {getChartThemeColors} from '@/utils/data-analysis'
+import {useThemeStore} from '@/stores/theme'
 
 use([CanvasRenderer, GaugeChart, TooltipComponent])
 
 const props = defineProps({
-  data: { type: Array, default: () => [] }
+  data: {type: Array, default: () => []}
 })
 
 const themeStore = useThemeStore()
 const activeIndex = ref(0)
-const chartInitOptions = { width: 160, height: 160 }
+const chartInitOptions = {width: 160, height: 160}
 
 function handleChange(index) {
   activeIndex.value = index
@@ -110,10 +110,10 @@ function getGaugeOption(item) {
           color: [[1, colors.splitLineColor]]
         }
       },
-      axisTick: { show: false },
-      splitLine: { show: false },
-      axisLabel: { show: false },
-      title: { show: false },
+      axisTick: {show: false},
+      splitLine: {show: false},
+      axisLabel: {show: false},
+      title: {show: false},
       detail: {
         valueAnimation: true,
         fontSize: 20,
@@ -122,7 +122,7 @@ function getGaugeOption(item) {
         offsetCenter: [0, '0%'],
         formatter: hasCapacity ? '{value}%' : '--'
       },
-      data: [{ value: hasCapacity ? rate : 0 }]
+      data: [{value: hasCapacity ? rate : 0}]
     }]
   }
 }

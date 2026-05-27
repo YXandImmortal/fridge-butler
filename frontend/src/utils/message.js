@@ -1,4 +1,4 @@
-import { createVNode, render } from 'vue'
+import {createVNode, render} from 'vue'
 import MessageComponent from '@/components/MessageComponent.vue'
 
 const messageContainer = document.createElement('div')
@@ -9,7 +9,7 @@ let messageInstances = []
 let messageId = 0
 
 export function showMessage(options) {
-    const { type = 'info', message, duration = 3000 } = options
+    const {type = 'info', message, duration = 3000} = options
 
     const id = `message-${++messageId}`
     const instance = createVNode(MessageComponent, {
@@ -25,7 +25,7 @@ export function showMessage(options) {
     messageContainer.appendChild(container)
 
     render(instance, container)
-    messageInstances.push({ id, container })
+    messageInstances.push({id, container})
 
     setTimeout(() => removeMessage(id), duration)
 }
@@ -33,16 +33,16 @@ export function showMessage(options) {
 function removeMessage(id) {
     const index = messageInstances.findIndex(item => item.id === id)
     if (index > -1) {
-        const { container } = messageInstances[index]
+        const {container} = messageInstances[index]
         render(null, container)
         container.remove()
         messageInstances.splice(index, 1)
     }
 }
 
-showMessage.success = (message, duration) => showMessage({ type: 'success', message, duration })
-showMessage.error = (message, duration) => showMessage({ type: 'error', message, duration })
-showMessage.warning = (message, duration) => showMessage({ type: 'warning', message, duration })
-showMessage.info = (message, duration) => showMessage({ type: 'info', message, duration })
+showMessage.success = (message, duration) => showMessage({type: 'success', message, duration})
+showMessage.error = (message, duration) => showMessage({type: 'error', message, duration})
+showMessage.warning = (message, duration) => showMessage({type: 'warning', message, duration})
+showMessage.info = (message, duration) => showMessage({type: 'info', message, duration})
 
 export default showMessage

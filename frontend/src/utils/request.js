@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { useUserStore } from '@/stores/user'
+import {useUserStore} from '@/stores/user'
 import showMessage from '@/utils/message'
-import { replaceToLogin } from '@/utils/navigate'
+import {replaceToLogin} from '@/utils/navigate'
 
 // 创建axios实例
 const service = axios.create({

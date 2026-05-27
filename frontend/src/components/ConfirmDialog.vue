@@ -13,14 +13,14 @@
           <p>{{ message }}</p>
           <div v-if="type === 'select'" class="dialog-select-wrapper">
             <CustomSelect
-              :model-value="selectValue"
-              :placeholder="selectPlaceholder"
-              style="width: 100%"
-              :options="mappedOptions"
-              @update:model-value="handleSelectChange"
+                :model-value="selectValue"
+                :placeholder="selectPlaceholder"
+                style="width: 100%"
+                :options="mappedOptions"
+                @update:model-value="handleSelectChange"
             />
           </div>
-          <slot />
+          <slot/>
         </div>
         <div class="dialog-footer">
           <CustomButton v-if="showCancel" type="danger" @click="handleCancel">{{ cancelText }}</CustomButton>
@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 import CustomSelect from './CustomSelect.vue'
 
 const props = defineProps({

@@ -3,9 +3,9 @@
     <!-- 步骤条 -->
     <el-steps :active="data.currentStep" finish-status="success" simple class="wizard-steps">
       <el-step
-        v-for="(step, index) in data.steps"
-        :key="index"
-        :title="step.title"
+          v-for="(step, index) in data.steps"
+          :key="index"
+          :title="step.title"
       />
     </el-steps>
 
@@ -47,64 +47,64 @@
       <!-- 文本输入 -->
       <template v-if="inputComponentType === 'text'">
         <EnhancedInput
-          v-model="inputValue"
-          :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
-          type="text"
-          clearable
-          maxlength="50"
-          show-word-limit
-          :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
+            v-model="inputValue"
+            :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
+            type="text"
+            clearable
+            maxlength="50"
+            show-word-limit
+            :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
         />
       </template>
 
       <!-- 文本域 -->
       <template v-else-if="inputComponentType === 'textarea'">
         <EnhancedInput
-          v-model="inputValue"
-          :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
-          type="textarea"
-          :rows="2"
-          maxlength="200"
-          show-word-limit
-          :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
+            v-model="inputValue"
+            :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
+            type="textarea"
+            :rows="2"
+            maxlength="200"
+            show-word-limit
+            :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
         />
       </template>
 
       <!-- 选择器 -->
       <template v-else-if="inputComponentType === 'select'">
         <CustomSelect
-          v-model="inputValue"
-          :options="selectOptions"
-          :placeholder="currentInputConfig.placeholder || `请选择${currentInputConfig.label}`"
-          :grid="true"
-          :full-width="true"
-          class="wizard-custom-select"
+            v-model="inputValue"
+            :options="selectOptions"
+            :placeholder="currentInputConfig.placeholder || `请选择${currentInputConfig.label}`"
+            :grid="true"
+            :full-width="true"
+            class="wizard-custom-select"
         />
       </template>
 
       <!-- 数字输入（数量） -->
       <template v-else-if="inputComponentType === 'number'">
         <el-input-number
-          v-model="inputValueNum"
-          :min="0"
-          :precision="2"
-          :step="1"
-          :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
-          style="width: 100%; --el-border-radius-base: var(--radius-md);"
+            v-model="inputValueNum"
+            :min="0"
+            :precision="2"
+            :step="1"
+            :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
+            style="width: 100%; --el-border-radius-base: var(--radius-md);"
         />
       </template>
 
       <!-- 日期输入 -->
       <template v-else-if="inputComponentType === 'date'">
         <el-date-picker
-          v-model="inputValue"
-          type="date"
-          :placeholder="currentInputConfig.placeholder || `请选择${currentInputConfig.label}`"
-          value-format="YYYY-MM-DD"
-          format="YYYY-MM-DD"
-          style="width: 100%; --el-border-radius-base: var(--radius-md); --el-input-height: 40px;"
-          clearable
-          :default-value="new Date()"
+            v-model="inputValue"
+            type="date"
+            :placeholder="currentInputConfig.placeholder || `请选择${currentInputConfig.label}`"
+            value-format="YYYY-MM-DD"
+            format="YYYY-MM-DD"
+            style="width: 100%; --el-border-radius-base: var(--radius-md); --el-input-height: 40px;"
+            clearable
+            :default-value="new Date()"
         />
       </template>
 
@@ -112,30 +112,30 @@
       <template v-else-if="inputComponentType === 'combined_unit'">
         <div class="combined-unit-row">
           <el-input-number
-            v-model="inputValueNum"
-            :min="1"
-            :precision="2"
-            :step="1"
-            placeholder="数量"
-            class="unit-num-input"
-            size="large"
-            style="--el-border-radius-base: var(--radius-md);"
+              v-model="inputValueNum"
+              :min="1"
+              :precision="2"
+              :step="1"
+              placeholder="数量"
+              class="unit-num-input"
+              size="large"
+              style="--el-border-radius-base: var(--radius-md);"
           />
           <CustomSelect
-            v-model="unitTypeId"
-            :options="unitTypeOptions"
-            placeholder="单位类型"
-            grid
-            class="unit-type-select"
-            @change="handleUnitTypeChange"
+              v-model="unitTypeId"
+              :options="unitTypeOptions"
+              placeholder="单位类型"
+              grid
+              class="unit-type-select"
+              @change="handleUnitTypeChange"
           />
           <CustomSelect
-            v-model="unitId"
-            :options="filteredUnitOptions"
-            placeholder="单位"
-            grid
-            :disabled="!unitTypeId"
-            class="unit-select"
+              v-model="unitId"
+              :options="filteredUnitOptions"
+              placeholder="单位"
+              grid
+              :disabled="!unitTypeId"
+              class="unit-select"
           />
         </div>
       </template>
@@ -168,10 +168,10 @@
       </template>
 
       <div
-        v-if="currentInputConfig.required && !isInputValid"
-        class="wizard-input-hint is-error"
+          v-if="currentInputConfig.required && !isInputValid"
+          class="wizard-input-hint is-error"
       >
-        <i class="iconfont icon-info" /> 此项为必填
+        <i class="iconfont icon-info"/> 此项为必填
       </div>
     </div>
 
@@ -179,19 +179,20 @@
     <div v-if="isLastStep" class="wizard-confirm-area">
       <div class="confirm-card">
         <div class="confirm-icon">
-          <i class="iconfont icon-item" />
+          <i class="iconfont icon-item"/>
         </div>
         <div class="confirm-info">
           <div class="confirm-name">{{ data.formData.itemName || '未命名物品' }}</div>
           <div class="confirm-meta">
             <span v-if="categoryName" class="confirm-meta-item">{{ categoryName }}</span>
-            <span v-if="data.formData.itemNum != null && data.formData.itemNum !== ''" class="confirm-meta-item">{{ data.formData.itemNum }} {{ unitName }}</span>
+            <span v-if="data.formData.itemNum != null && data.formData.itemNum !== ''"
+                  class="confirm-meta-item">{{ data.formData.itemNum }} {{ unitName }}</span>
           </div>
           <div v-if="data.formData.productionDate" class="confirm-address">
-            <i class="iconfont icon-calendar" /> 生产日期：{{ data.formData.productionDate }}
+            <i class="iconfont icon-calendar"/> 生产日期：{{ data.formData.productionDate }}
           </div>
           <div v-if="data.formData.shelfLifeDays" class="confirm-address">
-            <i class="iconfont icon-calendar-alert" /> 保质期：{{ data.formData.shelfLifeDays }} 天
+            <i class="iconfont icon-calendar-alert"/> 保质期：{{ data.formData.shelfLifeDays }} 天
           </div>
           <div v-if="data.formData.remark" class="confirm-desc">{{ data.formData.remark }}</div>
         </div>
@@ -204,29 +205,29 @@
         取消
       </CustomButton>
       <CustomButton
-        v-if="canSkip"
-        class="dialog-btn dialog-btn-cancel"
-        :disabled="stepSubmitting"
-        @click="handleSkip"
+          v-if="canSkip"
+          class="dialog-btn dialog-btn-cancel"
+          :disabled="stepSubmitting"
+          @click="handleSkip"
       >
         跳过
       </CustomButton>
       <CustomButton
-        v-if="!isLastStep"
-        type="primary"
-        class="dialog-btn dialog-btn-confirm"
-        :loading="stepSubmitting"
-        :disabled="!canGoNext"
-        @click="handleNext"
+          v-if="!isLastStep"
+          type="primary"
+          class="dialog-btn dialog-btn-confirm"
+          :loading="stepSubmitting"
+          :disabled="!canGoNext"
+          @click="handleNext"
       >
         {{ stepSubmitting ? '处理中...' : '下一步' }}
       </CustomButton>
       <CustomButton
-        v-else
-        type="primary"
-        class="dialog-btn dialog-btn-confirm"
-        :loading="creating"
-        @click="handleConfirm"
+          v-else
+          type="primary"
+          class="dialog-btn dialog-btn-confirm"
+          :loading="creating"
+          @click="handleConfirm"
       >
         确认添加
       </CustomButton>
@@ -235,11 +236,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import {ref, computed, watch, onMounted} from 'vue'
 import CustomButton from '@/components/CustomButton.vue'
 import CustomSelect from '@/components/CustomSelect.vue'
 import EnhancedInput from '@/components/EnhancedInput.vue'
-import { listItemCategories, listItemUnits, listUnitTypes } from '@/api/item'
+import {listItemCategories, listItemUnits, listUnitTypes} from '@/api/item'
 
 const props = defineProps({
   data: {
@@ -267,9 +268,9 @@ async function loadBaseData() {
   dataLoading.value = true
   try {
     const [catRes, unitRes, typeRes] = await Promise.all([
-      listItemCategories().catch(() => ({ code: -1, data: [] })),
-      listItemUnits().catch(() => ({ code: -1, data: [] })),
-      listUnitTypes().catch(() => ({ code: -1, data: [] }))
+      listItemCategories().catch(() => ({code: -1, data: []})),
+      listItemUnits().catch(() => ({code: -1, data: []})),
+      listUnitTypes().catch(() => ({code: -1, data: []}))
     ])
     if (catRes.code === 200 && Array.isArray(catRes.data)) {
       categoryList.value = catRes.data
@@ -322,20 +323,20 @@ const selectOptions = computed(() => {
   if (inputComponentType.value !== 'select') return []
   const field = currentInputConfig.value?.field
   if (field === 'categoryId') {
-    return categoryList.value.map(c => ({ label: c.categoryName, value: c.id }))
+    return categoryList.value.map(c => ({label: c.categoryName, value: c.id}))
   }
   return currentInputConfig.value?.options || []
 })
 
 const unitTypeOptions = computed(() => {
-  return unitTypeList.value.map(t => ({ label: t.unitTypeName, value: t.id }))
+  return unitTypeList.value.map(t => ({label: t.unitTypeName, value: t.id}))
 })
 
 const filteredUnitOptions = computed(() => {
   if (!unitTypeId.value) return []
   return unitList.value
-    .filter(u => u.unitTypeId === unitTypeId.value)
-    .map(u => ({ label: u.unitName, value: u.id }))
+      .filter(u => u.unitTypeId === unitTypeId.value)
+      .map(u => ({label: u.unitName, value: u.id}))
 })
 
 const categoryName = computed(() => {
@@ -391,12 +392,12 @@ const hasFormData = computed(() => {
   // summary 未渲染的字段（如 unitTypeId、itemUnitId 或 itemNum: 0）
   // 导致出现空的蓝色摘要块
   return !!(
-    fd.itemName ||
-    fd.categoryId ||
-    (fd.itemNum != null && fd.itemNum !== '') ||
-    fd.productionDate ||
-    fd.shelfLifeDays ||
-    fd.remark
+      fd.itemName ||
+      fd.categoryId ||
+      (fd.itemNum != null && fd.itemNum !== '') ||
+      fd.productionDate ||
+      fd.shelfLifeDays ||
+      fd.remark
   )
 })
 
@@ -443,13 +444,13 @@ function initInputFromFormData() {
 }
 
 watch(
-  () => [props.data.currentStep, props.data.currentInput?.field],
-  () => {
-    stepSubmitting.value = false
-    resetInput()
-    initInputFromFormData()
-  },
-  { immediate: true }
+    () => [props.data.currentStep, props.data.currentInput?.field],
+    () => {
+      stepSubmitting.value = false
+      resetInput()
+      initInputFromFormData()
+    },
+    {immediate: true}
 )
 
 // ==================== 事件处理 ====================
@@ -459,7 +460,7 @@ function handleNext() {
   const config = currentInputConfig.value
   const field = config?.field
   let value
-  const formData = { ...props.data.formData }
+  const formData = {...props.data.formData}
 
   const type = inputComponentType.value
   if (type === 'number') {
@@ -484,7 +485,7 @@ function handleNext() {
     formData[field] = value
   }
 
-  emit('step-submit', { field, value, formData })
+  emit('step-submit', {field, value, formData})
 }
 
 function handleSkip() {
@@ -499,7 +500,7 @@ function handleSkip() {
   } else {
     messageText = `跳过${currentInputConfig.value?.label || field}`
   }
-  emit('skip', { field, formData: props.data.formData, messageText })
+  emit('skip', {field, formData: props.data.formData, messageText})
 }
 
 function handleConfirm() {

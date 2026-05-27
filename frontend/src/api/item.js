@@ -246,7 +246,7 @@ export function getRecent30DaysTakeOutStats(fridgeId) {
     return request({
         url: '/item/take-out/statistics/recent-30-days',
         method: 'get',
-        params: fridgeId ? { fridgeId } : {}
+        params: fridgeId ? {fridgeId} : {}
     })
 }
 
@@ -258,7 +258,7 @@ export function getRecent30DaysAddStats(fridgeId) {
     return request({
         url: '/item/add/statistics/recent-30-days',
         method: 'get',
-        params: fridgeId ? { fridgeId } : {}
+        params: fridgeId ? {fridgeId} : {}
     })
 }
 

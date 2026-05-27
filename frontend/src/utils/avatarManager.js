@@ -10,10 +10,12 @@
 export function getSystemAvatarIds() {
     // 系统预设头像列表
     const avatarFiles = [
-        'bot.svg',
-        'core.svg',
-        'fruit.svg',
-        'panda.svg'
+        'egg.svg',
+        'ice.svg',
+        'leaf.svg',
+        'milk.svg',
+        'orange.svg',
+        'snowflake.svg'
     ];
 
     // 提取头像ID（去掉文件扩展名）

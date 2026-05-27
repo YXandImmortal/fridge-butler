@@ -1,7 +1,7 @@
 <!-- src/App.vue -->
 <template>
   <!-- 路由出口：所有页面都在这里渲染（登录页/首页/注册页） -->
-  <router-view />
+  <router-view/>
 </template>
 
 <script setup>

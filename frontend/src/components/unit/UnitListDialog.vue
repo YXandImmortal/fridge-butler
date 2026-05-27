@@ -4,10 +4,10 @@
       <div class="unit-expand-dialog">
         <div class="dialog-header">
           <div class="dialog-title-container">
-            <i class="iconfont icon-inbox-all dialog-icon" />
+            <i class="iconfont icon-inbox-all dialog-icon"/>
             <h3 class="dialog-title">{{ unitTypeName }}</h3>
           </div>
-          <i class="iconfont icon-close dialog-close" @click="handleClose" />
+          <i class="iconfont icon-close dialog-close" @click="handleClose"/>
         </div>
 
         <div class="dialog-content">
@@ -15,35 +15,35 @@
           <div class="unit-stats">
             <span class="stats-label">共 {{ unitList.length }} 个单位</span>
             <span v-if="unitType?.isSystemDefault" class="system-hint">
-              <i class="iconfont icon-shield-fill" /> 系统默认，不可编辑
+              <i class="iconfont icon-bookmark"/> 系统默认，不可编辑
             </span>
           </div>
 
           <!-- 添加新单位（仅非系统默认） -->
           <div v-if="!unitType?.isSystemDefault" class="add-unit-section">
             <el-form
-              ref="addFormRef"
-              :model="addForm"
-              :rules="addRules"
-              class="add-unit-form"
-              @submit.prevent
+                ref="addFormRef"
+                :model="addForm"
+                :rules="addRules"
+                class="add-unit-form"
+                @submit.prevent
             >
               <el-form-item prop="unitName" class="add-unit-input">
                 <EnhancedInput
-                  v-model="addForm.unitName"
-                  placeholder="请输入新单位名称，如：千克、升、个"
-                  maxlength="20"
-                  show-word-limit
-                  icon="icon-inbox"
-                  @keyup.enter="handleAddUnit"
+                    v-model="addForm.unitName"
+                    placeholder="请输入新单位名称，如：千克、升、个"
+                    maxlength="20"
+                    show-word-limit
+                    icon="icon-inbox"
+                    @keyup.enter="handleAddUnit"
                 />
               </el-form-item>
               <CustomButton
-                type="primary"
-                :loading="adding"
-                @click="handleAddUnit"
-                class="add-unit-btn"
-                size="large"
+                  type="primary"
+                  :loading="adding"
+                  @click="handleAddUnit"
+                  class="add-unit-btn"
+                  size="large"
               >添加
               </CustomButton>
             </el-form>
@@ -52,30 +52,30 @@
           <!-- 单位列表 -->
           <div class="unit-list">
             <div v-if="unitList.length === 0" class="empty-units">
-              <i class="iconfont icon-empty-box empty-icon" />
+              <i class="iconfont icon-empty-box empty-icon"/>
               <p>该分类下暂无单位</p>
               <p v-if="!unitType?.isSystemDefault" class="empty-hint">请在上方添加新单位</p>
             </div>
 
             <div
-              v-for="unit in unitList"
-              :key="unit.id"
-              class="unit-item"
-              :class="{ 'unit-item--editable': !unitType?.isSystemDefault && !unit.isSystemDefault }"
-              @click="handleEditUnit(unit)"
+                v-for="unit in unitList"
+                :key="unit.id"
+                class="unit-item"
+                :class="{ 'unit-item--editable': !unitType?.isSystemDefault && !unit.isSystemDefault }"
+                @click="handleEditUnit(unit)"
             >
               <div class="unit-info">
-                <i class="iconfont icon-inbox unit-item-icon" />
+                <i class="iconfont icon-inbox unit-item-icon"/>
                 <span class="unit-name">{{ unit.unitName }}</span>
               </div>
               <div class="unit-actions">
                 <i
-                  v-if="!unitType?.isSystemDefault && !unit.isSystemDefault"
-                  class="iconfont icon-close unit-delete-icon"
-                  @click.stop="handleDeleteUnit(unit)"
+                    v-if="!unitType?.isSystemDefault && !unit.isSystemDefault"
+                    class="iconfont icon-close unit-delete-icon"
+                    @click.stop="handleDeleteUnit(unit)"
                 />
                 <span v-else-if="unit.isSystemDefault" class="system-unit-badge">
-                  <i class="iconfont icon-shield-fill" /> 系统
+                  <i class="iconfont icon-bookmark"/> 系统
                 </span>
               </div>
             </div>
@@ -93,36 +93,36 @@
 
   <!-- 编辑单位对话框 -->
   <InputDialog
-    v-model:visible="showEditDialog"
-    title="编辑单位名称"
-    label="单位名称"
-    placeholder="请输入单位名称"
-    icon="icon-inbox"
-    value-prop="unitName"
-    confirm-text="确认修改"
-    :data="selectedUnit"
-    :loading="editLoading"
-    @submit="handleEditSubmit"
+      v-model:visible="showEditDialog"
+      title="编辑单位名称"
+      label="单位名称"
+      placeholder="请输入单位名称"
+      icon="icon-inbox"
+      value-prop="unitName"
+      confirm-text="确认修改"
+      :data="selectedUnit"
+      :loading="editLoading"
+      @submit="handleEditSubmit"
   />
 
   <!-- 删除单位确认对话框 -->
   <ConfirmDialog
-    v-model:visible="showDeleteConfirm"
-    title="删除单位"
-    :message="`确定要删除单位「${selectedUnit?.unitName || ''}」吗？删除后无法恢复，且会影响使用该单位的物品。`"
-    confirm-text="确定删除"
-    cancel-text="取消"
-    @confirm="confirmDeleteUnit"
-    width="420px"
+      v-model:visible="showDeleteConfirm"
+      title="删除单位"
+      :message="`确定要删除单位「${selectedUnit?.unitName || ''}」吗？删除后无法恢复，且会影响使用该单位的物品。`"
+      confirm-text="确定删除"
+      cancel-text="取消"
+      @confirm="confirmDeleteUnit"
+      width="420px"
   />
 </template>
 
 <script setup>
-import { reactive, ref, watch, computed } from 'vue'
+import {reactive, ref, watch, computed} from 'vue'
 import CustomButton from '@/components/CustomButton.vue'
 import EnhancedInput from '@/components/EnhancedInput.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import { createItemUnit, deleteItemUnit, updateItemUnit } from '@/api/item'
+import {createItemUnit, deleteItemUnit, updateItemUnit} from '@/api/item'
 import showMessage from '@/utils/message'
 
 const props = defineProps({
@@ -159,8 +159,8 @@ const addForm = reactive({
 
 const addRules = {
   unitName: [
-    { required: true, message: '请输入单位名称', trigger: 'blur' },
-    { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur' }
+    {required: true, message: '请输入单位名称', trigger: 'blur'},
+    {min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur'}
   ]
 }
 
@@ -222,7 +222,7 @@ const handleEditUnit = (unit) => {
 }
 
 // 编辑提交
-const handleEditSubmit = async ({ id, value }) => {
+const handleEditSubmit = async ({id, value}) => {
   editLoading.value = true
   try {
     const res = await updateItemUnit({

@@ -6,39 +6,39 @@
         <div class="avatar-wrapper" @click="handleChangeAvatar">
           <Avatar size="x-large" :avatar-id="userForm.avatar"/>
           <div class="avatar-edit-icon">
-            <i class="iconfont icon-edit-box" />
+            <i class="iconfont icon-edit-box"/>
           </div>
         </div>
       </div>
       <el-form :model="userForm" label-position="top" class="profile-form">
         <el-form-item label="用户名">
-          <EnhancedInput v-model="userForm.username" placeholder="请输入用户名" icon="icon-contact" />
+          <EnhancedInput v-model="userForm.username" placeholder="请输入用户名" icon="icon-contact"/>
         </el-form-item>
 
         <el-form-item label="手机号">
-          <EnhancedInput v-model="userForm.mobile" placeholder="请输入手机号" icon="icon-device-phone" />
+          <EnhancedInput v-model="userForm.mobile" placeholder="请输入手机号" icon="icon-device-phone"/>
         </el-form-item>
 
         <el-form-item label="注册时间">
-          <EnhancedInput v-model="userForm.createTime" disabled icon="icon-calendar" />
+          <EnhancedInput v-model="userForm.createTime" disabled icon="icon-calendar"/>
         </el-form-item>
 
         <el-form-item label="角色">
-          <EnhancedInput v-model="userForm.roleName" disabled icon="icon-user" />
+          <EnhancedInput v-model="userForm.roleName" disabled icon="icon-user"/>
         </el-form-item>
       </el-form>
 
       <div class="profile-actions">
         <CustomButton type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">
-          <i class="iconfont icon-save" />
+          <i class="iconfont icon-save"/>
           保存修改
         </CustomButton>
         <CustomButton @click="handleChangePassword">
-          <i class="iconfont icon-edit-box" />
+          <i class="iconfont icon-edit-box"/>
           修改密码
         </CustomButton>
         <CustomButton type="danger" @click="handleLogout">
-          <i class="iconfont icon-logout" />
+          <i class="iconfont icon-logout"/>
           退出登录
         </CustomButton>
       </div>
@@ -52,15 +52,19 @@
           <Transition name="switch">
             <div v-if="editType === 'password'">
               <h2 class="edit-title">修改密码</h2>
-              <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-position="top" class="profile-form edit-form">
+              <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-position="top"
+                       class="profile-form edit-form">
                 <el-form-item label="原密码" prop="originalPassword">
-                  <EnhancedInput type="password" v-model="passwordForm.originalPassword" placeholder="请输入原密码" icon="icon-lock" />
+                  <EnhancedInput type="password" v-model="passwordForm.originalPassword" placeholder="请输入原密码"
+                                 icon="icon-lock"/>
                 </el-form-item>
                 <el-form-item label="新密码" prop="newPassword">
-                  <EnhancedInput type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码" icon="icon-lock" />
+                  <EnhancedInput type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码"
+                                 icon="icon-lock"/>
                 </el-form-item>
                 <el-form-item label="确认新密码" prop="confirmNewPassword">
-                  <EnhancedInput type="password" v-model="passwordForm.confirmNewPassword" placeholder="请确认新密码" icon="icon-lock" />
+                  <EnhancedInput type="password" v-model="passwordForm.confirmNewPassword" placeholder="请确认新密码"
+                                 icon="icon-lock"/>
                 </el-form-item>
                 <el-form-item label="验证码" prop="captcha">
                   <CaptchaInput
@@ -78,11 +82,11 @@
                 <Avatar size="x-large" :avatar-id="selectedAvatar"/>
                 <div class="avatar-grid">
                   <div
-                    v-for="avatarId in systemAvatars"
-                    :key="avatarId"
-                    class="avatar-item"
-                    :class="{ 'selected': selectedAvatar === avatarId }"
-                    @click="handleSelectAvatar(avatarId)"
+                      v-for="avatarId in systemAvatars"
+                      :key="avatarId"
+                      class="avatar-item"
+                      :class="{ 'selected': selectedAvatar === avatarId }"
+                      @click="handleSelectAvatar(avatarId)"
                   >
                     <Avatar size="large" :avatar-id="avatarId"/>
                   </div>
@@ -93,16 +97,16 @@
         </div>
         <div class="edit-actions">
           <CustomButton
-            type="primary"
-            @click="editType === 'password' ? handleChangePasswordSubmit() : handleChangeAvatarSubmit()"
-            :loading="editType === 'password' ? loadingChangePassword : loadingChangeAvatar"
-            loading-text="修改中..."
+              type="primary"
+              @click="editType === 'password' ? handleChangePasswordSubmit() : handleChangeAvatarSubmit()"
+              :loading="editType === 'password' ? loadingChangePassword : loadingChangeAvatar"
+              loading-text="修改中..."
           >
-            <i class="iconfont icon-check" />
+            <i class="iconfont icon-check"/>
             确认
           </CustomButton>
           <CustomButton @click="showEditCard = false">
-            <i class="iconfont icon-close" />
+            <i class="iconfont icon-close"/>
             取消
           </CustomButton>
         </div>
@@ -118,24 +122,27 @@
         cancel-text="取消"
         @confirm="handleSave"
     />
+    <UserCenterTour ref="tourRef"/>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import UserCenterTour from '@/components/tour/UserCenterTour.vue'
+import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {onMounted, ref, watch} from 'vue';
+import {useRouter} from 'vue-router';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import showMessage from '@/utils/message'
-import { useUserStore } from '@/stores/user';
+import {useUserStore} from '@/stores/user';
 import Avatar from "@/components/Avatar.vue";
 import EnhancedInput from "@/components/EnhancedInput.vue";
 import CaptchaInput from "@/components/CaptchaInput.vue";
-import { getSystemAvatarIds } from '@/utils/avatarManager';
+import {getSystemAvatarIds} from '@/utils/avatarManager';
 import CustomButton from "@/components/CustomButton.vue";
 
 const router = useRouter()
 const userStore = useUserStore();
-const { getUserInfo, updateUserInfo, changePassword, updateUserAvatar, logout } = userStore;
+const {getUserInfo, updateUserInfo, changePassword, updateUserAvatar, logout} = userStore;
 
 const showConfirmSave = ref(false);
 
@@ -168,25 +175,27 @@ const passwordForm = ref({
 // 密码修改表单验证规则
 const passwordRules = {
   originalPassword: [
-    { required: true, message: '原密码不能为空', trigger: 'blur' }
+    {required: true, message: '原密码不能为空', trigger: 'blur'}
   ],
   newPassword: [
-    { required: true, message: '新密码不能为空', trigger: 'blur' },
-    { min: 6, message: '新密码长度至少为6位', trigger: 'blur' }
+    {required: true, message: '新密码不能为空', trigger: 'blur'},
+    {min: 6, message: '新密码长度至少为6位', trigger: 'blur'}
   ],
   confirmNewPassword: [
-    { required: true, message: '确认新密码不能为空', trigger: 'blur' },
-    { validator: (rule, value, callback) => {
+    {required: true, message: '确认新密码不能为空', trigger: 'blur'},
+    {
+      validator: (rule, value, callback) => {
         if (value !== passwordForm.value.newPassword) {
           callback(new Error('两次输入的密码不一致'));
         } else {
           callback();
         }
-      }, trigger: 'blur' }
+      }, trigger: 'blur'
+    }
   ],
   captcha: [
-    { required: true, message: '验证码不能为空', trigger: 'blur' },
-    { min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur' }
+    {required: true, message: '验证码不能为空', trigger: 'blur'},
+    {min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur'}
   ]
 };
 
@@ -208,12 +217,12 @@ onMounted(async () => {
       mobile: userInfo.mobile || '',
       createTime: userInfo.createTime || '',
       roleName: userInfo.roleName || '',
-      avatar: userInfo.avatar || 'bot'
+      avatar: userInfo.avatar || 'egg'
     };
   } else {
     showMessage.error('获取用户信息失败');
   }
-  
+
   // 加载系统预设头像
   loadSystemAvatars();
 });
@@ -322,7 +331,7 @@ const handleChangeAvatarSubmit = async () => {
   try {
     loadingChangeAvatar.value = true;
     const res = await updateUserAvatar(selectedAvatar.value);
-    
+
     if (res.code === 200) {
       showMessage.success('头像修改成功');
       userForm.value.avatar = selectedAvatar.value;
@@ -345,6 +354,15 @@ const handleLogout = (msg) => {
   router.push('/login');
   showMessage.info(msg || '已退出登录')
 };
+// 页面引导
+const tourRef = ref(null)
+const tourStore = useTourStore()
+
+watch(() => tourStore.pendingStartScene, (scene) => {
+  if (scene === TOUR_SCENES.USER_CENTER) {
+    tourRef.value?.start()
+  }
+})
 </script>
 
 <style scoped lang="scss">

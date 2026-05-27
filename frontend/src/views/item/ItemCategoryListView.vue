@@ -4,7 +4,7 @@
     <div class="page-header">
       <h2 class="page-title">物品分类一览</h2>
       <CustomButton type="primary" @click="handleCreate">
-        <i class="iconfont icon-add-box" />
+        <i class="iconfont icon-add-box"/>
         新建分类
       </CustomButton>
     </div>
@@ -15,20 +15,20 @@
       <div class="category-section">
         <h3 class="section-title">我的分类</h3>
         <el-empty
-          v-if="!loading && customCategories.length === 0"
-          description="您还没有创建自定义分类"
+            v-if="!loading && customCategories.length === 0"
+            description="您还没有创建自定义分类"
         >
           <CustomButton type="primary" @click="handleCreate">立即创建</CustomButton>
         </el-empty>
         <div v-else class="category-grid">
           <div
-            v-for="category in customCategories"
-            :key="category.id"
-            class="category-card"
+              v-for="category in customCategories"
+              :key="category.id"
+              class="category-card"
           >
             <div class="card-header">
               <div class="category-icon">
-                <i class="iconfont icon-label" />
+                <i class="iconfont icon-label"/>
               </div>
               <div class="category-info">
                 <h3 class="category-name">{{ category.categoryName }}</h3>
@@ -38,11 +38,11 @@
 
             <div class="card-actions">
               <CustomButton type="primary" size="small" @click.stop="handleEdit(category)">
-                <i class="iconfont icon-edit-box" />
+                <i class="iconfont icon-edit-box"/>
                 编辑
               </CustomButton>
               <CustomButton type="danger" size="small" @click.stop="handleDelete(category)">
-                <i class="iconfont icon-delete" />
+                <i class="iconfont icon-delete"/>
                 删除
               </CustomButton>
             </div>
@@ -54,7 +54,7 @@
       <div class="category-section category-section--system" v-if="systemCategories.length > 0">
         <div class="section-header" @click="isSystemCollapsed = !isSystemCollapsed">
           <h3 class="section-title">系统默认分类</h3>
-          <i class="iconfont icon-chevron-down toggle-icon" :class="{ 'is-collapsed': isSystemCollapsed }" />
+          <i class="iconfont icon-chevron-down toggle-icon" :class="{ 'is-collapsed': isSystemCollapsed }"/>
         </div>
         <el-collapse-transition>
           <div v-show="!isSystemCollapsed" class="category-grid">
@@ -64,12 +64,12 @@
                 class="category-card category-card--system"
             >
               <div class="system-badge">
-                <i class="iconfont icon-shield-fill" />
+                <i class="iconfont icon-bookmark"/>
                 系统默认
               </div>
               <div class="card-header">
                 <div class="category-icon">
-                  <i class="iconfont icon-label" />
+                  <i class="iconfont icon-label"/>
                 </div>
                 <div class="category-info">
                   <h3 class="category-name">{{ category.categoryName }}</h3>
@@ -84,50 +84,53 @@
 
     <!-- 删除确认对话框 -->
     <ConfirmDialog
-      v-model:visible="showDeleteDialog"
-      title="删除分类"
-      :message="`确定要删除分类「${selectedCategory?.categoryName || ''}」吗？删除后无法恢复，且会影响该分类下存在的物品。`"
-      confirm-text="确定删除"
-      cancel-text="取消"
-      @confirm="confirmDelete"
-      width="450px"
+        v-model:visible="showDeleteDialog"
+        title="删除分类"
+        :message="`确定要删除分类「${selectedCategory?.categoryName || ''}」吗？删除后无法恢复，且会影响该分类下存在的物品。`"
+        confirm-text="确定删除"
+        cancel-text="取消"
+        @confirm="confirmDelete"
+        width="450px"
     />
 
     <!-- 创建分类对话框 -->
     <InputDialog
-      v-model:visible="showCreateDialog"
-      title="创建物品分类"
-      label="分类名称"
-      placeholder="请输入分类名称，如：冷冻食品、调味品"
-      icon="icon-label"
-      value-prop="categoryName"
-      confirm-text="创建分类"
-      :loading="createLoading"
-      @submit="handleCreateSubmit"
+        v-model:visible="showCreateDialog"
+        title="创建物品分类"
+        label="分类名称"
+        placeholder="请输入分类名称，如：冷冻食品、调味品"
+        icon="icon-label"
+        value-prop="categoryName"
+        confirm-text="创建分类"
+        :loading="createLoading"
+        @submit="handleCreateSubmit"
     />
 
     <!-- 编辑分类对话框 -->
     <InputDialog
-      v-model:visible="showEditDialog"
-      title="编辑分类名称"
-      label="分类名称"
-      placeholder="请输入分类名称"
-      icon="icon-label"
-      value-prop="categoryName"
-      confirm-text="确认修改"
-      :data="selectedCategory"
-      :loading="editLoading"
-      @submit="handleEditSubmit"
+        v-model:visible="showEditDialog"
+        title="编辑分类名称"
+        label="分类名称"
+        placeholder="请输入分类名称"
+        icon="icon-label"
+        value-prop="categoryName"
+        confirm-text="确认修改"
+        :data="selectedCategory"
+        :loading="editLoading"
+        @submit="handleEditSubmit"
     />
+    <ItemCategoryTour ref="tourRef"/>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import ItemCategoryTour from '@/components/tour/ItemCategoryTour.vue'
+import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {onMounted, ref, computed, watch} from 'vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import InputDialog from '@/components/InputDialog.vue'
 import showMessage from '@/utils/message'
-import { listItemCategories, deleteItemCategory, updateItemCategory, createItemCategory } from '@/api/item'
+import {listItemCategories, deleteItemCategory, updateItemCategory, createItemCategory} from '@/api/item'
 import CustomButton from '@/components/CustomButton.vue'
 
 // 加载状态
@@ -141,16 +144,16 @@ const isSystemCollapsed = ref(true)
 
 // 自定义分类
 const customCategories = computed(() =>
-  categoryList.value
-    .filter(c => !c.isSystemDefault)
-    .sort((a, b) => a.id - b.id)
+    categoryList.value
+        .filter(c => !c.isSystemDefault)
+        .sort((a, b) => a.id - b.id)
 )
 
 // 系统默认分类
 const systemCategories = computed(() =>
-  categoryList.value
-    .filter(c => c.isSystemDefault)
-    .sort((a, b) => a.id - b.id)
+    categoryList.value
+        .filter(c => c.isSystemDefault)
+        .sort((a, b) => a.id - b.id)
 )
 
 // 对话框控制
@@ -185,7 +188,7 @@ const handleCreate = () => {
 }
 
 // 创建提交
-const handleCreateSubmit = async ({ value }) => {
+const handleCreateSubmit = async ({value}) => {
   createLoading.value = true
   try {
     const res = await createItemCategory({
@@ -217,7 +220,7 @@ const handleEdit = (category) => {
 }
 
 // 编辑提交
-const handleEditSubmit = async ({ id, value }) => {
+const handleEditSubmit = async ({id, value}) => {
   editLoading.value = true
   try {
     const res = await updateItemCategory({
@@ -271,6 +274,15 @@ const confirmDelete = async () => {
 
 onMounted(() => {
   fetchCategoryList()
+})
+// 页面引导
+const tourRef = ref(null)
+const tourStore = useTourStore()
+
+watch(() => tourStore.pendingStartScene, (scene) => {
+  if (scene === TOUR_SCENES.ITEM_CATEGORY) {
+    tourRef.value?.start()
+  }
 })
 </script>
 

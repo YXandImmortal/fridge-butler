@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import {defineStore} from 'pinia'
+import {ref, computed} from 'vue'
 import {
     getUnreadCount,
     getNotificationSummary,
@@ -33,13 +33,55 @@ export const useNotificationStore = defineStore('notification', () => {
     const hasUnread = computed(() => unreadCount.value > 0)
 
     const summaryItems = computed(() => [
-        { key: '', label: '全部', count: summary.value.totalUnread, icon: 'icon-notification', color: 'var(--primary-color)' },
-        { key: 'EXPIRED', label: '已过期', count: summary.value.expiredCount, icon: 'icon-calendar-alert', color: 'var(--danger-color)' },
-        { key: 'EXPIRING_CRITICAL', label: '1天内过期', count: summary.value.expiringCriticalCount, icon: 'icon-clock', color: 'var(--danger-color)' },
-        { key: 'EXPIRING_WARNING', label: '3天内过期', count: summary.value.expiringWarningCount, icon: 'icon-clock', color: 'var(--warn-color)' },
-        { key: 'EXPIRING_NOTICE', label: '7天内过期', count: summary.value.expiringNoticeCount, icon: 'icon-clock', color: 'var(--text-tertiary)' },
-        { key: 'CAPACITY_WARNING', label: '容量预警', count: summary.value.capacityWarningCount, icon: 'icon-chart', color: 'var(--warn-color)' },
-        { key: 'SYSTEM', label: '系统通知', count: summary.value.systemCount, icon: 'icon-info-box', color: 'var(--text-tertiary)' }
+        {
+            key: '',
+            label: '全部',
+            count: summary.value.totalUnread,
+            icon: 'icon-notification',
+            color: 'var(--primary-color)'
+        },
+        {
+            key: 'EXPIRED',
+            label: '已过期',
+            count: summary.value.expiredCount,
+            icon: 'icon-calendar-alert',
+            color: 'var(--danger-color)'
+        },
+        {
+            key: 'EXPIRING_CRITICAL',
+            label: '1天内过期',
+            count: summary.value.expiringCriticalCount,
+            icon: 'icon-clock',
+            color: 'var(--danger-color)'
+        },
+        {
+            key: 'EXPIRING_WARNING',
+            label: '3天内过期',
+            count: summary.value.expiringWarningCount,
+            icon: 'icon-clock',
+            color: 'var(--warn-color)'
+        },
+        {
+            key: 'EXPIRING_NOTICE',
+            label: '7天内过期',
+            count: summary.value.expiringNoticeCount,
+            icon: 'icon-clock',
+            color: 'var(--text-tertiary)'
+        },
+        {
+            key: 'CAPACITY_WARNING',
+            label: '容量预警',
+            count: summary.value.capacityWarningCount,
+            icon: 'icon-chart',
+            color: 'var(--warn-color)'
+        },
+        {
+            key: 'SYSTEM',
+            label: '系统通知',
+            count: summary.value.systemCount,
+            icon: 'icon-info-box',
+            color: 'var(--text-tertiary)'
+        }
     ])
 
     // ========== 方法 ==========
@@ -87,7 +129,7 @@ export const useNotificationStore = defineStore('notification', () => {
         loading.value = true
         currentType.value = type
         try {
-            const res = await getNotificationList({ type, page: 1, size: 9999 })
+            const res = await getNotificationList({type, page: 1, size: 9999})
             if (res.code === 200 && res.data) {
                 // 兼容两种返回格式：直接数组 或 { list, total, pages }
                 if (Array.isArray(res.data)) {
@@ -179,7 +221,7 @@ export const useNotificationStore = defineStore('notification', () => {
      * 根据 actionType 获取跳转路由
      */
     const getActionRoute = (notification) => {
-        const { actionType, actionPayload } = notification
+        const {actionType, actionPayload} = notification
         if (!actionType || actionType === 'NONE' || !actionPayload) {
             return null
         }

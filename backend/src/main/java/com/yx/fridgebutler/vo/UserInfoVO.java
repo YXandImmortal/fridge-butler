@@ -38,4 +38,9 @@ public class UserInfoVO {
      * 创建时间
      */
     private String createTime;
+
+    /**
+     * 是否已完成新手指引
+     */
+    private Boolean guideCompleted;
 }

@@ -1,11 +1,11 @@
 <template>
   <div class="ai-message-markdown">
-    <VueMarkdown :source="content" :options="markdownOptions" />
+    <VueMarkdown :source="content" :options="markdownOptions"/>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import hljs from 'highlight.js/lib/common'
 
@@ -34,7 +34,7 @@ const markdownOptions = computed(() => ({
   highlight: (str, lang) => {
     if (lang && hljs.getLanguage(lang)) {
       try {
-        return hljs.highlight(str, { language: lang }).value
+        return hljs.highlight(str, {language: lang}).value
       } catch (__) {
         // fall through
       }
@@ -50,11 +50,11 @@ const markdownOptions = computed(() => ({
 
 function escapeHtml(text) {
   return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
 }
 </script>
 
@@ -84,12 +84,23 @@ function escapeHtml(text) {
     color: var(--text-primary);
   }
 
-  :deep(h1) { font-size: 1.35em; }
-  :deep(h2) { font-size: 1.2em; }
-  :deep(h3) { font-size: 1.1em; }
+  :deep(h1) {
+    font-size: 1.35em;
+  }
+
+  :deep(h2) {
+    font-size: 1.2em;
+  }
+
+  :deep(h3) {
+    font-size: 1.1em;
+  }
+
   :deep(h4),
   :deep(h5),
-  :deep(h6) { font-size: 1em; }
+  :deep(h6) {
+    font-size: 1em;
+  }
 
   /* 列表 */
   :deep(ul),
