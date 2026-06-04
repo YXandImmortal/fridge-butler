@@ -43,4 +43,9 @@ public class UserInfoVO {
      * 是否已完成新手指引
      */
     private Boolean guideCompleted;
+
+    /**
+     * 是否已激活（true=已激活，false=未激活）
+     */
+    private Boolean isActivated;
 }

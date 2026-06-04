@@ -44,4 +44,9 @@ public class NotificationSummaryVO {
      * 容量预警数量
      */
     private Long capacityWarningCount;
+
+    /**
+     * 重要通知数量
+     */
+    private Long importantNoticeCount;
 }

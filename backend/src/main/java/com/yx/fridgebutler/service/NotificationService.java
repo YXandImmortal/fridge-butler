@@ -78,4 +78,29 @@ public interface NotificationService {
      * @param fridgeId 冰箱ID
      */
     void clearCapacityWarning(Long fridgeId);
+
+    /**
+     * 广播重要通知给所有普通用户（非 SuperAdmin）。
+     * <p>5 分钟内相同标题的通知将被拒绝，防止重复广播。</p>
+     *
+     * @param title   通知标题
+     * @param content Markdown 通知内容
+     */
+    void broadcastImportantNotice(String title, String content);
+
+    /**
+     * 获取当前登录用户最新的未读重要通知。
+     *
+     * @return 最新的未读重要通知，不存在时返回 null
+     */
+    NotificationVO getLatestImportantNotice();
+
+    /**
+     * 为新注册用户初始化最新重要通知。
+     * <p>从重要通知模板表中读取最新的一条未删除通知，为用户创建对应的个人通知记录。
+     * 如果用户已存在未读的重要通知，则跳过避免重复。</p>
+     *
+     * @param userId 新注册用户ID
+     */
+    void initializeImportantNoticeForNewUser(Long userId);
 }

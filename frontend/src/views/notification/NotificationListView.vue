@@ -149,7 +149,7 @@ import {onMounted, onUnmounted, ref, watch} from 'vue'
 import {useRouter} from 'vue-router'
 import {storeToRefs} from 'pinia'
 import {Check, RefreshRight} from '@element-plus/icons-vue'
-import CustomButton from '@/components/CustomButton.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
 import {useNotificationStore} from '@/stores/notification'
 import showMessage from '@/utils/message'
 
@@ -191,6 +191,7 @@ const getTagType = (type) => {
   switch (type) {
     case 'EXPIRED':
     case 'EXPIRING_CRITICAL':
+    case 'IMPORTANT_NOTICE':
       return 'danger'
     case 'EXPIRING_WARNING':
     case 'CAPACITY_WARNING':

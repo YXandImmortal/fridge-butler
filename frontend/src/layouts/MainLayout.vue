@@ -32,7 +32,7 @@
     />
 
     <!-- 全局布局引导 -->
-    <GlobalLayoutTour ref="tourRef"/>
+    <QuickGuideTour ref="tourRef" @finish="handleTourFinish" @close="handleTourFinish"/>
 
     <!-- 指引类型选择对话框 -->
     <GuideTypeDialog
@@ -40,27 +40,45 @@
         v-model="guideType"
         @confirm="handleGuideTypeConfirm"
     />
+
+    <!-- 重要通知全局弹窗 -->
+    <ImportantNoticeDialog
+        v-model="showImportantNotice"
+        :notice="notificationStore.latestImportantNotice"
+        @close="handleNoticeClose"
+        @confirm="handleNoticeConfirm"
+    />
+
+    <!-- 强制修改密码弹窗（超级管理员首次登录） -->
+    <ForceChangePasswordDialog
+        v-model:visible="showForceChangePassword"
+        @success="handleForceChangePasswordSuccess"
+    />
   </div>
 </template>
 
 <script setup>
-import {onMounted, ref, nextTick} from 'vue'
+import {onMounted, ref, nextTick, computed, watch} from 'vue'
 import {useRouter} from 'vue-router'
-import Header from '@/components/Header.vue'
-import Sidebar from '@/components/Sidebar.vue'
-import CopyrightFooter from '@/components/CopyrightFooter.vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import GlobalLayoutTour from '@/components/tour/GlobalLayoutTour.vue'
+import Header from '@/components/layout/Header.vue'
+import Sidebar from '@/components/layout/Sidebar.vue'
+import CopyrightFooter from '@/components/layout/CopyrightFooter.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import QuickGuideTour from '@/components/tour/QuickGuideTour.vue'
 import GuideTypeDialog from '@/components/tour/GuideTypeDialog.vue'
 import showMessage from '@/utils/message'
 import {useSystemStore} from '@/stores/system'
 import {useUserStore} from '@/stores/user'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {useNotificationStore} from '@/stores/notification'
+import ImportantNoticeDialog from '@/components/notification/ImportantNoticeDialog.vue'
+import ForceChangePasswordDialog from '@/components/ui/ForceChangePasswordDialog.vue'
 
 const router = useRouter()
 const systemStore = useSystemStore()
 const userStore = useUserStore()
 const tourStore = useTourStore()
+const notificationStore = useNotificationStore()
 const {getSystemInfo} = systemStore
 const {logout} = userStore
 
@@ -69,6 +87,30 @@ const showLogoutDialog = ref(false)
 
 // 控制指引类型选择对话框显示/隐藏
 const showGuideTypeDialog = ref(false)
+
+// 控制强制修改密码对话框显示
+const showForceChangePassword = ref(false)
+
+// 监听强制修改密码状态，状态变为 true 时立即弹出弹窗
+// 不受子组件挂载顺序影响
+watch(() => userStore.requirePasswordChange, (val) => {
+  if (val && userStore.roleId === 1) {
+    showForceChangePassword.value = true
+  }
+}, { immediate: true })
+
+// Tour 是否正在进行中
+const tourActive = ref(false)
+
+// 重要通知弹窗显示控制（Tour 进行期间不弹出）
+const showImportantNotice = computed({
+    get: () => !tourActive.value && !!notificationStore.latestImportantNotice,
+    set: (val) => {
+        if (!val && notificationStore.latestImportantNotice) {
+            notificationStore.dismissImportantNotice(notificationStore.latestImportantNotice.id)
+        }
+    }
+})
 
 // 当前选择的指引类型
 const guideType = ref('page')
@@ -80,15 +122,21 @@ const tourRef = ref(null)
 onMounted(async () => {
   await getSystemInfo()
 
-  // 首次登录自动播放全局布局引导
+  // 首次登录自动播放全局布局引导（仅普通用户可见）
   nextTick(() => {
     setTimeout(() => {
-      if (!tourStore.isSceneCompleted(TOUR_SCENES.GLOBAL_LAYOUT)) {
+      if (userStore.roleId === 2 && !tourStore.isSceneCompleted(TOUR_SCENES.GLOBAL_LAYOUT)) {
+        tourActive.value = true
         tourRef.value?.start()
       }
     }, 800)
   })
 })
+
+// 强制修改密码成功回调
+const handleForceChangePasswordSuccess = () => {
+    userStore.clearRequirePasswordChange()
+}
 
 // 封装：确保在首页后启动 Tour（AI 聊天区元素仅在首页存在）
 const startTourWithRouteCheck = () => {
@@ -98,12 +146,14 @@ const startTourWithRouteCheck = () => {
     router.push('/user/index').then(() => {
       nextTick(() => {
         setTimeout(() => {
+          tourActive.value = true
           tourRef.value?.start()
         }, 300)
       })
     })
   } else {
     nextTick(() => {
+      tourActive.value = true
       tourRef.value?.start()
     })
   }
@@ -152,6 +202,21 @@ const handleLogout = () => {
   showLogoutDialog.value = false
   router.push('/login')
   showMessage.info('已退出登录')
+}
+
+// 处理重要通知关闭（点击X、遮罩、ESC）
+const handleNoticeClose = (id) => {
+    notificationStore.readImportantNotice(id)
+}
+
+// 处理重要通知确认（点击"我知道了"）
+const handleNoticeConfirm = (id) => {
+    notificationStore.readImportantNotice(id)
+}
+
+// Tour 结束（完成或中途关闭）
+const handleTourFinish = () => {
+    tourActive.value = false
 }
 </script>
 

@@ -103,4 +103,15 @@ public class NotificationController {
         log.info("删除消息成功，消息ID：{}", id);
         return Result.success(null);
     }
+
+    /**
+     * 获取当前登录用户最新的未读重要通知。
+     *
+     * @return 最新的未读重要通知，不存在时返回 null
+     */
+    @GetMapping("/latest-important")
+    public Result<NotificationVO> latestImportant() {
+        NotificationVO result = notificationService.getLatestImportantNotice();
+        return Result.success(result);
+    }
 }

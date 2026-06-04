@@ -46,17 +46,20 @@ public class AuthController {
 
     /**
      * 普通用户注册
+     * <p>
+     * 注册成功后直接返回登录凭证，前端无需再次调用登录接口即可进入首页。
+     * </p>
      *
      * @param request    注册请求参数，包含用户名、密码、手机号等信息
      * @param httpRequest HTTP请求对象，用于获取客户端IP地址
-     * @return 注册成功返回空数据的响应结果
+     * @return 注册成功返回与登录一致的响应结果，包含 JWT Token
      */
     @PostMapping("/register/user")
-    public Result<Void> registerUser(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+    public Result<LoginVO> registerUser(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
         log.info("普通用户注册请求，用户名：{}，客户端IP：{}", request.getUsername(), getClientIp(httpRequest));
-        authService.registerUser(request, httpRequest);
+        LoginVO response = authService.registerUser(request, httpRequest);
         log.info("普通用户注册成功，用户名：{}", request.getUsername());
-        return Result.success(ResultCode.REGISTER_SUCCESS, null);
+        return Result.success(ResultCode.REGISTER_SUCCESS, response);
     }
 
     /**

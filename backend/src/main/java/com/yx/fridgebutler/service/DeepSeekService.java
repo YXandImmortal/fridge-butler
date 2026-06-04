@@ -61,9 +61,8 @@ public interface DeepSeekService {
      *
      * @param messages 消息列表
      * @param onChunk  每个文本片段的回调（会在调用线程中同步执行）
-     * @throws java.io.IOException 网络或流式读取异常
      */
-    void chatStream(List<DeepSeekChatMessage> messages, java.util.function.Consumer<String> onChunk) throws java.io.IOException;
+    void chatStream(List<DeepSeekChatMessage> messages, java.util.function.Consumer<String> onChunk);
 
     /**
      * 流式对话请求（自定义请求参数）。
@@ -71,7 +70,6 @@ public interface DeepSeekService {
      *
      * @param request 自定义对话请求参数
      * @param onChunk 每个文本片段的回调
-     * @throws java.io.IOException 网络或流式读取异常
      */
-    void chatStream(DeepSeekChatRequest request, java.util.function.Consumer<String> onChunk) throws java.io.IOException;
+    void chatStream(DeepSeekChatRequest request, java.util.function.Consumer<String> onChunk);
 }

@@ -23,10 +23,11 @@ public interface AuthService {
 
     /**
      * 用户注册。
-     * <p>校验验证码、密码一致性、用户名/手机号唯一性，创建新用户。</p>
+     * <p>校验验证码、密码一致性、用户名/手机号唯一性，创建新用户并直接颁发登录凭证。</p>
      *
      * @param request     注册请求参数
      * @param httpRequest HTTP 请求对象，用于获取客户端信息
+     * @return 注册成功后的用户信息及 Token，与登录响应一致
      */
-    void registerUser(RegisterRequest request, HttpServletRequest httpRequest);
+    LoginVO registerUser(RegisterRequest request, HttpServletRequest httpRequest);
 }

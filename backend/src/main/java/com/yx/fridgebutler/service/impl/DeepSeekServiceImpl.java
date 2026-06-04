@@ -114,7 +114,12 @@ public class DeepSeekServiceImpl implements DeepSeekService {
             throw BusinessException.deepSeekApiError("响应中无有效内容");
         }
 
-        String content = response.getChoices().getFirst().getMessage().getContent();
+        var firstChoice = response.getChoices().getFirst();
+        if (firstChoice.getMessage() == null) {
+            log.error("DeepSeek 响应中消息体为空");
+            throw BusinessException.deepSeekApiError("响应中消息体为空");
+        }
+        String content = firstChoice.getMessage().getContent();
         log.info("DeepSeek 对话成功，消耗 token：prompt={}, completion={}, total={}",
                 response.getUsage() != null ? response.getUsage().getPromptTokens() : "N/A",
                 response.getUsage() != null ? response.getUsage().getCompletionTokens() : "N/A",
@@ -162,7 +167,7 @@ public class DeepSeekServiceImpl implements DeepSeekService {
      * {@inheritDoc}
      */
     @Override
-    public void chatStream(List<DeepSeekChatMessage> messages, Consumer<String> onChunk) throws IOException {
+    public void chatStream(List<DeepSeekChatMessage> messages, Consumer<String> onChunk) {
         DeepSeekChatRequest request = DeepSeekChatRequest.builder()
                 .messages(messages)
                 .stream(true)
@@ -178,7 +183,7 @@ public class DeepSeekServiceImpl implements DeepSeekService {
      * 响应体通过 Hutool JSON 逐行解析 SSE 数据块。
      */
     @Override
-    public void chatStream(DeepSeekChatRequest request, Consumer<String> onChunk) throws IOException {
+    public void chatStream(DeepSeekChatRequest request, Consumer<String> onChunk) {
         fillDefaults(request);
         if (!Boolean.TRUE.equals(request.getStream())) {
             request.setStream(true);

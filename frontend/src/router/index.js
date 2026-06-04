@@ -3,7 +3,7 @@ import {useUserStore} from '@/stores/user'
 import {MainLayout} from '@/layouts'
 
 const UserIndexView = () => import('@/views/user/UserIndexView.vue')
-const SuperAdminIndex = () => import('@/views/super-admin/SuperAdminIndexView.vue')
+const AdminDashboardView = () => import('@/views/super-admin/SuperAdminDashboardView.vue')
 const UserCenterView = () => import('@/views/user/UserCenterView.vue')
 const FridgeListView = () => import('@/views/fridge/FridgeListView.vue')
 const FridgeDetailView = () => import('@/views/fridge/FridgeDetailView.vue')
@@ -15,6 +15,7 @@ const NotificationListView = () => import('@/views/notification/NotificationList
 
 const LoginView = () => import('@/views/auth/LoginView.vue')
 const RegisterView = () => import('@/views/auth/RegisterView.vue')
+const LandingView = () => import('@/views/landing/LandingView.vue')
 
 const SUPER_ADMIN_PERMISSION = 1
 const USER_PERMISSION = 2
@@ -24,7 +25,8 @@ const router = createRouter({
     routes: [
         {
             path: '/',
-            redirect: {name: 'login'}
+            name: 'landing',
+            component: LandingView
         },
         // 用户端路由（使用主布局）
         {
@@ -161,12 +163,60 @@ const router = createRouter({
             meta: {requiresAuth: true},
             children: [
                 {
-                    path: 'index',
-                    name: 'super-admin-index',
-                    component: SuperAdminIndex,
+                    path: '',
+                    redirect: {name: 'super-admin-dashboard'}
+                },
+                {
+                    path: 'dashboard',
+                    name: 'super-admin-dashboard',
+                    component: AdminDashboardView,
                     meta: {
                         roles: [SUPER_ADMIN_PERMISSION]
                     }
+                },
+                {
+                    path: 'users',
+                    name: 'super-admin-users',
+                    component: () => import('@/views/super-admin/SuperAdminUserView.vue'),
+                    meta: {
+                        roles: [SUPER_ADMIN_PERMISSION]
+                    }
+                },
+                {
+                    path: 'logs',
+                    name: 'super-admin-logs',
+                    component: () => import('@/views/super-admin/SuperAdminLogView.vue'),
+                    meta: {
+                        roles: [SUPER_ADMIN_PERMISSION]
+                    }
+                },
+                {
+                    path: 'system',
+                    name: 'super-admin-system',
+                    component: () => import('@/views/super-admin/SuperAdminSystemConfigView.vue'),
+                    meta: {
+                        roles: [SUPER_ADMIN_PERMISSION]
+                    }
+                },
+                {
+                    path: 'notification',
+                    name: 'super-admin-notification',
+                    component: () => import('@/views/super-admin/SuperAdminNotificationView.vue'),
+                    meta: {
+                        roles: [SUPER_ADMIN_PERMISSION]
+                    }
+                },
+                {
+                    path: 'activation-keys',
+                    name: 'super-admin-activation-keys',
+                    component: () => import('@/views/super-admin/SuperAdminActivationKeyView.vue'),
+                    meta: {
+                        roles: [SUPER_ADMIN_PERMISSION]
+                    }
+                },
+                {
+                    path: 'index',
+                    redirect: {name: 'super-admin-dashboard'}
                 }
             ]
         },
@@ -180,6 +230,11 @@ const router = createRouter({
             path: '/register',
             name: 'register',
             component: RegisterView
+        },
+        {
+            path: '/activation',
+            name: 'activation',
+            component: () => import('@/views/auth/ActivationView.vue')
         },
         // 错误页面路由
         {
@@ -223,32 +278,48 @@ router.beforeEach((to, from) => {
             }
         }
 
+        // 检查是否需要强制修改密码（超级管理员首次登录）
+        if (userStore.requirePasswordChange.value && to.name !== from.name) {
+            return false
+        }
+
         // 检查用户角色权限
         const requiredRoles = to.meta?.roles
         if (requiredRoles && requiredRoles.length > 0) {
             const userRoleId = userStore.roleId
             if (!requiredRoles.includes(userRoleId)) {
-                // 权限不足，根据用户角色重定向到对应首页
-                if (userRoleId === 1) {
-                    return {name: 'super-admin-index'}
-                } else if (userRoleId === 2) {
-                    return {name: 'user-index'}
-                } else {
-                    // 未知角色，重定向到登录页
-                    return {name: 'login'}
-                }
+                // 权限不足，跳转403页面
+                return {name: 'forbidden'}
             }
         }
     }
 
-    // 已登录用户访问登录/注册页，重定向到对应首页
-    if (userStore.isLoggedIn && (to.name === 'login' || to.name === 'register')) {
+    // 已登录用户访问登录/注册页或介绍页，重定向到对应首页
+    if (userStore.isLoggedIn && (to.name === 'login' || to.name === 'register' || to.name === 'landing')) {
         const userRoleId = userStore.roleId
         if (userRoleId === 1) {
-            return {name: 'super-admin-index'}
+            return {name: 'super-admin-dashboard'}
         } else if (userRoleId === 2) {
             return {name: 'user-index'}
         }
+    }
+
+    // ==================== 激活密钥拦截 ====================
+    // 未登录用户禁止访问激活页
+    if (!userStore.isLoggedIn && to.name === 'activation') {
+        return {name: 'login'}
+    }
+
+    // 已登录但未激活的普通用户，强制进入激活页
+    if (userStore.isLoggedIn && !userStore.isActivated && userStore.roleId === USER_PERMISSION) {
+        if (to.name !== 'activation') {
+            return {name: 'activation'}
+        }
+    }
+
+    // 已激活用户禁止访问激活页
+    if (userStore.isLoggedIn && userStore.isActivated && to.name === 'activation') {
+        return {name: 'user-index'}
     }
 })
 

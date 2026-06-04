@@ -14,7 +14,8 @@ public enum NotificationType {
     EXPIRING_WARNING("3天内过期", 1),
     EXPIRING_NOTICE("7天内过期", 0),
     CAPACITY_WARNING("容量预警", 1),
-    SYSTEM("系统通知", 0);
+    SYSTEM("系统通知", 0),
+    IMPORTANT_NOTICE("重要通知", 2);
 
     /**
      * 显示名称

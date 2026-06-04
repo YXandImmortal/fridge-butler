@@ -20,6 +20,7 @@ public enum ResultCode {
     UNAUTHORIZED(401, "未授权"),
     FORBIDDEN(403, "禁止访问"),
     NOT_FOUND(404, "资源不存在"),
+    METHOD_NOT_ALLOWED(405, "请求方法不支持"),
 
     /**
      * 登录状态码
@@ -53,6 +54,7 @@ public enum ResultCode {
      */
     CHANGE_PASSWORD_FAILED_NOT_MATCH(400, "两次密码不一致"),
     CHANGE_PASSWORD_FAILED_ORIGINAL_WRONG(400, "原密码错误"),
+    INIT_PASSWORD_NOT_ALLOWED(400, "您已设置过密码，无法再次初始化"),
 
     /**
      * 用户状态码
@@ -99,7 +101,30 @@ public enum ResultCode {
      * 消息通知状态码
      * <p>消息提醒模块使用</p>
      */
-    NOTIFICATION_NOT_FOUND(404, "消息不存在");
+    NOTIFICATION_NOT_FOUND(404, "消息不存在"),
+
+    /**
+     * 管理员模块状态码
+     * <p>管理员后台功能使用</p>
+     */
+    ADMIN_CANNOT_DISABLE_SELF(403, "不能禁用或删除当前登录账号"),
+    ADMIN_RESET_PASSWORD_FAILED(500, "重置密码失败"),
+
+    /**
+     * 激活密钥状态码
+     * <p>激活密钥管理使用</p>
+     */
+    ACTIVATION_KEY_INVALID(400, "激活密钥无效或不存在"),
+    ACTIVATION_KEY_ALREADY_USED(400, "激活密钥已被使用"),
+    ACTIVATION_KEY_REVOKED(400, "激活密钥已被收回"),
+    ACTIVATION_KEY_DESTROYED(400, "激活密钥已销毁"),
+    USER_NOT_ACTIVATED(460, "账号未激活，请先输入有效密钥"),
+
+    /**
+     * 重要通知广播状态码
+     * <p>广播幂等校验失败</p>
+     */
+    DUPLICATE_BROADCAST(400, "相同标题的重要通知在5分钟内已广播过");
 
     /**
      * 状态码数值

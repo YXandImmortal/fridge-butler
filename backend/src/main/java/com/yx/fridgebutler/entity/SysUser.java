@@ -84,16 +84,33 @@ public class SysUser {
     private Boolean isDeleted;
 
     /**
-     * 头像标识，必填，最大长度20，默认值为 'bot'。
+     * 头像标识，必填，最大长度20，默认值为 'ice'。
      */
     @Size(max = 20)
     @NotNull
-    @ColumnDefault("'bot'")
+    @ColumnDefault("'ice'")
     @Column(name = "avatar", nullable = false, length = 20)
     private String avatar;
     @NotNull
     @ColumnDefault("0")
     @Column(name = "guide_completed", nullable = false)
     private Boolean guideCompleted;
+
+    /**
+     * 是否已激活，true 表示已激活，默认值为 true。
+     * <p>用于密钥激活功能，未激活的普通用户无法使用系统功能。</p>
+     */
+    @NotNull
+    @ColumnDefault("1")
+    @Column(name = "is_activated", nullable = false)
+    private Boolean isActivated;
+
+    /**
+     * 最后登录时间，记录用户最近一次成功登录的时间。
+     */
+    @Column(name = "last_login_time")
+    private Instant lastLoginTime;
+    @Column(name = "password_updated_at")
+    private Instant passwordUpdatedAt;
 
 }

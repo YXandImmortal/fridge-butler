@@ -1,6 +1,6 @@
 {
   "name": "fridge-butler",
-  "version": "beta 0.2.1",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,6 +13,7 @@
     "echarts": "^6.1.0",
     "element-plus": "^2.14.0",
     "highlight.js": "^11.11.1",
+    "md-editor-v3": "^6.5.1",
     "pinia": "^3.0.4",
     "vue": "^3.5.32",
     "vue-echarts": "^8.0.1",

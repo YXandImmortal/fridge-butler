@@ -1,6 +1,7 @@
 package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.dto.user.UserChangePasswordRequest;
+import com.yx.fridgebutler.dto.user.UserInitPasswordRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateAvatarRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateRequest;
 import com.yx.fridgebutler.vo.UserInfoVO;
@@ -85,6 +86,20 @@ public class UserController {
     public Result<Void> completeGuide() {
         userService.completeGuide();
         log.info("新手指引标记完成");
+        return Result.success(null);
+    }
+
+    /**
+     * 首次登录初始化密码（无需原密码和验证码）
+     * <p>仅允许 password_updated_at 为 null 的用户调用，用于首次登录或管理员重置密码后的强制改密。</p>
+     *
+     * @param request 初始化密码请求参数
+     * @return 密码设置成功的响应结果
+     */
+    @PostMapping("/init-password")
+    public Result<Void> initPassword(@Valid @RequestBody UserInitPasswordRequest request) {
+        userService.initPassword(request);
+        log.info("首次登录密码初始化成功");
         return Result.success(null);
     }
 }

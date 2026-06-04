@@ -1,6 +1,7 @@
 package com.yx.fridgebutler.service.impl;
 
 import com.yx.fridgebutler.dto.user.UserChangePasswordRequest;
+import com.yx.fridgebutler.dto.user.UserInitPasswordRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateAvatarRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateRequest;
 import com.yx.fridgebutler.vo.UserInfoVO;
@@ -17,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
@@ -73,6 +75,7 @@ public class UserServiceImpl implements UserService {
                         .atZone(ZONE_ID_SHANGHAI)
                         .format(DATE_TIME_FORMATTER))
                 .guideCompleted(user.getGuideCompleted())
+                .isActivated(user.getIsActivated())
                 .build();
     }
 
@@ -141,6 +144,7 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPasswordUpdatedAt(Instant.now());
         userRepository.save(user);
 
         log.info("密码修改成功，用户名：{}", username);
@@ -171,6 +175,35 @@ public class UserServiceImpl implements UserService {
         user.setGuideCompleted(true);
         userRepository.save(user);
         log.info("新手指引标记完成，用户名：{}", username);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>首次登录初始化密码，无需原密码和验证码。</p>
+     */
+    @Override
+    public void initPassword(UserInitPasswordRequest request) {
+        String username = getUsernameFromToken();
+
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+            log.error("初始化密码失败，用户名：{}两次密码不一致", username);
+            throw BusinessException.changePasswordNotMatch();
+        }
+
+        SysUser user = userRepository.findByUsername(username)
+                .orElseThrow(BusinessException::userNotFound);
+
+        // 仅允许从未修改过密码的用户调用（passwordUpdatedAt 为 null）
+        if (user.getPasswordUpdatedAt() != null) {
+            log.error("初始化密码失败，用户名：{}已设置过密码", username);
+            throw BusinessException.initPasswordNotAllowed();
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPasswordUpdatedAt(Instant.now());
+        userRepository.save(user);
+
+        log.info("首次登录密码初始化成功，用户名：{}", username);
     }
 
     /**

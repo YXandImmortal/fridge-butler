@@ -42,4 +42,11 @@ public interface BizItemCategoryRepository extends JpaRepository<BizItemCategory
      * @return 若存在则返回true
      */
     boolean existsByCategoryNameAndOwnerIdAndIsDeletedFalse(String categoryName, Long ownerId);
+
+    /**
+     * 查询所有未删除的系统默认物品分类。
+     *
+     * @return 系统默认物品分类列表
+     */
+    List<BizItemCategory> findByIsSystemDefaultTrueAndIsDeletedFalse();
 }

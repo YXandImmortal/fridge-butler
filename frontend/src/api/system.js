@@ -23,3 +23,13 @@ export function getSystemBuildTime() {
         method: 'get'
     })
 }
+
+/**
+ * 获取公开系统配置（公告、系统描述等）
+ */
+export function getPublicConfig() {
+    return request({
+        url: '/system/public-config',
+        method: 'get'
+    })
+}

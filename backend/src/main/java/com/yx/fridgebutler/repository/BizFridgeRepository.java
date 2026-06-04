@@ -108,4 +108,27 @@ public interface BizFridgeRepository extends JpaRepository<BizFridge, Long> {
      * @return 该用户的默认冰箱Optional对象
      */
     Optional<BizFridge> findByOwnerIdAndIsDefaultTrueAndIsDeletedFalse(Long ownerId);
+
+    /**
+     * 统计未删除的冰箱总数。
+     *
+     * @return 未删除冰箱数量
+     */
+    long countByIsDeletedFalse();
+
+    /**
+     * 按冰箱类型分组统计未删除的冰箱数量（原生SQL）。
+     * <p>LEFT JOIN 冰箱类型表，未分类冰箱的类型名称返回 NULL。</p>
+     *
+     * @return [类型名称, 数量] 列表
+     */
+    @Query(value = """
+            SELECT t.type_name as name, COUNT(f.id) as value
+            FROM biz_fridge f
+            LEFT JOIN biz_fridge_type t ON f.fridge_type_id = t.id
+            WHERE f.is_deleted = 0
+            GROUP BY f.fridge_type_id, t.type_name
+            ORDER BY value DESC
+            """, nativeQuery = true)
+    List<Object[]> countFridgeGroupByType();
 }

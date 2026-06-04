@@ -41,7 +41,7 @@
       <el-form-item prop="mobile">
         <EnhancedInput
             v-model="registerForm.mobile"
-            placeholder="请输入手机号码"
+            placeholder="请输入手机号码（选填，可用于登录）"
             icon="icon-device-phone"
         />
       </el-form-item>
@@ -71,13 +71,15 @@ import {useRouter} from 'vue-router'
 import request from '@/utils/request.js'
 import showMessage from '@/utils/message.js'
 import {useSystemStore} from '@/stores/system.js'
+import {useUserStore} from '@/stores/user.js'
 import AuthLayout from "@/layouts/AuthLayout.vue"
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
-import EnhancedInput from "@/components/EnhancedInput.vue"
-import CaptchaInput from "@/components/CaptchaInput.vue"
+import EnhancedInput from "@/components/ui/EnhancedInput.vue"
+import CaptchaInput from "@/components/form/CaptchaInput.vue"
 
 const router = useRouter()
 const systemStore = useSystemStore()
+const userStore = useUserStore()
 const {systemName, getSystemInfo} = systemStore;
 const registerFormRef = ref()
 const captchaInputRef = ref()
@@ -97,6 +99,42 @@ const registerForm = reactive({
   captcha: ''
 })
 
+// 自定义验证规则：密码
+const validatePassword = (rule, value, callback) => {
+  if (value === '') {
+    callback(new Error('请输入密码'))
+  } else if (value.length < 8 || value.length > 20) {
+    callback(new Error('密码长度应为8-20位'))
+  } else {
+    let typeCount = 0
+    if (/[A-Z]/.test(value)) typeCount++
+    if (/[a-z]/.test(value)) typeCount++
+    if (/[0-9]/.test(value)) typeCount++
+    if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value)) typeCount++
+
+    if (typeCount < 2) {
+      callback(new Error('密码需包含大写字母、小写字母、数字、特殊符号中的至少两种'))
+    } else if (registerForm.username && value.includes(registerForm.username)) {
+      callback(new Error('密码不能包含用户名'))
+    } else if (registerForm.mobile && value.includes(registerForm.mobile)) {
+      callback(new Error('密码不能包含手机号'))
+    } else {
+      callback()
+    }
+  }
+}
+
+// 自定义验证规则：手机号（选填，填写时校验格式）
+const validateMobile = (rule, value, callback) => {
+  if (value === '' || value == null) {
+    callback()
+  } else if (!/^1[3-9]\d{9}$/.test(value)) {
+    callback(new Error('手机号格式不正确'))
+  } else {
+    callback()
+  }
+}
+
 // 自定义验证规则：确认密码
 const validateConfirmPassword = (rule, value, callback) => {
   if (value === '') {
@@ -115,13 +153,13 @@ const registerRules = {
     {max: 50, message: '用户名长度不能超过50', trigger: 'blur'}
   ],
   password: [
-    {required: true, message: '密码不能为空', trigger: 'blur'}
+    {required: true, validator: validatePassword, trigger: 'blur'}
   ],
   confirmPassword: [
     {required: true, validator: validateConfirmPassword, trigger: 'blur'}
   ],
   mobile: [
-    {pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur'}
+    {validator: validateMobile, trigger: 'blur'}
   ],
   captcha: [
     {required: true, message: '验证码不能为空', trigger: 'blur'},
@@ -152,8 +190,19 @@ const handleRegister = async () => {
 
     if (res.code === 200) {
       showMessage.success(res.message || '注册成功！')
+
+      // 自动登录：后端已返回和登录相同的响应数据
+      if (res.data) {
+        userStore.saveLoginData(res.data)
+      }
+
       setTimeout(() => {
-        router.push('/login')
+        // 根据角色跳转到对应首页（与登录页逻辑保持一致）
+        if (userStore.roleId === 1) {
+          router.push({name: 'super-admin-dashboard'})
+        } else {
+          router.push({name: 'user-index'})
+        }
       }, 1500)
     } else {
       showMessage.error(res.message || '注册失败')

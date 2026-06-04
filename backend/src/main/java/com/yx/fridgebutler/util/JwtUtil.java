@@ -3,7 +3,9 @@ package com.yx.fridgebutler.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,7 @@ import java.util.Map;
  * 支持普通登录和记住我两种过期时间策略。
  * </p>
  */
+@Slf4j
 @Component
 public final class JwtUtil {
 
@@ -34,13 +37,26 @@ public final class JwtUtil {
     @Value("${jwt.remember-me-expiration:2592000000}")
     private Long rememberMeExpiration;
 
+    private SecretKey key;
+
+    @PostConstruct
+    public void init() {
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException(
+                    "JWT_SECRET 长度必须至少 32 字节（推荐 64 字节以上），当前长度: " + keyBytes.length
+            );
+        }
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
+
     /**
      * 获取 JWT 签名密钥
      *
      * @return HMAC SHA 密钥对象
      */
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        return this.key;
     }
 
     /**
@@ -52,7 +68,7 @@ public final class JwtUtil {
      * @return 生成的 JWT Token 字符串
      */
     public String generateToken(String username, Long userId, String roleName) {
-        return generateToken(username, userId, roleName, false);
+        return generateToken(username, userId, roleName, false, true);
     }
 
     /**
@@ -65,10 +81,25 @@ public final class JwtUtil {
      * @return 生成的 JWT Token 字符串
      */
     public String generateToken(String username, Long userId, String roleName, boolean rememberMe) {
+        return generateToken(username, userId, roleName, rememberMe, true);
+    }
+
+    /**
+     * 生成 JWT Token（完整参数）
+     *
+     * @param username   用户名
+     * @param userId     用户ID
+     * @param roleName   角色名称
+     * @param rememberMe 是否为记住我登录
+     * @param activated  用户是否已激活
+     * @return 生成的 JWT Token 字符串
+     */
+    public String generateToken(String username, Long userId, String roleName, boolean rememberMe, boolean activated) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("roleName", roleName);
         claims.put("rememberMe", rememberMe);
+        claims.put("activated", activated);
 
         Date now = new Date();
         Long expireTime = rememberMe ? rememberMeExpiration : expiration;
@@ -116,7 +147,7 @@ public final class JwtUtil {
      */
     public Long extractUserId(String token) {
         Claims claims = extractAllClaims(token);
-        return (Long) claims.get("userId", Long.class);
+        return claims.get("userId", Long.class);
     }
 
     /**
@@ -127,7 +158,7 @@ public final class JwtUtil {
      */
     public String extractRoleName(String token) {
         Claims claims = extractAllClaims(token);
-        return (String) claims.get("roleName", String.class);
+        return claims.get("roleName", String.class);
     }
 
     /**
@@ -151,6 +182,7 @@ public final class JwtUtil {
         try {
             return !isTokenExpired(token);
         } catch (Exception e) {
+            log.error("JWT Token 验证异常", e);
             return false;
         }
     }
@@ -163,6 +195,18 @@ public final class JwtUtil {
      */
     public Boolean extractRememberMe(String token) {
         Claims claims = extractAllClaims(token);
-        return (Boolean) claims.get("rememberMe", Boolean.class);
+        return claims.get("rememberMe", Boolean.class);
+    }
+
+    /**
+     * 从 Token 中提取激活状态
+     *
+     * @param token JWT Token 字符串
+     * @return 用户是否已激活，是返回 true，否则返回 false
+     */
+    public Boolean extractActivated(String token) {
+        Claims claims = extractAllClaims(token);
+        Boolean activated = claims.get("activated", Boolean.class);
+        return activated != null ? activated : true;
     }
 }

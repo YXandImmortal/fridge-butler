@@ -74,7 +74,7 @@
 
 <script setup>
 import {computed, reactive, ref, watch} from 'vue'
-import CustomButton from '@/components/CustomButton.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
 import {takeOutItem} from '@/api/item'
 import showMessage from '@/utils/message'
 

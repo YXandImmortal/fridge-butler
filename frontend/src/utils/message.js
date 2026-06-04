@@ -1,5 +1,5 @@
 import {createVNode, render} from 'vue'
-import MessageComponent from '@/components/MessageComponent.vue'
+import MessageComponent from '@/components/ui/MessageComponent.vue'
 
 const messageContainer = document.createElement('div')
 messageContainer.className = 'custom-message-container'

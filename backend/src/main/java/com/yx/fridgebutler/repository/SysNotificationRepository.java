@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -120,4 +121,35 @@ public interface SysNotificationRepository extends JpaRepository<SysNotification
     @Modifying
     @Query("UPDATE SysNotification n SET n.status = 1 WHERE n.fridgeId = :fridgeId AND n.type = :type AND n.status = 0 AND n.isDeleted = 0")
     int markCapacityWarningAsReadByFridgeId(@Param("fridgeId") Long fridgeId, @Param("type") String type);
+
+    /**
+     * 判断指定时间内是否存在指定类型和标题的通知。
+     * <p>用于重要广播幂等校验，防止短时间内重复发送相同标题的通知。</p>
+     *
+     * @param type     消息类型
+     * @param title    消息标题
+     * @param since    时间阈值
+     * @return true 表示存在
+     */
+    @Query("SELECT CASE WHEN COUNT(n) > 0 THEN true ELSE false END FROM SysNotification n WHERE n.type = :type AND n.title = :title AND n.createTime >= :since")
+    boolean existsByTypeAndTitleAndCreateTimeGreaterThanEqual(@Param("type") String type, @Param("title") String title, @Param("since") Instant since);
+
+    /**
+     * 查询指定用户指定类型的最新未读消息。
+     * <p>按创建时间降序排列，用于获取最新的单条重要通知。</p>
+     *
+     * @param userId 用户ID
+     * @param type   消息类型
+     * @param pageable 分页参数（通常取第一条）
+     * @return 消息通知列表
+     */
+    @Query("""
+            SELECT n FROM SysNotification n
+            WHERE n.userId = :userId
+              AND n.type = :type
+              AND n.status = 0
+              AND n.isDeleted = 0
+            ORDER BY n.createTime DESC
+            """)
+    List<SysNotification> findUnreadByUserIdAndType(@Param("userId") Long userId, @Param("type") String type, Pageable pageable);
 }

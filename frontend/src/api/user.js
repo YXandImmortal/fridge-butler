@@ -70,6 +70,20 @@ export function changePassword(data) {
 }
 
 /**
+ * 初始化密码（首次设置密码，无需原密码和验证码）
+ * @param {Object} data - 密码数据
+ * @param {string} data.newPassword - 新密码
+ * @param {string} data.confirmNewPassword - 确认密码
+ */
+export function initPassword(data) {
+    return request({
+        url: '/user/init-password',
+        method: 'post',
+        data
+    })
+}
+
+/**
  * 标记新手指引完成
  */
 export function completeGuide() {

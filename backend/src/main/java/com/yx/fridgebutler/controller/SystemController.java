@@ -1,12 +1,16 @@
 package com.yx.fridgebutler.controller;
 
+import com.yx.fridgebutler.service.AdminSystemService;
 import com.yx.fridgebutler.vo.AboutItemVO;
 import com.yx.fridgebutler.vo.FeatureVO;
+import com.yx.fridgebutler.vo.PublicConfigVO;
 import com.yx.fridgebutler.vo.SidebarFeatureVO;
 import com.yx.fridgebutler.vo.SystemInfoVO;
 import com.yx.fridgebutler.vo.UpdateLogVO;
 import com.yx.fridgebutler.vo.Result;
+import com.yx.fridgebutler.vo.admin.SystemConfigVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +40,9 @@ public class SystemController {
 
     @Value("${system.build-time}")
     private String buildTime;
+
+    @Autowired
+    private AdminSystemService adminSystemService;
 
     private static final List<SidebarFeatureVO> USER_INDEX_FEATURES = List.of(
             SidebarFeatureVO.builder()
@@ -123,6 +130,21 @@ public class SystemController {
     );
 
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
+            UpdateLogVO.builder()
+                    .version("release 0.3.0")
+                    .date("2026-6-4")
+                    .summary("重大版本升级：超级管理员后台与官网正式上线")
+                    .changes(Arrays.asList(
+                            "全新超级管理员后台上线，支持仪表盘、用户管理、日志审计、系统配置与通知广播",
+                            "新增激活码系统，支持邀请制注册与内测用户管理",
+                            "新增官网落地页，项目正式开源并对外开放访问",
+                            "系统安全全面升级：首次登录强制修改初始密码、操作日志审计、JWT 安全增强",
+                            "系统配置支持热更新，管理员可实时调整公告、注册开关等全局设置",
+                            "注册后自动登录，无需二次输入账号密码，体验更流畅",
+                            "前端组件架构全面重构，页面加载更快，交互更顺畅"
+                    ))
+                    .isMajor(true)
+                    .build(),
             UpdateLogVO.builder()
                     .version("beta 0.2.1")
                     .date("2026-5-27")
@@ -310,7 +332,7 @@ public class SystemController {
                     .build(),
             AboutItemVO.builder()
                     .label("开源协议")
-                    .value("MIT License")
+                    .value("AGPL-3.0")
                     .type("text")
                     .icon("icon-script-text")
                     .build()
@@ -352,5 +374,24 @@ public class SystemController {
     public Result<String> getBuildTime() {
         log.debug("获取系统构建时间");
         return Result.success(buildTime);
+    }
+
+    /**
+     * 获取公开系统配置
+     * <p>
+     * 返回所有用户（含未登录）可访问的动态配置项，包括系统公告和系统简介。
+     * </p>
+     *
+     * @return 公开配置信息
+     */
+    @GetMapping("/public-config")
+    public Result<PublicConfigVO> getPublicConfig() {
+        log.debug("获取公开系统配置");
+        SystemConfigVO config = adminSystemService.getSystemConfig();
+        return Result.success(PublicConfigVO.builder()
+                .announcement(config.getAnnouncement())
+                .systemDescription(config.getSystemDescription())
+                .adminEmail(config.getAdminEmail())
+                .build());
     }
 }

@@ -2,7 +2,7 @@ package com.yx.fridgebutler.service.impl;
 
 import cn.hutool.json.JSONUtil;
 import com.yx.fridgebutler.dto.dailytip.DailyTipGenerateResult;
-import com.yx.fridgebutler.entity.DailyTip;
+import com.yx.fridgebutler.entity.SysDailyTip;
 import com.yx.fridgebutler.enums.DailyTipType;
 import com.yx.fridgebutler.repository.DailyTipRepository;
 import com.yx.fridgebutler.config.PromptTemplateLoader;
@@ -69,13 +69,13 @@ public class DailyTipServiceImpl implements DailyTipService {
     @Override
     public DailyTipVO getTodayTip() {
         LocalDate today = LocalDate.now();
-        Optional<DailyTip> optional = dailyTipRepository.findByTipDate(today);
+        Optional<SysDailyTip> optional = dailyTipRepository.findByTipDate(today);
         if (optional.isPresent()) {
             log.debug("命中数据库今日小贴士，date={}", today);
             return convertToVO(optional.get());
         }
         log.info("数据库中无今日小贴士，实时调用 AI 生成，date={}", today);
-        DailyTip tip = generateAndSave(today);
+        SysDailyTip tip = generateAndSave(today);
         return convertToVO(tip);
     }
 
@@ -111,7 +111,7 @@ public class DailyTipServiceImpl implements DailyTipService {
      * @param date 目标日期
      * @return 保存后的实体
      */
-    private DailyTip generateAndSave(LocalDate date) {
+    private SysDailyTip generateAndSave(LocalDate date) {
         DailyTipType type = TIP_TYPES.get(random.nextInt(TIP_TYPES.size()));
         String dateStr = date.format(DATE_FORMATTER);
         String weekday = date.format(WEEKDAY_FORMATTER);
@@ -123,11 +123,11 @@ public class DailyTipServiceImpl implements DailyTipService {
         String response = deepSeekService.chat(systemPrompt, userPrompt);
         DailyTipGenerateResult result = parseResponse(response);
 
-        DailyTip tip = DailyTip.builder()
+        SysDailyTip tip = SysDailyTip.builder()
                 .tipType(resolveType(result.getType(), type))
                 .emoji(truncate(result.getEmoji(), 10))
                 .title(truncate(result.getTitle(), 20))
-                .content(result.getContent())
+                .content(result.getContent() != null ? result.getContent() : "")
                 .tipDate(date)
                 .answer(result.getAnswer() != null ? result.getAnswer() : "")
                 .createTime(Instant.now())
@@ -179,7 +179,7 @@ public class DailyTipServiceImpl implements DailyTipService {
     /**
      * 将实体转换为 VO。
      */
-    private DailyTipVO convertToVO(DailyTip tip) {
+    private DailyTipVO convertToVO(SysDailyTip tip) {
         return DailyTipVO.builder()
                 .id(tip.getId())
                 .type(tip.getTipType().name())

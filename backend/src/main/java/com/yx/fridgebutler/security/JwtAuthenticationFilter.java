@@ -1,6 +1,9 @@
 package com.yx.fridgebutler.security;
 
+import cn.hutool.json.JSONUtil;
+import com.yx.fridgebutler.enums.ResultCode;
 import com.yx.fridgebutler.util.JwtUtil;
+import com.yx.fridgebutler.vo.Result;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * JWT 认证过滤器
@@ -31,6 +35,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    /**
+     * 不需要检查激活状态的白名单路径
+     */
+    private static final List<String> ACTIVATION_WHITELIST = List.of(
+            "/activation-key/status",
+            "/activation-key/verify",
+            "/auth/logout",
+            "/user/info",
+            "/system/"
+    );
 
     /**
      * 执行内部过滤逻辑
@@ -63,6 +78,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 log.debug("JWT 验证成功，用户：{}，角色：{}，请求：{}", username, roleName, requestUri);
 
+                Long userId = jwtUtil.extractUserId(token);
+                request.setAttribute("userId", userId);
+
+                // 检查激活状态：普通用户未激活且请求不在白名单中，则拦截
+                boolean activated = jwtUtil.extractActivated(token);
+                if (!activated && !isActivationWhitelist(requestUri) && !"SUPER_ADMIN".equals(roleName)) {
+                    log.warn("用户未激活，拒绝访问，用户：{}，请求：{}", username, requestUri);
+                    writeErrorResponse(response);
+                    return;
+                }
+
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + roleName);
 
                 UsernamePasswordAuthenticationToken authentication =
@@ -83,5 +109,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * 判断请求路径是否在激活状态白名单中
+     *
+     * @param requestUri 请求URI
+     * @return 在白名单中返回 true
+     */
+    private boolean isActivationWhitelist(String requestUri) {
+        return ACTIVATION_WHITELIST.stream().anyMatch(requestUri::startsWith);
+    }
+
+    /**
+     * 写入错误响应
+     *
+     * @param response HTTP 响应对象
+     * @throws IOException IO 异常
+     */
+    private void writeErrorResponse(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("application/json;charset=UTF-8");
+        Result<Void> result = Result.error(ResultCode.USER_NOT_ACTIVATED.getCode(), ResultCode.USER_NOT_ACTIVATED.getMessage());
+        response.getWriter().write(JSONUtil.toJsonStr(result));
     }
 }

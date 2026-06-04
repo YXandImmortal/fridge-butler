@@ -10,7 +10,7 @@
 
 <script setup>
 import {defineProps} from 'vue'
-import Logo from '@/components/Logo.vue'
+import Logo from '@/components/brand/Logo.vue'
 
 const props = defineProps({
   title: {

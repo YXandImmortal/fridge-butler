@@ -42,4 +42,11 @@ public interface BizUnitTypeRepository extends JpaRepository<BizUnitType, Long> 
      * @return 若存在则返回true
      */
     boolean existsByUnitTypeNameAndOwnerIdAndIsDeletedFalse(String unitTypeName, Long ownerId);
+
+    /**
+     * 查询所有未删除的系统默认单位类型。
+     *
+     * @return 系统默认单位类型列表
+     */
+    List<BizUnitType> findByIsSystemDefaultTrueAndIsDeletedFalse();
 }

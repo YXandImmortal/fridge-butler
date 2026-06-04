@@ -37,7 +37,7 @@
           <i class="iconfont icon-edit-box"/>
           修改密码
         </CustomButton>
-        <CustomButton type="danger" @click="handleLogout">
+        <CustomButton type="danger" @click="showConfirmLogout = true">
           <i class="iconfont icon-logout"/>
           退出登录
         </CustomButton>
@@ -122,6 +122,15 @@
         cancel-text="取消"
         @confirm="handleSave"
     />
+    <!-- 确认退出登录对话框 -->
+    <ConfirmDialog
+        v-model:visible="showConfirmLogout"
+        title="退出登录"
+        message="您确定要退出登录吗？"
+        confirm-text="确定"
+        cancel-text="取消"
+        @confirm="handleLogout"
+    />
     <UserCenterTour ref="tourRef"/>
   </div>
 </template>
@@ -131,20 +140,21 @@ import UserCenterTour from '@/components/tour/UserCenterTour.vue'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour'
 import {onMounted, ref, watch} from 'vue';
 import {useRouter} from 'vue-router';
-import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import showMessage from '@/utils/message'
 import {useUserStore} from '@/stores/user';
-import Avatar from "@/components/Avatar.vue";
-import EnhancedInput from "@/components/EnhancedInput.vue";
-import CaptchaInput from "@/components/CaptchaInput.vue";
+import Avatar from "@/components/ui/Avatar.vue";
+import EnhancedInput from "@/components/ui/EnhancedInput.vue";
+import CaptchaInput from "@/components/form/CaptchaInput.vue";
 import {getSystemAvatarIds} from '@/utils/avatarManager';
-import CustomButton from "@/components/CustomButton.vue";
+import CustomButton from "@/components/ui/CustomButton.vue";
 
 const router = useRouter()
 const userStore = useUserStore();
 const {getUserInfo, updateUserInfo, changePassword, updateUserAvatar, logout} = userStore;
 
 const showConfirmSave = ref(false);
+const showConfirmLogout = ref(false);
 
 // 控制编辑卡片显示/隐藏
 const showEditCard = ref(false);
@@ -351,8 +361,9 @@ const handleChangeAvatarSubmit = async () => {
 const handleLogout = (msg) => {
   logout();
   showConfirmSave.value = false;
+  showConfirmLogout.value = false;
   router.push('/login');
-  showMessage.info(msg || '已退出登录')
+  showMessage.info(typeof msg === 'string' ? msg : '已退出登录')
 };
 // 页面引导
 const tourRef = ref(null)

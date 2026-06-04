@@ -2,13 +2,17 @@ package com.yx.fridgebutler.service.impl;
 
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.BizFridgeItem;
+import com.yx.fridgebutler.entity.SysImportantNotice;
 import com.yx.fridgebutler.entity.SysNotification;
+import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.entity.SysUser;
 import com.yx.fridgebutler.enums.NotificationType;
 import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.BizFridgeItemRepository;
 import com.yx.fridgebutler.repository.BizFridgeRepository;
+import com.yx.fridgebutler.repository.SysImportantNoticeRepository;
 import com.yx.fridgebutler.repository.SysNotificationRepository;
+import com.yx.fridgebutler.repository.SysRoleRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.service.NotificationService;
 import com.yx.fridgebutler.vo.notification.NotificationSummaryVO;
@@ -54,6 +58,12 @@ public class NotificationServiceImpl implements NotificationService {
     @Autowired
     private SysUserRepository userRepository;
 
+    @Autowired
+    private SysRoleRepository roleRepository;
+
+    @Autowired
+    private SysImportantNoticeRepository importantNoticeRepository;
+
     /**
      * {@inheritDoc}
      */
@@ -96,6 +106,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .expiringWarningCount(notificationRepository.countUnreadByUserIdAndType(currentUserId, NotificationType.EXPIRING_WARNING.name()))
                 .expiringNoticeCount(notificationRepository.countUnreadByUserIdAndType(currentUserId, NotificationType.EXPIRING_NOTICE.name()))
                 .capacityWarningCount(notificationRepository.countUnreadByUserIdAndType(currentUserId, NotificationType.CAPACITY_WARNING.name()))
+                .importantNoticeCount(notificationRepository.countUnreadByUserIdAndType(currentUserId, NotificationType.IMPORTANT_NOTICE.name()))
                 .build();
     }
 
@@ -252,6 +263,116 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
+     * 执行逻辑：
+     * <ol>
+     *   <li>5 分钟内相同标题的广播将被拒绝（幂等校验）</li>
+     *   <li>查询所有非 SuperAdmin 的未删除用户</li>
+     *   <li>为每个用户生成一条 IMPORTANT_NOTICE 通知</li>
+     * </ol>
+     * </p>
+     */
+    @Override
+    @Transactional
+    public void broadcastImportantNotice(String title, String content) {
+        // 1. 幂等校验：5 分钟内相同标题禁止重复广播
+        Instant fiveMinutesAgo = Instant.now().minus(5, ChronoUnit.MINUTES);
+        boolean exists = notificationRepository.existsByTypeAndTitleAndCreateTimeGreaterThanEqual(
+                NotificationType.IMPORTANT_NOTICE.name(), title, fiveMinutesAgo);
+        if (exists) {
+            log.warn("重要通知广播被拦截，5 分钟内已存在相同标题的通知：{}", title);
+            throw BusinessException.duplicateBroadcast();
+        }
+
+        // 2. 保存到重要通知模板表
+        SysImportantNotice importantNotice = SysImportantNotice.builder()
+                .title(title)
+                .content(content)
+                .priority((byte) NotificationType.IMPORTANT_NOTICE.getDefaultPriority())
+                .createTime(Instant.now())
+                .isDeleted((byte) 0)
+                .build();
+        importantNoticeRepository.save(importantNotice);
+        log.info("重要通知模板已保存，标题：{}", title);
+
+        // 3. 获取 SuperAdmin 的 roleId，排除该角色用户
+        Long superAdminRoleId = roleRepository.findByRoleCode("SUPER_ADMIN")
+                .map(SysRole::getId)
+                .orElse(null);
+
+        List<SysUser> users = userRepository.findAll().stream()
+                .filter(u -> superAdminRoleId == null || !superAdminRoleId.equals(u.getRoleId()))
+                .filter(u -> u.getIsDeleted() == null || !u.getIsDeleted())
+                .toList();
+
+        for (SysUser user : users) {
+            SysNotification notice = buildNotification(
+                    user.getId(), null, null,
+                    title, content, NotificationType.IMPORTANT_NOTICE,
+                    "NONE", null
+            );
+            notificationRepository.save(notice);
+        }
+
+        log.info("重要通知广播完成，标题：{}，覆盖用户：{} 人", title, users.size());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 执行逻辑：
+     * <ol>
+     *   <li>查询最新的一条未删除重要通知模板</li>
+     *   <li>检查该用户是否已存在未读的重要通知（避免重复）</li>
+     *   <li>为用户创建对应的 IMPORTANT_NOTICE 通知记录</li>
+     * </ol>
+     * </p>
+     */
+    @Override
+    @Transactional
+    public void initializeImportantNoticeForNewUser(Long userId) {
+        log.info("为新用户 {} 初始化最新重要通知", userId);
+
+        List<SysImportantNotice> notices = importantNoticeRepository.findAllActiveOrderByCreateTimeDesc(PageRequest.of(0, 1));
+        if (notices.isEmpty()) {
+            log.info("不存在重要通知模板，跳过初始化");
+            return;
+        }
+
+        SysImportantNotice latestNotice = notices.getFirst();
+
+        long existingCount = notificationRepository.countUnreadByUserIdAndType(
+                userId, NotificationType.IMPORTANT_NOTICE.name());
+        if (existingCount > 0) {
+            log.info("用户 {} 已存在未读重要通知，跳过初始化", userId);
+            return;
+        }
+
+        SysNotification notification = buildNotification(
+                userId, null, null,
+                latestNotice.getTitle(), latestNotice.getContent(), NotificationType.IMPORTANT_NOTICE,
+                "NONE", null
+        );
+        notificationRepository.save(notification);
+        log.info("为用户 {} 初始化最新重要通知完成：{}", userId, latestNotice.getTitle());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NotificationVO getLatestImportantNotice() {
+        Long currentUserId = getCurrentUserId();
+        List<SysNotification> notifications = notificationRepository.findUnreadByUserIdAndType(
+                currentUserId, NotificationType.IMPORTANT_NOTICE.name(), PageRequest.of(0, 1));
+        if (notifications.isEmpty()) {
+            return null;
+        }
+        return convertToVO(notifications.getFirst());
+    }
+
+    /**
      * 根据剩余天数判断临期提醒类型。
      *
      * @param daysUntilExpire 距离过期的剩余天数
@@ -275,6 +396,9 @@ public class NotificationServiceImpl implements NotificationService {
      */
     private String buildExpiringTitle(BizFridgeItem item, NotificationType type, long days, LocalDate expireDate) {
         String dateStr = expireDate.format(DATE_FORMATTER);
+        if (type == null) {
+            return String.format("「%s」临期提醒", item.getItemName());
+        }
         return switch (type) {
             case EXPIRED -> String.format("「%s」已过期（保质期至 %s）", item.getItemName(), dateStr);
             case EXPIRING_CRITICAL -> String.format("「%s」明天过期", item.getItemName());
@@ -289,6 +413,9 @@ public class NotificationServiceImpl implements NotificationService {
      */
     private String buildExpiringContent(BizFridgeItem item, NotificationType type, long days, LocalDate expireDate) {
         String dateStr = expireDate.format(DATE_FORMATTER);
+        if (type == null) {
+            return String.format("您的「%s」临期提醒", item.getItemName());
+        }
         return switch (type) {
             case EXPIRED -> String.format("您的「%s」已于 %s 过期，请及时处理。", item.getItemName(), dateStr);
             case EXPIRING_CRITICAL ->

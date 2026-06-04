@@ -127,11 +127,11 @@
 import ItemCategoryTour from '@/components/tour/ItemCategoryTour.vue'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour'
 import {onMounted, ref, computed, watch} from 'vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import InputDialog from '@/components/InputDialog.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import InputDialog from '@/components/ui/InputDialog.vue'
 import showMessage from '@/utils/message'
 import {listItemCategories, deleteItemCategory, updateItemCategory, createItemCategory} from '@/api/item'
-import CustomButton from '@/components/CustomButton.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
 
 // 加载状态
 const loading = ref(false)

@@ -22,6 +22,8 @@ export const useUserStore = defineStore('user', () => {
     const avatar = ref('')
     const expireTime = ref(0)
     const guideCompleted = ref(false)
+    const requirePasswordChange = ref(false)
+    const isActivated = ref(true)
 
     // 计算属性：是否已登录
     const isLoggedIn = computed(() => !!token.value)
@@ -77,6 +79,8 @@ export const useUserStore = defineStore('user', () => {
             avatar.value = info.avatar
             expireTime.value = info.expireTime || 0
             guideCompleted.value = info.guideCompleted || false
+            requirePasswordChange.value = !!info.requirePasswordChange
+            isActivated.value = info.isActivated !== undefined ? !!info.isActivated : true
 
             // 检查token是否过期
             if (expireTime.value && Date.now() > expireTime.value) {
@@ -89,65 +93,85 @@ export const useUserStore = defineStore('user', () => {
         return false
     }
 
+    // 保存登录数据到状态和本地存储（供 login 和 register 复用）
+    const saveLoginData = (data) => {
+        const {
+            token: resToken,
+            username: resName,
+            mobile: resMobile,
+            createTime: resCreateTime,
+            roleName: resRole,
+            roleId: resRoleId,
+            userId: resId,
+            rememberMe: resRememberMe,
+            avatar: resAvatar,
+            expireTime: resExpireTime,
+            guideCompleted: resGuideCompleted,
+            requirePasswordChange: resRequirePasswordChange,
+            needActivation: resNeedActivation,
+            isActivated: resIsActivated
+        } = data
+
+        // 更新状态
+        token.value = resToken
+        username.value = resName
+        mobile.value = resMobile
+        createTime.value = resCreateTime
+        roleName.value = resRole
+        roleId.value = Number(resRoleId) || ''
+        userId.value = resId
+        rememberMe.value = resRememberMe || false
+        avatar.value = resAvatar
+        expireTime.value = resExpireTime || 0
+        guideCompleted.value = !!resGuideCompleted
+        requirePasswordChange.value = !!resRequirePasswordChange
+        // 优先使用 needActivation 判断，兼容 isActivated
+        if (resNeedActivation !== undefined) {
+            isActivated.value = !resNeedActivation
+        } else if (resIsActivated !== undefined) {
+            isActivated.value = !!resIsActivated
+        } else {
+            isActivated.value = true
+        }
+
+        // 构建用户信息对象
+        const userInfo = {
+            token: resToken,
+            username: resName,
+            mobile: resMobile,
+            createTime: resCreateTime,
+            roleName: resRole,
+            roleId: resRoleId,
+            userId: resId,
+            rememberMe: resRememberMe || false,
+            avatar: resAvatar,
+            expireTime: resExpireTime || 0,
+            guideCompleted: !!resGuideCompleted,
+            requirePasswordChange: !!resRequirePasswordChange,
+            isActivated: isActivated.value
+        }
+
+        // 根据rememberMe决定存储方式
+        if (resRememberMe) {
+            // 勾选了"记住我"，使用localStorage长期存储
+            localStorage.setItem('userInfo', JSON.stringify(userInfo))
+            // 清除sessionStorage中的旧数据
+            sessionStorage.removeItem('userInfo')
+        } else {
+            // 未勾选"记住我"，使用sessionStorage会话存储
+            sessionStorage.setItem('userInfo', JSON.stringify(userInfo))
+            // 清除localStorage中的旧数据
+            localStorage.removeItem('userInfo')
+        }
+    }
+
     // 登录方法：调用后端/auth/login接口
     const login = async (loginForm) => {
         const res = await loginApi(loginForm)
 
         // 只有当code为200时才更新用户状态
         if (res.code === 200 && res.data) {
-            const {
-                token: resToken,
-                username: resName,
-                mobile: resMobile,
-                createTime: resCreateTime,
-                roleName: resRole,
-                roleId: resRoleId,
-                userId: resId,
-                rememberMe: resRememberMe,
-                avatar: resAvatar,
-                expireTime: resExpireTime,
-                guideCompleted: resGuideCompleted
-            } = res.data
-
-            // 更新状态
-            token.value = resToken
-            username.value = resName
-            mobile.value = resMobile
-            createTime.value = resCreateTime
-            roleName.value = resRole
-            roleId.value = resRoleId
-            userId.value = resId
-            rememberMe.value = resRememberMe || false
-            avatar.value = resAvatar
-            expireTime.value = resExpireTime || 0
-            guideCompleted.value = !!resGuideCompleted
-
-            // 构建用户信息对象
-            const userInfo = {
-                token: resToken,
-                username: resName,
-                mobile: resMobile,
-                createTime: resCreateTime,
-                roleName: resRole,
-                roleId: resRoleId,
-                userId: resId,
-                rememberMe: resRememberMe || false,
-                expireTime: resExpireTime || 0,
-                guideCompleted: !!resGuideCompleted
-            }
-
-            // 根据rememberMe决定存储方式
-            if (resRememberMe) {
-                // 勾选了"记住我"，使用localStorage长期存储
-                localStorage.setItem('userInfo', JSON.stringify(userInfo))
-                // 清除sessionStorage中的旧数据
-                sessionStorage.removeItem('userInfo')
-            } else {
-                // 未勾选"记住我"，使用sessionStorage会话存储
-                sessionStorage.setItem('userInfo', JSON.stringify(userInfo))
-                // 清除localStorage中的旧数据
-                localStorage.removeItem('userInfo')
-            }
+            saveLoginData(res.data)
         }
 
         return res
@@ -156,6 +180,14 @@ export const useUserStore = defineStore('user', () => {
 
     // 退出登录：清空状态和本地存储
     const logout = () => {
+        // 清理当前用户的 tour 场景状态（按用户隔离的 key）
+        const currentUserId = userId.value
+        if (currentUserId) {
+            localStorage.removeItem(`tour_scene_completed_${currentUserId}`)
+        }
+        // 同时清理旧的全局 key（兼容旧数据）
+        localStorage.removeItem('tour_scene_completed')
+
         token.value = ''
         username.value = ''
         mobile.value = ''
@@ -167,8 +199,10 @@ export const useUserStore = defineStore('user', () => {
         avatar.value = ''
         expireTime.value = 0
         guideCompleted.value = false
+        isActivated.value = true
         localStorage.removeItem('userInfo')
         sessionStorage.removeItem('userInfo')
+        localStorage.removeItem('ai_chat_session_id')
     }
 
     // 获取用户信息
@@ -314,6 +348,26 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
+    // 清除强制修改密码标记
+    const clearRequirePasswordChange = () => {
+        requirePasswordChange.value = false
+        syncFieldToStorage('requirePasswordChange', false)
+    }
+
+    // 激活账号（验证密钥成功后调用）
+    const activateAccount = (newToken) => {
+        token.value = newToken
+        isActivated.value = true
+        syncFieldToStorage('token', newToken)
+        syncFieldToStorage('isActivated', true)
+    }
+
+    // 设置激活状态（供拦截器调用）
+    const setActivationStatus = (activated) => {
+        isActivated.value = activated
+        syncFieldToStorage('isActivated', activated)
+    }
+
     // 标记新手指引完成
     const markGuideCompleted = async () => {
         try {
@@ -349,6 +403,12 @@ export const useUserStore = defineStore('user', () => {
         changePassword,
         updateUserAvatar,
         isLoggedIn,
-        markGuideCompleted
+        markGuideCompleted,
+        saveLoginData,
+        requirePasswordChange,
+        clearRequirePasswordChange,
+        isActivated,
+        activateAccount,
+        setActivationStatus
     }
 })

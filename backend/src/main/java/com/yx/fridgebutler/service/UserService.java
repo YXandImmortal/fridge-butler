@@ -1,6 +1,7 @@
 package com.yx.fridgebutler.service;
 
 import com.yx.fridgebutler.dto.user.UserChangePasswordRequest;
+import com.yx.fridgebutler.dto.user.UserInitPasswordRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateAvatarRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateRequest;
 import com.yx.fridgebutler.vo.UserInfoVO;
@@ -43,4 +44,12 @@ public interface UserService {
      * 标记当前登录用户的新手指引已完成。
      */
     void completeGuide();
+
+    /**
+     * 首次登录初始化密码（无需原密码和验证码）。
+     * <p>仅当用户 password_updated_at 为 null 时允许调用，用于首次登录或管理员重置密码后的强制改密。</p>
+     *
+     * @param request 初始化密码请求参数
+     */
+    void initPassword(UserInitPasswordRequest request);
 }

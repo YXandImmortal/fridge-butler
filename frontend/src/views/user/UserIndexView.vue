@@ -1,5 +1,13 @@
 <template>
   <div v-loading="pageLoading" class="user-index-container">
+    <!-- 系统公告 -->
+    <section v-if="announcement" class="announcement-bar animate-in" style="animation-delay: 0.05s">
+      <div class="announcement-content">
+        <i class="iconfont icon-megaphone announcement-icon"/>
+        <span class="announcement-text" v-html="announcement"/>
+      </div>
+    </section>
+
     <!-- 欢迎区 -->
     <section class="welcome-section animate-in" style="animation-delay: 0s">
       <h1 class="welcome-title">
@@ -195,6 +203,26 @@
         @switch-session="switchSession"
         @delete-session="handleDeleteSession"
     />
+    <!-- 选择冰箱对话框（AI物品向导前置检查） -->
+    <ConfirmDialog
+        v-model:visible="showSelectFridgeDialog"
+        v-model:select-value="selectedFridgeId"
+        title="选择冰箱"
+        message="请选择一个冰箱来添加物品："
+        confirm-text="确定"
+        cancel-text="取消"
+        type="select"
+        :persistent="true"
+        :show-close="false"
+        width="420px"
+        :options="fridgeList"
+        option-label="fridgeName"
+        option-value="id"
+        select-placeholder="请选择冰箱"
+        :select-loading="fridgeListLoading"
+        @confirm="handleSelectFridgeConfirm"
+        @cancel="handleSelectFridgeCancel"
+    />
     <UserIndexTour ref="tourRef"/>
   </div>
 </template>
@@ -206,7 +234,7 @@ import {ref, computed, onMounted, onUnmounted, nextTick, watch} from 'vue'
 import {useRouter, useRoute} from 'vue-router'
 import {useUserStore} from '@/stores/user'
 import {useThemeStore} from '@/stores/theme'
-import Logo from '@/components/Logo.vue'
+import Logo from '@/components/brand/Logo.vue'
 import FridgeCreationWizard from '@/components/ai/FridgeCreationWizard.vue'
 import ItemCreationWizard from '@/components/ai/ItemCreationWizard.vue'
 import StatsOverview from '@/components/ai/StatsOverview.vue'
@@ -215,7 +243,9 @@ import AttachmentSelector from '@/components/ai/AttachmentSelector.vue'
 import ChatSessionDrawer from '@/components/ai/ChatSessionDrawer.vue'
 import {getFridgeTypeById} from '@/utils/fridgeTypeMap.js'
 import {listMyFridges} from '@/api/fridge'
+import showMessage from '@/utils/message'
 import {searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats, getExpiringSummary} from '@/api/item'
+import {getPublicConfig} from '@/api/system'
 import {
   sendChatMessage,
   sendChatMessageStream,
@@ -239,6 +269,7 @@ const themeStore = useThemeStore()
 
 // ==================== 数据状态 ====================
 const pageLoading = ref(false)
+const announcement = ref('')
 const fridgeList = ref([])
 const itemList = ref([])
 const takeOutList = ref([])
@@ -256,6 +287,12 @@ const sessionLoading = ref(false)
 // 向导状态（当前激活的AI向导）
 const activeWizard = ref(null) // { type: 'fridge_creation', currentStep, totalSteps, steps, formData, currentInput }
 const wizardCompleted = ref(false)
+
+// 冰箱选择对话框状态（用于物品向导前置检查）
+const showSelectFridgeDialog = ref(false)
+const selectedFridgeId = ref(null)
+const fridgeListLoading = ref(false)
+const pendingWizardData = ref(null) // 暂存后端返回的 item_creation_wizard 数据
 
 const activeWizardData = computed(() => {
   if (!activeWizard.value) return null
@@ -398,8 +435,11 @@ async function doSendChat(text, currentAttachments) {
 
   const payload = {
     message: text,
-    sessionId: sessionId.value,
     attachments: currentAttachments
+  }
+  // 首次请求不传 sessionId，让后端自动生成
+  if (sessionId.value) {
+    payload.sessionId = sessionId.value
   }
 
   // 如果 URL 中有 fridgeId（来自物品管理页面跳转），传递给后端
@@ -441,13 +481,19 @@ async function doSendChat(text, currentAttachments) {
           }
         } else if (messageType === 'item_creation_wizard') {
           wizardCompleted.value = false
-          activeWizard.value = {
-            type: 'item_creation',
-            currentStep: data.currentStep,
-            totalSteps: data.totalSteps,
-            steps: data.steps || [],
-            formData: data.formData || {},
-            currentInput: data.currentInput || null
+          const currentFridgeId = route.query.fridgeId
+          if (currentFridgeId) {
+            activeWizard.value = {
+              type: 'item_creation',
+              currentStep: data.currentStep,
+              totalSteps: data.totalSteps,
+              steps: data.steps || [],
+              formData: data.formData || {},
+              currentInput: data.currentInput || null
+            }
+          } else {
+            pendingWizardData.value = data
+            checkFridgeBeforeItemWizard(assistantMsg)
           }
         } else {
           activeWizard.value = null
@@ -540,13 +586,20 @@ async function doSendChat(text, currentAttachments) {
           }
         } else if (reply.messageType === 'item_creation_wizard') {
           wizardCompleted.value = false
-          activeWizard.value = {
-            type: 'item_creation',
-            currentStep: reply.data.currentStep,
-            totalSteps: reply.data.totalSteps,
-            steps: reply.data.steps || [],
-            formData: reply.data.formData || {},
-            currentInput: reply.data.currentInput || null
+          const currentFridgeId = route.query.fridgeId
+          if (currentFridgeId) {
+            activeWizard.value = {
+              type: 'item_creation',
+              currentStep: reply.data.currentStep,
+              totalSteps: reply.data.totalSteps,
+              steps: reply.data.steps || [],
+              formData: reply.data.formData || {},
+              currentInput: reply.data.currentInput || null
+            }
+          } else {
+            pendingWizardData.value = reply.data
+            const lastMsg = messages.value[messages.value.length - 1]
+            checkFridgeBeforeItemWizard(lastMsg)
           }
         } else {
           activeWizard.value = null
@@ -793,6 +846,20 @@ async function handleWizardConfirm(formData) {
       })
     }
   } else if (wizardType === 'item_creation') {
+    // 兜底校验：确保有 fridgeId
+    const currentFridgeId = route.query.fridgeId
+    if (!currentFridgeId) {
+      messages.value.push({
+        id: generateMsgId(),
+        role: 'assistant',
+        content: '❌ 请先选择一个冰箱，才能添加物品。',
+        messageType: 'text',
+        data: null,
+        time: formatTime(new Date())
+      })
+      scrollToBottom()
+      return
+    }
     if (!formData.itemName || !String(formData.itemName).trim()) {
       messages.value.push({
         id: generateMsgId(),
@@ -814,7 +881,7 @@ async function handleWizardConfirm(formData) {
         categoryId: formData.categoryId || undefined,
         itemNum: formData.itemNum || 1,
         itemUnitId: formData.itemUnitId || undefined,
-        fridgeId: Number(route.query.fridgeId) || undefined,
+        fridgeId: Number(currentFridgeId) || undefined,
         storedDate: new Date().toISOString().split('T')[0],
         productionDate: formData.productionDate || null,
         shelfLifeDays: formData.shelfLifeDays || null,
@@ -865,6 +932,98 @@ function handleWizardCancel() {
     id: generateMsgId(),
     role: 'assistant',
     content: cancelText,
+    messageType: 'text',
+    data: null,
+    time: formatTime(new Date())
+  })
+  scrollToBottom()
+}
+
+// ==================== 冰箱前置检查（物品向导）====================
+async function checkFridgeBeforeItemWizard(assistantMsg) {
+  fridgeListLoading.value = true
+  try {
+    const res = await listMyFridges()
+    let fridges = []
+    if (res.code === 200 && Array.isArray(res.data)) {
+      fridges = res.data
+    }
+
+    if (fridges.length === 0) {
+      // 没有冰箱，把当前AI消息改为提示
+      assistantMsg.content = '我注意到您还没有创建冰箱，请先创建一个冰箱才能添加物品哦~'
+      assistantMsg.messageType = 'text'
+      assistantMsg.data = null
+      scrollToBottom()
+      pendingWizardData.value = null
+    } else if (fridges.length === 1) {
+      // 只有一个冰箱，自动选中
+      const onlyFridge = fridges[0]
+      await router.replace({
+        query: {...route.query, fridgeId: String(onlyFridge.id)}
+      })
+      // 启动暂存的向导
+      if (pendingWizardData.value) {
+        activeWizard.value = {
+          type: 'item_creation',
+          currentStep: pendingWizardData.value.currentStep,
+          totalSteps: pendingWizardData.value.totalSteps,
+          steps: pendingWizardData.value.steps || [],
+          formData: pendingWizardData.value.formData || {},
+          currentInput: pendingWizardData.value.currentInput || null
+        }
+        pendingWizardData.value = null
+      }
+    } else {
+      // 多个冰箱，弹出选择对话框
+      fridgeList.value = fridges
+      selectedFridgeId.value = null
+      showSelectFridgeDialog.value = true
+    }
+  } catch (error) {
+    console.error('获取冰箱列表失败:', error)
+    assistantMsg.content = '获取冰箱列表失败，请稍后重试。'
+    assistantMsg.messageType = 'text'
+    assistantMsg.data = null
+    scrollToBottom()
+    pendingWizardData.value = null
+  } finally {
+    fridgeListLoading.value = false
+  }
+}
+
+function handleSelectFridgeConfirm() {
+  if (!selectedFridgeId.value) {
+    showMessage.warning('请选择一个冰箱')
+    return
+  }
+  showSelectFridgeDialog.value = false
+  // 更新 URL query
+  router.replace({
+    query: {...route.query, fridgeId: String(selectedFridgeId.value)}
+  })
+  // 启动暂存的向导
+  if (pendingWizardData.value) {
+    activeWizard.value = {
+      type: 'item_creation',
+      currentStep: pendingWizardData.value.currentStep,
+      totalSteps: pendingWizardData.value.totalSteps,
+      steps: pendingWizardData.value.steps || [],
+      formData: pendingWizardData.value.formData || {},
+      currentInput: pendingWizardData.value.currentInput || null
+    }
+    pendingWizardData.value = null
+  }
+}
+
+function handleSelectFridgeCancel() {
+  showSelectFridgeDialog.value = false
+  selectedFridgeId.value = null
+  pendingWizardData.value = null
+  messages.value.push({
+    id: generateMsgId(),
+    role: 'assistant',
+    content: '已取消选择冰箱，如需添加物品请重新发起对话~',
     messageType: 'text',
     data: null,
     time: formatTime(new Date())
@@ -1200,8 +1359,20 @@ async function fetchPageData() {
   }
 }
 
+const fetchAnnouncement = async () => {
+  try {
+    const res = await getPublicConfig()
+    if (res.code === 200 && res.data) {
+      announcement.value = res.data.announcement || ''
+    }
+  } catch (error) {
+    console.error('获取公告失败:', error)
+  }
+}
+
 onMounted(() => {
   fetchPageData()
+  fetchAnnouncement()
   loadSessions()
 
   // 如果本地有保存的 sessionId，自动恢复该会话的历史消息
@@ -1230,6 +1401,8 @@ onMounted(() => {
     const query = {...route.query}
     delete query.aiMessage
     router.replace({path: '/user/index', query})
+    // "AI 帮我创建/添加"应视为新会话，避免携带旧 sessionId 导致冲突
+    createNewSession()
     doSendChat(aiMessage, [])
   }
 })
@@ -1302,6 +1475,43 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   font-size: 15px;
   color: var(--text-secondary);
   margin: 0;
+}
+
+/* ==================== 系统公告 ==================== */
+.announcement-bar {
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--glass-bg) 100%);
+  border: 1px solid var(--primary-30);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-5);
+  backdrop-filter: blur(10px);
+}
+
+.announcement-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.announcement-icon {
+  font-size: 18px;
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.announcement-text {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.announcement-text :deep(a) {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.announcement-text :deep(a:hover) {
+  text-decoration: underline;
 }
 
 /* ==================== AI 聊天 ==================== */

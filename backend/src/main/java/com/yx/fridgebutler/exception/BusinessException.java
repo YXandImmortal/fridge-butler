@@ -175,6 +175,15 @@ public class BusinessException extends RuntimeException {
         return new BusinessException(ResultCode.CHANGE_PASSWORD_FAILED_ORIGINAL_WRONG);
     }
 
+    /**
+     * 创建初始化密码不允许异常（已设置过密码）
+     *
+     * @return 初始化密码不允许业务异常
+     */
+    public static BusinessException initPasswordNotAllowed() {
+        return new BusinessException(ResultCode.INIT_PASSWORD_NOT_ALLOWED);
+    }
+
     // ======================== 用户相关 ========================
 
     /**
@@ -370,6 +379,64 @@ public class BusinessException extends RuntimeException {
      */
     public static BusinessException notificationNotFound() {
         return new BusinessException(ResultCode.NOTIFICATION_NOT_FOUND);
+    }
+
+    /**
+     * 创建重复广播异常
+     *
+     * @return 5分钟内相同标题通知已存在业务异常
+     */
+    public static BusinessException duplicateBroadcast() {
+        return new BusinessException(ResultCode.DUPLICATE_BROADCAST);
+    }
+
+    // ======================== 管理员相关 ========================
+
+    /**
+     * 创建不能禁用自己异常
+     *
+     * @return 不能禁用当前登录账号业务异常
+     */
+    public static BusinessException adminCannotDisableSelf() {
+        return new BusinessException(ResultCode.ADMIN_CANNOT_DISABLE_SELF);
+    }
+
+    // ======================== 激活密钥相关 ========================
+
+    /**
+     * 创建激活密钥无效异常
+     *
+     * @return 激活密钥无效业务异常
+     */
+    public static BusinessException activationKeyInvalid() {
+        return new BusinessException(ResultCode.ACTIVATION_KEY_INVALID);
+    }
+
+    /**
+     * 创建激活密钥已被使用异常
+     *
+     * @return 激活密钥已被使用业务异常
+     */
+    public static BusinessException activationKeyAlreadyUsed() {
+        return new BusinessException(ResultCode.ACTIVATION_KEY_ALREADY_USED);
+    }
+
+    /**
+     * 创建激活密钥已被收回异常
+     *
+     * @return 激活密钥已被收回业务异常
+     */
+    public static BusinessException activationKeyRevoked() {
+        return new BusinessException(ResultCode.ACTIVATION_KEY_REVOKED);
+    }
+
+    /**
+     * 创建账号未激活异常
+     *
+     * @return 账号未激活业务异常
+     */
+    public static BusinessException userNotActivated() {
+        return new BusinessException(ResultCode.USER_NOT_ACTIVATED);
     }
 
     // ======================== AI 服务相关 ========================

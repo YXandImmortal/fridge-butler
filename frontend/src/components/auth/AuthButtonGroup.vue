@@ -20,7 +20,7 @@
 
 <script setup>
 import {defineProps, defineEmits} from 'vue'
-import CustomButton from "@/components/CustomButton.vue";
+import CustomButton from "@/components/ui/CustomButton.vue";
 
 const props = defineProps({
   primaryText: {

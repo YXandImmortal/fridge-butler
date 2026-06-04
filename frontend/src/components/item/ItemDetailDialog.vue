@@ -162,9 +162,9 @@
 
 <script setup>
 import {computed, reactive, ref, watch} from 'vue'
-import CustomButton from '@/components/CustomButton.vue'
-import EnhancedInput from '@/components/EnhancedInput.vue'
-import CustomSelect from '@/components/CustomSelect.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
+import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import {createItem, updateItem} from '@/api/item'
 import showMessage from '@/utils/message'
 

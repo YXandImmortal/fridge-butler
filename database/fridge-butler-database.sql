@@ -247,7 +247,42 @@ comment '计量单位类型表';
 create index idx_owner_id
 	on biz_unit_type (owner_id);
 
-create table daily_tip
+create table sys_activation_key
+(
+	id bigint auto_increment
+		primary key,
+	key_code varchar(16) not null comment '密钥字符串，如 FB-A3F9K2M1',
+	status varchar(16) default 'UNUSED' not null comment '状态：UNUSED-未使用, BOUND-已绑定, REVOKED-已收回, DESTROYED-已销毁',
+	bound_user_id bigint null comment '绑定用户ID',
+	bound_time datetime null comment '绑定时间',
+	remark varchar(255) null comment '备注',
+	create_time datetime default CURRENT_TIMESTAMP not null,
+	update_time datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
+	constraint uk_key_code
+		unique (key_code)
+)
+comment '用户激活密钥表';
+
+create index idx_bound_user_id
+	on sys_activation_key (bound_user_id);
+
+create index idx_status
+	on sys_activation_key (status);
+
+create table sys_config
+(
+	id bigint auto_increment
+		primary key,
+	config_key varchar(64) not null comment '配置键',
+	config_value text null comment '配置值',
+	description varchar(255) null comment '配置描述',
+	update_time datetime default CURRENT_TIMESTAMP null,
+	constraint config_key
+		unique (config_key)
+)
+comment '系统配置表';
+
+create table sys_daily_tip
 (
 	id bigint auto_increment comment '主键ID'
 		primary key,
@@ -265,7 +300,22 @@ create table daily_tip
 comment '每日小贴士表' collate=utf8mb4_unicode_ci;
 
 create index idx_tip_date
-	on daily_tip (tip_date);
+	on sys_daily_tip (tip_date);
+
+create table sys_important_notice
+(
+	id bigint auto_increment comment '主键ID'
+		primary key,
+	title varchar(100) not null comment '通知标题',
+	content text null comment '通知内容',
+	priority tinyint default 0 not null comment '优先级：0普通 1警告 2紧急',
+	create_time timestamp default CURRENT_TIMESTAMP not null comment '发布时间',
+	is_deleted tinyint default 0 not null comment '软删除标记：0未删除 1已删除'
+)
+comment '重要通知模板表' collate=utf8mb4_unicode_ci;
+
+create index idx_important_notice_create_time
+	on sys_important_notice (create_time);
 
 create table sys_notification
 (
@@ -275,7 +325,7 @@ create table sys_notification
 	fridge_id bigint null comment '关联冰箱ID',
 	item_id bigint null comment '关联物品ID',
 	title varchar(100) not null comment '消息标题',
-	content varchar(500) null comment '消息内容',
+	content text null,
 	type varchar(30) not null comment '消息类型：EXPIRED(已过期)/EXPIRING_CRITICAL(1天内过期)/EXPIRING_WARNING(3天内过期)/EXPIRING_NOTICE(7天内过期)/CAPACITY_WARNING(容量预警)/SYSTEM(系统通知)',
 	priority tinyint default 0 not null comment '优先级：0普通 1警告 2紧急',
 	status tinyint default 0 not null comment '状态：0未读 1已读',
@@ -302,6 +352,24 @@ create index idx_notification_user_time
 create index idx_notification_user_type
 	on sys_notification (user_id, type, status, is_deleted);
 
+create table sys_oper_log
+(
+	id bigint auto_increment
+		primary key,
+	trace_id varchar(64) null comment '链路ID',
+	user_id bigint null comment '操作用户ID',
+	username varchar(64) null comment '操作用户名',
+	method varchar(10) null comment '请求方法',
+	uri varchar(512) null comment '请求URI',
+	ip varchar(128) null comment 'IP地址',
+	params text null comment '请求参数（脱敏后）',
+	status_code int null comment '响应状态码',
+	duration_ms int null comment '耗时毫秒',
+	error_msg text null comment '错误信息',
+	create_time datetime default CURRENT_TIMESTAMP null
+)
+comment '操作日志表';
+
 create table sys_role
 (
 	id bigint auto_increment
@@ -325,9 +393,13 @@ create table sys_user
 	mobile varchar(11) null comment '用户手机号',
 	role_id bigint not null comment '角色ID',
 	avatar varchar(20) default 'bot' not null,
+	guide_completed tinyint(1) default 0 not null comment '是否已完成新手指引：0-未完成，1-已完成',
+	is_activated tinyint(1) default 1 not null comment '是否已激活：1-已激活，0-未激活',
 	create_time datetime default CURRENT_TIMESTAMP not null,
 	update_time datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
 	is_deleted tinyint(1) default 0 null comment '逻辑删除',
+	last_login_time datetime null comment '最后登录时间',
+	password_updated_at datetime null comment '密码最后修改时间',
 	constraint uk_mobile
 		unique (mobile),
 	constraint uk_username

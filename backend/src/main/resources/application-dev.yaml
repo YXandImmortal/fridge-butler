@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/fridge_butler_db?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    com.yx.fridgebutler: DEBUG
+
+# 开发环境：开启管理员自动初始化
+system:
+  admin:
+    auto-init:
+      enabled: true
+  # 业务系统默认数据自动初始化配置
+  data:
+    init:
+      enabled: true
+  # 系统角色自动初始化配置
+  role:
+    init:
+      enabled: true

@@ -16,7 +16,9 @@ export const TOUR_SCENES = {
     DATA_CENTER: 'data_center',
 }
 
-const SCENE_STORAGE_KEY = 'tour_scene_completed'
+function getSceneStorageKey(userId) {
+    return userId ? `tour_scene_completed_${userId}` : 'tour_scene_completed'
+}
 
 export const useTourStore = defineStore('tour', () => {
     const userStore = useUserStore()
@@ -30,30 +32,43 @@ export const useTourStore = defineStore('tour', () => {
     // 待启动的场景（用于手动触发页面引导，不持久化）
     const pendingStartScene = ref(null)
 
+    // 已加载的 storage key，避免重复加载
+    let loadedStorageKey = null
+
     // 从 localStorage 加载场景完成状态
     function loadSceneCompletedMap() {
+        const key = getSceneStorageKey(userStore.userId)
+        if (loadedStorageKey === key) return
+
         try {
-            const raw = localStorage.getItem(SCENE_STORAGE_KEY)
+            const raw = localStorage.getItem(key)
             if (raw) {
                 const obj = JSON.parse(raw)
                 sceneCompletedMap.value = new Map(Object.entries(obj))
+            } else {
+                sceneCompletedMap.value = new Map()
             }
+            loadedStorageKey = key
         } catch (e) {
             console.error('加载 Tour 场景状态失败', e)
+            sceneCompletedMap.value = new Map()
         }
     }
 
     // 保存场景完成状态到 localStorage
     function saveSceneCompletedMap() {
         try {
+            const key = getSceneStorageKey(userStore.userId)
             const obj = Object.fromEntries(sceneCompletedMap.value)
-            localStorage.setItem(SCENE_STORAGE_KEY, JSON.stringify(obj))
+            localStorage.setItem(key, JSON.stringify(obj))
+            loadedStorageKey = key
         } catch (e) {
             console.error('保存 Tour 场景状态失败', e)
         }
     }
 
     function isSceneCompleted(scene) {
+        loadSceneCompletedMap() // 确保加载当前用户的数据
         // 如果被临时重置，则视为未完成
         if (localResetMap.value.has(scene)) return false
         // 优先检查 sceneCompletedMap
@@ -68,6 +83,7 @@ export const useTourStore = defineStore('tour', () => {
     }
 
     function completeScene(scene) {
+        loadSceneCompletedMap() // 确保操作的是当前用户的数据
         localResetMap.value.delete(scene)
         sceneCompletedMap.value.set(scene, true)
         saveSceneCompletedMap()

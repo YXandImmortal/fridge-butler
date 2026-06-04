@@ -49,8 +49,7 @@ public class SysNotification {
     @Column(name = "title", nullable = false, length = 100)
     private String title;
 
-    @Size(max = 500)
-    @Column(name = "content", length = 500)
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
     @Size(max = 30)

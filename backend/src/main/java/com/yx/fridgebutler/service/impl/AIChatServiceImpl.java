@@ -1,5 +1,6 @@
 package com.yx.fridgebutler.service.impl;
 
+import cn.hutool.core.lang.TypeReference;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -42,7 +43,11 @@ import com.yx.fridgebutler.vo.aichat.CalorieItem;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -217,6 +222,9 @@ public class AIChatServiceImpl implements AIChatService {
     @Autowired
     private PromptTemplateLoader promptLoader;
 
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
     @Value("${ai.chat.max-history-rounds:10}")
     private Integer maxHistoryRounds;
 
@@ -239,26 +247,13 @@ public class AIChatServiceImpl implements AIChatService {
     public AIChatDataVO chat(AIChatRequest request) {
         Long currentUserId = getCurrentUserId();
         String sessionId = request.getSessionId();
-        boolean isNewSession = false;
 
         // 1. 查找或创建会话
         if (sessionId == null || sessionId.isBlank()) {
             sessionId = "sess_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-            isNewSession = true;
         }
 
-        AiChatSession session;
-        if (!isNewSession) {
-            Optional<AiChatSession> existing = sessionRepository
-                    .findBySessionIdAndUserIdAndIsDeleted(sessionId, currentUserId, (byte) 0);
-            if (existing.isPresent()) {
-                session = existing.get();
-            } else {
-                session = createNewSession(sessionId, currentUserId, request.getMessage());
-            }
-        } else {
-            session = createNewSession(sessionId, currentUserId, request.getMessage());
-        }
+        AiChatSession session = findOrCreateSession(sessionId, currentUserId, request.getMessage());
 
         // 2. 从数据库加载历史（优先于前端传的 history，支持跨页面刷新）
         List<AIChatHistoryMessage> dbHistory = buildHistoryFromDb(sessionId);
@@ -323,6 +318,8 @@ public class AIChatServiceImpl implements AIChatService {
                 case "item_creation_wizard" -> handleItemCreationWizardInit(request.getFridgeId());
                 default -> handleText(userMessage, dbHistory, attachmentContext);
             };
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("AI 聊天业务处理异常，intent={}", intent.intent, e);
             reply = AIChatReplyVO.builder()
@@ -887,10 +884,6 @@ public class AIChatServiceImpl implements AIChatService {
             days = 7;
         }
 
-        Long currentUserId = getCurrentUserId();
-        List<Long> fridgeIds = fridgeRepository.findByOwnerIdAndIsDeletedFalse(currentUserId, Sort.unsorted())
-                .stream().map(BizFridge::getId).toList();
-
         // 默认取所有冰箱的数据（fridgeId 传 null）
         Long fridgeId = null;
 
@@ -921,15 +914,25 @@ public class AIChatServiceImpl implements AIChatService {
         if (!takeOutStats.isEmpty()) {
             dates = takeOutStats.stream()
                     .map(s -> {
-                        LocalDate d = LocalDate.parse(s.getDate());
-                        return d.format(CHART_DATE_FORMATTER);
+                        try {
+                            LocalDate d = LocalDate.parse(s.getDate());
+                            return d.format(CHART_DATE_FORMATTER);
+                        } catch (Exception e) {
+                            log.warn("趋势图表日期解析失败：{}", s.getDate());
+                            return "";
+                        }
                     })
                     .toList();
         } else if (!addStats.isEmpty()) {
             dates = addStats.stream()
                     .map(s -> {
-                        LocalDate d = LocalDate.parse(s.getDate());
-                        return d.format(CHART_DATE_FORMATTER);
+                        try {
+                            LocalDate d = LocalDate.parse(s.getDate());
+                            return d.format(CHART_DATE_FORMATTER);
+                        } catch (Exception e) {
+                            log.warn("趋势图表日期解析失败：{}", s.getDate());
+                            return "";
+                        }
                     })
                     .toList();
         }
@@ -970,8 +973,6 @@ public class AIChatServiceImpl implements AIChatService {
     private AIChatReplyVO handleActionConfirm(Map<String, Object> params) {
         String action = (String) params.getOrDefault("action", "");
         String targetName = (String) params.getOrDefault("targetName", "");
-
-        Long currentUserId = getCurrentUserId();
 
         // 尝试查找目标对象
         Long targetId = null;
@@ -1017,7 +1018,7 @@ public class AIChatServiceImpl implements AIChatService {
             text = "确定要删除「" + targetName + "」吗？该操作不可撤销" +
                     (affectedCount > 0 ? "，冰箱内的 " + affectedCount + " 件物品也将被清空。" : "。");
         } else {
-            text = "确定要" + ("clear_expired".equals(action) ? "清空所有过期物品" : "执行此操作") + "吗？";
+            text = "确定要清空所有过期物品吗？";
         }
 
         return AIChatReplyVO.builder()
@@ -1129,6 +1130,49 @@ public class AIChatServiceImpl implements AIChatService {
     }
 
     /**
+     * 查找或创建会话（带并发冲突兜底）。
+     * <p>若会话已存在直接返回；若不存在则创建，遇到唯一键冲突时说明其他线程已创建，
+     * 查询并返回已有记录。</p>
+     */
+    private AiChatSession findOrCreateSession(String sessionId, Long userId, String firstMessage) {
+        Optional<AiChatSession> existing = sessionRepository
+                .findBySessionIdAndUserIdAndIsDeleted(sessionId, userId, (byte) 0);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+        try {
+            return createNewSession(sessionId, userId, firstMessage);
+        } catch (DataIntegrityViolationException e) {
+            // MySQL RR 隔离级别下，当前事务的一致性读视图看不到其他事务已提交的记录，
+            // 因此必须在全新事务中查询才能获取到冲突记录。
+            TransactionTemplate tmpl = new TransactionTemplate(transactionManager);
+            tmpl.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+            return tmpl.execute(_ -> {
+                Optional<AiChatSession> sessionOpt = sessionRepository.findBySessionId(sessionId);
+                if (sessionOpt.isPresent()) {
+                    AiChatSession session = sessionOpt.get();
+                    if (!session.getUserId().equals(userId)) {
+                        // sessionId 属于其他用户，前端传了错误的 ID，生成新的即可
+                        return createNewSession(
+                                "sess_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16),
+                                userId, firstMessage);
+                    }
+                    if (session.getIsDeleted() == 1) {
+                        Instant now = Instant.now();
+                        session.setIsDeleted((byte) 0);
+                        session.setLastActiveTime(now);
+                        session.setUpdateTime(now);
+                        return sessionRepository.saveAndFlush(session);
+                    }
+                    return session;
+                }
+                throw new DataIntegrityViolationException(
+                        "Session not found after unique key conflict: " + sessionId);
+            });
+        }
+    }
+
+    /**
      * 创建新的 AI 聊天会话。
      */
     private AiChatSession createNewSession(String sessionId, Long userId, String firstMessage) {
@@ -1192,7 +1236,10 @@ public class AIChatServiceImpl implements AIChatService {
                 }
             } else {
                 // POJO 等非 Map 对象，先序列化为 JSON 再转换为 Map
-                structuredData = JSONUtil.toBean(JSONUtil.toJsonStr(reply.getData()), LinkedHashMap.class);
+                structuredData = JSONUtil.toBean(
+                        JSONUtil.toJsonStr(reply.getData()),
+                        new TypeReference<LinkedHashMap<String, Object>>() {},
+                        false);
             }
         }
 
@@ -1583,26 +1630,13 @@ public class AIChatServiceImpl implements AIChatService {
 
     private void streamChatInternal(AIChatRequest request, SseEmitter emitter, Long currentUserId) throws Exception {
         String sessionId = request.getSessionId();
-        boolean isNewSession = false;
 
         // 1. 查找或创建会话
         if (sessionId == null || sessionId.isBlank()) {
             sessionId = "sess_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-            isNewSession = true;
         }
 
-        AiChatSession session;
-        if (!isNewSession) {
-            Optional<AiChatSession> existing = sessionRepository
-                    .findBySessionIdAndUserIdAndIsDeleted(sessionId, currentUserId, (byte) 0);
-            if (existing.isPresent()) {
-                session = existing.get();
-            } else {
-                session = createNewSession(sessionId, currentUserId, request.getMessage());
-            }
-        } else {
-            session = createNewSession(sessionId, currentUserId, request.getMessage());
-        }
+        AiChatSession session = findOrCreateSession(sessionId, currentUserId, request.getMessage());
 
         // 2. 加载历史
         List<AIChatHistoryMessage> dbHistory = buildHistoryFromDb(sessionId);
@@ -1711,6 +1745,8 @@ public class AIChatServiceImpl implements AIChatService {
                 }
                 default -> streamTextReply(userMessage, dbHistory, emitter, fullText, attachmentContext);
             };
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("AI 流式聊天业务处理异常，intent={}", intent.intent, e);
             reply = AIChatReplyVO.builder()
@@ -1754,7 +1790,7 @@ public class AIChatServiceImpl implements AIChatService {
 
     private AIChatReplyVO streamTextReply(String userMessage, List<AIChatHistoryMessage> history,
                                           SseEmitter emitter, StringBuilder fullText,
-                                          String attachmentContext) throws IOException {
+                                          String attachmentContext) {
         List<DeepSeekChatMessage> messages = new ArrayList<>();
 
         String chatPrompt = promptLoader.getPrompt("general-chat", GENERAL_CHAT_SYSTEM_PROMPT);

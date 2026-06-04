@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
  * <p>提供模型输出清洗、JSON 提取等通用能力。</p>
  */
 @Slf4j
-public class AiResponseUtils {
+public final class AiResponseUtils {
 
     private AiResponseUtils() {
         // 工具类禁止实例化

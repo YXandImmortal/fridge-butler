@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-import CustomButton from '@/components/CustomButton.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
 
 const props = defineProps({
   visible: {

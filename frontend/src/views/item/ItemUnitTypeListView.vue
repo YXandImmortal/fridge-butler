@@ -32,7 +32,7 @@
                 <i class="iconfont icon-inbox-all"/>
               </div>
               <div class="unit-type-info">
-                <h3 class="unit-type-name">{{ unitType.unitTypeName || unitType.typeName }}</h3>
+                <h3 class="unit-type-name">{{ unitType.unitTypeName }}</h3>
                 <p class="unit-type-meta">
                   <span class="unit-count">{{ getUnitCount(unitType.id) }} 个单位</span>
                   <span class="unit-type-label">自定义分类</span>
@@ -77,7 +77,7 @@
                   <i class="iconfont icon-inbox-full"/>
                 </div>
                 <div class="unit-type-info">
-                  <h3 class="unit-type-name">{{ unitType.unitTypeName || unitType.typeName }}</h3>
+                  <h3 class="unit-type-name">{{ unitType.unitTypeName }}</h3>
                   <p class="unit-type-meta">
                     <span class="unit-count">{{ getUnitCount(unitType.id) }} 个单位</span>
                     <span class="unit-type-label">系统预设，不可编辑</span>
@@ -97,7 +97,7 @@
     <ConfirmDialog
         v-model:visible="showDeleteDialog"
         title="删除单位分类"
-        :message="`确定要删除单位分类「${selectedUnitType?.unitTypeName || selectedUnitType?.typeName || ''}」吗？删除后无法恢复，且会影响使用该分类下单位的物品。`"
+        :message="`确定要删除单位分类「${selectedUnitType?.unitTypeName || ''}」吗？删除后无法恢复，且会影响使用该分类下单位的物品。`"
         confirm-text="确定删除"
         cancel-text="取消"
         @confirm="confirmDelete"
@@ -146,12 +146,12 @@
 import ItemUnitTypeTour from '@/components/tour/ItemUnitTypeTour.vue'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour'
 import {onMounted, ref, computed, watch} from 'vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import InputDialog from '@/components/InputDialog.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import InputDialog from '@/components/ui/InputDialog.vue'
 import UnitListDialog from '@/components/unit/UnitListDialog.vue'
 import showMessage from '@/utils/message'
 import {listUnitTypes, listItemUnits, deleteUnitType, updateUnitType, createUnitType} from '@/api/item'
-import CustomButton from '@/components/CustomButton.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
 
 // 加载状态
 const loading = ref(false)

@@ -1,6 +1,5 @@
 package com.yx.fridgebutler.enums;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 /**

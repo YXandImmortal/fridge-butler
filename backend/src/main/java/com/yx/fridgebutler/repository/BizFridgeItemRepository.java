@@ -120,4 +120,11 @@ public interface BizFridgeItemRepository extends JpaRepository<BizFridgeItem, Lo
               AND i.shelfLifeDays <= 30
             """)
     List<BizFridgeItem> findExpiringCandidates(@Param("fridgeIds") List<Long> fridgeIds);
+
+    /**
+     * 统计未删除的物品总数。
+     *
+     * @return 未删除物品数量
+     */
+    long countByIsDeletedFalse();
 }

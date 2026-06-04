@@ -130,14 +130,14 @@ import FridgeListTour from '@/components/tour/FridgeListTour.vue'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour'
 import {onMounted, reactive, ref, watch} from 'vue'
 import {useRouter} from 'vue-router'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import FridgeCreateDialog from '@/components/fridge/FridgeCreateDialog.vue'
 import showMessage from '@/utils/message'
 import {listMyFridges, deleteFridge, searchFridges, createFridge} from '@/api/fridge'
-import CustomButton from "@/components/CustomButton.vue";
-import SearchBar from "@/components/SearchBar.vue";
-import SortControl from "@/components/SortControl.vue";
-import CustomSelect from '@/components/CustomSelect.vue'
+import CustomButton from "@/components/ui/CustomButton.vue";
+import SearchBar from "@/components/form/SearchBar.vue";
+import SortControl from "@/components/form/SortControl.vue";
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 import {FRIDGE_TYPE_LIST} from '@/utils/fridgeTypeMap.js'
 
 const router = useRouter()

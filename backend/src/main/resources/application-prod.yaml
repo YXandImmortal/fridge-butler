@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/fridge_butler_db?serverTimezone=UTC&useSSL=true&allowPublicKeyRetrieval=false
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    open-in-view: false
+
+logging:
+  level:
+    com.yx.fridgebutler: INFO
+
+# CORS 跨域配置（生产环境前端域名，多个用逗号分隔）
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:https://fridge-butler.top}
+
+# 生产环境：默认开启管理员自动初始化
+system:
+  admin:
+    auto-init:
+      enabled: true
+  # 生产环境：默认开启角色、初始物品管理数据自动初始化
+  role:
+    init:
+      enabled: true
+  data:
+    init:
+      enabled: true

@@ -16,6 +16,8 @@ public interface AiChatSessionRepository extends JpaRepository<AiChatSession, Lo
 
     Optional<AiChatSession> findBySessionIdAndUserIdAndIsDeleted(String sessionId, Long userId, Byte isDeleted);
 
+    Optional<AiChatSession> findBySessionId(String sessionId);
+
     List<AiChatSession> findByUserIdAndIsDeletedOrderByLastActiveTimeDesc(Long userId, Byte isDeleted);
 
     List<AiChatSession> findByLastActiveTimeBeforeAndIsDeleted(Instant time, Byte isDeleted);

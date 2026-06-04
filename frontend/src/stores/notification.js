@@ -6,7 +6,8 @@ import {
     markAsRead,
     markAllAsRead,
     deleteNotification,
-    getNotificationList
+    getNotificationList,
+    getLatestImportantNotice
 } from '@/api/notification'
 
 const POLL_INTERVAL = 30000 // 轮询间隔 30 秒
@@ -28,6 +29,10 @@ export const useNotificationStore = defineStore('notification', () => {
     const currentType = ref('') // 当前筛选类型
     const loading = ref(false)
     const pollTimer = ref(null)
+
+    // ========== 重要通知弹窗相关状态 ==========
+    const latestImportantNotice = ref(null)
+    const dismissedNoticeIds = ref(new Set())
 
     // ========== 计算属性 ==========
     const hasUnread = computed(() => unreadCount.value > 0)
@@ -76,9 +81,16 @@ export const useNotificationStore = defineStore('notification', () => {
             color: 'var(--warn-color)'
         },
         {
+            key: 'IMPORTANT_NOTICE',
+            label: '重要通知',
+            count: summary.value.importantNoticeCount || 0,
+            icon: 'icon-megaphone',
+            color: 'var(--danger-color)'
+        },
+        {
             key: 'SYSTEM',
             label: '系统通知',
-            count: summary.value.systemCount,
+            count: 0,
             icon: 'icon-info-box',
             color: 'var(--text-tertiary)'
         }
@@ -114,7 +126,7 @@ export const useNotificationStore = defineStore('notification', () => {
                     expiringWarningCount: res.data.expiringWarningCount || 0,
                     expiringNoticeCount: res.data.expiringNoticeCount || 0,
                     capacityWarningCount: res.data.capacityWarningCount || 0,
-                    systemCount: res.data.systemCount || 0
+                    importantNoticeCount: res.data.importantNoticeCount || 0
                 }
             }
         } catch (error) {
@@ -131,14 +143,8 @@ export const useNotificationStore = defineStore('notification', () => {
         try {
             const res = await getNotificationList({type, page: 1, size: 9999})
             if (res.code === 200 && res.data) {
-                // 兼容两种返回格式：直接数组 或 { list, total, pages }
-                if (Array.isArray(res.data)) {
-                    notificationList.value = res.data
-                    totalCount.value = res.data.length
-                } else {
-                    notificationList.value = res.data.list || []
-                    totalCount.value = res.data.total || 0
-                }
+                notificationList.value = res.data
+                totalCount.value = res.data.length
             }
         } catch (error) {
             console.error('获取消息列表失败:', error)
@@ -247,8 +253,10 @@ export const useNotificationStore = defineStore('notification', () => {
     const startPolling = () => {
         stopPolling()
         fetchUnreadCount()
+        fetchLatestImportantNotice()
         pollTimer.value = setInterval(() => {
             fetchUnreadCount()
+            fetchLatestImportantNotice()
         }, POLL_INTERVAL)
     }
 
@@ -263,11 +271,51 @@ export const useNotificationStore = defineStore('notification', () => {
     }
 
     /**
+     * 获取最新未读重要通知（用于全局弹窗）
+     */
+    const fetchLatestImportantNotice = async () => {
+        try {
+            const res = await getLatestImportantNotice()
+            if (res.code === 200 && res.data) {
+                const list = Array.isArray(res.data) ? res.data : []
+                const notice = list[0] || null
+                if (notice && !dismissedNoticeIds.value.has(notice.id)) {
+                    latestImportantNotice.value = notice
+                }
+            }
+        } catch (error) {
+            console.error('获取重要通知失败:', error)
+        }
+    }
+
+    /**
+     * 关闭重要通知弹窗（仅标记为已关闭，不调用API）
+     */
+    const dismissImportantNotice = (id) => {
+        if (id) {
+            dismissedNoticeIds.value.add(id)
+        }
+        latestImportantNotice.value = null
+    }
+
+    /**
+     * 标记重要通知已读并关闭弹窗
+     */
+    const readImportantNotice = async (id) => {
+        if (id) {
+            dismissedNoticeIds.value.add(id)
+            await readOne(id)
+        }
+        latestImportantNotice.value = null
+    }
+
+    /**
      * 初始化（获取摘要+启动轮询）
      */
     const init = async () => {
         await fetchSummary()
         await fetchUnreadCount()
+        await fetchLatestImportantNotice()
         startPolling()
     }
 
@@ -280,6 +328,7 @@ export const useNotificationStore = defineStore('notification', () => {
         loading,
         hasUnread,
         summaryItems,
+        latestImportantNotice,
         fetchUnreadCount,
         fetchSummary,
         fetchList,
@@ -287,6 +336,9 @@ export const useNotificationStore = defineStore('notification', () => {
         readAll,
         removeOne,
         getActionRoute,
+        fetchLatestImportantNotice,
+        dismissImportantNotice,
+        readImportantNotice,
         startPolling,
         stopPolling,
         init

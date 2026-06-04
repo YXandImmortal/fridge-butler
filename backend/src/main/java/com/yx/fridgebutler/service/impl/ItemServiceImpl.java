@@ -475,6 +475,7 @@ public class ItemServiceImpl implements ItemService {
      * 创建前会校验冰箱归属权、分类存在性（如传了分类ID）、单位存在性（如传了单位ID）。
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long createItem(ItemCreateRequest request) {
         Long currentUserId = getCurrentUserId();
         log.info("新增物品，用户ID：{}，冰箱ID：{}，物品名称：{}", currentUserId, request.getFridgeId(), request.getItemName());
@@ -542,6 +543,7 @@ public class ItemServiceImpl implements ItemService {
      * 更新前会校验物品存在性、冰箱归属权、分类存在性（如传了分类ID）、单位存在性（如传了单位ID）。
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateItem(ItemUpdateRequest request) {
         Long currentUserId = getCurrentUserId();
         log.info("更新物品，用户ID：{}，物品ID：{}" , currentUserId, request.getId());

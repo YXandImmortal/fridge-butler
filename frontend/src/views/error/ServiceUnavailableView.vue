@@ -83,11 +83,19 @@
 
 <script setup>
 import {useRouter} from 'vue-router'
+import {useUserStore} from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const goHome = () => {
-  router.push('/user/index')
+  if (!userStore.isLoggedIn) {
+    router.push({name: 'landing'})
+  } else if (userStore.roleId === 1) {
+    router.push({name: 'super-admin-dashboard'})
+  } else {
+    router.push({name: 'user-index'})
+  }
 }
 
 const goBack = () => {

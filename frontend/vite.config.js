@@ -20,6 +20,21 @@ export default defineConfig({
       dts: true,
     }),
   ],
+  build: {
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue', 'vue-router', 'pinia'],
+          element: ['element-plus'],
+          echarts: ['echarts', 'vue-echarts'],
+        }
+      }
+    }
+  },
+  esbuild: {
+    drop: ['console', 'debugger']
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

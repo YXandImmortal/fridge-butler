@@ -65,6 +65,25 @@ export function markAllAsRead() {
 }
 
 /**
+ * 获取最新未读重要通知
+ * @param {number} [page=1] - 页码
+ * @param {number} [size=1] - 每页数量
+ */
+export function getLatestImportantNotice(params = {}) {
+    return request({
+        url: '/notification/list',
+        method: 'get',
+        params: {
+            type: 'IMPORTANT_NOTICE',
+            status: 0,
+            page: 1,
+            size: 1,
+            ...params
+        }
+    })
+}
+
+/**
  * 删除单条消息（软删除）
  * @param {number} id - 消息ID
  */

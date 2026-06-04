@@ -237,9 +237,9 @@
 
 <script setup>
 import {ref, computed, watch, onMounted} from 'vue'
-import CustomButton from '@/components/CustomButton.vue'
-import CustomSelect from '@/components/CustomSelect.vue'
-import EnhancedInput from '@/components/EnhancedInput.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
+import EnhancedInput from '@/components/ui/EnhancedInput.vue'
 import {listItemCategories, listItemUnits, listUnitTypes} from '@/api/item'
 
 const props = defineProps({

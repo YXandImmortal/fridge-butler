@@ -71,8 +71,8 @@ import {useSystemStore} from '@/stores/system.js'
 import showMessage from '@/utils/message.js'
 import AuthLayout from "@/layouts/AuthLayout.vue"
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
-import EnhancedInput from "@/components/EnhancedInput.vue"
-import CaptchaInput from "@/components/CaptchaInput.vue"
+import EnhancedInput from "@/components/ui/EnhancedInput.vue"
+import CaptchaInput from "@/components/form/CaptchaInput.vue"
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -127,12 +127,17 @@ const handleLogin = async () => {
 
     // 校验后端返回的code是否为200
     if (res.code === 200) {
-      const message = res.data?.rememberMe
+      const message = res.data.rememberMe
           ? '登录成功！30天内自动登录'
           : (res.message || '登录成功！')
       showMessage.success(message)
 
-      await router.push('/user/index')
+      // 根据角色跳转到对应首页
+      if (userStore.roleId === 1) {
+        await router.push({name: 'super-admin-dashboard'})
+      } else {
+        await router.push({name: 'user-index'})
+      }
     } else {
       showMessage.error(res.message || '登录失败')
       // 登录失败时刷新验证码

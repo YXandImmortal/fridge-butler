@@ -316,7 +316,7 @@ import ItemManageTour from '@/components/tour/ItemManageTour.vue'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour'
 import {computed, onMounted, reactive, ref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
 import {useThemeStore} from '@/stores/theme'
 import {
@@ -328,10 +328,10 @@ import {
   takeOutItem
 } from '@/api/item'
 import {listMyFridges, getDefaultFridge, getCapacityStats} from '@/api/fridge'
-import CustomButton from '@/components/CustomButton.vue'
-import CustomSelect from '@/components/CustomSelect.vue'
-import SortControl from '@/components/SortControl.vue'
-import SearchBar from '@/components/SearchBar.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
+import SortControl from '@/components/form/SortControl.vue'
+import SearchBar from '@/components/form/SearchBar.vue'
 import ItemDetailDialog from '@/components/item/ItemDetailDialog.vue'
 import ItemTakeOutDialog from '@/components/item/ItemTakeOutDialog.vue'
 

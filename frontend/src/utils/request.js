@@ -1,7 +1,7 @@
 import axios from 'axios'
 import {useUserStore} from '@/stores/user'
 import showMessage from '@/utils/message'
-import {replaceToLogin} from '@/utils/navigate'
+import {replaceToLogin, toForbidden, toServerError, toServiceUnavailable, toActivation} from '@/utils/navigate'
 
 // 创建axios实例
 const service = axios.create({
@@ -35,18 +35,41 @@ service.interceptors.request.use(
 // 响应拦截器：统一处理后端返回结果
 service.interceptors.response.use(
     (response) => {
-        // 直接返回后端数据，由调用方处理业务逻辑
-        return response.data
+        const data = response.data
+        // 用户未激活（业务码 460，HTTP 状态码 200）
+        if (data.code === 460) {
+            const userStore = useUserStore()
+            userStore.setActivationStatus(false)
+            showMessage.warning(data.message || '账号未激活，请先输入激活密钥')
+            toActivation()
+            return Promise.reject(new Error(data.message || '账号未激活'))
+        }
+        return data
     },
     (error) => {
-        // 处理401未授权错误
-        if (error.response && error.response.status === 401) {
-            const userStore = useUserStore()
-            userStore.logout()
-            showMessage.error('登录已过期，请重新登录')
-            replaceToLogin()
+        if (error.response) {
+            const status = error.response.status
+            // 处理401未授权错误
+            if (status === 401) {
+                const userStore = useUserStore()
+                userStore.logout()
+                showMessage.error('登录已过期，请重新登录')
+                replaceToLogin()
+            } else if (status === 403) {
+                // 权限不足，跳转403页面
+                toForbidden()
+            } else if (status === 500) {
+                // 服务器内部错误，跳转500页面
+                toServerError()
+            } else if (status === 503) {
+                // 服务不可用，跳转503页面（预留）
+                toServiceUnavailable()
+            } else {
+                showMessage.error(error.message || '服务器错误')
+            }
         } else {
-            showMessage.error(error.message || '服务器错误')
+            // 后端无响应、网络错误或请求超时
+            toServerError()
         }
         return Promise.reject(error)
     }

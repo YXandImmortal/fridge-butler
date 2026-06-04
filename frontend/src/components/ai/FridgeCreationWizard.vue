@@ -201,8 +201,8 @@
 <script setup>
 import {ref, computed, watch} from 'vue'
 import {getFridgeTypeById, FRIDGE_TYPE_LIST} from '@/utils/fridgeTypeMap.js'
-import CustomButton from '@/components/CustomButton.vue'
-import CustomSelect from '@/components/CustomSelect.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
+import CustomSelect from '@/components/ui/CustomSelect.vue'
 
 const props = defineProps({
   data: {

@@ -1,23 +1,11 @@
 spring:
   application:
     name: fridge-butler-backend
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/fridge_butler_db?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: true
-    open-in-view: false
-    properties:
-      hibernate:
-        format_sql: true
+  profiles:
+    active: dev
 
 server:
-  port: 8080
+  port: 8081
 
 jwt:
   secret: ${JWT_SECRET}
@@ -26,21 +14,36 @@ jwt:
 
 system:
   name: 智鲜·引擎
-  version: beta 0.2.1
+  version: release 0.3.0
   slogan: 智能管理您的冰箱，让食材更新鲜
-  build-time: 20260527-03
+  build-time: 20260604-01
+  # 管理员账号自动初始化配置
+  # 生产环境建议通过环境变量 ADMIN_AUTO_INIT_ENABLED 控制，首次部署时开启，完成后关闭
+  admin:
+    auto-init:
+      enabled: false
+      accounts:
+        - username: ${ADMIN_USERNAME:admin}
+          role-code: SUPER_ADMIN
+      output-dir: ${ADMIN_CREDENTIALS_DIR:}
+      file-name: admin-credentials.txt
+  # 业务系统默认数据自动初始化配置
+  data:
+    init:
+      enabled: false
+  # 系统角色自动初始化配置
+  # 首次部署时建议开启，确保 sys_role 表中有预设角色数据
+  role:
+    init:
+      enabled: false
 
-# AI 聊天历史配置
 ai:
   history:
-    retention-days: 7      # 会话保留天数（超过此天数的会话将被软删除）
-    purge-days: 30         # 物理删除延迟（已软删数据保留多少天后彻底删除）
+    retention-days: 7
+    purge-days: 30
   chat:
-    max-history-rounds: 10 # 单会话保留的最大对话轮数（1轮=1问1答），超出部分将被截断
+    max-history-rounds: 10
 
-
-# DeepSeek AI 大模型配置
-# 文档参考：https://api-docs.deepseek.com/zh-cn/
 deepseek:
   api-key: ${DEEPSEEK_API_KEY}
   base-url: https://api.deepseek.com

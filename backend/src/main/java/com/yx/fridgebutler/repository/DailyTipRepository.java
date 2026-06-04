@@ -1,6 +1,6 @@
 package com.yx.fridgebutler.repository;
 
-import com.yx.fridgebutler.entity.DailyTip;
+import com.yx.fridgebutler.entity.SysDailyTip;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +11,7 @@ import java.util.Optional;
  * 每日小贴士数据访问层。
  */
 @Repository
-public interface DailyTipRepository extends JpaRepository<DailyTip, Long> {
+public interface DailyTipRepository extends JpaRepository<SysDailyTip, Long> {
 
     /**
      * 根据日期查询每日小贴士。
@@ -19,7 +19,7 @@ public interface DailyTipRepository extends JpaRepository<DailyTip, Long> {
      * @param tipDate 日期
      * @return 每日小贴士
      */
-    Optional<DailyTip> findByTipDate(LocalDate tipDate);
+    Optional<SysDailyTip> findByTipDate(LocalDate tipDate);
 
     /**
      * 判断指定日期是否已存在小贴士。

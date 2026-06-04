@@ -119,9 +119,9 @@
 
 <script setup>
 import {reactive, ref, watch, computed} from 'vue'
-import CustomButton from '@/components/CustomButton.vue'
-import EnhancedInput from '@/components/EnhancedInput.vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
+import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import {createItemUnit, deleteItemUnit, updateItemUnit} from '@/api/item'
 import showMessage from '@/utils/message'
 
@@ -150,7 +150,7 @@ const showEditDialog = ref(false)
 const editLoading = ref(false)
 
 const unitTypeName = computed(() => {
-  return props.unitType?.unitTypeName || props.unitType?.typeName || '单位分类'
+  return props.unitType?.unitTypeName || '单位分类'
 })
 
 const addForm = reactive({

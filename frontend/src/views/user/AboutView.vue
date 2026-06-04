@@ -14,6 +14,15 @@
       </p>
     </div>
 
+    <!-- 系统介绍 -->
+    <div class="about-section" v-if="systemDescription">
+      <h2 class="section-title">
+        <i class="iconfont icon-script-text"/>
+        系统介绍
+      </h2>
+      <div class="description-card" v-html="systemDescription"/>
+    </div>
+
     <!-- 功能特性区域 -->
     <div class="about-section">
       <h2 class="section-title">
@@ -94,16 +103,34 @@
 </template>
 
 <script setup>
-import {computed, ref, watch} from 'vue'
+import {computed, ref, watch, onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 import {useSystemStore} from '@/stores/system.js'
-import Logo from '@/components/Logo.vue'
+import Logo from '@/components/brand/Logo.vue'
 import AboutTour from '@/components/tour/AboutTour.vue'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour.js'
+import {getPublicConfig} from '@/api/system.js'
 
 const router = useRouter()
 const systemStore = useSystemStore()
 const {systemName, systemVersion, slogan, features, updates, about} = systemStore
+
+const systemDescription = ref('')
+
+const fetchPublicConfig = async () => {
+  try {
+    const res = await getPublicConfig()
+    if (res.code === 200 && res.data) {
+      systemDescription.value = res.data.systemDescription || ''
+    }
+  } catch (error) {
+    console.error('获取公开配置失败:', error)
+  }
+}
+
+onMounted(() => {
+  fetchPublicConfig()
+})
 
 const goToUserIndex = () => {
   router.push('/user/index')
@@ -208,6 +235,10 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 
 .about-section:nth-child(4) {
   animation-delay: 0.3s;
+}
+
+.about-section:nth-child(5) {
+  animation-delay: 0.4s;
 }
 
 .section-title {
@@ -392,6 +423,46 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 
 .major-badge .iconfont {
   font-size: 12px;
+}
+
+/* 系统介绍描述卡片 */
+.description-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  padding: 24px 32px;
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.description-card :deep(p) {
+  margin: 0 0 12px;
+}
+
+.description-card :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.description-card :deep(ul),
+.description-card :deep(ol) {
+  padding-left: 20px;
+  margin: 12px 0;
+}
+
+.description-card :deep(li) {
+  margin-bottom: 6px;
+}
+
+.description-card :deep(a) {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.description-card :deep(a:hover) {
+  text-decoration: underline;
 }
 
 /* 关于我们信息卡片 */

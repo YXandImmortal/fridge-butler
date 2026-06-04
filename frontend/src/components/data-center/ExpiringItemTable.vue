@@ -92,7 +92,7 @@
 <script setup>
 import {useRouter} from 'vue-router'
 import {useThemeStore} from '@/stores/theme'
-import CustomButton from '@/components/CustomButton.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
 
 const props = defineProps({
   data: {type: Array, default: () => []}

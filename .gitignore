@@ -27,3 +27,7 @@ application-*.yml
 .DS_Store
 Thumbs.db
 *.log
+
+# 日志
+logs/
+*.log
