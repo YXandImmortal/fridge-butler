@@ -24,10 +24,12 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['vue', 'vue-router', 'pinia'],
-          element: ['element-plus'],
-          echarts: ['echarts', 'vue-echarts'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('element-plus')) return 'element'
+            if (id.includes('echarts') || id.includes('vue-echarts')) return 'echarts'
+            if (id.includes('vue') || id.includes('vue-router') || id.includes('pinia')) return 'vendor'
+          }
         }
       }
     }
