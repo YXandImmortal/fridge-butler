@@ -122,10 +122,10 @@ public class LogInterceptor implements HandlerInterceptor {
             // 未登录/公共接口请求时，根据 URI 显示友好占位
             if (username == null) {
                 username = switch (uri) {
-                    case "/auth/login" -> "登录请求";
-                    case "/auth/register/user" -> "注册请求";
-                    case "/captcha/generate" -> "请求验证码";
-                    case "/captcha/verify" -> "验证码校验";
+                    case "/api/auth/login" -> "登录请求";
+                    case "/api/auth/register/user" -> "注册请求";
+                    case "/api/captcha/generate" -> "请求验证码";
+                    case "/api/captcha/verify" -> "验证码校验";
                     default -> "公共接口请求";
                 };
             }

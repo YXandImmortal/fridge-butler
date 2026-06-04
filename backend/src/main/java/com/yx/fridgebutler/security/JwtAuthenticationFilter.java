@@ -40,11 +40,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * 不需要检查激活状态的白名单路径
      */
     private static final List<String> ACTIVATION_WHITELIST = List.of(
-            "/activation-key/status",
-            "/activation-key/verify",
-            "/auth/logout",
-            "/user/info",
-            "/system/"
+            "/api/activation-key/status",
+            "/api/activation-key/verify",
+            "/api/auth/logout",
+            "/api/user/info",
+            "/api/system/"
     );
 
     /**
