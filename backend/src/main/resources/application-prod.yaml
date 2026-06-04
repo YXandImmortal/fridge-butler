@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/fridge_butler_db?serverTimezone=UTC&useSSL=true&allowPublicKeyRetrieval=false
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/fridge_butler_db?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=false
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
