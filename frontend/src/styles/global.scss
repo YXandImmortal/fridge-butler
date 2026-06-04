@@ -39,7 +39,8 @@ body {
  * --------------------------------------------------------- */
 
 /* 玻璃态卡片 */
-.glass-card {
+.glass-card,
+.el-card.glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
   border-radius: var(--radius-lg);

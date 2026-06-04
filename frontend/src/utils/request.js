@@ -49,26 +49,34 @@ service.interceptors.response.use(
     (error) => {
         if (error.response) {
             const status = error.response.status
+            // 优先读取后端返回的业务错误消息
+            const backendMessage = error.response.data?.message
+
             // 处理401未授权错误
             if (status === 401) {
                 const userStore = useUserStore()
                 userStore.logout()
-                showMessage.error('登录已过期，请重新登录')
+                showMessage.error(backendMessage || '登录已过期，请重新登录')
                 replaceToLogin()
             } else if (status === 403) {
                 // 权限不足，跳转403页面
+                showMessage.error(backendMessage || '权限不足')
                 toForbidden()
             } else if (status === 500) {
                 // 服务器内部错误，跳转500页面
+                showMessage.error(backendMessage || '服务器内部错误')
                 toServerError()
             } else if (status === 503) {
                 // 服务不可用，跳转503页面（预留）
+                showMessage.error(backendMessage || '服务不可用')
                 toServiceUnavailable()
             } else {
-                showMessage.error(error.message || '服务器错误')
+                // 400等其他错误，优先显示后端返回的消息
+                showMessage.error(backendMessage || error.message || '服务器错误')
             }
         } else {
             // 后端无响应、网络错误或请求超时
+            showMessage.error('网络错误，请检查网络连接')
             toServerError()
         }
         return Promise.reject(error)

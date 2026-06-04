@@ -64,6 +64,11 @@
   border-color: var(--primary-color);
 }
 
+.custom-checkbox .el-checkbox__input .el-checkbox__inner {
+  background-color: transparent;
+  box-shadow: var(--shadow-input);
+}
+
 /* 禁用输入框统一样式 */
 .el-input.is-disabled {
   cursor: default;
@@ -145,9 +150,9 @@
   background-color: transparent;
 }
 
-/* 表头：默认使用半透明灰，允许组件内 :header-cell-style 内联覆盖 */
+/* 表头 */
 .el-table th.el-table__cell {
-  background-color: var(--gray-20);
+  background-color: transparent;
 }
 
 /* 数据单元格 */

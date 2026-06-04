@@ -8,7 +8,7 @@
       <ThemeToggle/>
     </div>
     <div class="auth-wrapper">
-      <el-card class="auth-card glass-card">
+      <el-card class="auth-card">
         <AuthHeader
             :title="title"
             :subtitle="subtitle"
@@ -125,6 +125,10 @@ const props = defineProps({
 .auth-card {
   padding: 0 40px 20px 40px;
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  background-color: var(--card-bg);
 }
 
 .auth-card:hover {

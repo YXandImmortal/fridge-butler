@@ -199,8 +199,13 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String mobile = request.getMobile();
+        // 将空白手机号统一转为 null，避免空字符串触发唯一键冲突
+        if (mobile != null && mobile.isBlank()) {
+            mobile = null;
+        }
+
         // 校验手机号格式及唯一性
-        if (mobile != null && !mobile.isBlank()) {
+        if (mobile != null) {
             if (!PhoneUtil.isMobile(mobile)) {
                 log.error("普通用户注册失败，手机号：{}格式错误", mobile);
                 throw BusinessException.registerPhoneFormatError();

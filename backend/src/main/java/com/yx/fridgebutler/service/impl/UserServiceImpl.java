@@ -102,6 +102,10 @@ public class UserServiceImpl implements UserService {
 
         // 如果手机号发生变化，校验新手机号是否已被其他用户占用
         String newMobile = request.getMobile();
+        // 将空白手机号统一转为 null，避免空字符串触发唯一键冲突
+        if (newMobile != null && newMobile.isBlank()) {
+            newMobile = null;
+        }
         if (newMobile != null && !newMobile.equals(user.getMobile())) {
             userRepository.findByUsernameOrMobile(newMobile, newMobile).ifPresent(existingUser -> {
                 if (!existingUser.getId().equals(user.getId())) {
