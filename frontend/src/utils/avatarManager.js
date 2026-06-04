@@ -28,7 +28,7 @@ export function getSystemAvatarIds() {
  * @returns {string} 头像完整路径
  */
 export function getAvatarPath(avatarId) {
-    return `/src/assets/avatars/${avatarId}.svg`;
+    return `/avatars/${avatarId}.svg`;
 }
 
 /**

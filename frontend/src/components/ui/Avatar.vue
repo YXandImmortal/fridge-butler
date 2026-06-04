@@ -63,9 +63,7 @@ const avatarSrc = computed(() => {
 
   // 如果是系统头像ID
   if (SYSTEM_AVATARS[props.avatarId]) {
-    // 在实际使用中，这里需要处理动态导入
-    // 由于SVG导入的限制，我们使用相对路径
-    return `/src/assets/avatars/${props.avatarId}.svg`
+    return `/avatars/${props.avatarId}.svg`
   }
 
   // 如果是URL，直接返回

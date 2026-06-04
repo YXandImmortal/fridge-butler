@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+    <defs>
+        <linearGradient id="bg-leaf" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#A5D6A7"/>
+            <stop offset="100%" stop-color="#81C784"/>
+        </linearGradient>
+    </defs>
+    <!-- 圆形背景 -->
+    <circle cx="50" cy="50" r="50" fill="url(#bg-leaf)"/>
+    <!-- 三片绿叶组合 -->
+    <g fill="#ffffff" opacity="0.95">
+        <!-- 主叶片 -->
+        <ellipse cx="50" cy="45" rx="20" ry="28" transform="rotate(-15 50 45)"/>
+        <!-- 左侧叶片 -->
+        <ellipse cx="35" cy="52" rx="12" ry="18" transform="rotate(-50 35 52)"/>
+        <!-- 右侧叶片 -->
+        <ellipse cx="65" cy="50" rx="12" ry="18" transform="rotate(45 65 50)"/>
+    </g>
+    <!-- 叶脉 -->
+    <g stroke="#81C784" stroke-width="1.8" stroke-linecap="round" opacity="0.45" fill="none">
+        <!-- 主叶脉 -->
+        <line x1="50" y1="68" x2="44" y2="28"/>
+        <!-- 左侧叶脉 -->
+        <line x1="40" y1="65" x2="30" y2="52"/>
+        <line x1="37" y1="58" x2="28" y2="48"/>
+        <!-- 右侧叶脉 -->
+        <line x1="60" y1="63" x2="70" y2="50"/>
+        <line x1="63" y1="56" x2="72" y2="46"/>
+    </g>
+    <!-- 中心连接点 -->
+    <circle cx="48" cy="68" r="3.5" fill="#81C784" opacity="0.5"/>
+</svg>
