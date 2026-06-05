@@ -24,4 +24,5 @@ export const broadcastImportantNotice = (data) => request.post('/admin/notificat
 export const getActivationKeyList = (params) => request.get('/admin/activation-keys', { params })
 export const generateActivationKeys = (data) => request.post('/admin/activation-keys', data)
 export const revokeActivationKey = (id) => request.put(`/admin/activation-keys/${id}/revoke`)
+export const issueActivationKey = (id) => request.put(`/admin/activation-keys/${id}/issue`)
 export const destroyActivationKey = (id) => request.delete(`/admin/activation-keys/${id}`)

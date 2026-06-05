@@ -84,26 +84,65 @@
               {{ row.remark || '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120" fixed="right">
+          <el-table-column label="操作" width="200" fixed="right">
             <template #default="{ row }">
-              <CustomButton
-                v-if="row.status === 'UNUSED'"
-                type="link"
-                color="danger"
-                size="small"
-                @click="handleDestroy(row)"
-              >
-                销毁
-              </CustomButton>
-              <CustomButton
-                v-else-if="row.status === 'BOUND'"
-                type="link"
-                color="warning"
-                size="small"
-                @click="handleRevoke(row)"
-              >
-                收回
-              </CustomButton>
+              <!-- UNUSED: 发放、收回、销毁 -->
+              <template v-if="row.status === 'UNUSED'">
+                <CustomButton
+                  type="link"
+                  color="primary"
+                  size="small"
+                  @click="handleIssue(row)"
+                >
+                  发放
+                </CustomButton>
+                <CustomButton
+                  type="link"
+                  color="warning"
+                  size="small"
+                  @click="handleRevoke(row)"
+                >
+                  收回
+                </CustomButton>
+                <CustomButton
+                  type="link"
+                  color="danger"
+                  size="small"
+                  @click="handleDestroy(row)"
+                >
+                  销毁
+                </CustomButton>
+              </template>
+              <!-- ISSUED: 收回、销毁 -->
+              <template v-else-if="row.status === 'ISSUED'">
+                <CustomButton
+                  type="link"
+                  color="warning"
+                  size="small"
+                  @click="handleRevoke(row)"
+                >
+                  收回
+                </CustomButton>
+                <CustomButton
+                  type="link"
+                  color="danger"
+                  size="small"
+                  @click="handleDestroy(row)"
+                >
+                  销毁
+                </CustomButton>
+              </template>
+              <!-- BOUND: 收回 -->
+              <template v-else-if="row.status === 'BOUND'">
+                <CustomButton
+                  type="link"
+                  color="warning"
+                  size="small"
+                  @click="handleRevoke(row)"
+                >
+                  收回
+                </CustomButton>
+              </template>
             </template>
           </el-table-column>
         </el-table>
@@ -123,6 +162,17 @@
         </div>
       </template>
     </div>
+
+    <!-- 发放确认 -->
+    <ConfirmDialog
+      v-model:visible="issueConfirmVisible"
+      title="发放密钥"
+      :message="`确定要发放密钥「${selectedKey?.keyCode || ''}」吗？发放后该密钥可被用户绑定。`"
+      confirm-text="确定发放"
+      cancel-text="取消"
+      @confirm="confirmIssue"
+      width="400px"
+    />
 
     <!-- 收回确认 -->
     <ConfirmDialog
@@ -157,6 +207,7 @@ import CustomButton from '@/components/ui/CustomButton.vue'
 import {
   getActivationKeyList,
   generateActivationKeys,
+  issueActivationKey,
   revokeActivationKey,
   destroyActivationKey
 } from '@/api/admin.js'
@@ -165,6 +216,7 @@ import showMessage from '@/utils/message.js'
 // ==================== 状态 ====================
 const loading = ref(false)
 const generating = ref(false)
+const issueConfirmVisible = ref(false)
 const revokeConfirmVisible = ref(false)
 const destroyConfirmVisible = ref(false)
 const selectedKey = ref(null)
@@ -181,6 +233,7 @@ const searchForm = reactive({
 
 const statusOptions = [
   { label: '未使用', value: 'UNUSED' },
+  { label: '已发放', value: 'ISSUED' },
   { label: '已绑定', value: 'BOUND' },
   { label: '已收回', value: 'REVOKED' },
   { label: '已销毁', value: 'DESTROYED' }
@@ -198,6 +251,7 @@ const keyList = ref([])
 const statusTagType = (status) => {
   const map = {
     UNUSED: 'info',
+    ISSUED: 'primary',
     BOUND: 'success',
     REVOKED: 'warning',
     DESTROYED: 'danger'
@@ -208,6 +262,7 @@ const statusTagType = (status) => {
 const statusText = (status) => {
   const map = {
     UNUSED: '未使用',
+    ISSUED: '已发放',
     BOUND: '已绑定',
     REVOKED: '已收回',
     DESTROYED: '已销毁'
@@ -307,6 +362,30 @@ const handleGenerate = async () => {
     showMessage.error('生成密钥失败')
   } finally {
     generating.value = false
+  }
+}
+
+// ==================== 发放密钥 ====================
+const handleIssue = (row) => {
+  selectedKey.value = row
+  issueConfirmVisible.value = true
+}
+
+const confirmIssue = async () => {
+  if (!selectedKey.value) return
+  try {
+    const res = await issueActivationKey(selectedKey.value.id)
+    if (res.code === 200) {
+      showMessage.success('密钥已发放')
+      fetchList()
+    } else {
+      showMessage.error(res.message || '发放失败')
+    }
+  } catch (error) {
+    console.error('发放密钥失败:', error)
+    showMessage.error('发放密钥失败')
+  } finally {
+    issueConfirmVisible.value = false
   }
 }
 

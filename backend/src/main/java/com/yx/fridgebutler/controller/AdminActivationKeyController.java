@@ -51,6 +51,19 @@ public class AdminActivationKeyController {
     }
 
     /**
+     * 发放激活密钥
+     *
+     * @param id 密钥ID
+     * @return 操作结果
+     */
+    @PutMapping("/{id}/issue")
+    public Result<Void> issueKey(@PathVariable Long id) {
+        log.info("管理员发放激活密钥，ID：{}", id);
+        adminActivationKeyService.issueKey(id);
+        return Result.success(null);
+    }
+
+    /**
      * 收回激活密钥
      *
      * @param id 密钥ID

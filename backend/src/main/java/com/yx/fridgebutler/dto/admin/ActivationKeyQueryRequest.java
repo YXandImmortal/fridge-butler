@@ -14,7 +14,7 @@ public class ActivationKeyQueryRequest {
     private String keyword;
 
     /**
-     * 状态筛选：UNUSED, BOUND, REVOKED, DESTROYED，null 表示全部
+     * 状态筛选：UNUSED, ISSUED, BOUND, REVOKED, DESTROYED，null 表示全部
      */
     private String status;
 

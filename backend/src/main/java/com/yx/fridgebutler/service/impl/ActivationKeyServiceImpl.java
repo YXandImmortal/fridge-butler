@@ -61,6 +61,9 @@ public class ActivationKeyServiceImpl implements ActivationKeyService {
             throw BusinessException.activationKeyInvalid();
         }
         switch (key.getStatus()) {
+            case "UNUSED", "ISSUED" -> {
+                // 允许验证通过
+            }
             case "BOUND" -> {
                 log.warn("密钥验证失败，密钥已被使用：{}，用户ID：{}", keyCode, userId);
                 throw BusinessException.activationKeyAlreadyUsed();
@@ -73,11 +76,10 @@ public class ActivationKeyServiceImpl implements ActivationKeyService {
                 log.warn("密钥验证失败，密钥已销毁：{}，用户ID：{}", keyCode, userId);
                 throw BusinessException.activationKeyInvalid();
             }
-        }
-
-        if (!"UNUSED".equals(key.getStatus())) {
-            log.warn("密钥验证失败，密钥状态异常：{}，状态：{}，用户ID：{}", keyCode, key.getStatus(), userId);
-            throw BusinessException.activationKeyInvalid();
+            default -> {
+                log.warn("密钥验证失败，密钥状态异常：{}，状态：{}，用户ID：{}", keyCode, key.getStatus(), userId);
+                throw BusinessException.activationKeyInvalid();
+            }
         }
 
         // 查询用户

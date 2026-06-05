@@ -100,6 +100,27 @@ public class AdminActivationKeyServiceImpl implements AdminActivationKeyService 
 
     /**
      * {@inheritDoc}
+     * <p>发放密钥：将 UNUSED 状态的密钥改为 ISSUED。</p>
+     */
+    @Override
+    @Transactional
+    public void issueKey(Long id) {
+        SysActivationKey key = activationKeyRepository.findById(id)
+                .orElseThrow(BusinessException::notFound);
+
+        if (!"UNUSED".equals(key.getStatus())) {
+            log.warn("发放密钥失败，密钥ID：{}当前状态：{}不允许发放", id, key.getStatus());
+            throw BusinessException.activationKeyInvalid();
+        }
+
+        key.setStatus("ISSUED");
+        key.setUpdateTime(Instant.now());
+        activationKeyRepository.save(key);
+        log.info("管理员发放激活密钥成功，密钥ID：{}，密钥码：{}", id, key.getKeyCode());
+    }
+
+    /**
+     * {@inheritDoc}
      * <p>收回密钥：将状态改为 REVOKED，若已绑定用户则取消其激活状态。</p>
      */
     @Override
@@ -108,8 +129,9 @@ public class AdminActivationKeyServiceImpl implements AdminActivationKeyService 
         SysActivationKey key = activationKeyRepository.findById(id)
                 .orElseThrow(BusinessException::notFound);
 
-        if (!"BOUND".equals(key.getStatus()) && !"UNUSED".equals(key.getStatus())) {
-            log.warn("收回密钥失败，密钥ID：{}当前状态：{}不允许收回", id, key.getStatus());
+        String status = key.getStatus();
+        if (!"BOUND".equals(status) && !"UNUSED".equals(status) && !"ISSUED".equals(status)) {
+            log.warn("收回密钥失败，密钥ID：{}当前状态：{}不允许收回", id, status);
             throw BusinessException.activationKeyInvalid();
         }
 
@@ -131,7 +153,7 @@ public class AdminActivationKeyServiceImpl implements AdminActivationKeyService 
 
     /**
      * {@inheritDoc}
-     * <p>仅允许销毁 UNUSED 状态的密钥。</p>
+     * <p>仅允许销毁 UNUSED 或 ISSUED 状态的密钥。</p>
      */
     @Override
     @Transactional
@@ -139,12 +161,15 @@ public class AdminActivationKeyServiceImpl implements AdminActivationKeyService 
         SysActivationKey key = activationKeyRepository.findById(id)
                 .orElseThrow(BusinessException::notFound);
 
-        if (!"UNUSED".equals(key.getStatus())) {
-            log.warn("销毁密钥失败，密钥ID：{}当前状态：{}不允许销毁", id, key.getStatus());
+        String status = key.getStatus();
+        if (!"UNUSED".equals(status) && !"ISSUED".equals(status)) {
+            log.warn("销毁密钥失败，密钥ID：{}当前状态：{}不允许销毁", id, status);
             throw BusinessException.activationKeyInvalid();
         }
 
-        activationKeyRepository.delete(key);
+        key.setStatus("DESTROYED");
+        key.setUpdateTime(Instant.now());
+        activationKeyRepository.save(key);
         log.info("管理员销毁激活密钥成功，密钥ID：{}，密钥码：{}", id, key.getKeyCode());
     }
 

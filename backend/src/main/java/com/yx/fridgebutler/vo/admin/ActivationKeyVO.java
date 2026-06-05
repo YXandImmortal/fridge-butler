@@ -25,7 +25,7 @@ public class ActivationKeyVO {
     private String keyCode;
 
     /**
-     * 密钥状态：UNUSED-未使用, BOUND-已绑定, REVOKED-已收回, DESTROYED-已销毁
+     * 密钥状态：UNUSED-未使用, ISSUED-已发放, BOUND-已绑定, REVOKED-已收回, DESTROYED-已销毁
      */
     private String status;
 

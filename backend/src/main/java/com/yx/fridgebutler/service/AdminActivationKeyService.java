@@ -37,8 +37,16 @@ public interface AdminActivationKeyService {
     void revokeKey(Long id);
 
     /**
+     * 发放激活密钥
+     * <p>将 UNUSED 状态的密钥改为 ISSUED，表示已发放给用户。</p>
+     *
+     * @param id 密钥ID
+     */
+    void issueKey(Long id);
+
+    /**
      * 销毁激活密钥
-     * <p>仅允许销毁 UNUSED 状态的密钥。</p>
+     * <p>仅允许销毁 UNUSED 或 ISSUED 状态的密钥。</p>
      *
      * @param id 密钥ID
      */

@@ -1,8 +1,10 @@
 package com.yx.fridgebutler.config;
 
+import com.yx.fridgebutler.entity.BizFridgeType;
 import com.yx.fridgebutler.entity.BizItemCategory;
 import com.yx.fridgebutler.entity.BizItemUnit;
 import com.yx.fridgebutler.entity.BizUnitType;
+import com.yx.fridgebutler.repository.BizFridgeTypeRepository;
 import com.yx.fridgebutler.repository.BizItemCategoryRepository;
 import com.yx.fridgebutler.repository.BizItemUnitRepository;
 import com.yx.fridgebutler.repository.BizUnitTypeRepository;
@@ -70,6 +72,30 @@ public class BizSystemDataInitializer implements ApplicationRunner {
             "熟食", "烘焙", "冷冻食品", "粮食", "零食", "豆制品", "酱料"
     );
 
+    /**
+     * 系统默认冰箱类型列表。
+     * <p>严格按照预设 id 和 type_name 初始化，保持顺序稳定。</p>
+     */
+    private static final List<FridgeTypeDef> DEFAULT_FRIDGE_TYPES = List.of(
+            new FridgeTypeDef(1L, "单门冰箱"),
+            new FridgeTypeDef(2L, "双门冰箱"),
+            new FridgeTypeDef(3L, "三门冰箱"),
+            new FridgeTypeDef(4L, "对开门冰箱"),
+            new FridgeTypeDef(5L, "十字对开门"),
+            new FridgeTypeDef(6L, "T型三门"),
+            new FridgeTypeDef(7L, "法式多门冰箱"),
+            new FridgeTypeDef(8L, "日式多门冰箱")
+    );
+
+    /**
+     * 冰箱类型初始化固定时间戳（UTC）。
+     * <p>对应北京时间 2026-05-21 20:40:32。</p>
+     */
+    private static final Instant FRIDGE_TYPE_INIT_TIME = Instant.parse("2026-05-21T12:40:32Z");
+
+    @Autowired
+    private BizFridgeTypeRepository fridgeTypeRepository;
+
     @Autowired
     private BizUnitTypeRepository unitTypeRepository;
 
@@ -87,6 +113,7 @@ public class BizSystemDataInitializer implements ApplicationRunner {
         Map<String, BizUnitType> unitTypeMap = initUnitTypes();
         initItemCategories();
         initItemUnits(unitTypeMap);
+        initFridgeTypes();
 
         log.info("========== 业务系统默认数据初始化结束 ==========");
     }
@@ -207,5 +234,53 @@ public class BizSystemDataInitializer implements ApplicationRunner {
         } else {
             log.info("系统默认物品单位已存在，跳过初始化。");
         }
+    }
+
+    /**
+     * 初始化系统默认冰箱类型。
+     * <p>严格按照预设的 id 和 type_name 进行幂等判断，任一字段冲突均跳过。</p>
+     */
+    private void initFridgeTypes() {
+        List<BizFridgeType> existing = fridgeTypeRepository.findAllByIsDeletedFalse();
+        Set<Long> existingIds = existing.stream()
+                .map(BizFridgeType::getId)
+                .collect(Collectors.toSet());
+        Set<String> existingNames = existing.stream()
+                .map(BizFridgeType::getTypeName)
+                .collect(Collectors.toSet());
+
+        List<BizFridgeType> toSave = new ArrayList<>();
+        for (FridgeTypeDef def : DEFAULT_FRIDGE_TYPES) {
+            if (existingIds.contains(def.id())) {
+                log.info("冰箱类型 id=[{}] 已存在，跳过创建。", def.id());
+                continue;
+            }
+            if (existingNames.contains(def.typeName())) {
+                log.info("冰箱类型 typeName=[{}] 已存在，跳过创建。", def.typeName());
+                continue;
+            }
+
+            BizFridgeType type = new BizFridgeType();
+            type.setId(def.id());
+            type.setTypeName(def.typeName());
+            type.setIsDeleted(false);
+            type.setCreateTime(FRIDGE_TYPE_INIT_TIME);
+            type.setUpdateTime(FRIDGE_TYPE_INIT_TIME);
+            toSave.add(type);
+            log.info("准备创建系统默认冰箱类型: id={}, typeName={}", def.id(), def.typeName());
+        }
+
+        if (!toSave.isEmpty()) {
+            fridgeTypeRepository.saveAll(toSave);
+            log.info("系统默认冰箱类型初始化完成，本次新增 {} 条。", toSave.size());
+        } else {
+            log.info("系统默认冰箱类型已存在，跳过初始化。");
+        }
+    }
+
+    /**
+     * 冰箱类型定义内部记录。
+     */
+    private record FridgeTypeDef(Long id, String typeName) {
     }
 }
