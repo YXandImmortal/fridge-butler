@@ -355,11 +355,9 @@ export const useUserStore = defineStore('user', () => {
     }
 
     // 激活账号（验证密钥成功后调用）
-    const activateAccount = (newToken) => {
-        token.value = newToken
-        isActivated.value = true
-        syncFieldToStorage('token', newToken)
-        syncFieldToStorage('isActivated', true)
+    // 后端返回的数据格式与登录一致，直接复用 saveLoginData 完整更新所有字段
+    const activateAccount = (data) => {
+        saveLoginData(data)
     }
 
     // 设置激活状态（供拦截器调用）

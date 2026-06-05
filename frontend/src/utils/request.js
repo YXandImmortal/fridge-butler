@@ -1,7 +1,7 @@
 import axios from 'axios'
 import {useUserStore} from '@/stores/user'
 import showMessage from '@/utils/message'
-import {replaceToLogin, toForbidden, toServerError, toServiceUnavailable, toActivation} from '@/utils/navigate'
+import {replaceToLogin, toForbidden, toServerError, toServiceUnavailable, toActivation, toAccountDisabled} from '@/utils/navigate'
 
 // 创建axios实例
 const service = axios.create({
@@ -36,7 +36,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
     (response) => {
         const data = response.data
-        // 用户未激活（业务码 460，HTTP 状态码 200）
+        // 兼容旧版：账号未激活仍可能返回 HTTP 200
         if (data.code === 460) {
             const userStore = useUserStore()
             userStore.setActivationStatus(false)
@@ -49,29 +49,61 @@ service.interceptors.response.use(
     (error) => {
         if (error.response) {
             const status = error.response.status
+            const data = error.response.data
             // 优先读取后端返回的业务错误消息
-            const backendMessage = error.response.data?.message
+            const backendMessage = data?.message
+            const isLoginRequest = error.config?.url?.includes('/auth/login')
 
             // 处理401未授权错误
             if (status === 401) {
-                const userStore = useUserStore()
-                userStore.logout()
-                showMessage.error(backendMessage || '登录已过期，请重新登录')
-                replaceToLogin()
+                if (isLoginRequest) {
+                    showMessage.error(backendMessage || '用户名或密码错误')
+                } else {
+                    const userStore = useUserStore()
+                    userStore.logout()
+                    showMessage.error(backendMessage || '登录已过期，请重新登录')
+                    replaceToLogin()
+                }
             } else if (status === 403) {
-                // 权限不足，跳转403页面
-                showMessage.error(backendMessage || '权限不足')
-                toForbidden()
+                // 业务码 461 = 账号被禁用；登录接口的 403 也视为账号被禁用
+                if (isLoginRequest || data?.code === 461) {
+                    const userStore = useUserStore()
+                    userStore.logout()
+                    showMessage.error(backendMessage || '账号已被禁用')
+                    toAccountDisabled()
+                } else {
+                    // 权限不足，跳转403页面
+                    showMessage.error(backendMessage || '权限不足')
+                    toForbidden()
+                }
+            } else if (status === 404) {
+                showMessage.error(backendMessage || '请求的资源不存在')
             } else if (status === 500) {
                 // 服务器内部错误，跳转500页面
                 showMessage.error(backendMessage || '服务器内部错误')
                 toServerError()
             } else if (status === 503) {
-                // 服务不可用，跳转503页面（预留）
-                showMessage.error(backendMessage || '服务不可用')
-                toServiceUnavailable()
+                const isAiRequest = error.config?.url?.includes('/ai/chat')
+                if (isAiRequest) {
+                    // AI 聊天接口的 503 只弹提示不跳转页面，避免中断聊天体验
+                    showMessage.error(backendMessage || 'AI 服务繁忙，请稍后重试')
+                } else {
+                    // 服务不可用，跳转503页面（预留）
+                    showMessage.error(backendMessage || 'AI服务暂时不可用，请稍后重试')
+                    toServiceUnavailable()
+                }
+            } else if (status === 400) {
+                if (data?.code === 460) {
+                    // 账号未激活
+                    const userStore = useUserStore()
+                    userStore.setActivationStatus(false)
+                    showMessage.warning(backendMessage || '账号未激活，请先输入激活密钥')
+                    toActivation()
+                } else {
+                    // 参数校验失败等通用业务错误
+                    showMessage.error(backendMessage || error.message || '请求参数错误')
+                }
             } else {
-                // 400等其他错误，优先显示后端返回的消息
                 showMessage.error(backendMessage || error.message || '服务器错误')
             }
         } else {

@@ -156,10 +156,15 @@ const handleOverlayClick = () => {
 const handleSubmit = async () => {
   if (loading.value) return
 
+  // 先验证表单
   try {
-    const valid = await formRef.value.validate().catch(() => false)
-    if (!valid) return
+    await formRef.value.validate()
+  } catch {
+    return // 表单验证失败，直接返回
+  }
 
+  // 执行修改密码请求
+  try {
     loading.value = true
 
     const changePasswordData = {
@@ -181,13 +186,13 @@ const handleSubmit = async () => {
       await captchaInputRef.value?.refreshCaptcha()
     }
   } catch (error) {
-    if (error?.message) {
-      console.log('表单验证失败')
-    } else {
-      console.error('修改密码失败:', error)
-      showMessage.error('修改密码失败')
-      await captchaInputRef.value?.refreshCaptcha()
+    // 网络错误、请求超时、拦截器reject等异常情况
+    console.error('修改密码失败:', error)
+    if (!error.response) {
+      // 只有真正的网络/超时错误才兜底提示；业务错误已由响应拦截器处理
+      showMessage.error(error.message || '修改密码失败')
     }
+    await captchaInputRef.value?.refreshCaptcha()
   } finally {
     loading.value = false
   }

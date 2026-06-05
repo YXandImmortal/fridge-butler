@@ -182,26 +182,52 @@ const passwordForm = ref({
   captcha: ''
 });
 
+// 自定义验证规则：新密码
+const validateNewPassword = (rule, value, callback) => {
+  if (value === '') {
+    callback(new Error('请输入新密码'))
+  } else if (value.length < 8 || value.length > 20) {
+    callback(new Error('密码长度应为8-20位'))
+  } else {
+    let typeCount = 0
+    if (/[A-Z]/.test(value)) typeCount++
+    if (/[a-z]/.test(value)) typeCount++
+    if (/[0-9]/.test(value)) typeCount++
+    if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value)) typeCount++
+
+    if (typeCount < 2) {
+      callback(new Error('密码需包含大写字母、小写字母、数字、特殊符号中的至少两种'))
+    } else if (userForm.value.username && value.includes(userForm.value.username)) {
+      callback(new Error('密码不能包含用户名'))
+    } else if (userForm.value.mobile && value.includes(userForm.value.mobile)) {
+      callback(new Error('密码不能包含手机号'))
+    } else {
+      callback()
+    }
+  }
+}
+
+// 自定义验证规则：确认新密码
+const validateConfirmNewPassword = (rule, value, callback) => {
+  if (value === '') {
+    callback(new Error('请再次输入密码'))
+  } else if (value !== passwordForm.value.newPassword) {
+    callback(new Error('两次输入的密码不一致'))
+  } else {
+    callback()
+  }
+}
+
 // 密码修改表单验证规则
 const passwordRules = {
   originalPassword: [
     {required: true, message: '原密码不能为空', trigger: 'blur'}
   ],
   newPassword: [
-    {required: true, message: '新密码不能为空', trigger: 'blur'},
-    {min: 6, message: '新密码长度至少为6位', trigger: 'blur'}
+    {required: true, validator: validateNewPassword, trigger: 'blur'}
   ],
   confirmNewPassword: [
-    {required: true, message: '确认新密码不能为空', trigger: 'blur'},
-    {
-      validator: (rule, value, callback) => {
-        if (value !== passwordForm.value.newPassword) {
-          callback(new Error('两次输入的密码不一致'));
-        } else {
-          callback();
-        }
-      }, trigger: 'blur'
-    }
+    {required: true, validator: validateConfirmNewPassword, trigger: 'blur'}
   ],
   captcha: [
     {required: true, message: '验证码不能为空', trigger: 'blur'},
@@ -277,9 +303,15 @@ const handleChangePassword = async () => {
 const handleChangePasswordSubmit = async () => {
   if (loadingChangePassword.value) return;
 
+  // 先验证表单
   try {
     await passwordFormRef.value.validate();
+  } catch {
+    return; // 表单验证失败，直接返回
+  }
 
+  // 执行修改密码请求
+  try {
     loadingChangePassword.value = true;
 
     // 传递captchaId到修改密码请求
@@ -309,15 +341,14 @@ const handleChangePasswordSubmit = async () => {
       await captchaInputRef.value?.refreshCaptcha();
     }
   } catch (error) {
-    if (error?.message) {
-      console.log('表单验证失败');
-    } else {
-      // 网络错误等异常情况
-      console.error('修改密码失败:', error);
-      showMessage.error('修改密码失败');
-      // 异常时刷新验证码
-      await captchaInputRef.value?.refreshCaptcha();
+    // 网络错误、请求超时、拦截器reject等异常情况
+    console.error('修改密码失败:', error);
+    if (!error.response) {
+      // 只有真正的网络/超时错误才兜底提示；业务错误已由响应拦截器处理
+      showMessage.error(error.message || '修改密码失败');
     }
+    // 异常时刷新验证码
+    await captchaInputRef.value?.refreshCaptcha();
   } finally {
     loadingChangePassword.value = false;
   }

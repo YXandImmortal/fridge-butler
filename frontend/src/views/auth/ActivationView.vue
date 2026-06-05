@@ -113,7 +113,7 @@ const handleSubmit = async () => {
     loading.value = true
     const res = await verifyActivationKey({ keyCode: form.value.keyCode })
     if (res.code === 200 && res.data) {
-      userStore.activateAccount(res.data.token)
+      userStore.saveLoginData(res.data)
       showMessage.success('激活成功')
       router.replace({ name: 'user-index' })
     } else {
@@ -122,6 +122,11 @@ const handleSubmit = async () => {
   } catch (error) {
     if (error?.message && !error.response) {
       // 表单验证失败或已处理的业务错误
+      return
+    }
+    if (error.response) {
+      // 响应拦截器已处理并提示，这里只打印日志
+      console.error('激活失败:', error)
       return
     }
     console.error('激活失败:', error)

@@ -519,26 +519,37 @@ async function doSendChat(text, currentAttachments) {
       },
       onError: (msg) => {
         console.error('SSE 流式错误:', msg)
+        // 默认标记为可降级；如果是 503 HTTP 错误，后续 catch 会覆盖为 false
         useFallback = true
         const idx = messages.value.indexOf(assistantMsg)
         if (idx !== -1) {
-          messages.value.splice(idx, 1)
+          messages.value[idx] = {
+            ...assistantMsg,
+            content: msg || 'AI 服务繁忙，请稍后重试',
+            messageType: 'text'
+          }
         }
       }
     })
   } catch (err) {
-    if (err.name !== 'AbortError') {
-      console.error('SSE 请求失败:', err)
-      useFallback = true
-      const idx = messages.value.indexOf(assistantMsg)
-      if (idx !== -1) {
-        messages.value.splice(idx, 1)
-      }
-    } else {
+    if (err.name === 'AbortError') {
       // 用户主动中断或组件卸载
       aiTyping.value = false
       abortController.value = null
       return
+    }
+    console.error('SSE 请求失败:', err)
+    if (err.message === 'AI_SERVICE_UNAVAILABLE') {
+      // 503 已在 onError 中展示错误消息，不再降级到同步接口
+      useFallback = false
+      aiTyping.value = false
+      abortController.value = null
+      return
+    }
+    useFallback = true
+    const idx = messages.value.indexOf(assistantMsg)
+    if (idx !== -1) {
+      messages.value.splice(idx, 1)
     }
   }
 

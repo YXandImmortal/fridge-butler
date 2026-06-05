@@ -106,6 +106,7 @@
       confirm-text="确定重置"
       cancel-text="取消"
       @confirm="confirmResetPassword"
+      width="400px"
     />
 
     <!-- 禁用/启用确认 -->
@@ -116,30 +117,16 @@
       confirm-text="确定"
       cancel-text="取消"
       @confirm="confirmToggleStatus"
+      width="400px"
     />
 
     <!-- 重置密码结果 -->
-    <el-dialog
-      v-model="resetPwdResultVisible"
-      title="密码重置成功"
-      width="400px"
-      :show-close="false"
-      :close-on-click-modal="false"
-    >
-      <div class="reset-pwd-result">
-        <p class="result-text">用户 <strong>{{ selectedUser?.username }}</strong> 的密码已重置为：</p>
-        <div class="pwd-box">
-          <code>{{ newPassword }}</code>
-          <el-button type="primary" size="small" @click="handleCopyPassword">
-            复制
-          </el-button>
-        </div>
-        <p class="result-hint">请妥善保存，关闭后将无法再次查看。</p>
-      </div>
-      <template #footer>
-        <el-button type="primary" @click="resetPwdResultVisible = false">我知道了</el-button>
-      </template>
-    </el-dialog>
+    <ResetPasswordResultDialog
+      v-model:visible="resetPwdResultVisible"
+      :username="selectedUser?.username"
+      :password="newPassword"
+      @copy="handleCopyPassword"
+    />
   </div>
 </template>
 
@@ -147,6 +134,7 @@
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user.js'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import ResetPasswordResultDialog from '@/components/ui/ResetPasswordResultDialog.vue'
 import SearchBar from '@/components/form/SearchBar.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
@@ -344,7 +332,7 @@ const handleToggleStatus = (row) => {
 const confirmToggleStatus = async () => {
   if (!selectedUser.value) return
   try {
-    const newStatus = selectedUser.value.status === true ? false : true
+    const newStatus = selectedUser.value.status !== true
     const res = await updateUserStatus(selectedUser.value.id, newStatus)
     if (res.code === 200) {
       showMessage.success(newStatus === true ? '用户已启用' : '用户已禁用')
@@ -418,43 +406,6 @@ onMounted(() => {
 }
 
 
-
-/* 重置密码结果 */
-.reset-pwd-result {
-  text-align: center;
-}
-
-.result-text {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0 0 var(--space-4);
-}
-
-.pwd-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-  background: var(--primary-light);
-  border: 1px dashed var(--primary-30);
-  border-radius: var(--radius-sm);
-  padding: var(--space-4) var(--space-5);
-  margin-bottom: var(--space-4);
-
-  code {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--primary-color);
-    font-family: 'Courier New', monospace;
-    letter-spacing: 1px;
-  }
-}
-
-.result-hint {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  margin: 0;
-}
 
 /* 响应式 */
 @media (max-width: 768px) {

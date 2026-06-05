@@ -236,6 +236,11 @@ const router = createRouter({
             name: 'activation',
             component: () => import('@/views/auth/ActivationView.vue')
         },
+        {
+            path: '/account-disabled',
+            name: 'account-disabled',
+            component: () => import('@/views/auth/AccountDisabledView.vue')
+        },
         // 错误页面路由
         {
             path: '/403',

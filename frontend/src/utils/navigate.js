@@ -72,3 +72,14 @@ export function toActivation() {
         window.location.href = '/activation'
     }
 }
+
+/**
+ * 替换到账号禁用提示页（不保留历史记录）
+ */
+export function toAccountDisabled() {
+    if (routerInstance) {
+        routerInstance.replace({name: 'account-disabled'})
+    } else {
+        window.location.href = '/account-disabled'
+    }
+}

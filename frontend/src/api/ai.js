@@ -103,6 +103,16 @@ export async function sendChatMessageStream({
             throw new Error('Unauthorized')
         }
         const err = await response.json().catch(() => ({}))
+        if (response.status === 503) {
+            const msg = err.message || 'AI 服务繁忙，请稍后重试'
+            onError?.(msg)
+            throw new Error('AI_SERVICE_UNAVAILABLE')
+        }
+        if (response.status === 403) {
+            const msg = err.message || '无权访问该资源'
+            onError?.(msg)
+            throw new Error(msg)
+        }
         throw new Error(err.message || `HTTP ${response.status}`)
     }
 

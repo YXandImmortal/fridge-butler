@@ -113,9 +113,15 @@ const loginRules = {
 const handleLogin = async () => {
   if (loading.value) return
 
+  // 先验证表单
   try {
     await loginFormRef.value.validate()
+  } catch {
+    return // 表单验证失败，直接返回
+  }
 
+  // 执行登录请求
+  try {
     loading.value = true
 
     // 传递captchaId到登录请求
@@ -144,14 +150,10 @@ const handleLogin = async () => {
       await captchaInputRef.value?.refreshCaptcha()
     }
   } catch (error) {
-    if (error?.message) {
-      console.log('表单验证失败')
-    } else {
-      // 网络错误等异常情况
-      console.error('登录失败:', error)
-      // 异常时刷新验证码
-      captchaInputRef.value?.refreshCaptcha()
-    }
+    // 网络错误、请求超时、拦截器reject等异常情况
+    console.error('登录失败:', error)
+    // 异常时刷新验证码
+    await captchaInputRef.value?.refreshCaptcha()
   } finally {
     loading.value = false
   }
