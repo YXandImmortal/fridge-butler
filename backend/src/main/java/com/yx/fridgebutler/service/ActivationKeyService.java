@@ -1,5 +1,7 @@
 package com.yx.fridgebutler.service;
 
+import com.yx.fridgebutler.vo.LoginVO;
+
 /**
  * 用户激活密钥服务接口
  */
@@ -11,9 +13,9 @@ public interface ActivationKeyService {
      *
      * @param keyCode 密钥字符串
      * @param userId  当前用户ID
-     * @return 新的 JWT Token
+     * @return 登录信息（含新的 JWT Token）
      */
-    String verifyKey(String keyCode, Long userId);
+    LoginVO verifyKey(String keyCode, Long userId);
 
     /**
      * 查询用户激活状态

@@ -2,6 +2,7 @@ package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.dto.activation.ActivationKeyVerifyRequest;
 import com.yx.fridgebutler.service.ActivationKeyService;
+import com.yx.fridgebutler.vo.LoginVO;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -40,14 +41,14 @@ public class ActivationKeyController {
      *
      * @param request     HTTP 请求对象
      * @param verifyRequest 密钥验证请求
-     * @return 新的 JWT Token
+     * @return 登录信息（含新的 JWT Token）
      */
     @PostMapping("/verify")
-    public Result<String> verifyKey(HttpServletRequest request,
-                                    @Valid @RequestBody ActivationKeyVerifyRequest verifyRequest) {
+    public Result<LoginVO> verifyKey(HttpServletRequest request,
+                                     @Valid @RequestBody ActivationKeyVerifyRequest verifyRequest) {
         Long userId = (Long) request.getAttribute("userId");
         log.info("用户提交激活密钥，用户ID：{}，密钥：{}", userId, verifyRequest.getKeyCode());
-        String newToken = activationKeyService.verifyKey(verifyRequest.getKeyCode(), userId);
-        return Result.success(newToken);
+        LoginVO loginVO = activationKeyService.verifyKey(verifyRequest.getKeyCode(), userId);
+        return Result.success(loginVO);
     }
 }

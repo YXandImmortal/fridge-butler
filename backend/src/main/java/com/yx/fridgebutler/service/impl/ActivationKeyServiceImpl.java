@@ -7,6 +7,7 @@ import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.SysActivationKeyRepository;
 import com.yx.fridgebutler.repository.SysRoleRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
+import com.yx.fridgebutler.vo.LoginVO;
 import com.yx.fridgebutler.service.ActivationKeyService;
 import com.yx.fridgebutler.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 /**
  * 用户激活密钥服务实现类
@@ -22,6 +25,9 @@ import java.time.Instant;
 @Slf4j
 @Service
 public class ActivationKeyServiceImpl implements ActivationKeyService {
+
+    private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     private SysActivationKeyRepository activationKeyRepository;
@@ -41,7 +47,7 @@ public class ActivationKeyServiceImpl implements ActivationKeyService {
      */
     @Override
     @Transactional
-    public String verifyKey(String keyCode, Long userId) {
+    public LoginVO verifyKey(String keyCode, Long userId) {
         // 查询密钥
         SysActivationKey key = activationKeyRepository.findByKeyCode(keyCode.toUpperCase())
                 .orElseThrow(() -> {
@@ -91,14 +97,46 @@ public class ActivationKeyServiceImpl implements ActivationKeyService {
 
         log.info("用户激活成功，用户ID：{}，用户名：{}，密钥：{}", userId, user.getUsername(), keyCode);
 
-        // 生成新的 JWT Token（activated = true）
-        return jwtUtil.generateToken(
+        // 查询角色信息
+        SysRole role = user.getRoleId() != null
+                ? sysRoleRepository.findById(user.getRoleId()).orElse(null)
+                : null;
+        String roleCode = role != null ? role.getRoleCode() : "USER";
+        String roleName = role != null ? role.getRoleName() : "USER";
+
+        // 生成新的 JWT Token（activated = true, rememberMe = true）
+        String token = jwtUtil.generateToken(
                 user.getUsername(),
                 user.getId(),
-                getRoleCode(user),
+                roleCode,
                 true,
                 true
         );
+
+        // 计算Token过期时间
+        Long expireTime = System.currentTimeMillis() + jwtUtil.getRememberMeExpiration();
+
+        // 判断是否需要修改初始密码
+        boolean requirePasswordChange = user.getPasswordUpdatedAt() == null;
+
+        return LoginVO.builder()
+                .token(token)
+                .username(user.getUsername())
+                .mobile(user.getMobile())
+                .roleName(roleName)
+                .createTime(user.getCreateTime() != null
+                        ? user.getCreateTime().atZone(ZONE_ID_SHANGHAI).format(DATE_TIME_FORMATTER)
+                        : null)
+                .roleId(user.getRoleId())
+                .userId(user.getId())
+                .rememberMe(true)
+                .avatar(user.getAvatar())
+                .expireTime(expireTime)
+                .guideCompleted(user.getGuideCompleted())
+                .requirePasswordChange(requirePasswordChange)
+                .needActivation(false)
+                .isActivated(true)
+                .build();
     }
 
     /**
@@ -111,18 +149,4 @@ public class ActivationKeyServiceImpl implements ActivationKeyService {
                 .orElse(false);
     }
 
-    /**
-     * 获取用户角色编码
-     *
-     * @param user 用户实体
-     * @return 角色编码
-     */
-    private String getRoleCode(SysUser user) {
-        if (user.getRoleId() == null) {
-            return "USER";
-        }
-        return sysRoleRepository.findById(user.getRoleId())
-                .map(SysRole::getRoleCode)
-                .orElse("USER");
-    }
 }
