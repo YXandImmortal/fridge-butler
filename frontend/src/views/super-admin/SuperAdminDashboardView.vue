@@ -99,7 +99,7 @@
                 <el-tag :type="methodTagType(row.method)" size="small">{{ row.method }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="uri" label="请求路径" min-width="180" show-overflow-tooltip />
+            <el-table-column prop="uri" label="请求路径" min-width="180" />
             <el-table-column prop="statusCode" label="状态" width="80">
               <template #default="{ row }">
                 <el-tag :type="statusTagType(row.statusCode)" size="small">{{ row.statusCode }}</el-tag>

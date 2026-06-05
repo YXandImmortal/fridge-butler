@@ -52,7 +52,7 @@
       <el-empty v-if="!loading && logList.length === 0" description="暂无日志数据" />
       <template v-else>
         <el-table max-height="520px" :data="logList" style="width: 100%" @row-click="handleRowClick">
-          <el-table-column prop="username" label="用户" min-width="100" show-overflow-tooltip />
+          <el-table-column prop="username" label="用户" min-width="100" />
           <el-table-column prop="method" label="方法" width="80">
             <template #default="{ row }">
               <el-tag :type="methodTagType(row.method)" size="small" class="method-tag">
@@ -60,7 +60,7 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="uri" label="请求路径" min-width="180" show-overflow-tooltip />
+          <el-table-column prop="uri" label="请求路径" min-width="180" />
           <el-table-column prop="ip" label="IP" min-width="120" />
           <el-table-column prop="statusCode" label="状态" width="80">
             <template #default="{ row }">

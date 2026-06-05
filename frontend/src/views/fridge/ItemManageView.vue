@@ -137,7 +137,7 @@
                 :header-cell-style="{ color: 'var(--text-primary)', fontWeight: 600 }"
                 width="100%"
             >
-              <el-table-column label="物品名称" min-width="140" show-overflow-tooltip>
+              <el-table-column label="物品名称" min-width="140">
                 <template #default="{ row }">
                   <div class="item-name-cell">
                     <div class="item-icon-sm">
@@ -201,7 +201,7 @@
                 </template>
               </el-table-column>
 
-              <el-table-column label="备注" min-width="140" show-overflow-tooltip>
+              <el-table-column label="备注" min-width="140">
                 <template #default="{ row }">
                   <span class="remark-text">{{ row.remark || '-' }}</span>
                 </template>

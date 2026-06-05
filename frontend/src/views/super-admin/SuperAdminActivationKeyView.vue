@@ -54,7 +54,7 @@
       <el-empty v-if="!loading && keyList.length === 0" description="暂无密钥数据" />
       <template v-else>
         <el-table max-height="520px" :data="keyList" style="width: 100%">
-          <el-table-column prop="keyCode" label="密钥码" min-width="180" show-overflow-tooltip>
+          <el-table-column prop="keyCode" label="密钥码" min-width="180">
             <template #default="{ row }">
               <span class="keycode-text" @click="copyKeyCode(row.keyCode)">
                 {{ row.keyCode }}
@@ -79,7 +79,7 @@
               {{ row.boundTime || '-' }}
             </template>
           </el-table-column>
-          <el-table-column prop="remark" label="备注" min-width="140" show-overflow-tooltip>
+          <el-table-column prop="remark" label="备注" min-width="140">
             <template #default="{ row }">
               {{ row.remark || '-' }}
             </template>

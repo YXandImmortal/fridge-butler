@@ -22,7 +22,7 @@
           :header-cell-style="{ color: 'var(--text-primary)', fontWeight: 600, background: 'var(--primary-10)' }"
           max-height="400"
       >
-        <el-table-column label="物品名称" min-width="140" show-overflow-tooltip>
+        <el-table-column label="物品名称" min-width="140">
           <template #default="{ row }">
             <div class="item-name-cell">
               <div class="item-icon-sm">
@@ -33,7 +33,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="所在冰箱" min-width="120" show-overflow-tooltip>
+        <el-table-column label="所在冰箱" min-width="120">
           <template #default="{ row }">
             <span class="fridge-name">{{ row.fridgeName }}</span>
           </template>

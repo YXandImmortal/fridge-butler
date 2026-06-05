@@ -39,7 +39,7 @@
       <el-empty v-if="!loading && userList.length === 0" description="暂无用户数据" />
       <template v-else>
         <el-table max-height="520px" :data="userList" style="width: 100%">
-          <el-table-column prop="username" label="用户名" min-width="120" show-overflow-tooltip />
+          <el-table-column prop="username" label="用户名" min-width="120" />
           <el-table-column prop="roleName" label="角色" width="120" />
           <el-table-column prop="status" label="状态" width="90">
             <template #default="{ row }">
