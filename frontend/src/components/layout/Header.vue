@@ -25,6 +25,7 @@
 
       <!-- 通知图标 -->
       <el-popover
+          v-if="!isSuperAdmin"
           trigger="click"
           :width="420"
           popper-class="notification-popover"
@@ -174,11 +175,15 @@ const recentNotifications = ref([])
 onMounted(async () => {
   initUser()
   await getSystemInfo()
-  notificationStore.init()
+  if (!isSuperAdmin.value) {
+    notificationStore.init()
+  }
 })
 
 onUnmounted(() => {
-  notificationStore.stopPolling()
+  if (!isSuperAdmin.value) {
+    notificationStore.stopPolling()
+  }
 })
 
 // ========== 通知下拉面板 ==========

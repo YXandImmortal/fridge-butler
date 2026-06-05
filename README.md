@@ -6,7 +6,7 @@
 
 > **智能管理您的冰箱，让食材更新鲜**
 
-[![Version](https://img.shields.io/badge/version-release%200.3.0-blue)](./backend/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-release%200.3.1-blue)](./CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-green)](./LICENSE)
 [![Status](https://img.shields.io/badge/status-Closed%20Beta-orange)](mailto:yxandimmortal@qq.com)
 
@@ -133,7 +133,7 @@ fridge-butler/
 
 ## 🤝 参与内测
 
-当前版本为 **内测版本（release 0.3.0）**，采用邀请制 / 激活码机制开放体验。
+当前版本为 **内测版本（release 0.3.1）**，采用邀请制 / 激活码机制开放体验。
 
 如果您对项目感兴趣，欢迎通过以下方式申请：
 

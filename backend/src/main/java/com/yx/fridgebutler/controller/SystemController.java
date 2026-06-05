@@ -131,6 +131,20 @@ public class SystemController {
 
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
+                    .version("release 0.3.1")
+                    .date("2026-6-5")
+                    .summary("体验优化与问题修复：激活码流程、错误提示与头像修复")
+                    .changes(Arrays.asList(
+                            "激活码验证后自动登录，无需再次输入账号密码",
+                            "账号被禁用时新增专属提示页面，体验更友好",
+                            "修复头像在某些环境下无法显示的问题",
+                            "管理员后台激活码管理支持「发放」状态，密钥流转更清晰",
+                            "系统错误提示全面升级，登录失败、无权访问等场景给出明确原因",
+                            "后端接口统一 /api 前缀，部署更规范",
+                            "多处交互细节与前端样式优化"
+                    ))
+                    .build(),
+            UpdateLogVO.builder()
                     .version("release 0.3.0")
                     .date("2026-6-4")
                     .summary("重大版本升级：超级管理员后台与官网正式上线")

@@ -16,9 +16,9 @@ jwt:
 
 system:
   name: 智鲜·引擎
-  version: release 0.3.0
+  version: release 0.3.1
   slogan: 智能管理您的冰箱，让食材更新鲜
-  build-time: 20260604-01
+  build-time: 20260605-02
   # 管理员账号自动初始化配置
   # 生产环境建议通过环境变量 ADMIN_AUTO_INIT_ENABLED 控制，首次部署时开启，完成后关闭
   admin:
