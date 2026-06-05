@@ -4,6 +4,7 @@ import com.yx.fridgebutler.enums.ResultCode;
 import com.yx.fridgebutler.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -26,16 +27,17 @@ public class GlobalExceptionHandler {
      * <p>
      * 当系统抛出BusinessException时，该方法会捕获并处理异常，
      * 记录警告日志并返回统一的错误响应结果。
+     * HTTP 状态码与业务错误码对齐（如 401/403/404/503 等）。
      * </p>
      *
      * @param e 业务异常对象，包含错误码和错误信息
      * @return 统一的错误响应结果，包含异常中的错误码和错误消息
      */
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BusinessException.class)
-    public Result<Void> handleBusinessException(BusinessException e) {
+    public ResponseEntity<Result<Void>> handleBusinessException(BusinessException e) {
         log.warn("业务异常：{}", e.getMessage());
-        return Result.error(e.getCode(), e.getMessage());
+        HttpStatus httpStatus = e.getHttpStatus() != null ? e.getHttpStatus() : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(httpStatus).body(Result.error(e.getCode(), e.getMessage()));
     }
 
     /**

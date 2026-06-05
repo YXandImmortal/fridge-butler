@@ -2,6 +2,7 @@ package com.yx.fridgebutler.exception;
 
 import com.yx.fridgebutler.enums.ResultCode;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 /**
  * 业务异常
@@ -19,14 +20,21 @@ public class BusinessException extends RuntimeException {
     private final Integer code;
 
     /**
+     * HTTP 状态码
+     */
+    private final HttpStatus httpStatus;
+
+    /**
      * 构造业务异常
      *
-     * @param code    错误码
-     * @param message 错误信息
+     * @param code       错误码
+     * @param httpStatus HTTP 状态码
+     * @param message    错误信息
      */
-    public BusinessException(Integer code, String message) {
+    public BusinessException(Integer code, HttpStatus httpStatus, String message) {
         super(message);
         this.code = code;
+        this.httpStatus = httpStatus;
     }
 
     /**
@@ -37,6 +45,7 @@ public class BusinessException extends RuntimeException {
     public BusinessException(ResultCode resultCode) {
         super(resultCode.getMessage());
         this.code = resultCode.getCode();
+        this.httpStatus = resultCode.getHttpStatus();
     }
 
 
@@ -87,7 +96,7 @@ public class BusinessException extends RuntimeException {
      * @return 账号禁用业务异常
      */
     public static BusinessException loginForbidden() {
-        return new BusinessException(ResultCode.LOGIN_FAILED_ACCOUNT_DISABLED);
+        return new BusinessException(ResultCode.USER_ACCOUNT_DISABLED);
     }
 
     /**
@@ -457,7 +466,11 @@ public class BusinessException extends RuntimeException {
      * @return AI 服务调用失败业务异常
      */
     public static BusinessException deepSeekApiError(String detail) {
-        return new BusinessException(ResultCode.DEEPSEEK_API_ERROR.getCode(), ResultCode.DEEPSEEK_API_ERROR.getMessage() + ": " + detail);
+        return new BusinessException(
+                ResultCode.DEEPSEEK_API_ERROR.getCode(),
+                ResultCode.DEEPSEEK_API_ERROR.getHttpStatus(),
+                ResultCode.DEEPSEEK_API_ERROR.getMessage() + ": " + detail
+        );
     }
 
 }
