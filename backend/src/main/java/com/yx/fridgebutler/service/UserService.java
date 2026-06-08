@@ -1,6 +1,8 @@
 package com.yx.fridgebutler.service;
 
+import com.yx.fridgebutler.dto.user.BindEmailRequest;
 import com.yx.fridgebutler.dto.user.UserChangePasswordRequest;
+import com.yx.fridgebutler.dto.user.UserEmailCaptchaRequest;
 import com.yx.fridgebutler.dto.user.UserInitPasswordRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateAvatarRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateRequest;
@@ -52,4 +54,20 @@ public interface UserService {
      * @param request 初始化密码请求参数
      */
     void initPassword(UserInitPasswordRequest request);
+
+    /**
+     * 发送绑定/修改邮箱验证码。
+     * <p>向目标邮箱发送 6 位数字验证码，用于登录后绑定或修改邮箱。</p>
+     *
+     * @param request 绑定邮箱验证码请求参数
+     */
+    void sendBindEmailCaptcha(UserEmailCaptchaRequest request);
+
+    /**
+     * 绑定或修改当前登录用户的邮箱。
+     * <p>校验验证码及邮箱是否被其他用户占用，验证通过后更新邮箱。</p>
+     *
+     * @param request 绑定邮箱请求参数
+     */
+    void bindEmail(BindEmailRequest request);
 }

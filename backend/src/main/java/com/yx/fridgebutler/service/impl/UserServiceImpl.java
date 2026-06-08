@@ -1,9 +1,14 @@
 package com.yx.fridgebutler.service.impl;
 
+import com.yx.fridgebutler.dto.user.BindEmailRequest;
 import com.yx.fridgebutler.dto.user.UserChangePasswordRequest;
+import com.yx.fridgebutler.dto.user.UserEmailCaptchaRequest;
 import com.yx.fridgebutler.dto.user.UserInitPasswordRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateAvatarRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateRequest;
+import com.yx.fridgebutler.enums.EmailTemplate;
+import com.yx.fridgebutler.service.EmailService;
+import com.yx.fridgebutler.service.NotificationService;
 import com.yx.fridgebutler.vo.UserInfoVO;
 import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.entity.SysUser;
@@ -12,6 +17,7 @@ import com.yx.fridgebutler.repository.SysRoleRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.service.UserService;
 import com.yx.fridgebutler.util.CaptchaManager;
+import com.yx.fridgebutler.util.EmailCaptchaManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,6 +58,17 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EmailCaptchaManager emailCaptchaManager;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    private static final String TYPE_BIND = "BIND";
+
     /**
      * {@inheritDoc}
      * <p>从 Security 上下文中获取当前用户名，查询用户及角色信息后组装为 VO 返回。</p>
@@ -70,6 +87,7 @@ public class UserServiceImpl implements UserService {
                 .username(user.getUsername())
                 .avatar(user.getAvatar())
                 .mobile(user.getMobile())
+                .email(user.getEmail())
                 .roleName(role.getRoleName())
                 .createTime(user.getCreateTime()
                         .atZone(ZONE_ID_SHANGHAI)
@@ -151,6 +169,14 @@ public class UserServiceImpl implements UserService {
         user.setPasswordUpdatedAt(Instant.now());
         userRepository.save(user);
 
+        // 发送密码修改成功通知
+        notificationService.createSystemNotification(
+                user.getId(),
+                "安全提醒：密码已修改",
+                "您的账号密码已被修改。如非本人操作，请立即联系管理员。",
+                "NONE"
+        );
+
         log.info("密码修改成功，用户名：{}", username);
     }
 
@@ -208,6 +234,118 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         log.info("首次登录密码初始化成功，用户名：{}", username);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 发送绑定/修改邮箱验证码流程：
+     * <ol>
+     *   <li>校验目标邮箱是否已被其他用户绑定</li>
+     *   <li>生成 6 位数字验证码（含 60 秒发送频率限制）</li>
+     *   <li>异步发送验证码邮件</li>
+     * </ol>
+     */
+    @Override
+    public void sendBindEmailCaptcha(UserEmailCaptchaRequest request) {
+        String email = normalizeEmail(request.getEmail());
+        log.info("发送绑定邮箱验证码请求，邮箱：{}", email);
+
+        String currentUsername = getUsernameFromToken();
+        SysUser currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(BusinessException::userNotFound);
+
+        // 检查邮件服务是否启用
+        if (!emailService.isEmailEnabled()) {
+            log.error("邮件服务未启用，无法发送绑定邮箱验证码到：{}", email);
+            throw BusinessException.emailSendFailed();
+        }
+
+        // 校验邮箱是否已被其他用户绑定
+        userRepository.findByEmail(email).ifPresent(existingUser -> {
+            if (!existingUser.getId().equals(currentUser.getId())) {
+                log.warn("发送绑定邮箱验证码失败，邮箱已被其他用户绑定：{}", email);
+                throw BusinessException.emailAlreadyBound();
+            }
+        });
+
+        try {
+            String captcha = emailCaptchaManager.generateCaptcha(TYPE_BIND, email);
+            emailService.sendTemplateMailSync(email, EmailTemplate.EMAIL_VERIFICATION, captcha);
+            log.info("绑定邮箱验证码已生成并发送，当前用户：{}，邮箱：{}", currentUsername, email);
+        } catch (IllegalStateException e) {
+            log.warn("绑定邮箱验证码发送过于频繁，邮箱：{}", email);
+            throw BusinessException.emailSendTooFrequent();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 绑定/修改邮箱流程：
+     * <ol>
+     *   <li>校验当前登录用户</li>
+     *   <li>校验邮箱验证码是否正确</li>
+     *   <li>校验邮箱是否已被其他用户绑定</li>
+     *   <li>更新用户邮箱</li>
+     * </ol>
+     */
+    @Override
+    public void bindEmail(BindEmailRequest request) {
+        String email = normalizeEmail(request.getEmail());
+        log.info("绑定邮箱请求，邮箱：{}", email);
+
+        String currentUsername = getUsernameFromToken();
+        SysUser currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(BusinessException::userNotFound);
+
+        // 校验邮箱验证码
+        if (!emailCaptchaManager.verifyCaptcha(TYPE_BIND, email, request.getCaptcha())) {
+            log.warn("绑定邮箱失败，验证码错误，用户：{}，邮箱：{}", currentUsername, email);
+            throw BusinessException.emailCaptchaError();
+        }
+
+        // 校验邮箱是否已被其他用户绑定
+        userRepository.findByEmail(email).ifPresent(existingUser -> {
+            if (!existingUser.getId().equals(currentUser.getId())) {
+                log.warn("绑定邮箱失败，邮箱已被其他用户绑定：{}", email);
+                throw BusinessException.emailAlreadyBound();
+            }
+        });
+
+        // 如果邮箱没有变化，直接返回成功
+        if (email.equals(normalizeEmail(currentUser.getEmail()))) {
+            log.info("绑定邮箱成功，邮箱未发生变化，用户：{}，邮箱：{}", currentUsername, email);
+            return;
+        }
+
+        // 更新邮箱
+        currentUser.setEmail(email);
+        currentUser.setUpdateTime(Instant.now());
+        userRepository.save(currentUser);
+
+        // 清除绑定邮箱提醒通知
+        notificationService.clearBindEmailReminder(currentUser.getId());
+
+        // 发送邮箱绑定成功通知
+        notificationService.createSystemNotification(
+                currentUser.getId(),
+                "邮箱绑定成功",
+                "您的账号已绑定邮箱 " + email + "，可用于密码找回和接收安全通知。",
+                "NONE"
+        );
+
+        log.info("绑定邮箱成功，用户：{}，邮箱：{}", currentUsername, email);
+    }
+
+    /**
+     * 标准化邮箱地址
+     *
+     * @param email 原始邮箱
+     * @return 去除首尾空格并转小写后的邮箱
+     */
+    private String normalizeEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase();
     }
 
     /**

@@ -53,6 +53,22 @@ public interface SysUserRepository extends JpaRepository<SysUser, Long> {
     boolean existsByMobile(String mobile);
 
     /**
+     * 根据邮箱查询用户。
+     *
+     * @param email 邮箱地址
+     * @return 符合条件的用户Optional对象
+     */
+    Optional<SysUser> findByEmail(String email);
+
+    /**
+     * 检查指定邮箱是否已存在。
+     *
+     * @param email 邮箱地址
+     * @return true 表示已存在，false 表示不存在
+     */
+    boolean existsByEmail(String email);
+
+    /**
      * 统计未删除的用户总数。
      *
      * @return 未删除用户数量

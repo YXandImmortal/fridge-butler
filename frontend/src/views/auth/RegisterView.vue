@@ -41,10 +41,29 @@
       <el-form-item prop="mobile">
         <EnhancedInput
             v-model="registerForm.mobile"
-            placeholder="请输入手机号码（选填，可用于登录）"
+            placeholder="请输入手机号码（选填,可用于登录）"
             icon="icon-device-phone"
         />
       </el-form-item>
+
+      <el-form-item prop="email">
+        <EmailVerifyInput
+            v-model="registerForm.email"
+            captcha-type="REGISTER"
+            @send="emailCaptchaVisible = true"
+        />
+      </el-form-item>
+
+      <transition name="el-zoom-in-top">
+        <el-form-item v-show="emailCaptchaVisible" prop="emailCaptcha">
+          <EnhancedInput
+              v-model="registerForm.emailCaptcha"
+              placeholder="请输入邮箱验证码"
+              icon="icon-captcha"
+              maxlength="6"
+          />
+        </el-form-item>
+      </transition>
 
       <el-form-item prop="captcha">
         <CaptchaInput
@@ -66,7 +85,7 @@
 </template>
 
 <script setup>
-import {ref, reactive, onMounted} from 'vue'
+import {ref, reactive, onMounted, watch} from 'vue'
 import {useRouter} from 'vue-router'
 import request from '@/utils/request.js'
 import showMessage from '@/utils/message.js'
@@ -76,6 +95,7 @@ import AuthLayout from "@/layouts/AuthLayout.vue"
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
 import EnhancedInput from "@/components/ui/EnhancedInput.vue"
 import CaptchaInput from "@/components/form/CaptchaInput.vue"
+import EmailVerifyInput from "@/components/form/EmailVerifyInput.vue"
 
 const router = useRouter()
 const systemStore = useSystemStore()
@@ -84,6 +104,7 @@ const {systemName, getSystemInfo} = systemStore;
 const registerFormRef = ref()
 const captchaInputRef = ref()
 const loading = ref(false)
+const emailCaptchaVisible = ref(false)
 
 // 初始化系统信息
 onMounted(async () => {
@@ -96,7 +117,15 @@ const registerForm = reactive({
   password: '',
   confirmPassword: '',
   mobile: '',
+  email: '',
+  emailCaptcha: '',
   captcha: ''
+})
+
+// 监听邮箱变化：修改或清空时隐藏验证码输入框并清空已输入的验证码
+watch(() => registerForm.email, () => {
+  emailCaptchaVisible.value = false
+  registerForm.emailCaptcha = ''
 })
 
 // 自定义验证规则：密码
@@ -135,6 +164,28 @@ const validateMobile = (rule, value, callback) => {
   }
 }
 
+// 自定义验证规则：邮箱（选填，填写时校验格式）
+const validateEmail = (rule, value, callback) => {
+  if (value === '' || value == null) {
+    callback()
+  } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
+    callback(new Error('邮箱格式不正确'))
+  } else {
+    callback()
+  }
+}
+
+// 自定义验证规则：邮箱验证码（填写了邮箱则必填）
+const validateEmailCaptcha = (rule, value, callback) => {
+  if (registerForm.email && (value === '' || value == null)) {
+    callback(new Error('请输入邮箱验证码'))
+  } else if (value && !/^\d{6}$/.test(value)) {
+    callback(new Error('邮箱验证码为6位数字'))
+  } else {
+    callback()
+  }
+}
+
 // 自定义验证规则：确认密码
 const validateConfirmPassword = (rule, value, callback) => {
   if (value === '') {
@@ -161,6 +212,12 @@ const registerRules = {
   mobile: [
     {validator: validateMobile, trigger: 'blur'}
   ],
+  email: [
+    {validator: validateEmail, trigger: 'blur'}
+  ],
+  emailCaptcha: [
+    {validator: validateEmailCaptcha, trigger: 'blur'}
+  ],
   captcha: [
     {required: true, message: '验证码不能为空', trigger: 'blur'},
     {min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur'}
@@ -170,6 +227,12 @@ const registerRules = {
 // 注册方法
 const handleRegister = async () => {
   if (loading.value) return
+
+  // 前置检查：已输入邮箱但未点击验证获取验证码
+  if (registerForm.email && !emailCaptchaVisible.value) {
+    showMessage.warning('您已输入邮箱，请先点击"验证"获取验证码')
+    return
+  }
 
   // 先验证表单
   try {

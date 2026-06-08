@@ -61,6 +61,7 @@ declare module 'vue' {
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElTour: typeof import('element-plus/es')['ElTour']
     ElTourStep: typeof import('element-plus/es')['ElTourStep']
+    EmailVerifyInput: typeof import('./src/components/form/EmailVerifyInput.vue')['default']
     EnhancedInput: typeof import('./src/components/ui/EnhancedInput.vue')['default']
     ExpiringItemTable: typeof import('./src/components/data-center/ExpiringItemTable.vue')['default']
     ForceChangePasswordDialog: typeof import('./src/components/ui/ForceChangePasswordDialog.vue')['default']

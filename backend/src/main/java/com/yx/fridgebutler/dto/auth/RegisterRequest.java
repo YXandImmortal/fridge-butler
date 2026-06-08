@@ -1,5 +1,6 @@
 package com.yx.fridgebutler.dto.auth;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -40,6 +41,19 @@ public class RegisterRequest {
      */
     @Pattern(regexp = "^$|^1[3-9]\\d{9}$", message = "手机号格式不正确")
     private String mobile;
+
+    /**
+     * 邮箱，可选，需符合标准邮箱格式。
+     * <p>填写后需要同时提供邮箱验证码。</p>
+     */
+    @Email(message = "邮箱格式不正确")
+    private String email;
+
+    /**
+     * 邮箱验证码，选填，当填写邮箱时必须提供。
+     */
+    @Pattern(regexp = "^$|^\\d{6}$", message = "邮箱验证码必须为 6 位数字")
+    private String emailCaptcha;
 
     /**
      * 验证码，必填。

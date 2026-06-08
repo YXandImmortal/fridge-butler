@@ -60,6 +60,12 @@
           @secondary-action="handleRegister"
       />
     </el-form>
+
+    <div class="login-footer">
+      <span class="footer-text footer-link" @click="handleForgotPassword">
+        忘记密码
+      </span>
+    </div>
   </AuthLayout>
 </template>
 
@@ -163,6 +169,11 @@ const handleLogin = async () => {
 const handleRegister = () => {
   router.push('/register')
 }
+
+// 忘记密码
+const handleForgotPassword = () => {
+  router.push('/forgot-password')
+}
 </script>
 
 <style scoped lang="scss">
@@ -192,5 +203,31 @@ const handleRegister = () => {
 .el-form-item.is-error :deep(.el-input__wrapper.is-focus) {
   box-shadow: 0 0 0 1px var(--el-color-danger) inset;
   border-color: var(--el-color-danger);
+}
+
+/* 忘记密码入口 */
+.login-footer {
+  margin-top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.footer-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.footer-link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: var(--primary-color);
 }
 </style>

@@ -6,6 +6,8 @@ import {
     updateUserAvatar as updateUserAvatarApi,
     updateUserInfo as updateUserInfoApi,
     changePassword as changePasswordApi,
+    sendBindEmailCaptcha as sendBindEmailCaptchaApi,
+    bindEmail as bindEmailApi,
     completeGuide as completeGuideApi
 } from '@/api/user'
 
@@ -20,6 +22,7 @@ export const useUserStore = defineStore('user', () => {
     const userId = ref('')
     const rememberMe = ref(false)
     const avatar = ref('')
+    const email = ref('')
     const expireTime = ref(0)
     const guideCompleted = ref(false)
     const requirePasswordChange = ref(false)
@@ -77,6 +80,7 @@ export const useUserStore = defineStore('user', () => {
             userId.value = info.userId
             rememberMe.value = info.rememberMe || false
             avatar.value = info.avatar
+            email.value = info.email || ''
             expireTime.value = info.expireTime || 0
             guideCompleted.value = info.guideCompleted || false
             requirePasswordChange.value = !!info.requirePasswordChange
@@ -145,6 +149,7 @@ export const useUserStore = defineStore('user', () => {
             userId: resId,
             rememberMe: resRememberMe || false,
             avatar: resAvatar,
+            email: data.email || '',
             expireTime: resExpireTime || 0,
             guideCompleted: !!resGuideCompleted,
             requirePasswordChange: !!resRequirePasswordChange,
@@ -197,6 +202,7 @@ export const useUserStore = defineStore('user', () => {
         userId.value = ''
         rememberMe.value = false
         avatar.value = ''
+        email.value = ''
         expireTime.value = 0
         guideCompleted.value = false
         isActivated.value = true
@@ -232,6 +238,10 @@ export const useUserStore = defineStore('user', () => {
                 if (typeof res.data.guideCompleted !== 'undefined') {
                     guideCompleted.value = !!res.data.guideCompleted
                     syncFieldToStorage('guideCompleted', guideCompleted.value)
+                }
+                // 同步邮箱到状态
+                if (typeof res.data.email !== 'undefined') {
+                    email.value = res.data.email || ''
                 }
                 return res.data;
             }
@@ -282,6 +292,52 @@ export const useUserStore = defineStore('user', () => {
             return res;
         } catch (error) {
             console.error('更新用户头像失败:', error);
+            throw error;
+        }
+    }
+
+    // 发送绑定邮箱验证码
+    const sendBindEmailCaptcha = async (emailAddr) => {
+        try {
+            return await sendBindEmailCaptchaApi(emailAddr);
+        } catch (error) {
+            console.error('发送绑定邮箱验证码失败:', error);
+            throw error;
+        }
+    }
+
+    // 绑定/修改邮箱
+    const updateUserEmail = async (data) => {
+        try {
+            const res = await bindEmailApi(data);
+            if (res.code === 200) {
+                email.value = data.email;
+                // 同步到本地存储
+                let storageInfo = null;
+                let storageType = null;
+                const localInfo = localStorage.getItem('userInfo');
+                if (localInfo) {
+                    storageInfo = JSON.parse(localInfo);
+                    storageType = 'local';
+                } else {
+                    const sessionInfo = sessionStorage.getItem('userInfo');
+                    if (sessionInfo) {
+                        storageInfo = JSON.parse(sessionInfo);
+                        storageType = 'session';
+                    }
+                }
+                if (storageInfo) {
+                    storageInfo.email = data.email;
+                    if (storageType === 'local') {
+                        localStorage.setItem('userInfo', JSON.stringify(storageInfo));
+                    } else if (storageType === 'session') {
+                        sessionStorage.setItem('userInfo', JSON.stringify(storageInfo));
+                    }
+                }
+            }
+            return res;
+        } catch (error) {
+            console.error('绑定邮箱失败:', error);
             throw error;
         }
     }
@@ -391,6 +447,7 @@ export const useUserStore = defineStore('user', () => {
         userId,
         rememberMe,
         avatar,
+        email,
         expireTime,
         guideCompleted,
         initUser,
@@ -400,6 +457,8 @@ export const useUserStore = defineStore('user', () => {
         updateUserInfo,
         changePassword,
         updateUserAvatar,
+        sendBindEmailCaptcha,
+        updateUserEmail,
         isLoggedIn,
         markGuideCompleted,
         saveLoginData,

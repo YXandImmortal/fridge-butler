@@ -107,6 +107,8 @@ public class NotificationServiceImpl implements NotificationService {
                 .expiringNoticeCount(notificationRepository.countUnreadByUserIdAndType(currentUserId, NotificationType.EXPIRING_NOTICE.name()))
                 .capacityWarningCount(notificationRepository.countUnreadByUserIdAndType(currentUserId, NotificationType.CAPACITY_WARNING.name()))
                 .importantNoticeCount(notificationRepository.countUnreadByUserIdAndType(currentUserId, NotificationType.IMPORTANT_NOTICE.name()))
+                .bindEmailReminderCount(notificationRepository.countUnreadByUserIdAndType(currentUserId, NotificationType.BIND_EMAIL_REMINDER.name()))
+                .systemNotificationCount(notificationRepository.countUnreadByUserIdAndType(currentUserId, NotificationType.SYSTEM.name()))
                 .build();
     }
 
@@ -360,16 +362,110 @@ public class NotificationServiceImpl implements NotificationService {
 
     /**
      * {@inheritDoc}
+     * <p>
+     * 如果用户存在多条未读的重要通知，只返回最新的一条，并将其他旧的未读重要通知
+     * 自动标记为已读，避免用户连续多次收到弹窗打扰。
+     * </p>
      */
     @Override
+    @Transactional
     public NotificationVO getLatestImportantNotice() {
         Long currentUserId = getCurrentUserId();
         List<SysNotification> notifications = notificationRepository.findUnreadByUserIdAndType(
-                currentUserId, NotificationType.IMPORTANT_NOTICE.name(), PageRequest.of(0, 1));
+                currentUserId, NotificationType.IMPORTANT_NOTICE.name(), PageRequest.of(0, Integer.MAX_VALUE));
         if (notifications.isEmpty()) {
             return null;
         }
-        return convertToVO(notifications.getFirst());
+
+        SysNotification latest = notifications.getFirst();
+
+        // 自动将其他旧的未读重要通知标记为已读，防止连续弹窗
+        if (notifications.size() > 1) {
+            List<Long> oldIds = notifications.stream()
+                    .skip(1)
+                    .map(SysNotification::getId)
+                    .toList();
+            int markedCount = notificationRepository.markAsReadByIds(oldIds);
+            log.info("获取最新重要通知时自动清理旧通知，用户ID：{}，清理数量：{}", currentUserId, markedCount);
+        }
+
+        return convertToVO(latest);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 执行逻辑：
+     * <ol>
+     *   <li>检查用户当天是否已收到过绑定邮箱提醒（按创建时间当天去重）</li>
+     *   <li>检查用户是否确实未绑定邮箱</li>
+     *   <li>创建 BIND_EMAIL_REMINDER 类型的系统通知</li>
+     * </ol>
+     * </p>
+     */
+    @Override
+    @Transactional
+    public void createBindEmailReminderIfAbsent(Long userId) {
+        LocalDate today = LocalDate.now(ZONE_ID_SHANGHAI);
+        Instant todayStart = today.atStartOfDay(ZONE_ID_SHANGHAI).toInstant();
+
+        boolean exists = notificationRepository.existsByUserIdAndTypeAndCreateTimeGreaterThanEqual(
+                userId, NotificationType.BIND_EMAIL_REMINDER.name(), todayStart);
+        if (exists) {
+            log.info("用户 {} 今天已收到绑定邮箱提醒，跳过", userId);
+            return;
+        }
+
+        SysUser user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return;
+        }
+
+        if (user.getEmail() != null && !user.getEmail().isBlank()) {
+            return;
+        }
+
+        String title = "安全提醒：请绑定邮箱";
+        String content = "您尚未绑定邮箱，出于账号安全考虑，建议您尽快绑定邮箱。绑定后可用于密码找回和接收安全通知。";
+
+        SysNotification notification = buildNotification(
+                userId, null, null,
+                title, content, NotificationType.BIND_EMAIL_REMINDER,
+                "BIND_EMAIL", null
+        );
+
+        notificationRepository.save(notification);
+        log.info("为用户 {} 创建绑定邮箱提醒通知", userId);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>将指定用户所有未读的绑定邮箱提醒标记为已读。</p>
+     */
+    @Override
+    @Transactional
+    public void clearBindEmailReminder(Long userId) {
+        int rows = notificationRepository.markAsReadByUserIdAndType(
+                userId, NotificationType.BIND_EMAIL_REMINDER.name());
+        if (rows > 0) {
+            log.info("清除用户 {} 的绑定邮箱提醒通知，数量：{}", userId, rows);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>创建 SYSTEM 类型的系统通知，用于安全事件、欢迎消息等场景。</p>
+     */
+    @Override
+    @Transactional
+    public void createSystemNotification(Long userId, String title, String content, String actionType) {
+        SysNotification notification = buildNotification(
+                userId, null, null,
+                title, content, NotificationType.SYSTEM,
+                actionType, null
+        );
+        notificationRepository.save(notification);
+        log.info("创建系统通知，用户ID：{}，标题：{}", userId, title);
     }
 
     /**

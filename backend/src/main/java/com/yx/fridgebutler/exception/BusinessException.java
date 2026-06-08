@@ -448,6 +448,82 @@ public class BusinessException extends RuntimeException {
         return new BusinessException(ResultCode.USER_NOT_ACTIVATED);
     }
 
+    // ======================== 邮件相关 ========================
+
+    /**
+     * 创建邮箱未绑定异常
+     *
+     * @return 邮箱未绑定业务异常
+     */
+    public static BusinessException emailNotBound() {
+        return new BusinessException(ResultCode.EMAIL_NOT_BOUND);
+    }
+
+    /**
+     * 创建邮件发送过于频繁异常
+     *
+     * @return 发送过于频繁业务异常
+     */
+    public static BusinessException emailSendTooFrequent() {
+        return new BusinessException(ResultCode.EMAIL_SEND_TOO_FREQUENT);
+    }
+
+    /**
+     * 创建邮件验证码错误异常
+     *
+     * @return 验证码错误或已过期业务异常
+     */
+    public static BusinessException emailCaptchaError() {
+        return new BusinessException(ResultCode.EMAIL_CAPTCHA_ERROR);
+    }
+
+    /**
+     * 创建邮件发送失败异常（收件人相关，如邮箱不存在、被SMTP拒收）。
+     * <p>HTTP 状态码为 400，属于客户端可修正的错误。</p>
+     *
+     * @return 邮件发送失败业务异常
+     */
+    public static BusinessException emailSendFailed() {
+        return new BusinessException(ResultCode.EMAIL_SEND_FAILED);
+    }
+
+    /**
+     * 创建邮件服务不可用异常（SMTP连接失败、认证失败、服务未配置等）。
+     * <p>HTTP 状态码为 503，属于服务端暂不可用。</p>
+     *
+     * @return 邮件服务不可用业务异常
+     */
+    public static BusinessException emailServiceUnavailable() {
+        return new BusinessException(ResultCode.EMAIL_SERVICE_UNAVAILABLE);
+    }
+
+    /**
+     * 创建邮箱格式错误异常
+     *
+     * @return 邮箱格式不正确业务异常
+     */
+    public static BusinessException emailFormatError() {
+        return new BusinessException(ResultCode.EMAIL_FORMAT_ERROR);
+    }
+
+    /**
+     * 创建邮箱已被绑定异常
+     *
+     * @return 邮箱已被其他账号绑定业务异常
+     */
+    public static BusinessException emailAlreadyBound() {
+        return new BusinessException(ResultCode.EMAIL_ALREADY_BOUND);
+    }
+
+    /**
+     * 创建新密码与旧密码相同异常
+     *
+     * @return 新密码不能与旧密码相同业务异常
+     */
+    public static BusinessException resetPasswordSameAsOld() {
+        return new BusinessException(ResultCode.RESET_PASSWORD_FAILED_SAME_AS_OLD);
+    }
+
     // ======================== AI 服务相关 ========================
 
     /**

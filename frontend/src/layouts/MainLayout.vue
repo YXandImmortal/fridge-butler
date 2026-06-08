@@ -178,6 +178,13 @@ const routeSceneMap = {
   'notification-list': TOUR_SCENES.NOTIFICATION,
 }
 
+// 监听消息中心/Header 发来的快速指引请求
+watch(() => tourStore.pendingQuickGuide, (val) => {
+  if (val) {
+    startTourWithRouteCheck()
+  }
+})
+
 // 处理指引类型选择确认
 const handleGuideTypeConfirm = (mode) => {
   if (mode === 'quick') {

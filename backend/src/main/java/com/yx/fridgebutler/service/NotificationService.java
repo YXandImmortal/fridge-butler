@@ -103,4 +103,31 @@ public interface NotificationService {
      * @param userId 新注册用户ID
      */
     void initializeImportantNoticeForNewUser(Long userId);
+
+    /**
+     * 如果用户当天未收到过绑定邮箱提醒，则创建一条。
+     * <p>用于用户登录后检测，当天仅提醒一次，避免过度打扰。</p>
+     *
+     * @param userId 用户ID
+     */
+    void createBindEmailReminderIfAbsent(Long userId);
+
+    /**
+     * 清除指定用户的绑定邮箱提醒通知。
+     * <p>用户成功绑定邮箱后调用，将对应的未读提醒标记为已读。</p>
+     *
+     * @param userId 用户ID
+     */
+    void clearBindEmailReminder(Long userId);
+
+    /**
+     * 创建一条系统通知。
+     * <p>用于账户安全事件、新用户欢迎等场景，由系统自动触发。</p>
+     *
+     * @param userId       用户ID
+     * @param title        通知标题
+     * @param content      通知内容
+     * @param actionType   点击动作类型
+     */
+    void createSystemNotification(Long userId, String title, String content, String actionType);
 }

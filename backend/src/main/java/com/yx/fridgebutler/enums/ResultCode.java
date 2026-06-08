@@ -113,6 +113,19 @@ public enum ResultCode {
     ADMIN_RESET_PASSWORD_FAILED(500, HttpStatus.INTERNAL_SERVER_ERROR, "重置密码失败"),
 
     /**
+     * 邮件相关状态码
+     * <p>邮件发送、验证码、密码重置模块使用</p>
+     */
+    EMAIL_NOT_BOUND(404, HttpStatus.NOT_FOUND, "该邮箱未绑定任何账号"),
+    EMAIL_SEND_TOO_FREQUENT(429, HttpStatus.TOO_MANY_REQUESTS, "发送过于频繁，请稍后再试"),
+    EMAIL_CAPTCHA_ERROR(400, HttpStatus.BAD_REQUEST, "验证码错误或已过期"),
+    EMAIL_SEND_FAILED(400, HttpStatus.BAD_REQUEST, "邮件发送失败，请检查邮箱地址是否正确或稍后重试"),
+    EMAIL_SERVICE_UNAVAILABLE(503, HttpStatus.SERVICE_UNAVAILABLE, "邮件服务暂不可用，请稍后重试"),
+    EMAIL_FORMAT_ERROR(400, HttpStatus.BAD_REQUEST, "邮箱格式不正确"),
+    EMAIL_ALREADY_BOUND(400, HttpStatus.BAD_REQUEST, "该邮箱已被其他账号绑定"),
+    RESET_PASSWORD_FAILED_SAME_AS_OLD(400, HttpStatus.BAD_REQUEST, "新密码不能与旧密码相同"),
+
+    /**
      * 激活密钥状态码
      * <p>激活密钥管理使用</p>
      */

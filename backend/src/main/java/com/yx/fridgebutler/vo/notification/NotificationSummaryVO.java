@@ -49,4 +49,14 @@ public class NotificationSummaryVO {
      * 重要通知数量
      */
     private Long importantNoticeCount;
+
+    /**
+     * 绑定邮箱提醒数量
+     */
+    private Long bindEmailReminderCount;
+
+    /**
+     * 系统通知数量
+     */
+    private Long systemNotificationCount;
 }

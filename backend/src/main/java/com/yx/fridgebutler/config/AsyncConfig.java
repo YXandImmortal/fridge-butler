@@ -33,4 +33,25 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    /**
+     * 邮件发送异步执行器。
+     * <p>
+     * 用于执行邮件发送等网络 IO 操作，避免阻塞主请求线程。
+     * 为后续的邮件提醒功能预留容量。
+     * </p>
+     *
+     * @return 线程池执行器
+     */
+    @Bean(name = "mailExecutor")
+    public Executor mailExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(200);
+        executor.setThreadNamePrefix("mail-sender-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
+        return executor;
+    }
 }

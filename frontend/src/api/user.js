@@ -84,6 +84,32 @@ export function initPassword(data) {
 }
 
 /**
+ * 发送绑定/修改邮箱验证码（需登录）
+ * @param {string} email - 邮箱地址
+ */
+export function sendBindEmailCaptcha(email) {
+    return request({
+        url: '/user/email/captcha',
+        method: 'post',
+        data: { email }
+    })
+}
+
+/**
+ * 绑定/修改邮箱（需登录）
+ * @param {Object} data
+ * @param {string} data.email - 邮箱地址
+ * @param {string} data.captcha - 验证码
+ */
+export function bindEmail(data) {
+    return request({
+        url: '/user/email',
+        method: 'post',
+        data
+    })
+}
+
+/**
  * 标记新手指引完成
  */
 export function completeGuide() {

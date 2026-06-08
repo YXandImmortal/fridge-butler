@@ -7,6 +7,7 @@ import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.SysRoleRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.service.AdminUserService;
+import com.yx.fridgebutler.service.NotificationService;
 import com.yx.fridgebutler.vo.admin.AdminUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,9 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private NotificationService notificationService;
 
     /**
      * {@inheritDoc}
@@ -121,6 +125,14 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setPassword(passwordEncoder.encode(rawPassword));
         user.setPasswordUpdatedAt(null);
         sysUserRepository.save(user);
+
+        // 发送管理员重置密码通知
+        notificationService.createSystemNotification(
+                user.getId(),
+                "系统通知：密码已被重置",
+                "管理员已重置您的账号密码，请使用新密码登录，建议登录后尽快修改。",
+                "NONE"
+        );
 
         log.info("管理员重置用户密码成功，用户ID：{}，用户名：{}", id, user.getUsername());
         return rawPassword;

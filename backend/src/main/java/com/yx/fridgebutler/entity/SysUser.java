@@ -112,5 +112,8 @@ public class SysUser {
     private Instant lastLoginTime;
     @Column(name = "password_updated_at")
     private Instant passwordUpdatedAt;
+    @Size(max = 100)
+    @Column(name = "email", length = 100)
+    private String email;
 
 }

@@ -89,7 +89,7 @@ service.interceptors.response.use(
                     showMessage.error(backendMessage || 'AI 服务繁忙，请稍后重试')
                 } else {
                     // 服务不可用，跳转503页面（预留）
-                    showMessage.error(backendMessage || 'AI服务暂时不可用，请稍后重试')
+                    showMessage.error(backendMessage || '服务暂时不可用，请稍后重试')
                     toServiceUnavailable()
                 }
             } else if (status === 400) {

@@ -82,6 +82,22 @@
                   <div class="dropdown-item-title">{{ n.title }}</div>
                   <div class="dropdown-item-time">{{ formatTime(n.createTime) }}</div>
                 </div>
+                <CustomButton
+                    v-if="n.actionType === 'BIND_EMAIL'"
+                    type="primary"
+                    size="small"
+                    @click.stop="handleNotificationClick(n)"
+                >
+                  去绑定
+                </CustomButton>
+                <CustomButton
+                    v-if="n.actionType === 'VIEW_GUIDE'"
+                    type="primary"
+                    size="small"
+                    @click.stop="handleNotificationClick(n)"
+                >
+                  去完成指引
+                </CustomButton>
               </div>
             </template>
             <el-empty v-else description="暂无新消息" :image-size="60" class="dropdown-empty"/>
@@ -244,6 +260,9 @@ const handleNotificationClick = async (notification) => {
   // 跳转
   const route = notificationStore.getActionRoute(notification)
   if (route) {
+    if (notification.actionType === 'VIEW_GUIDE') {
+      tourStore.requestQuickGuide()
+    }
     router.push(route)
   } else {
     goToNotificationCenter()

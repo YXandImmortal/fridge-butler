@@ -32,6 +32,9 @@ export const useTourStore = defineStore('tour', () => {
     // 待启动的场景（用于手动触发页面引导，不持久化）
     const pendingStartScene = ref(null)
 
+    // 请求启动全局快速指引（由 MainLayout 监听并执行）
+    const pendingQuickGuide = ref(false)
+
     // 已加载的 storage key，避免重复加载
     let loadedStorageKey = null
 
@@ -108,6 +111,13 @@ export const useTourStore = defineStore('tour', () => {
         }, 100)
     }
 
+    function requestQuickGuide() {
+        pendingQuickGuide.value = true
+        setTimeout(() => {
+            pendingQuickGuide.value = false
+        }, 100)
+    }
+
     // 初始化加载
     loadSceneCompletedMap()
 
@@ -115,10 +125,12 @@ export const useTourStore = defineStore('tour', () => {
         localResetMap,
         sceneCompletedMap,
         pendingStartScene,
+        pendingQuickGuide,
         isSceneCompleted,
         completeScene,
         resetScene,
         resetAll,
         startScene,
+        requestQuickGuide,
     }
 })

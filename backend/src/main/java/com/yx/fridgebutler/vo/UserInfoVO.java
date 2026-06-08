@@ -30,6 +30,11 @@ public class UserInfoVO {
     private String mobile;
 
     /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
      * 角色名称
      */
     private String roleName;

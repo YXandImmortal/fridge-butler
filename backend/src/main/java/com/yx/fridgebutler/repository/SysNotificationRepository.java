@@ -152,4 +152,39 @@ public interface SysNotificationRepository extends JpaRepository<SysNotification
             ORDER BY n.createTime DESC
             """)
     List<SysNotification> findUnreadByUserIdAndType(@Param("userId") Long userId, @Param("type") String type, Pageable pageable);
+
+    /**
+     * 判断指定用户在指定时间之后是否存在指定类型的通知。
+     * <p>用于绑定邮箱提醒的当天去重，避免同一天内重复发送。</p>
+     *
+     * @param userId 用户ID
+     * @param type   消息类型
+     * @param since  时间阈值
+     * @return true 表示存在
+     */
+    @Query("SELECT CASE WHEN COUNT(n) > 0 THEN true ELSE false END FROM SysNotification n WHERE n.userId = :userId AND n.type = :type AND n.createTime >= :since")
+    boolean existsByUserIdAndTypeAndCreateTimeGreaterThanEqual(@Param("userId") Long userId, @Param("type") String type, @Param("since") Instant since);
+
+    /**
+     * 将指定用户指定类型的未读消息标记为已读。
+     * <p>用于用户绑定邮箱后，自动清除对应的绑定邮箱提醒。</p>
+     *
+     * @param userId 用户ID
+     * @param type   消息类型
+     * @return 更新的记录数
+     */
+    @Modifying
+    @Query("UPDATE SysNotification n SET n.status = 1, n.readTime = CURRENT_TIMESTAMP WHERE n.userId = :userId AND n.type = :type AND n.status = 0 AND n.isDeleted = 0")
+    int markAsReadByUserIdAndType(@Param("userId") Long userId, @Param("type") String type);
+
+    /**
+     * 将指定ID列表的未读消息标记为已读。
+     * <p>用于获取最新重要通知时，自动将同类型的旧未读通知一并标为已读，避免连续弹窗。</p>
+     *
+     * @param ids 消息ID列表
+     * @return 更新的记录数
+     */
+    @Modifying
+    @Query("UPDATE SysNotification n SET n.status = 1, n.readTime = CURRENT_TIMESTAMP WHERE n.id IN :ids AND n.status = 0 AND n.isDeleted = 0")
+    int markAsReadByIds(@Param("ids") List<Long> ids);
 }

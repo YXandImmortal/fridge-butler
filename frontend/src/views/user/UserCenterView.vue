@@ -19,23 +19,28 @@
           <EnhancedInput v-model="userForm.mobile" placeholder="请输入手机号" icon="icon-device-phone"/>
         </el-form-item>
 
+        <el-form-item label="邮箱">
+          <EnhancedInput v-model="userForm.email" disabled placeholder="暂无绑定邮箱" icon="icon-mail"/>
+        </el-form-item>
+
         <el-form-item label="注册时间">
           <EnhancedInput v-model="userForm.createTime" disabled icon="icon-calendar"/>
         </el-form-item>
 
-        <el-form-item label="角色">
-          <EnhancedInput v-model="userForm.roleName" disabled icon="icon-user"/>
-        </el-form-item>
       </el-form>
 
       <div class="profile-actions">
-        <CustomButton type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">
-          <i class="iconfont icon-save"/>
-          保存修改
-        </CustomButton>
         <CustomButton @click="handleChangePassword">
           <i class="iconfont icon-edit-box"/>
           修改密码
+        </CustomButton>
+        <CustomButton @click="handleChangeEmail">
+          <i class="iconfont icon-mail"/>
+          {{ userForm.email ? '修改邮箱' : '绑定邮箱' }}
+        </CustomButton>
+        <CustomButton type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">
+          <i class="iconfont icon-save"/>
+          保存修改
         </CustomButton>
         <CustomButton type="danger" @click="showConfirmLogout = true">
           <i class="iconfont icon-logout"/>
@@ -76,6 +81,23 @@
                 </el-form-item>
               </el-form>
             </div>
+            <div v-else-if="editType === 'email'">
+              <h2 class="edit-title">{{ userForm.email ? '修改邮箱' : '绑定邮箱' }}</h2>
+              <el-form :model="emailForm" :rules="emailRules" ref="emailFormRef" label-position="top"
+                       class="profile-form edit-form">
+                <el-form-item label="新邮箱" prop="email">
+                  <EmailVerifyInput
+                      v-model="emailForm.email"
+                      placeholder="请输入新邮箱地址"
+                      captcha-type="BIND"
+                      api-url="/user/email/captcha"
+                  />
+                </el-form-item>
+                <el-form-item label="验证码" prop="captcha">
+                  <EnhancedInput v-model="emailForm.captcha" placeholder="请输入6位验证码" icon="icon-captcha"/>
+                </el-form-item>
+              </el-form>
+            </div>
             <div v-else-if="editType === 'avatar'">
               <h2 class="edit-title">选择头像</h2>
               <div class="avatar-upload-section">
@@ -98,8 +120,8 @@
         <div class="edit-actions">
           <CustomButton
               type="primary"
-              @click="editType === 'password' ? handleChangePasswordSubmit() : handleChangeAvatarSubmit()"
-              :loading="editType === 'password' ? loadingChangePassword : loadingChangeAvatar"
+              @click="handleEditConfirm"
+              :loading="editConfirmLoading"
               loading-text="修改中..."
           >
             <i class="iconfont icon-check"/>
@@ -138,20 +160,24 @@
 <script setup>
 import UserCenterTour from '@/components/tour/UserCenterTour.vue'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour'
-import {onMounted, ref, watch} from 'vue';
-import {useRouter} from 'vue-router';
+import {computed, onMounted, ref, watch} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
+import {useNotificationStore} from '@/stores/notification'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import showMessage from '@/utils/message'
 import {useUserStore} from '@/stores/user';
 import Avatar from "@/components/ui/Avatar.vue";
 import EnhancedInput from "@/components/ui/EnhancedInput.vue";
 import CaptchaInput from "@/components/form/CaptchaInput.vue";
+import EmailVerifyInput from "@/components/form/EmailVerifyInput.vue";
 import {getSystemAvatarIds} from '@/utils/avatarManager';
 import CustomButton from "@/components/ui/CustomButton.vue";
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore();
-const {getUserInfo, updateUserInfo, changePassword, updateUserAvatar, logout} = userStore;
+const notificationStore = useNotificationStore()
+const {getUserInfo, updateUserInfo, changePassword, updateUserAvatar, updateUserEmail, logout} = userStore;
 
 const showConfirmSave = ref(false);
 const showConfirmLogout = ref(false);
@@ -170,15 +196,30 @@ const loadingChangeAvatar = ref(false);
 // 加载状态
 const loadingSave = ref(false);
 const loadingChangePassword = ref(false);
+const loadingChangeEmail = ref(false);
+
+// 编辑确认按钮 loading 状态
+const editConfirmLoading = computed(() => {
+  if (editType.value === 'password') return loadingChangePassword.value;
+  if (editType.value === 'email') return loadingChangeEmail.value;
+  return loadingChangeAvatar.value;
+});
 
 const captchaInputRef = ref();
 const passwordFormRef = ref();
+const emailFormRef = ref();
 
 // 密码修改表单
 const passwordForm = ref({
   originalPassword: '',
   newPassword: '',
   confirmNewPassword: '',
+  captcha: ''
+});
+
+// 邮箱修改表单
+const emailForm = ref({
+  email: '',
   captcha: ''
 });
 
@@ -235,10 +276,46 @@ const passwordRules = {
   ]
 };
 
+// 邮箱格式校验
+const validateEmail = (rule, value, callback) => {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  if (!value) {
+    callback(new Error('请输入邮箱地址'))
+  } else if (!emailRegex.test(value)) {
+    callback(new Error('邮箱格式不正确'))
+  } else if (value === userForm.value.email) {
+    callback(new Error('新邮箱不能与当前邮箱相同'))
+  } else {
+    callback()
+  }
+}
+
+// 邮箱验证码校验
+const validateEmailCaptcha = (rule, value, callback) => {
+  if (!value) {
+    callback(new Error('请输入验证码'))
+  } else if (!/^\d{6}$/.test(value)) {
+    callback(new Error('验证码为6位数字'))
+  } else {
+    callback()
+  }
+}
+
+// 邮箱修改表单验证规则
+const emailRules = {
+  email: [
+    {required: true, validator: validateEmail, trigger: 'blur'}
+  ],
+  captcha: [
+    {required: true, validator: validateEmailCaptcha, trigger: 'blur'}
+  ]
+};
+
 // 用户信息表单
 const userForm = ref({
   username: '',
   mobile: '',
+  email: '',
   createTime: '',
   roleName: '',
   avatar: ''
@@ -251,6 +328,7 @@ onMounted(async () => {
     userForm.value = {
       username: userInfo.username || '',
       mobile: userInfo.mobile || '',
+      email: userInfo.email || '',
       createTime: userInfo.createTime || '',
       roleName: userInfo.roleName || '',
       avatar: userInfo.avatar || 'egg'
@@ -261,6 +339,11 @@ onMounted(async () => {
 
   // 加载系统预设头像
   loadSystemAvatars();
+
+  // 若从通知跳转过来，自动打开邮箱绑定面板
+  if (route.query.edit === 'email') {
+    handleChangeEmail()
+  }
 });
 
 // 加载系统预设头像
@@ -291,12 +374,33 @@ const handleSave = async () => {
   }
 };
 
+// 编辑确认按钮分发
+const handleEditConfirm = () => {
+  if (editType.value === 'password') {
+    handleChangePasswordSubmit();
+  } else if (editType.value === 'email') {
+    handleChangeEmailSubmit();
+  } else {
+    handleChangeAvatarSubmit();
+  }
+};
+
 // 修改密码
 const handleChangePassword = async () => {
   editType.value = 'password';
   showEditCard.value = true;
   // 初始化验证码
   await captchaInputRef.value?.refreshCaptcha();
+};
+
+// 修改邮箱
+const handleChangeEmail = () => {
+  editType.value = 'email';
+  emailForm.value = {
+    email: '',
+    captcha: ''
+  };
+  showEditCard.value = true;
 };
 
 // 提交修改密码
@@ -364,6 +468,48 @@ const handleChangeAvatar = () => {
 // 选择头像
 const handleSelectAvatar = (avatarId) => {
   selectedAvatar.value = avatarId;
+};
+
+// 提交修改邮箱
+const handleChangeEmailSubmit = async () => {
+  if (loadingChangeEmail.value) return;
+
+  // 先验证表单
+  try {
+    await emailFormRef.value.validate();
+  } catch {
+    return;
+  }
+
+  try {
+    loadingChangeEmail.value = true;
+    const res = await updateUserEmail({
+      email: emailForm.value.email,
+      captcha: emailForm.value.captcha
+    });
+
+    if (res.code === 200) {
+      showMessage.success(res.message || '邮箱绑定成功');
+      userForm.value.email = emailForm.value.email;
+      showEditCard.value = false;
+      emailForm.value = {
+        email: '',
+        captcha: ''
+      };
+      // 刷新通知状态（后端会自动标记绑定邮箱提醒为已读）
+      await notificationStore.fetchUnreadCount()
+      await notificationStore.fetchSummary()
+    } else {
+      showMessage.error(res.message || '邮箱绑定失败');
+    }
+  } catch (error) {
+    console.error('绑定邮箱失败:', error);
+    if (!error.response) {
+      showMessage.error(error.message || '绑定邮箱失败');
+    }
+  } finally {
+    loadingChangeEmail.value = false;
+  }
 };
 
 // 提交修改头像
@@ -487,7 +633,7 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 }
 
 .profile-card {
-  max-width: 600px;
+  max-width: 500px;
   width: 100%;
   padding: 40px;
   background: var(--glass-bg);
@@ -529,9 +675,10 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 }
 
 .profile-actions {
-  display: flex;
+  justify-self: center;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-5);
-  justify-content: center;
   padding-top: 24px;
   border-top: 1px solid var(--divider-color);
 }
@@ -636,13 +783,21 @@ watch(() => tourStore.pendingStartScene, (scene) => {
     margin-bottom: 24px;
   }
 
-  .profile-actions,
+  .profile-actions {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .profile-actions .custom-button {
+    width: 100%;
+    min-width: auto;
+  }
+
   .edit-actions {
     flex-direction: column;
     gap: 12px;
   }
 
-  .profile-actions .custom-button,
   .edit-actions .custom-button {
     width: 100%;
     min-width: auto;

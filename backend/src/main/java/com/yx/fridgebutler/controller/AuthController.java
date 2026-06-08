@@ -1,8 +1,11 @@
 package com.yx.fridgebutler.controller;
 
+import com.yx.fridgebutler.dto.auth.EmailCaptchaRequest;
+import com.yx.fridgebutler.dto.auth.ForgotPasswordRequest;
 import com.yx.fridgebutler.dto.auth.LoginRequest;
 import com.yx.fridgebutler.vo.LoginVO;
 import com.yx.fridgebutler.dto.auth.RegisterRequest;
+import com.yx.fridgebutler.dto.auth.ResetPasswordRequest;
 import com.yx.fridgebutler.enums.ResultCode;
 import com.yx.fridgebutler.service.AuthService;
 import com.yx.fridgebutler.vo.Result;
@@ -60,6 +63,59 @@ public class AuthController {
         LoginVO response = authService.registerUser(request, httpRequest);
         log.info("普通用户注册成功，用户名：{}", request.getUsername());
         return Result.success(ResultCode.REGISTER_SUCCESS, response);
+    }
+
+    /**
+     * 发送通用邮箱验证码
+     * <p>
+     * 支持注册（REGISTER）和忘记密码（RESET）两种业务类型，
+     * 向指定邮箱发送 6 位数字验证码。同一邮箱 60 秒内只能发送一次，验证码 5 分钟内有效。
+     * </p>
+     *
+     * @param request    邮箱验证码请求参数，包含邮箱地址和业务类型
+     * @param httpRequest HTTP请求对象，用于获取客户端IP地址
+     * @return 发送成功返回提示信息
+     */
+    @PostMapping("/email/captcha")
+    public Result<Void> sendEmailCaptcha(@Valid @RequestBody EmailCaptchaRequest request, HttpServletRequest httpRequest) {
+        log.info("发送邮箱验证码请求，类型：{}，邮箱：{}，客户端IP：{}", request.getType(), request.getEmail(), getClientIp(httpRequest));
+        authService.sendEmailCaptcha(request, httpRequest);
+        return Result.success("验证码已发送，请查收邮件", null);
+    }
+
+    /**
+     * 发送密码重置验证码
+     * <p>
+     * 向用户绑定的邮箱发送 6 位数字验证码，用于后续重置密码。
+     * 同一邮箱 60 秒内只能发送一次，验证码 5 分钟内有效。
+     * </p>
+     *
+     * @param request    忘记密码请求参数，包含邮箱地址
+     * @param httpRequest HTTP请求对象，用于获取客户端IP地址
+     * @return 发送成功返回提示信息
+     */
+    @PostMapping("/forgot-password")
+    public Result<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request, HttpServletRequest httpRequest) {
+        log.info("发送密码重置验证码请求，邮箱：{}，客户端IP：{}", request.getEmail(), getClientIp(httpRequest));
+        authService.sendPasswordResetCaptcha(request, httpRequest);
+        return Result.success("密码重置验证码已发送，请查收邮件", null);
+    }
+
+    /**
+     * 重置密码
+     * <p>
+     * 使用邮箱验证码校验用户身份，验证通过后更新用户密码。
+     * </p>
+     *
+     * @param request    重置密码请求参数，包含邮箱、验证码、新密码和确认密码
+     * @param httpRequest HTTP请求对象，用于获取客户端IP地址
+     * @return 重置成功返回提示信息
+     */
+    @PostMapping("/reset-password")
+    public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request, HttpServletRequest httpRequest) {
+        log.info("重置密码请求，邮箱：{}，客户端IP：{}", request.getEmail(), getClientIp(httpRequest));
+        authService.resetPassword(request, httpRequest);
+        return Result.success("密码重置成功", null);
     }
 
     /**

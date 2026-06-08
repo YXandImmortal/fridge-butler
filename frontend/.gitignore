@@ -37,3 +37,6 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Maintenance mode sensitive config
+public/maintenance-config.php

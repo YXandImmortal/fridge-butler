@@ -4,6 +4,52 @@
 
 ---
 
+## [release 0.4.0] - 2026-6-8
+
+### 新增
+- **邮箱安全体系**
+  - 完整邮箱模块：验证码发送与校验、找回密码、重置密码、绑定邮箱
+  - `EmailCaptchaManager`：统一管理邮箱验证码生命周期（60秒冷却、每日上限10条、30分钟过期）
+  - `EmailTemplate` 枚举：支持注册验证、密码重置、密码修改、绑定邮箱等场景模板
+  - `EmailService` / `EmailServiceImpl`：基于 Spring `JavaMailSender` 的邮件发送服务，支持异步发送与 HTML 模板渲染
+  - 前端 `EmailVerifyInput.vue`：通用邮箱验证码输入组件，支持发送冷却倒计时与校验提示
+  - 前端 `ForgotPasswordView.vue`：完整的找回密码页面，支持邮箱验证、密码重置与自动登录
+  - `application-dev.yaml` / `application-prod.yaml` 新增邮件服务器配置（SMTP、用户名、密码等）
+- **通知系统全面升级**
+  - 新增 `BIND_EMAIL_REMINDER` 通知类型：未绑定邮箱用户登录时自动创建提醒（当天仅一次，避免过度打扰）
+  - 新增 `SYSTEM` 通知类型：覆盖管理员重置密码、密码重置成功、新用户欢迎、密码修改成功、邮箱绑定成功等安全事件
+  - 通知摘要 `NotificationSummaryVO` 扩展：新增 `bindEmailReminderCount` 与 `systemNotificationCount`
+  - 通知仓库新增批量标记已读方法：`markAsReadByIds`、`markAsReadByUserIdAndType`
+  - 通知仓库新增存在性查询：`existsByUserIdAndTypeAndCreateTimeGreaterThanEqual`（用于当天去重）
+  - 重要通知获取逻辑优化：获取最新一条时自动将其他未读重要通知标记为已读，避免连续弹窗打扰
+  - 前端 `ImportantNoticeDialog.vue`：重要通知详情弹窗组件，支持展示完整内容与确认
+  - 前端消息中心支持快捷操作按钮：「去绑定」跳转个人中心邮箱面板、「去完成指引」触发全局快速引导
+  - 前端 Header 通知下拉面板支持 `BIND_EMAIL` 与 `VIEW_GUIDE` 操作按钮
+  - 前端通知 Store `getActionRoute` 扩展：支持 `BIND_EMAIL` 与 `VIEW_GUIDE` 动作类型路由
+- **用户引导增强**
+  - `TourStore` 新增 `pendingQuickGuide` 状态与 `requestQuickGuide()` 方法，支持跨组件触发全局快速指引
+  - `MainLayout.vue` 监听 `pendingQuickGuide` 变化，收到请求后自动调用 `startTourWithRouteCheck()`
+  - 用户中心支持通过 URL Query `edit=email` 自动打开邮箱绑定面板
+- **主题切换动画**
+  - 明暗主题切换新增圆形扩散动画效果，视觉过渡更流畅自然
+
+### 优化
+- **注册流程**：`RegisterRequest.emailCaptcha` 校验规则由 `@Size(min=6, max=6)` 优化为 `@Pattern(regexp = "^$|^\\d{6}$")`，允许未填邮箱时空值通过，填写时强制6位数字
+- **消息中心界面重构**：列表高度调整为 700px，卡片悬停动画由 Y 轴位移改为 X 轴位移，操作按钮区与消息卡片分离，布局更紧凑
+- **通知类型标签样式**：`BIND_EMAIL_REMINDER` 类型使用 `primary` 标签样式，视觉区分更明确
+- **前端 `.gitignore`**：新增 `public/maintenance-config.php` 忽略规则
+
+### 修复
+- **管理员后台看板日志**：修复耗时字段名错误导致数值不显示的问题
+- **AI 每日小贴士**：修复 AI 生成空内容导致展示异常的问题
+
+### 工程
+- **版本号统一升级**：后端 `pom.xml`、前端 `package.json` 同步升级至 `release 0.4.0`
+- **构建时间更新**：`application.yaml` 构建时间更新为 `20260608-03`
+- **系统版本号**：`application.yaml` 与 `SystemController` 同步更新为 `release 0.4.0`
+
+---
+
 ## [release 0.3.1] - 2026-6-5
 
 ### 新增

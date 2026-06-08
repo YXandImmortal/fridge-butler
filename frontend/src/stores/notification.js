@@ -22,7 +22,9 @@ export const useNotificationStore = defineStore('notification', () => {
         expiringWarningCount: 0,
         expiringNoticeCount: 0,
         capacityWarningCount: 0,
-        systemCount: 0
+        systemCount: 0,
+        bindEmailReminderCount: 0,
+        systemNotificationCount: 0
     })
     const notificationList = ref([])
     const totalCount = ref(0)
@@ -88,9 +90,16 @@ export const useNotificationStore = defineStore('notification', () => {
             color: 'var(--danger-color)'
         },
         {
+            key: 'BIND_EMAIL_REMINDER',
+            label: '绑定邮箱提醒',
+            count: summary.value.bindEmailReminderCount || 0,
+            icon: 'icon-mail',
+            color: 'var(--primary-color)'
+        },
+        {
             key: 'SYSTEM',
             label: '系统通知',
-            count: 0,
+            count: summary.value.systemNotificationCount || 0,
             icon: 'icon-info-box',
             color: 'var(--text-tertiary)'
         }
@@ -126,7 +135,9 @@ export const useNotificationStore = defineStore('notification', () => {
                     expiringWarningCount: res.data.expiringWarningCount || 0,
                     expiringNoticeCount: res.data.expiringNoticeCount || 0,
                     capacityWarningCount: res.data.capacityWarningCount || 0,
-                    importantNoticeCount: res.data.importantNoticeCount || 0
+                    importantNoticeCount: res.data.importantNoticeCount || 0,
+                    bindEmailReminderCount: res.data.bindEmailReminderCount || 0,
+                    systemNotificationCount: res.data.systemNotificationCount || 0
                 }
             }
         } catch (error) {
@@ -228,20 +239,24 @@ export const useNotificationStore = defineStore('notification', () => {
      */
     const getActionRoute = (notification) => {
         const {actionType, actionPayload} = notification
-        if (!actionType || actionType === 'NONE' || !actionPayload) {
+        if (!actionType || actionType === 'NONE') {
             return null
         }
         switch (actionType) {
             case 'VIEW_ITEM':
-                if (actionPayload.itemId && actionPayload.fridgeId) {
+                if (actionPayload && actionPayload.itemId && actionPayload.fridgeId) {
                     return `/fridge/items/${actionPayload.fridgeId}?itemId=${actionPayload.itemId}`
                 }
                 return null
             case 'VIEW_FRIDGE':
-                if (actionPayload.fridgeId) {
+                if (actionPayload && actionPayload.fridgeId) {
                     return `/fridge/detail/${actionPayload.fridgeId}`
                 }
                 return null
+            case 'BIND_EMAIL':
+                return '/user/center?edit=email'
+            case 'VIEW_GUIDE':
+                return '/user/index'
             default:
                 return null
         }

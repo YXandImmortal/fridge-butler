@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.yx</groupId>
     <artifactId>fridge-butler-backend</artifactId>
-    <version>release 0.3.1</version>
+    <version>release 0.4.0</version>
     <name>fridge-butler-backend</name>
     <description>fridge-butler-backend</description>
     <url>https://github.com/YXandImmortal/fridge-butler</url>
@@ -54,6 +54,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+
+        <!-- 邮件发送支持 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
         <dependency>

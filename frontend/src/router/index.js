@@ -232,6 +232,11 @@ const router = createRouter({
             component: RegisterView
         },
         {
+            path: '/forgot-password',
+            name: 'forgot-password',
+            component: () => import('@/views/auth/ForgotPasswordView.vue')
+        },
+        {
             path: '/activation',
             name: 'activation',
             component: () => import('@/views/auth/ActivationView.vue')
@@ -300,7 +305,7 @@ router.beforeEach((to, from) => {
     }
 
     // 已登录用户访问登录/注册页或介绍页，重定向到对应首页
-    if (userStore.isLoggedIn && (to.name === 'login' || to.name === 'register' || to.name === 'landing')) {
+    if (userStore.isLoggedIn && (to.name === 'login' || to.name === 'register' || to.name === 'forgot-password' || to.name === 'landing')) {
         const userRoleId = userStore.roleId
         if (userRoleId === 1) {
             return {name: 'super-admin-dashboard'}

@@ -69,11 +69,13 @@
 
         <!-- 消息列表 -->
         <template v-else>
-          <el-scrollbar height="600px" view-style="
+          <el-scrollbar height="700px" view-style="
           display: flex;
           flex-direction: column;
           gap: var(--space-3);
-          padding-right: var(--space-4); ">
+          padding-right: var(--space-4);
+          padding-left: var(--space-1);"
+          >
             <div
                 v-for="(notification, index) in notificationList"
                 :key="notification.id"
@@ -105,32 +107,52 @@
                   >
                     {{ notification.typeLabel }}
                   </el-tag>
-                  <span class="notification-time">{{ formatTime(notification.createTime) }}</span>
                 </div>
 
                 <h4 class="notification-title">{{ notification.title }}</h4>
                 <p class="notification-body">{{ notification.content }}</p>
               </div>
 
-              <!-- 操作按钮区 -->
-              <div class="notification-actions">
-                <CustomButton
-                    v-if="notification.status === 'UNREAD'"
-                    type="link"
-                    size="small"
-                    class="action-btn"
-                    @click.stop="handleMarkRead(notification.id)"
-                >
-                  标为已读
-                </CustomButton>
-                <CustomButton
-                    type="link"
-                    size="small"
-                    class="action-btn danger-link"
-                    @click.stop="handleDelete(notification.id)"
-                >
-                  <i class="iconfont icon-trash"/>
-                </CustomButton>
+              <!-- 操作按钮区 + 时间 -->
+              <div class="notification-right">
+                <div class="notification-actions">
+                  <CustomButton
+                      v-if="notification.status === 'UNREAD' && notification.actionType !== 'BIND_EMAIL'"
+                      type="link"
+                      size="small"
+                      class="action-btn"
+                      @click.stop="handleMarkRead(notification.id)"
+                  >
+                    标为已读
+                  </CustomButton>
+                  <CustomButton
+                      v-if="notification.actionType === 'BIND_EMAIL'"
+                      type="primary"
+                      size="small"
+                      class="action-btn"
+                      @click.stop="handleBindEmail(notification)"
+                  >
+                    去绑定
+                  </CustomButton>
+                  <CustomButton
+                      v-if="notification.actionType === 'VIEW_GUIDE'"
+                      type="primary"
+                      size="small"
+                      class="action-btn"
+                      @click.stop="handleViewGuide(notification)"
+                  >
+                    去完成指引
+                  </CustomButton>
+                  <CustomButton
+                      type="link"
+                      size="small"
+                      class="action-btn danger-link"
+                      @click.stop="handleDelete(notification.id)"
+                  >
+                    <i class="iconfont icon-trash"/>
+                  </CustomButton>
+                </div>
+                <span class="notification-time">{{ formatTime(notification.createTime) }}</span>
               </div>
             </div>
           </el-scrollbar>
@@ -139,22 +161,31 @@
       </main>
     </div>
     <NotificationTour ref="tourRef"/>
+
+    <!-- 重要通知详情弹窗 -->
+    <ImportantNoticeDialog
+        v-model="showImportantNoticeDialog"
+        :notice="selectedImportantNotice"
+        @close="handleNoticeClose"
+        @confirm="handleNoticeConfirm"
+    />
   </div>
 </template>
 
 <script setup>
+import ImportantNoticeDialog from '@/components/notification/ImportantNoticeDialog.vue'
 import NotificationTour from '@/components/tour/NotificationTour.vue'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour'
-import {onMounted, onUnmounted, ref, watch} from 'vue'
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue'
 import {useRouter} from 'vue-router'
 import {storeToRefs} from 'pinia'
-import {Check, RefreshRight} from '@element-plus/icons-vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
 import {useNotificationStore} from '@/stores/notification'
 import showMessage from '@/utils/message'
 
 const router = useRouter()
 const notificationStore = useNotificationStore()
+const tourStore = useTourStore()
 
 const {
   unreadCount,
@@ -173,6 +204,25 @@ const {
   init,
   stopPolling
 } = notificationStore
+
+// ========== 重要通知弹窗 ==========
+const selectedImportantNotice = ref(null)
+const showImportantNoticeDialog = computed({
+  get: () => !!selectedImportantNotice.value,
+  set: (val) => {
+    if (!val) selectedImportantNotice.value = null
+  }
+})
+
+const handleNoticeClose = async (id) => {
+  if (id) await readOne(id)
+  selectedImportantNotice.value = null
+}
+
+const handleNoticeConfirm = async (id) => {
+  if (id) await readOne(id)
+  selectedImportantNotice.value = null
+}
 
 // ========== 优先级颜色 ==========
 const getPriorityColor = (priority) => {
@@ -200,6 +250,8 @@ const getTagType = (type) => {
       return 'info'
     case 'SYSTEM':
       return undefined
+    case 'BIND_EMAIL_REMINDER':
+      return 'primary'
     default:
       return 'info'
   }
@@ -260,15 +312,38 @@ const handleDelete = async (id) => {
   }
 }
 
+const handleBindEmail = async (notification) => {
+  if (notification.status === 'UNREAD') {
+    await readOne(notification.id)
+  }
+  router.push('/user/center?edit=email')
+}
+
+const handleViewGuide = async (notification) => {
+  if (notification.status === 'UNREAD') {
+    await readOne(notification.id)
+  }
+  tourStore.requestQuickGuide()
+}
+
 const handleCardClick = async (notification) => {
   // 如果是未读，先标记已读
   if (notification.status === 'UNREAD') {
     await readOne(notification.id)
   }
 
+  // 重要通知类型：使用弹窗展示详情
+  if (notification.type === 'IMPORTANT_NOTICE') {
+    selectedImportantNotice.value = notification
+    return
+  }
+
   // 有跳转则跳转
   const route = getActionRoute(notification)
   if (route) {
+    if (notification.actionType === 'VIEW_GUIDE') {
+      tourStore.requestQuickGuide()
+    }
     router.push(route)
   }
 }
@@ -284,7 +359,6 @@ onUnmounted(() => {
 })
 // 页面引导
 const tourRef = ref(null)
-const tourStore = useTourStore()
 
 watch(() => tourStore.pendingStartScene, (scene) => {
   if (scene === TOUR_SCENES.NOTIFICATION) {
@@ -471,7 +545,7 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 
   &:hover {
     box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    transform: translateX(-2px);
 
     .notification-actions {
       opacity: 1;
@@ -518,12 +592,18 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 .notification-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   margin-bottom: var(--space-2);
 }
 
 .type-tag {
   font-weight: 500;
+}
+
+.notification-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .notification-time {

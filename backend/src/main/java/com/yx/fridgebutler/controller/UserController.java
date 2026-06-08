@@ -1,6 +1,8 @@
 package com.yx.fridgebutler.controller;
 
+import com.yx.fridgebutler.dto.user.BindEmailRequest;
 import com.yx.fridgebutler.dto.user.UserChangePasswordRequest;
+import com.yx.fridgebutler.dto.user.UserEmailCaptchaRequest;
 import com.yx.fridgebutler.dto.user.UserInitPasswordRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateAvatarRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateRequest;
@@ -101,5 +103,33 @@ public class UserController {
         userService.initPassword(request);
         log.info("首次登录密码初始化成功");
         return Result.success(null);
+    }
+
+    /**
+     * 发送绑定/修改邮箱验证码
+     * <p>向目标邮箱发送 6 位数字验证码，用于登录后绑定或修改邮箱。</p>
+     *
+     * @param request 绑定邮箱验证码请求参数，包含目标邮箱
+     * @return 发送成功返回提示信息
+     */
+    @PostMapping("/email/captcha")
+    public Result<Void> sendBindEmailCaptcha(@Valid @RequestBody UserEmailCaptchaRequest request) {
+        log.info("发送绑定邮箱验证码请求，邮箱：{}", request.getEmail());
+        userService.sendBindEmailCaptcha(request);
+        return Result.success("验证码已发送，请查收邮件", null);
+    }
+
+    /**
+     * 绑定或修改当前登录用户邮箱
+     * <p>校验验证码及邮箱是否被其他用户占用，验证通过后更新邮箱。</p>
+     *
+     * @param request 绑定邮箱请求参数，包含邮箱和验证码
+     * @return 绑定成功返回提示信息
+     */
+    @PostMapping("/email")
+    public Result<Void> bindEmail(@Valid @RequestBody BindEmailRequest request) {
+        log.info("绑定邮箱请求，邮箱：{}", request.getEmail());
+        userService.bindEmail(request);
+        return Result.success("邮箱绑定成功", null);
     }
 }
