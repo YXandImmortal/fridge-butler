@@ -13,4 +13,6 @@
 【输出要求】
 - 必须输出纯 JSON，不要 Markdown 代码块，不要任何额外说明。
 - type 字段只能从以下四个值中选择：FACT（冷知识）、TIP（实用技巧）、JOKE（冷笑话）、RIDDLE（谜语）。
+- content 字段必须包含有效的正文内容，不能为空字符串、null 或仅空白字符。
+- title、emoji、content 三个字段必须完整返回，不得省略。
 - 非谜语类型，answer 字段必须为空字符串。

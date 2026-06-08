@@ -107,6 +107,8 @@ public class DailyTipServiceImpl implements DailyTipService {
 
     /**
      * 调用 DeepSeek 生成小贴士并保存到数据库。
+     * <p>首次调用 AI 后，如果 content 为空或解析失败，会自动重试一次；
+     * 两次均失败则使用兜底内容。</p>
      *
      * @param date 目标日期
      * @return 保存后的实体
@@ -120,16 +122,32 @@ public class DailyTipServiceImpl implements DailyTipService {
                 dateStr, weekday, type.name());
 
         String systemPrompt = promptLoader.getPrompt("daily-tip", SYSTEM_PROMPT);
-        String response = deepSeekService.chat(systemPrompt, userPrompt);
-        DailyTipGenerateResult result = parseResponse(response);
+
+        DailyTipGenerateResult result = null;
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            String response = deepSeekService.chat(systemPrompt, userPrompt);
+            log.info("每日小贴士 AI 第{}次响应，date={}：{}", attempt, date, response);
+            result = parseResponse(response);
+            if (result != null) {
+                break;
+            }
+            log.warn("每日小贴士第{}次生成结果无效，准备重试，date={}", attempt, date);
+        }
+
+        if (result == null) {
+            log.error("每日小贴士 AI 两次生成均无效，使用兜底内容，date={}", date);
+            result = createFallbackResult(date);
+        }
+
+        ensureRequiredFields(result);
 
         SysDailyTip tip = SysDailyTip.builder()
                 .tipType(resolveType(result.getType(), type))
                 .emoji(truncate(result.getEmoji(), 10))
                 .title(truncate(result.getTitle(), 20))
-                .content(result.getContent() != null ? result.getContent() : "")
+                .content(result.getContent())
                 .tipDate(date)
-                .answer(result.getAnswer() != null ? result.getAnswer() : "")
+                .answer(result.getAnswer())
                 .createTime(Instant.now())
                 .updateTime(Instant.now())
                 .build();
@@ -139,22 +157,66 @@ public class DailyTipServiceImpl implements DailyTipService {
 
     /**
      * 解析 DeepSeek 返回的 JSON 响应。
+     * <p>仅在 JSON 解析成功且关键字段 {@code content} 非空时返回结果；
+     * 否则返回 {@code null}，由上层决定是否重试或使用兜底。</p>
+     *
+     * @param response 原始 AI 响应
+     * @return 解析后的结果；无效时返回 {@code null}
      */
     private DailyTipGenerateResult parseResponse(String response) {
         String cleaned = AiResponseUtils.cleanJsonResponse(response);
+        if (cleaned.isBlank()) {
+            log.warn("每日小贴士 AI 响应为空或清洗后无内容");
+            return null;
+        }
         try {
-            return JSONUtil.toBean(cleaned, DailyTipGenerateResult.class);
+            DailyTipGenerateResult result = JSONUtil.toBean(cleaned, DailyTipGenerateResult.class);
+            if (result == null) {
+                log.warn("每日小贴士 JSON 解析结果为空，原始响应：{}", response);
+                return null;
+            }
+            if (result.getContent() == null || result.getContent().trim().isEmpty()) {
+                log.warn("每日小贴士 AI 返回的 content 为空或缺失，原始响应：{}", response);
+                return null;
+            }
+            return result;
         } catch (Exception e) {
-            log.warn("每日小贴士 JSON 解析失败，尝试兜底解析。原始响应：{}", cleaned, e);
-            // 兜底：构造一个简单对象
-            DailyTipGenerateResult fallback = new DailyTipGenerateResult();
-            fallback.setType("FACT");
-            fallback.setEmoji("🧊");
-            fallback.setTitle("冰箱小贴士");
-            fallback.setContent("冰箱门不要频繁开关，每次开门冷气会流失约30%，既费电又影响保鲜效果。");
-            fallback.setDate(LocalDate.now().format(DATE_FORMATTER));
-            fallback.setAnswer("");
-            return fallback;
+            log.warn("每日小贴士 JSON 解析失败，原始响应：{}", response, e);
+            return null;
+        }
+    }
+
+    /**
+     * 创建兜底小贴士结果。
+     *
+     * @param date 目标日期
+     * @return 兜底结果
+     */
+    private DailyTipGenerateResult createFallbackResult(LocalDate date) {
+        DailyTipGenerateResult fallback = new DailyTipGenerateResult();
+        fallback.setType("FACT");
+        fallback.setEmoji("🧊");
+        fallback.setTitle("冰箱小贴士");
+        fallback.setContent("冰箱门不要频繁开关，每次开门冷气会流失约30%，既费电又影响保鲜效果。");
+        fallback.setDate(date.format(DATE_FORMATTER));
+        fallback.setAnswer("");
+        return fallback;
+    }
+
+    /**
+     * 确保关键字段（title、emoji、answer）不为空，避免前端展示异常。
+     *
+     * @param result AI 生成结果
+     */
+    private void ensureRequiredFields(DailyTipGenerateResult result) {
+        if (result.getTitle() == null || result.getTitle().trim().isEmpty()) {
+            result.setTitle("冰箱小贴士");
+        }
+        if (result.getEmoji() == null || result.getEmoji().trim().isEmpty()) {
+            result.setEmoji("🧊");
+        }
+        if (result.getAnswer() == null) {
+            result.setAnswer("");
         }
     }
 

@@ -778,14 +778,16 @@ const fetchCapacityStats = async () => {
 
 // ==================== 生命周期 ====================
 onMounted(async () => {
+  // 基础数据是用户级别的，不依赖冰箱ID，无条件加载
+  fetchCategories()
+  fetchUnits()
+  fetchUnitTypes()
+
   const fridgeId = await resolveFridgeId()
   if (!fridgeId) {
     openSelectFridgeDialog()
     return
   }
-  fetchCategories()
-  fetchUnits()
-  fetchUnitTypes()
   fetchItems()
   fetchCapacityStats()
 })
