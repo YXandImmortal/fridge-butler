@@ -29,9 +29,47 @@ export const useThemeStore = defineStore('theme', () => {
         }
     }
 
-    // 切换主题
-    const toggleTheme = () => {
-        theme.value = theme.value === 'light' ? 'dark' : 'light'
+    // 切换主题（带扩散动画）
+    const toggleTheme = (event) => {
+        const isDark = theme.value === 'dark'
+
+        // 降级：浏览器不支持 View Transitions API 时直接切换
+        if (!document.startViewTransition) {
+            theme.value = isDark ? 'light' : 'dark'
+            return
+        }
+
+        // 获取点击位置（无事件时取视口中心）
+        const x = event?.clientX ?? window.innerWidth / 2
+        const y = event?.clientY ?? window.innerHeight / 2
+
+        // 计算到最远角落的扩散半径
+        const endRadius = Math.hypot(
+            Math.max(x, window.innerWidth - x),
+            Math.max(y, window.innerHeight - y)
+        )
+
+        // 启动视图过渡
+        const transition = document.startViewTransition(() => {
+            theme.value = isDark ? 'light' : 'dark'
+        })
+
+        // 自定义圆形扩散动画
+        transition.ready.then(() => {
+            document.documentElement.animate(
+                {
+                    clipPath: [
+                        `circle(0px at ${x}px ${y}px)`,
+                        `circle(${endRadius}px at ${x}px ${y}px)`
+                    ]
+                },
+                {
+                    duration: 400,
+                    easing: 'ease-in-out',
+                    pseudoElement: '::view-transition-new(root)'
+                }
+            )
+        })
     }
 
     // 设置指定主题

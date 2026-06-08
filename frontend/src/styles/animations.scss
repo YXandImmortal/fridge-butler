@@ -165,3 +165,23 @@
   opacity: 0;
   transform: translateY(-20px) scale(0.92);
 }
+
+/* =========================================================
+ * 主题切换 View Transition 扩散动画
+ * ========================================================= */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* 旧视图在下层保持不动 */
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* 新视图在上层，通过 clip-path 从点击位置圆形扩散覆盖 */
+::view-transition-new(root) {
+  z-index: 2147483647;
+}

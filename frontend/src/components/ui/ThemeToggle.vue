@@ -3,7 +3,7 @@
       class="theme-toggle"
       :class="{ 'is-dark': themeStore.theme === 'dark' }"
       :aria-label="themeStore.theme === 'dark' ? '切换到浅色主题' : '切换到深色主题'"
-      @click="themeStore.toggleTheme"
+      @click="themeStore.toggleTheme($event)"
   >
     <span class="theme-toggle-track">
       <span class="theme-toggle-thumb">
