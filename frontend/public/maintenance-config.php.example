@@ -1,0 +1,27 @@
+<?php
+/**
+ * 维护模式敏感配置文件 —— 示例模板
+ *
+ * ⚠️ 安全提示：此文件仅为示例，不含真实敏感信息，可安全提交到 Git。
+ * 实际部署时：
+ *   1. 复制本文件为 maintenance-config.php
+ *   2. 修改配置项（尤其是 access_token）
+ *   3. maintenance-config.php 已被加入 .gitignore，不会泄露
+ */
+
+return [
+    // 开关维护模式的访问密码（必须设置一个强密码）
+    // 生成强密码：在终端执行 openssl rand -base64 24
+    'access_token' => 'your-secure-token-here',
+
+    // 允许执行开关操作的管理员 IP 列表
+    // 留空数组 [] 表示不限制 IP（仅校验密码）
+    'admin_ips' => [
+        // '123.45.67.89',
+    ],
+
+    // 维护期间仍可正常访问网站的白名单 IP
+    'whitelist_ips' => [
+        // '123.45.67.89',
+    ],
+];
