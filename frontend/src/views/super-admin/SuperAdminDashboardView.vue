@@ -94,7 +94,7 @@
           </div>
           <el-table :data="recentLogs" style="width: 100%">
             <el-table-column prop="username" label="用户" min-width="120" />
-            <el-table-column prop="method" label="方法" width="80">
+            <el-table-column prop="method" label="方法" width="90">
               <template #default="{ row }">
                 <el-tag :type="methodTagType(row.method)" size="small">{{ row.method }}</el-tag>
               </template>
@@ -105,9 +105,9 @@
                 <el-tag :type="statusTagType(row.statusCode)" size="small">{{ row.statusCode }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="duration" label="耗时" width="90">
+            <el-table-column prop="durationMs" label="耗时" width="90">
               <template #default="{ row }">
-                {{ row.duration }}ms
+                {{ row.durationMs }}ms
               </template>
             </el-table-column>
             <el-table-column prop="createTime" label="时间" min-width="160" />

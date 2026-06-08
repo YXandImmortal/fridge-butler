@@ -53,7 +53,7 @@
       <template v-else>
         <el-table max-height="520px" :data="logList" style="width: 100%" @row-click="handleRowClick">
           <el-table-column prop="username" label="用户" min-width="100" />
-          <el-table-column prop="method" label="方法" width="80">
+          <el-table-column prop="method" label="方法" width="90">
             <template #default="{ row }">
               <el-tag :type="methodTagType(row.method)" size="small" class="method-tag">
                 {{ row.method }}
