@@ -399,6 +399,33 @@ public class BusinessException extends RuntimeException {
         return new BusinessException(ResultCode.DUPLICATE_BROADCAST);
     }
 
+    /**
+     * 创建重要通知模板不存在异常
+     *
+     * @return 重要通知模板不存在业务异常
+     */
+    public static BusinessException importantNoticeNotFound() {
+        return new BusinessException(ResultCode.IMPORTANT_NOTICE_NOT_FOUND);
+    }
+
+    /**
+     * 创建重要通知已关闭异常
+     *
+     * @return 该重要通知已关闭业务异常
+     */
+    public static BusinessException importantNoticeAlreadyClosed() {
+        return new BusinessException(ResultCode.IMPORTANT_NOTICE_ALREADY_CLOSED);
+    }
+
+    /**
+     * 创建重要通知广播过于频繁异常
+     *
+     * @return 该通知广播过于频繁业务异常
+     */
+    public static BusinessException importantNoticeBroadcastTooFrequent() {
+        return new BusinessException(ResultCode.IMPORTANT_NOTICE_BROADCAST_TOO_FREQUENT);
+    }
+
     // ======================== 管理员相关 ========================
 
     /**

@@ -62,6 +62,28 @@ public class SysImportantNotice {
     private Instant createTime;
 
     /**
+     * 广播状态：0=活跃（可广播），1=已关闭（不可广播），默认值为 0。
+     */
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "status", nullable = false)
+    private Byte status;
+
+    /**
+     * 最近一次广播时间。
+     */
+    @Column(name = "broadcast_time")
+    private Instant broadcastTime;
+
+    /**
+     * 广播次数，默认值为 0。
+     */
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "broadcast_count", nullable = false)
+    private Integer broadcastCount;
+
+    /**
      * 是否删除，true 表示已删除，默认值为 0（未删除），必填。
      */
     @NotNull

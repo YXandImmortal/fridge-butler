@@ -4,8 +4,99 @@
     <div class="page-header">
       <div class="page-header-left">
         <i class="iconfont icon-megaphone page-header-icon"/>
-        <h1 class="page-title">重要通知发布</h1>
+        <h1 class="page-title">重要通知管理</h1>
       </div>
+    </div>
+
+    <!-- 模板列表 -->
+    <div class="table-card" v-loading="tableLoading">
+      <h3 class="section-title">
+        <i class="iconfont icon-list section-icon"/>
+        通知模板列表
+      </h3>
+
+      <el-empty v-if="!tableLoading && templateList.length === 0" description="暂无通知模板" />
+      <template v-else>
+        <el-table max-height="520px" :data="templateList" style="width: 100%">
+          <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip>
+            <template #default="{ row }">
+              <span :title="row.title">{{ row.title }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="内容摘要" min-width="200">
+            <template #default="{ row }">
+              {{ row.content ? row.content.slice(0, 30) + (row.content.length > 30 ? '...' : '') : '' }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="priority" label="优先级" width="90">
+            <template #default="{ row }">
+              <el-tag :type="getPriorityType(row.priority)" size="small">
+                {{ getPriorityLabel(row.priority) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="status" label="状态" width="90">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'" size="small">
+                {{ row.status === 'ACTIVE' ? '活跃' : '已关闭' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="broadcastCount" label="广播次数" width="100">
+            <template #default="{ row }">
+              {{ row.broadcastCount > 0 ? row.broadcastCount : '未广播' }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="broadcastTime" label="最近广播" width="170">
+            <template #default="{ row }">
+              {{ formatDateTime(row.broadcastTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="创建时间" width="170">
+            <template #default="{ row }">
+              {{ formatDateTime(row.createTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="140" fixed="right">
+            <template #default="{ row }">
+              <template v-if="row.status === 'ACTIVE'">
+                <CustomButton
+                  type="link"
+                  size="small"
+                  @click="handleBroadcastTemplate(row)"
+                  color="primary"
+                >
+                  广播
+                </CustomButton>
+                <CustomButton
+                  type="link"
+                  plain
+                  size="small"
+                  color="danger"
+                  @click="handleCloseTemplate(row)"
+                >
+                  关闭
+                </CustomButton>
+              </template>
+              <span v-else class="disabled-text">—</span>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <!-- 分页 -->
+        <div class="pagination-wrapper">
+          <el-pagination
+            v-model:current-page="pagination.page"
+            v-model:page-size="pagination.size"
+            :total="pagination.total"
+            :page-sizes="[10, 20, 50]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handlePageChange"
+            style="--el-border-radius-base: var(--radius-md);"
+          />
+        </div>
+      </template>
     </div>
 
     <!-- 发布表单 -->
@@ -19,7 +110,7 @@
         <div class="form-section">
           <h3 class="section-title">
             <i class="iconfont icon-edit section-icon"/>
-            通知内容编辑
+            新建并广播通知
           </h3>
 
           <el-form-item
@@ -60,6 +151,7 @@
             <li>每位用户会收到独立的通知记录，支持各自标记已读</li>
             <li>支持 Markdown 语法：标题、列表、链接、代码块、表格等</li>
             <li>当前版本<strong>不支持撤回</strong>，请确认内容后再发布</li>
+            <li>已关闭的模板新注册用户将不再收到，但已收到用户不受影响</li>
           </ul>
         </div>
 
@@ -77,19 +169,62 @@
         </div>
       </el-form>
     </div>
+
+    <!-- 广播确认 -->
+    <ConfirmDialog
+      v-model:visible="broadcastConfirmVisible"
+      title="广播通知"
+      message="确定向全体普通用户广播该通知？"
+      confirm-text="确定广播"
+      cancel-text="取消"
+      @confirm="confirmBroadcastTemplate"
+      width="340px"
+    />
+
+    <!-- 关闭确认 -->
+    <ConfirmDialog
+      v-model:visible="closeConfirmVisible"
+      title="关闭通知"
+      message="关闭后新注册用户将不再收到此通知，已收到用户不受影响。确定关闭？"
+      confirm-text="确定关闭"
+      cancel-text="取消"
+      @confirm="confirmCloseTemplate"
+      width="440px"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import CustomButton from '@/components/ui/CustomButton.vue'
 import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import { useThemeStore } from '@/stores/theme.js'
-import { broadcastImportantNotice } from '@/api/admin.js'
+import {
+  broadcastImportantNotice,
+  getImportantNoticeList,
+  broadcastImportantNoticeById,
+  closeImportantNotice
+} from '@/api/notification.js'
 import showMessage from '@/utils/message.js'
 
+// ==================== 模板列表 ====================
+const tableLoading = ref(false)
+const templateList = ref([])
+const pagination = reactive({
+  page: 1,
+  size: 10,
+  total: 0
+})
+
+// ==================== 广播/关闭确认对话框 ====================
+const broadcastConfirmVisible = ref(false)
+const closeConfirmVisible = ref(false)
+const selectedTemplate = ref(null)
+
+// ==================== 原有表单数据 ====================
 const formRef = ref(null)
 const broadcasting = ref(false)
 const themeStore = useThemeStore()
@@ -122,6 +257,135 @@ const isFormValid = computed(() => {
   return noticeForm.title.trim().length > 0 && noticeForm.content.trim().length > 0
 })
 
+// ==================== 格式化函数 ====================
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return '—'
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return dateStr
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).replace(/\//g, '-')
+}
+
+const getPriorityLabel = (priority) => {
+  const map = { 0: '普通', 1: '警告', 2: '紧急' }
+  return map[priority] ?? '普通'
+}
+
+const getPriorityType = (priority) => {
+  const map = { 0: 'info', 1: 'warning', 2: 'danger' }
+  return map[priority] ?? 'info'
+}
+
+// ==================== 数据获取 ====================
+const fetchTemplateList = async () => {
+  tableLoading.value = true
+  try {
+    const res = await getImportantNoticeList(pagination.page, pagination.size)
+    if (res.code === 200 && res.data) {
+      const data = res.data
+      if (Array.isArray(data.list)) {
+        templateList.value = data.list
+        pagination.total = data.total || 0
+      } else {
+        templateList.value = []
+        pagination.total = 0
+      }
+    } else {
+      templateList.value = []
+      pagination.total = 0
+    }
+  } catch (error) {
+    console.error('获取通知模板列表失败:', error)
+    templateList.value = []
+    pagination.total = 0
+  } finally {
+    tableLoading.value = false
+  }
+}
+
+// ==================== 广播操作 ====================
+const handleBroadcastTemplate = (row) => {
+  selectedTemplate.value = row
+  broadcastConfirmVisible.value = true
+}
+
+const confirmBroadcastTemplate = async () => {
+  if (!selectedTemplate.value) return
+  try {
+    const res = await broadcastImportantNoticeById(selectedTemplate.value.id)
+    if (res.code === 200) {
+      showMessage.success('广播成功')
+      broadcastConfirmVisible.value = false
+      fetchTemplateList()
+    } else {
+      showMessage.error(res.message || '广播失败')
+    }
+  } catch (error) {
+    console.error('广播通知失败:', error)
+    const status = error.response?.status
+    const message = error.response?.data?.message || ''
+    if (status === 429) {
+      showMessage.warning(message || '该通知广播过于频繁，请10分钟后再试')
+    } else if (status === 404) {
+      showMessage.error('通知模板不存在，请刷新后重试')
+    } else if (status === 400) {
+      if (message.includes('已关闭')) {
+        showMessage.error('该通知已关闭，无法广播')
+      } else {
+        showMessage.error(message || '广播失败')
+      }
+    }
+  }
+}
+
+// ==================== 关闭操作 ====================
+const handleCloseTemplate = (row) => {
+  selectedTemplate.value = row
+  closeConfirmVisible.value = true
+}
+
+const confirmCloseTemplate = async () => {
+  if (!selectedTemplate.value) return
+  try {
+    const res = await closeImportantNotice(selectedTemplate.value.id)
+    if (res.code === 200) {
+      showMessage.success('已关闭')
+      closeConfirmVisible.value = false
+      fetchTemplateList()
+    } else {
+      showMessage.error(res.message || '关闭失败')
+    }
+  } catch (error) {
+    console.error('关闭通知失败:', error)
+    const status = error.response?.status
+    const message = error.response?.data?.message || ''
+    if (status === 404) {
+      showMessage.error('通知模板不存在，请刷新后重试')
+    } else {
+      showMessage.error(message || '关闭失败')
+    }
+  }
+}
+
+// ==================== 分页 ====================
+const handleSizeChange = (size) => {
+  pagination.size = size
+  pagination.page = 1
+  fetchTemplateList()
+}
+
+const handlePageChange = (page) => {
+  pagination.page = page
+  fetchTemplateList()
+}
+
+// ==================== 新建并广播 ====================
 const handleBroadcast = async () => {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
@@ -137,21 +401,31 @@ const handleBroadcast = async () => {
       noticeForm.title = ''
       noticeForm.content = ''
       formRef.value?.resetFields()
+      fetchTemplateList()
     } else {
       showMessage.error(res.message || '发布失败')
     }
   } catch (error) {
     console.error('发布重要通知失败:', error)
-    showMessage.error('发布失败，请稍后重试')
+    const message = error.response?.data?.message || ''
+    if (error.response?.status === 400 && message.includes('重复')) {
+      showMessage.error('相同标题的通知在5分钟内已广播过')
+    } else {
+      showMessage.error('发布失败，请稍后重试')
+    }
   } finally {
     broadcasting.value = false
   }
 }
+
+onMounted(() => {
+  fetchTemplateList()
+})
 </script>
 
 <style scoped lang="scss">
 .admin-notification-container {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
   animation: fade-in-up 0.6s ease-out;
@@ -179,6 +453,16 @@ const handleBroadcast = async () => {
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
+}
+
+.table-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--space-6);
 }
 
 .publish-card {
@@ -243,6 +527,17 @@ const handleBroadcast = async () => {
   margin-top: var(--space-6);
   padding-top: var(--space-5);
   border-top: 1px solid var(--border-color);
+}
+
+.pagination-wrapper {
+  margin-top: var(--space-6);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.disabled-text {
+  color: var(--text-tertiary);
+  font-size: 14px;
 }
 
 // MdEditor 浅色模式主题适配
@@ -408,6 +703,7 @@ const handleBroadcast = async () => {
     font-size: 22px;
   }
 
+  .table-card,
   .publish-card {
     padding: var(--space-4);
   }

@@ -139,7 +139,22 @@ public enum ResultCode {
      * 重要通知广播状态码
      * <p>广播幂等校验失败</p>
      */
-    DUPLICATE_BROADCAST(400, HttpStatus.BAD_REQUEST, "相同标题的重要通知在5分钟内已广播过");
+    DUPLICATE_BROADCAST(400, HttpStatus.BAD_REQUEST, "相同标题的重要通知在5分钟内已广播过"),
+
+    /**
+     * 重要通知模板不存在
+     */
+    IMPORTANT_NOTICE_NOT_FOUND(404, HttpStatus.NOT_FOUND, "重要通知模板不存在"),
+
+    /**
+     * 重要通知已关闭，无法广播
+     */
+    IMPORTANT_NOTICE_ALREADY_CLOSED(400, HttpStatus.BAD_REQUEST, "该重要通知已关闭，无法广播"),
+
+    /**
+     * 重要通知广播过于频繁
+     */
+    IMPORTANT_NOTICE_BROADCAST_TOO_FREQUENT(429, HttpStatus.TOO_MANY_REQUESTS, "该通知广播过于频繁，请稍后再试");
 
     /**
      * 状态码数值

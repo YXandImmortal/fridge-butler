@@ -42,4 +42,20 @@ public class PageResult<T> {
                 .total(page.getTotalElements())
                 .build();
     }
+
+    /**
+     * 手动构建分页结果。
+     * <p>适用于非 Spring Data 分页场景，如自定义查询后手动组装分页数据。</p>
+     *
+     * @param list 当前页数据列表
+     * @param total 总记录数
+     * @param <T> 数据类型
+     * @return PageResult 包装对象
+     */
+    public static <T> PageResult<T> of(List<T> list, Long total) {
+        return PageResult.<T>builder()
+                .list(list)
+                .total(total)
+                .build();
+    }
 }

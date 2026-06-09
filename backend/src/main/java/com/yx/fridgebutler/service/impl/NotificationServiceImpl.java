@@ -15,6 +15,7 @@ import com.yx.fridgebutler.repository.SysNotificationRepository;
 import com.yx.fridgebutler.repository.SysRoleRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.service.NotificationService;
+import com.yx.fridgebutler.vo.notification.ImportantNoticeVO;
 import com.yx.fridgebutler.vo.notification.NotificationSummaryVO;
 import com.yx.fridgebutler.vo.notification.NotificationVO;
 import lombok.extern.slf4j.Slf4j;
@@ -273,6 +274,7 @@ public class NotificationServiceImpl implements NotificationService {
      * 执行逻辑：
      * <ol>
      *   <li>5 分钟内相同标题的广播将被拒绝（幂等校验）</li>
+     *   <li>保存到重要通知模板表，状态为活跃，广播次数为1</li>
      *   <li>查询所有非 SuperAdmin 的未删除用户</li>
      *   <li>为每个用户生成一条 IMPORTANT_NOTICE 通知</li>
      * </ol>
@@ -290,11 +292,14 @@ public class NotificationServiceImpl implements NotificationService {
             throw BusinessException.duplicateBroadcast();
         }
 
-        // 2. 保存到重要通知模板表
+        // 2. 保存到重要通知模板表（活跃状态，已广播1次）
         SysImportantNotice importantNotice = SysImportantNotice.builder()
                 .title(title)
                 .content(content)
                 .priority((byte) NotificationType.IMPORTANT_NOTICE.getDefaultPriority())
+                .status((byte) 0)
+                .broadcastTime(Instant.now())
+                .broadcastCount(1)
                 .createTime(Instant.now())
                 .isDeleted((byte) 0)
                 .build();
@@ -328,7 +333,7 @@ public class NotificationServiceImpl implements NotificationService {
      * <p>
      * 执行逻辑：
      * <ol>
-     *   <li>查询最新的一条未删除重要通知模板</li>
+     *   <li>查询最新的一条未删除且状态为活跃的重要通知模板</li>
      *   <li>检查该用户是否已存在未读的重要通知（避免重复）</li>
      *   <li>为用户创建对应的 IMPORTANT_NOTICE 通知记录</li>
      * </ol>
@@ -339,13 +344,19 @@ public class NotificationServiceImpl implements NotificationService {
     public void initializeImportantNoticeForNewUser(Long userId) {
         log.info("为新用户 {} 初始化最新重要通知", userId);
 
+        // 只查询状态为活跃（status=0）的最新模板
         List<SysImportantNotice> notices = importantNoticeRepository.findAllActiveOrderByCreateTimeDesc(PageRequest.of(0, 1));
         if (notices.isEmpty()) {
-            log.info("不存在重要通知模板，跳过初始化");
+            log.info("不存在活跃的重要通知模板，跳过初始化");
             return;
         }
 
         SysImportantNotice latestNotice = notices.getFirst();
+        // 二次校验：确保是活跃状态（防御性编程）
+        if (latestNotice.getStatus() != null && latestNotice.getStatus() == 1) {
+            log.info("最新重要通知模板已关闭，跳过初始化");
+            return;
+        }
 
         long existingCount = notificationRepository.countUnreadByUserIdAndType(
                 userId, NotificationType.IMPORTANT_NOTICE.name());
@@ -577,6 +588,122 @@ public class NotificationServiceImpl implements NotificationService {
             return null;
         }
         return instant.atZone(ZONE_ID_SHANGHAI).format(DATE_TIME_FORMATTER);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>查询所有未删除的重要通知模板，按创建时间降序排列。</p>
+     */
+    @Override
+    public List<ImportantNoticeVO> listImportantNotices(int page, int size) {
+        log.info("查询重要通知模板列表，页码：{}，每页：{}", page, size);
+
+        Pageable pageable = PageRequest.of(Math.max(page - 1, 0), Math.max(size, 1));
+        List<SysImportantNotice> notices = importantNoticeRepository.findAllActiveOrderByCreateTimeDesc(pageable);
+
+        return notices.stream()
+                .map(this::convertToImportantNoticeVO)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 执行逻辑：
+     * <ol>
+     *   <li>查询模板，校验存在性和活跃状态</li>
+     *   <li>10分钟内同一模板禁止重复广播（幂等校验）</li>
+     *   <li>查询所有非 SuperAdmin 的未删除用户</li>
+     *   <li>为每个用户生成一条 IMPORTANT_NOTICE 通知</li>
+     *   <li>更新模板的广播时间和广播次数</li>
+     * </ol>
+     * </p>
+     */
+    @Override
+    @Transactional
+    public void broadcastImportantNoticeById(Long noticeId) {
+        log.info("按ID广播重要通知，模板ID：{}", noticeId);
+
+        // 1. 查询模板
+        SysImportantNotice notice = importantNoticeRepository.findByIdAndIsDeleted(noticeId, (byte) 0)
+                .orElseThrow(BusinessException::importantNoticeNotFound);
+
+        // 2. 校验状态
+        if (notice.getStatus() != null && notice.getStatus() == 1) {
+            log.warn("重要通知广播被拦截，模板已关闭，ID：{}", noticeId);
+            throw BusinessException.importantNoticeAlreadyClosed();
+        }
+
+        // 3. 幂等校验：10分钟内同一模板禁止重复广播
+        Instant tenMinutesAgo = Instant.now().minus(10, ChronoUnit.MINUTES);
+        boolean recentlyBroadcast = importantNoticeRepository.existsBroadcastByIdAndTime(noticeId, tenMinutesAgo);
+        if (recentlyBroadcast) {
+            log.warn("重要通知广播被拦截，10分钟内已广播过该模板，ID：{}", noticeId);
+            throw BusinessException.importantNoticeBroadcastTooFrequent();
+        }
+
+        // 4. 获取 SuperAdmin 的 roleId，排除该角色用户
+        Long superAdminRoleId = roleRepository.findByRoleCode("SUPER_ADMIN")
+                .map(SysRole::getId)
+                .orElse(null);
+
+        List<SysUser> users = userRepository.findAll().stream()
+                .filter(u -> superAdminRoleId == null || !superAdminRoleId.equals(u.getRoleId()))
+                .filter(u -> u.getIsDeleted() == null || !u.getIsDeleted())
+                .toList();
+
+        // 5. 广播给所有普通用户
+        for (SysUser user : users) {
+            SysNotification notification = buildNotification(
+                    user.getId(), null, null,
+                    notice.getTitle(), notice.getContent(), NotificationType.IMPORTANT_NOTICE,
+                    "NONE", null
+            );
+            notificationRepository.save(notification);
+        }
+
+        // 6. 更新模板广播统计
+        notice.setBroadcastTime(Instant.now());
+        notice.setBroadcastCount((notice.getBroadcastCount() == null ? 0 : notice.getBroadcastCount()) + 1);
+        importantNoticeRepository.save(notice);
+
+        log.info("重要通知按ID广播完成，模板ID：{}，标题：{}，覆盖用户：{} 人",
+                noticeId, notice.getTitle(), users.size());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>将指定重要通知模板的状态设为已关闭（status=1）。</p>
+     */
+    @Override
+    @Transactional
+    public void closeImportantNotice(Long noticeId) {
+        log.info("关闭重要通知广播，模板ID：{}", noticeId);
+
+        SysImportantNotice notice = importantNoticeRepository.findByIdAndIsDeleted(noticeId, (byte) 0)
+                .orElseThrow(BusinessException::importantNoticeNotFound);
+
+        notice.setStatus((byte) 1);
+        importantNoticeRepository.save(notice);
+
+        log.info("重要通知广播已关闭，模板ID：{}，标题：{}", noticeId, notice.getTitle());
+    }
+
+    /**
+     * 将重要通知模板实体转换为 ImportantNoticeVO。
+     */
+    private ImportantNoticeVO convertToImportantNoticeVO(SysImportantNotice n) {
+        String statusLabel = (n.getStatus() != null && n.getStatus() == 1) ? "CLOSED" : "ACTIVE";
+        return ImportantNoticeVO.builder()
+                .id(n.getId())
+                .title(n.getTitle())
+                .content(n.getContent())
+                .priority(n.getPriority() != null ? n.getPriority().intValue() : 0)
+                .status(statusLabel)
+                .broadcastCount(n.getBroadcastCount() != null ? n.getBroadcastCount() : 0)
+                .broadcastTime(formatInstant(n.getBroadcastTime()))
+                .createTime(formatInstant(n.getCreateTime()))
+                .build();
     }
 
     /**

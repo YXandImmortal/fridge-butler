@@ -171,7 +171,7 @@ const handleClick = (event) => {
 }
 
 .custom-button--link-warning:hover:not(:disabled) {
-  filter: brightness(0.9);
+  color: var(--warn-dark);
 }
 
 .custom-button--link-danger {

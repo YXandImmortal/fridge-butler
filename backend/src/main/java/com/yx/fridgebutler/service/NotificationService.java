@@ -1,6 +1,7 @@
 package com.yx.fridgebutler.service;
 
 import com.yx.fridgebutler.entity.BizFridge;
+import com.yx.fridgebutler.vo.notification.ImportantNoticeVO;
 import com.yx.fridgebutler.vo.notification.NotificationSummaryVO;
 import com.yx.fridgebutler.vo.notification.NotificationVO;
 
@@ -130,4 +131,30 @@ public interface NotificationService {
      * @param actionType   点击动作类型
      */
     void createSystemNotification(Long userId, String title, String content, String actionType);
+
+    /**
+     * 查询重要通知模板列表（管理员用）。
+     * <p>按创建时间降序排列，包含广播状态、广播次数等信息。</p>
+     *
+     * @param page 页码，从1开始
+     * @param size 每页数量
+     * @return 重要通知模板列表
+     */
+    List<ImportantNoticeVO> listImportantNotices(int page, int size);
+
+    /**
+     * 根据模板ID广播重要通知（选择广播 / 重新广播）。
+     * <p>向所有普通用户推送指定模板的重要通知消息。同一模板10分钟内不能重复广播。</p>
+     *
+     * @param noticeId 重要通知模板ID
+     */
+    void broadcastImportantNoticeById(Long noticeId);
+
+    /**
+     * 关闭指定重要通知的广播。
+     * <p>关闭后新注册用户将不再初始化此通知，已收到用户不受影响。</p>
+     *
+     * @param noticeId 重要通知模板ID
+     */
+    void closeImportantNotice(Long noticeId);
 }

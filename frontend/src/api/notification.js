@@ -93,3 +93,54 @@ export function deleteNotification(id) {
         method: 'delete'
     })
 }
+
+// ==================== 管理后台：重要通知广播 ====================
+
+/**
+ * 新建并立即广播重要通知
+ * @param {Object} data
+ * @param {string} data.title - 通知标题
+ * @param {string} data.content - Markdown 格式通知内容
+ */
+export function broadcastImportantNotice(data) {
+    return request({
+        url: '/admin/notification/broadcast',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 分页查询重要通知模板列表
+ * @param {number} [page=1] - 页码
+ * @param {number} [size=10] - 每页数量
+ */
+export function getImportantNoticeList(page = 1, size = 10) {
+    return request({
+        url: '/admin/notification/important',
+        method: 'get',
+        params: { page, size }
+    })
+}
+
+/**
+ * 按ID广播/重新广播重要通知
+ * @param {number} id - 模板ID
+ */
+export function broadcastImportantNoticeById(id) {
+    return request({
+        url: `/admin/notification/important/${id}/broadcast`,
+        method: 'post'
+    })
+}
+
+/**
+ * 关闭指定模板广播
+ * @param {number} id - 模板ID
+ */
+export function closeImportantNotice(id) {
+    return request({
+        url: `/admin/notification/important/${id}/close`,
+        method: 'patch'
+    })
+}

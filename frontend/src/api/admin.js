@@ -18,7 +18,8 @@ export const getSystemConfig = () => request.get('/admin/system/config')
 export const updateSystemConfig = (data) => request.put('/admin/system/config', data)
 
 // ========== 重要通知广播 ==========
-export const broadcastImportantNotice = (data) => request.post('/admin/notification/broadcast', data)
+// 已迁移至 @/api/notification.js，此处保留 re-export 以保持兼容
+export { broadcastImportantNotice } from '@/api/notification.js'
 
 // ========== 密钥管理 ==========
 export const getActivationKeyList = (params) => request.get('/admin/activation-keys', { params })

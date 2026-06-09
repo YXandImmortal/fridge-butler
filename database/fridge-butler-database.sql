@@ -310,7 +310,10 @@ create table sys_important_notice
 	content text null comment '通知内容',
 	priority tinyint default 0 not null comment '优先级：0普通 1警告 2紧急',
 	create_time timestamp default CURRENT_TIMESTAMP not null comment '发布时间',
-	is_deleted tinyint default 0 not null comment '软删除标记：0未删除 1已删除'
+	is_deleted tinyint default 0 not null comment '软删除标记：0未删除 1已删除',
+	status tinyint default 0 not null comment '广播状态：0=活跃，1=已关闭',
+	broadcast_time datetime null comment '最近一次广播时间',
+	broadcast_count int default 0 not null comment '广播次数'
 )
 comment '重要通知模板表' collate=utf8mb4_unicode_ci;
 
@@ -400,6 +403,9 @@ create table sys_user
 	is_deleted tinyint(1) default 0 null comment '逻辑删除',
 	last_login_time datetime null comment '最后登录时间',
 	password_updated_at datetime null comment '密码最后修改时间',
+	email varchar(100) null comment '用户邮箱，用于忘记密码和邮件提醒',
+	constraint email
+		unique (email),
 	constraint uk_mobile
 		unique (mobile),
 	constraint uk_username
