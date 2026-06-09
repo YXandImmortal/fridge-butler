@@ -21,15 +21,17 @@ import java.util.List;
 @RequestMapping("/notification")
 public class NotificationController {
 
+    /** 通知服务 */
     @Autowired
     private NotificationService notificationService;
 
     /**
      * 查询当前登录用户的消息通知列表。
      *
-     * @param type 消息类型筛选（可选）
-     * @param page 页码，默认1
-     * @param size 每页数量，默认20
+     * @param type   消息类型筛选（可选）
+     * @param status 消息状态筛选（可选），0=未读，1=已读
+     * @param page   页码，默认1
+     * @param size   每页数量，默认20
      * @return 消息通知列表
      */
     @GetMapping("/list")

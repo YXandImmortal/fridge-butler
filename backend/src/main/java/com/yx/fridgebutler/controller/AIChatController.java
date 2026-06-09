@@ -24,6 +24,7 @@ import java.util.List;
 @RequestMapping("/ai")
 public class AIChatController {
 
+    /** AI 聊天服务 */
     @Autowired
     private AIChatService aiChatService;
 

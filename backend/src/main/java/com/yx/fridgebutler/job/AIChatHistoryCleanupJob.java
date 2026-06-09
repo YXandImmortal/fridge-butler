@@ -24,15 +24,19 @@ import java.util.List;
 @Component
 public class AIChatHistoryCleanupJob {
 
+    /** AI 聊天会话数据访问层 */
     @Autowired
     private AiChatSessionRepository sessionRepository;
 
+    /** AI 聊天消息数据访问层 */
     @Autowired
     private AiChatMessageRepository messageRepository;
 
+    /** 会话保留天数（软删除阈值），默认 7 天 */
     @Value("${ai.history.retention-days:7}")
     private int retentionDays;
 
+    /** 物理删除天数（彻底清理阈值），默认 30 天 */
     @Value("${ai.history.purge-days:30}")
     private int purgeDays;
 

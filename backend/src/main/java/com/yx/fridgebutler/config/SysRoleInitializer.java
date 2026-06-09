@@ -3,8 +3,7 @@ package com.yx.fridgebutler.config;
 import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.repository.SysRoleRepository;
 import org.jspecify.annotations.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -31,9 +30,10 @@ import java.util.stream.Collectors;
         havingValue = "true"
 )
 @Order(1)
+@Slf4j
 public class SysRoleInitializer implements ApplicationRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(SysRoleInitializer.class);
+
 
     /**
      * 系统预设角色列表。
@@ -45,9 +45,15 @@ public class SysRoleInitializer implements ApplicationRunner {
             new RoleDef("普通用户", "USER", "拥有普通用户权限，可以通过注册创建")
     );
 
+    /** 角色数据访问层 */
     @Autowired
     private SysRoleRepository roleRepository;
 
+    /**
+     * 执行系统角色自动初始化逻辑。
+     *
+     * @param args 应用启动参数
+     */
     @Override
     @Transactional
     public void run(@NonNull ApplicationArguments args) {

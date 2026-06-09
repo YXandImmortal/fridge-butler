@@ -49,12 +49,12 @@ public class FridgeUpdateRequest {
     private String remark;
 
     /**
-     * 总容量
+     * 总容量（升），可选。
      */
     private Integer totalCapacity;
 
     /**
-     * 状态
+     * 冰箱状态：true=启用，false=停用，默认 true。
      */
     private Boolean status;
 

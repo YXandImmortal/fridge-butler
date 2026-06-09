@@ -8,9 +8,16 @@ import lombok.Getter;
 @Getter
 public enum DailyTipType {
 
+    /** 冷知识类每日小贴士 */
     FACT("冷知识"),
+
+    /** 实用技巧类每日小贴士 */
     TIP("实用技巧"),
+
+    /** 冷笑话类每日小贴士 */
     JOKE("冷笑话"),
+
+    /** 谜语类每日小贴士 */
     RIDDLE("谜语");
 
     /**

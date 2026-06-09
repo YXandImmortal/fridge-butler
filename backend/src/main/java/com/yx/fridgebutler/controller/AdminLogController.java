@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/admin/logs")
 public class AdminLogController {
 
+    /** 管理员操作日志服务 */
     @Autowired
     private AdminLogService adminLogService;
 

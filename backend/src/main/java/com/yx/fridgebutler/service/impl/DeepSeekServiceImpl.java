@@ -24,7 +24,6 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +37,7 @@ import java.util.function.Consumer;
 @Service
 public class DeepSeekServiceImpl implements DeepSeekService {
 
+    /** DeepSeek API 聊天补全端点路径。 */
     private static final String CHAT_COMPLETIONS_PATH = "/chat/completions";
 
     @Value("${deepseek.api-key}")

@@ -22,6 +22,7 @@ import java.util.List;
 @RequestMapping("/admin/activation-keys")
 public class AdminActivationKeyController {
 
+    /** 管理员激活密钥服务 */
     @Autowired
     private AdminActivationKeyService adminActivationKeyService;
 

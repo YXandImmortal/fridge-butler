@@ -32,10 +32,15 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class AdminActivationKeyServiceImpl implements AdminActivationKeyService {
 
+    /** 上海时区，用于时间格式化。 */
     private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
+    /** 日期时间格式化器，格式为 yyyy-MM-dd HH:mm:ss。 */
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    /** 密钥字符池，包含大写字母和数字。 */
     private static final String KEY_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    /** 密钥随机部分长度（不含前缀）。 */
     private static final int KEY_LENGTH = 8;
+    /** 密钥前缀。 */
     private static final String KEY_PREFIX = "FB-";
 
     @Autowired

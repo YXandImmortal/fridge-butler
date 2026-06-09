@@ -33,6 +33,7 @@ import java.util.List;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    /** JWT 工具类，用于 Token 的解析与验证 */
     @Autowired
     private JwtUtil jwtUtil;
 

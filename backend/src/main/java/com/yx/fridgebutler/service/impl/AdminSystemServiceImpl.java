@@ -21,11 +21,17 @@ import java.util.Optional;
 @Service
 public class AdminSystemServiceImpl implements AdminSystemService {
 
+    /** 系统公告配置键。 */
     private static final String KEY_ANNOUNCEMENT = "sys.announcement";
+    /** 系统简介配置键。 */
     private static final String KEY_SYSTEM_DESCRIPTION = "sys.system_description";
+    /** 是否开放注册配置键。 */
     private static final String KEY_REGISTER_OPEN = "sys.register_open";
+    /** AI聊天功能开关配置键。 */
     private static final String KEY_AI_CHAT_OPEN = "sys.ai_chat_open";
+    /** 是否需要激活密钥配置键。 */
     private static final String KEY_REQUIRE_ACTIVATION = "sys.require_activation_key";
+    /** 管理员联系邮箱配置键。 */
     private static final String KEY_ADMIN_EMAIL = "sys.admin_email";
 
     @Autowired

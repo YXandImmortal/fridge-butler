@@ -39,13 +39,21 @@ import java.time.format.DateTimeFormatter;
 @Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
+    /** 上海时区，用于时间格式化。 */
     private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
+    /** 日期时间格式化器，格式为 yyyy-MM-dd HH:mm:ss。 */
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    /** 普通用户角色ID。 */
     private static final Long NORMAL_USER_ROLE_ID = 2L;
+    /** 默认头像ID。 */
     private static final String DEFAULT_AVATAR_ID = "ice";
+    /** 是否需要激活密钥配置键。 */
     private static final String KEY_REQUIRE_ACTIVATION = "sys.require_activation_key";
+    /** 密码重置业务类型。 */
     private static final String TYPE_RESET = "RESET";
+    /** 注册业务类型。 */
     private static final String TYPE_REGISTER = "REGISTER";
+    /** 绑定邮箱业务类型。 */
     private static final String TYPE_BIND = "BIND";
 
     @Autowired
@@ -95,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 验证验证码
         if (request.getCaptchaId() == null || !captchaManager.verifyCaptcha(request.getCaptchaId(), request.getCaptcha())) {
-            log.error("登陆失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
+            log.warn("登陆失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
             throw BusinessException.loginCaptchaError();
         }
 
@@ -105,26 +113,26 @@ public class AuthServiceImpl implements AuthService {
                         request.getAccount() == null ? "" : request.getAccount().trim()
                 )
                 .orElseThrow(() -> {
-                    log.error("登陆失败，用户不存在：账号：{}", request.getAccount());
+                    log.warn("登陆失败，用户不存在：账号：{}", request.getAccount());
                     return BusinessException.loginAuthFailed();
                 });
 
         // 校验密码
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            log.error("登陆失败，账号：{}密码错误", request.getAccount());
+            log.warn("登陆失败，账号：{}密码错误", request.getAccount());
             throw BusinessException.loginAuthFailed();
         }
 
         // 校验账号是否被禁用
         if (user.getIsDeleted() != null && user.getIsDeleted()) {
-            log.error("登陆失败，账号：{}已被禁用", request.getAccount());
+            log.warn("登陆失败，账号：{}已被禁用", request.getAccount());
             throw BusinessException.loginForbidden();
         }
 
         // 查询用户角色
         SysRole role = roleRepository.findById(user.getRoleId())
                 .orElseThrow(() -> {
-                    log.error("登陆失败，账号：{}的角色ID：{}不存在：", request.getAccount(), user.getRoleId());
+                    log.warn("登陆失败，账号：{}的角色ID：{}不存在：", request.getAccount(), user.getRoleId());
                     return BusinessException.loginRoleNotFound();
                 });
 
@@ -203,19 +211,19 @@ public class AuthServiceImpl implements AuthService {
 
         // 校验验证码
         if (request.getCaptchaId() == null || !captchaManager.verifyCaptcha(request.getCaptchaId(), request.getCaptcha())) {
-            log.error("注册失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
+            log.warn("注册失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
             throw BusinessException.loginCaptchaError();
         }
 
         // 校验两次密码是否一致
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            log.error("普通用户注册失败，用户名：{}两次密码不一致", request.getUsername());
+            log.warn("普通用户注册失败，用户名：{}两次密码不一致", request.getUsername());
             throw BusinessException.registerPasswordNotMatch();
         }
 
         // 校验用户名是否已存在
         if (userRepository.existsByUsername(request.getUsername())) {
-            log.error("普通用户注册失败，用户名：{}已存在", request.getUsername());
+            log.warn("普通用户注册失败，用户名：{}已存在", request.getUsername());
             throw BusinessException.registerUserExist();
         }
 
@@ -228,11 +236,11 @@ public class AuthServiceImpl implements AuthService {
         // 校验手机号格式及唯一性
         if (mobile != null) {
             if (!PhoneUtil.isMobile(mobile)) {
-                log.error("普通用户注册失败，手机号：{}格式错误", mobile);
+                log.warn("普通用户注册失败，手机号：{}格式错误", mobile);
                 throw BusinessException.registerPhoneFormatError();
             }
             if (userRepository.existsByMobile(mobile)) {
-                log.error("普通用户注册失败，手机号：{}已存在", mobile);
+                log.warn("普通用户注册失败，手机号：{}已存在", mobile);
                 throw BusinessException.registerPhoneExist();
             }
         }
@@ -249,7 +257,7 @@ public class AuthServiceImpl implements AuthService {
         // 校验邮箱唯一性
         if (email != null) {
             if (userRepository.existsByEmail(email)) {
-                log.error("普通用户注册失败，邮箱：{}已存在", email);
+                log.warn("普通用户注册失败，邮箱：{}已存在", email);
                 throw BusinessException.emailAlreadyBound();
             }
         }
@@ -258,22 +266,22 @@ public class AuthServiceImpl implements AuthService {
         String emailCaptcha = request.getEmailCaptcha();
         if (email != null) {
             if (emailCaptcha == null || emailCaptcha.isBlank()) {
-                log.error("普通用户注册失败，邮箱：{}已填写但未提供邮箱验证码", email);
+                log.warn("普通用户注册失败，邮箱：{}已填写但未提供邮箱验证码", email);
                 throw BusinessException.emailCaptchaError();
             }
             if (!emailCaptchaManager.verifyCaptcha(TYPE_REGISTER, email, emailCaptcha)) {
-                log.error("普通用户注册失败，邮箱验证码错误，邮箱：{}", email);
+                log.warn("普通用户注册失败，邮箱验证码错误，邮箱：{}", email);
                 throw BusinessException.emailCaptchaError();
             }
         } else if (emailCaptcha != null && !emailCaptcha.isBlank()) {
-            log.error("普通用户注册失败，提供了邮箱验证码但未填写邮箱");
+            log.warn("普通用户注册失败，提供了邮箱验证码但未填写邮箱");
             throw BusinessException.emailCaptchaError();
         }
 
         // 校验默认角色是否存在
         SysRole role = roleRepository.findById(NORMAL_USER_ROLE_ID)
                 .orElseThrow(() -> {
-                    log.error("普通用户注册失败，用户名：{}的角色ID：{}不存在", request.getUsername(), NORMAL_USER_ROLE_ID);
+                    log.warn("普通用户注册失败，用户名：{}的角色ID：{}不存在", request.getUsername(), NORMAL_USER_ROLE_ID);
                     return BusinessException.registerUserRoleNotFound();
                 });
 

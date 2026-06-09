@@ -9,8 +9,7 @@ import com.yx.fridgebutler.repository.BizItemCategoryRepository;
 import com.yx.fridgebutler.repository.BizItemUnitRepository;
 import com.yx.fridgebutler.repository.BizUnitTypeRepository;
 import org.jspecify.annotations.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -45,9 +44,10 @@ import java.util.stream.Collectors;
         name = "enabled",
         havingValue = "true"
 )
+@Slf4j
 public class BizSystemDataInitializer implements ApplicationRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(BizSystemDataInitializer.class);
+
 
     /**
      * 系统默认单位类型及其下属单位定义。
@@ -93,18 +93,28 @@ public class BizSystemDataInitializer implements ApplicationRunner {
      */
     private static final Instant FRIDGE_TYPE_INIT_TIME = Instant.parse("2026-05-21T12:40:32Z");
 
+    /** 冰箱类型数据访问层 */
     @Autowired
     private BizFridgeTypeRepository fridgeTypeRepository;
 
+    /** 单位类型数据访问层 */
     @Autowired
     private BizUnitTypeRepository unitTypeRepository;
 
+    /** 物品分类数据访问层 */
     @Autowired
     private BizItemCategoryRepository categoryRepository;
 
+    /** 物品单位数据访问层 */
     @Autowired
     private BizItemUnitRepository itemUnitRepository;
 
+    /**
+     * 执行业务系统默认数据初始化逻辑。
+     * 按顺序初始化单位类型、物品分类、物品单位、冰箱类型。
+     *
+     * @param args 应用启动参数
+     */
     @Override
     @Transactional
     public void run(@NonNull ApplicationArguments args) {

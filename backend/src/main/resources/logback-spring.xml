@@ -62,8 +62,8 @@
     <logger name="org.springframework" level="INFO"/>
     <logger name="org.springframework.security" level="INFO"/>
     <logger name="org.hibernate" level="INFO"/>
-    <logger name="org.hibernate.SQL" level="INFO"/>
-    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="INFO"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="DEBUG"/>
 
     <!-- 业务包日志 -->
     <logger name="com.yx.fridgebutler" level="DEBUG" additivity="false">

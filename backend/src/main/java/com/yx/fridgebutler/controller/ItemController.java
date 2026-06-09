@@ -43,11 +43,15 @@ import java.util.List;
 @RequestMapping("/item")
 public class ItemController {
 
+    /** 物品服务 */
     @Autowired
     private ItemService itemService;
 
     /**
      * 新增物品
+     *
+     * @param request 物品创建请求
+     * @return 新创建物品的ID
      */
     @PostMapping("/create")
     public Result<Long> createItem(@Valid @RequestBody ItemCreateRequest request) {
@@ -58,6 +62,9 @@ public class ItemController {
 
     /**
      * 更新物品
+     *
+     * @param request 物品更新请求
+     * @return 操作结果
      */
     @PostMapping("/update")
     public Result<Void> updateItem(@Valid @RequestBody ItemUpdateRequest request) {
@@ -68,6 +75,8 @@ public class ItemController {
 
     /**
      * 查询物品分类列表（系统默认 + 当前用户创建）
+     *
+     * @return 物品分类列表
      */
     @GetMapping("/category/list")
     public Result<List<ItemCategoryVO>> listItemCategories() {
@@ -78,6 +87,9 @@ public class ItemController {
 
     /**
      * 查询物品分类详情
+     *
+     * @param id 分类ID
+     * @return 物品分类详情
      */
     @GetMapping("/category/detail/{id}")
     public Result<ItemCategoryVO> getItemCategory(@PathVariable Long id) {
@@ -88,6 +100,9 @@ public class ItemController {
 
     /**
      * 创建物品分类（用户自定义）
+     *
+     * @param request 分类创建请求
+     * @return 新创建分类的ID
      */
     @PostMapping("/category/create")
     public Result<Long> createItemCategory(@Valid @RequestBody ItemCategoryCreateRequest request) {
@@ -98,6 +113,9 @@ public class ItemController {
 
     /**
      * 更新物品分类（用户自定义）
+     *
+     * @param request 分类更新请求
+     * @return 操作结果
      */
     @PostMapping("/category/update")
     public Result<Void> updateItemCategory(@Valid @RequestBody ItemCategoryUpdateRequest request) {
@@ -108,6 +126,9 @@ public class ItemController {
 
     /**
      * 删除物品分类（用户自定义，软删除）
+     *
+     * @param id 分类ID
+     * @return 操作结果
      */
     @DeleteMapping("/category/delete/{id}")
     public Result<Void> deleteItemCategory(@PathVariable Long id) {
@@ -118,6 +139,8 @@ public class ItemController {
 
     /**
      * 查询物品单位列表（系统默认 + 当前用户创建）
+     *
+     * @return 物品单位列表
      */
     @GetMapping("/unit/list")
     public Result<List<ItemUnitVO>> listItemUnits() {
@@ -128,6 +151,8 @@ public class ItemController {
 
     /**
      * 查询单位类型列表（系统默认 + 当前用户创建）
+     *
+     * @return 单位类型列表
      */
     @GetMapping("/unit-type/list")
     public Result<List<UnitTypeVO>> listUnitTypes() {
@@ -138,6 +163,9 @@ public class ItemController {
 
     /**
      * 创建单位类型（用户自定义）
+     *
+     * @param request 单位类型创建请求
+     * @return 新创建单位类型的ID
      */
     @PostMapping("/unit-type/create")
     public Result<Long> createUnitType(@Valid @RequestBody UnitTypeCreateRequest request) {
@@ -148,6 +176,9 @@ public class ItemController {
 
     /**
      * 更新单位类型（用户自定义）
+     *
+     * @param request 单位类型更新请求
+     * @return 操作结果
      */
     @PostMapping("/unit-type/update")
     public Result<Void> updateUnitType(@Valid @RequestBody UnitTypeUpdateRequest request) {
@@ -158,6 +189,9 @@ public class ItemController {
 
     /**
      * 删除单位类型（用户自定义，软删除）
+     *
+     * @param id 单位类型ID
+     * @return 操作结果
      */
     @DeleteMapping("/unit-type/delete/{id}")
     public Result<Void> deleteUnitType(@PathVariable Long id) {
@@ -168,6 +202,9 @@ public class ItemController {
 
     /**
      * 创建物品单位（用户自定义）
+     *
+     * @param request 物品单位创建请求
+     * @return 新创建物品单位的ID
      */
     @PostMapping("/unit/create")
     public Result<Long> createItemUnit(@Valid @RequestBody ItemUnitCreateRequest request) {
@@ -178,6 +215,9 @@ public class ItemController {
 
     /**
      * 更新物品单位（用户自定义）
+     *
+     * @param request 物品单位更新请求
+     * @return 操作结果
      */
     @PostMapping("/unit/update")
     public Result<Void> updateItemUnit(@Valid @RequestBody ItemUnitUpdateRequest request) {
@@ -188,6 +228,9 @@ public class ItemController {
 
     /**
      * 删除物品单位（用户自定义，软删除）
+     *
+     * @param id 物品单位ID
+     * @return 操作结果
      */
     @DeleteMapping("/unit/delete/{id}")
     public Result<Void> deleteItemUnit(@PathVariable Long id) {
@@ -198,6 +241,9 @@ public class ItemController {
 
     /**
      * 搜索物品（支持关键字模糊搜索、分类筛选、单位类型筛选、数量排序）
+     *
+     * @param request 物品搜索请求
+     * @return 匹配的物品列表
      */
     @PostMapping("/search")
     public Result<List<ItemVO>> searchItems(@Valid @RequestBody ItemSearchRequest request) {
@@ -209,6 +255,9 @@ public class ItemController {
 
     /**
      * 删除物品（软删除）
+     *
+     * @param id 物品ID
+     * @return 操作结果
      */
     @DeleteMapping("/delete/{id}")
     public Result<Void> deleteItem(@PathVariable Long id) {
@@ -219,6 +268,9 @@ public class ItemController {
 
     /**
      * 取出物品
+     *
+     * @param request 物品取出请求
+     * @return 操作结果
      */
     @PostMapping("/take-out")
     public Result<Void> takeOutItem(@Valid @RequestBody ItemTakeOutRequest request) {

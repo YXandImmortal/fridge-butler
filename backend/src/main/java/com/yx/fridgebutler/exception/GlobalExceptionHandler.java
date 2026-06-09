@@ -19,6 +19,13 @@ import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * 全局异常处理器
+ * <p>
+ * 统一捕获并处理系统中各类异常，将异常转换为标准化的错误响应返回给客户端。
+ * 支持业务异常、参数校验异常、权限异常、请求方法不支持异常等多种场景。
+ * </p>
+ */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {

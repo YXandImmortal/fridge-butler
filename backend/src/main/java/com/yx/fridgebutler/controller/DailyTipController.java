@@ -22,6 +22,7 @@ import java.time.LocalDate;
 @RequestMapping("/daily-tip")
 public class DailyTipController {
 
+    /** 每日小贴士服务 */
     @Autowired
     private DailyTipService dailyTipService;
 

@@ -91,6 +91,10 @@ public class SysUser {
     @ColumnDefault("'ice'")
     @Column(name = "avatar", nullable = false, length = 20)
     private String avatar;
+
+    /**
+     * 是否已完成新手引导，true 表示已完成，默认值为 false，必填。
+     */
     @NotNull
     @ColumnDefault("0")
     @Column(name = "guide_completed", nullable = false)
@@ -110,8 +114,16 @@ public class SysUser {
      */
     @Column(name = "last_login_time")
     private Instant lastLoginTime;
+
+    /**
+     * 密码最后更新时间。
+     */
     @Column(name = "password_updated_at")
     private Instant passwordUpdatedAt;
+
+    /**
+     * 电子邮箱，最大长度100。
+     */
     @Size(max = 100)
     @Column(name = "email", length = 100)
     private String email;

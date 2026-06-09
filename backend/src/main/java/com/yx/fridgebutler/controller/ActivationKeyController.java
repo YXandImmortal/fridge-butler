@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/activation-key")
 public class ActivationKeyController {
 
+    /** 激活密钥服务 */
     @Autowired
     private ActivationKeyService activationKeyService;
 

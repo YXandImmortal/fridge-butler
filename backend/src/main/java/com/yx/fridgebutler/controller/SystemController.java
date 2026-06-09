@@ -29,21 +29,27 @@ import java.util.List;
 @RestController
 @RequestMapping("/system")
 public class SystemController {
+    /** 系统名称 */
     @Value("${system.name}")
     private String systemName;
 
+    /** 系统版本 */
     @Value("${system.version}")
     private String systemVersion;
 
+    /** 系统标语 */
     @Value("${system.slogan}")
     private String systemSlogan;
 
+    /** 系统构建时间标识 */
     @Value("${system.build-time}")
     private String buildTime;
 
+    /** 管理员系统配置服务 */
     @Autowired
     private AdminSystemService adminSystemService;
 
+    /** 用户首页侧边栏功能菜单 */
     private static final List<SidebarFeatureVO> USER_INDEX_FEATURES = List.of(
             SidebarFeatureVO.builder()
                     .id(1)
@@ -106,6 +112,7 @@ public class SystemController {
                     .build()
     );
 
+    /** 系统功能特性列表 */
     private static final List<FeatureVO> SYSTEM_FEATURES = List.of(
             FeatureVO.builder()
                     .title("冰箱管理")
@@ -129,6 +136,7 @@ public class SystemController {
                     .build()
     );
 
+    /** 系统更新日志列表 */
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
                     .version("release 0.4.0")
@@ -345,6 +353,7 @@ public class SystemController {
                     .build()
     );
 
+    /** 系统关于页面信息列表 */
     private static final List<AboutItemVO> SYSTEM_ABOUT = List.of(
             AboutItemVO.builder()
                     .label("问题反馈")

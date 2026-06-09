@@ -70,9 +70,12 @@ import java.util.stream.Collectors;
 @Service
 public class AIChatServiceImpl implements AIChatService {
 
+    /** 上海时区。 */
     private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
+    /** 趋势图表日期格式化器，格式为 MM/dd。 */
     private static final DateTimeFormatter CHART_DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd");
 
+    /** AI 意图识别的系统提示词。 */
     private static final String INTENT_SYSTEM_PROMPT = """
             你是一个冰箱管理助手的意图识别系统。请严格分析用户输入与用户引用的上下文，返回纯JSON，不要包含任何其他文字（包括markdown代码块标记、解释说明等）。
 
@@ -139,6 +142,7 @@ public class AIChatServiceImpl implements AIChatService {
             3. 必须只返回JSON字符串，不要添加```json标记
             """;
 
+    /** AI 菜谱推荐的系统提示词。 */
     private static final String RECIPE_SYSTEM_PROMPT = """
             你是一位擅长家常菜的厨师。请根据用户的需求推荐合适的菜谱。
 
@@ -152,6 +156,7 @@ public class AIChatServiceImpl implements AIChatService {
             {"recipes":[{"name":"菜名","difficulty":"简单","cookTime":"10分钟","matchedItems":["食材1","食材2"],"missingItems":["食材3"],"description":"描述"}],"text":"根据你的需求，为你推荐以下x道菜："}
             """;
 
+    /** AI 热量计算的系统提示词。 */
     private static final String CALORIE_SYSTEM_PROMPT = """
             你是一位专业的营养师，擅长估算食材和菜品的热量及营养成分。
 
@@ -1603,6 +1608,10 @@ public class AIChatServiceImpl implements AIChatService {
 
     // ======================== 流式输出方法 ========================
 
+    /**
+     * {@inheritDoc}
+     * <p>通过 SSE 协议分阶段推送：text（自然语言）→ card（结构化数据）→ done（结束）。</p>
+     */
     @Override
     public void streamChat(AIChatRequest request, SseEmitter emitter) {
         Long currentUserId;
@@ -2042,9 +2051,7 @@ public class AIChatServiceImpl implements AIChatService {
 
     // ======================== 冰箱创建向导方法 ========================
 
-    /**
-     * 冰箱类型选项（硬编码，value 对应 biz_fridge_type 表 ID）。
-     */
+    /** 冰箱类型选项（硬编码，value 对应 biz_fridge_type 表 ID）。 */
     private static final List<Map<String, Object>> FRIDGE_TYPE_OPTIONS = List.of(
             Map.of("label", "单门冰箱", "value", 1),
             Map.of("label", "双门冰箱", "value", 2),

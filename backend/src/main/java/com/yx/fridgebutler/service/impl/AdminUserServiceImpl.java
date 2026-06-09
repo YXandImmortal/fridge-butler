@@ -30,9 +30,13 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class AdminUserServiceImpl implements AdminUserService {
 
+    /** 上海时区，用于时间格式化。 */
     private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
+    /** 日期时间格式化器，格式为 yyyy-MM-dd HH:mm:ss。 */
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    /** 随机密码字符池。 */
     private static final String PASSWORD_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
+    /** 随机密码长度。 */
     private static final int PASSWORD_LENGTH = 12;
 
     @Autowired

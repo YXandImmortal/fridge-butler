@@ -26,7 +26,9 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class ActivationKeyServiceImpl implements ActivationKeyService {
 
+    /** 上海时区，用于时间格式化。 */
     private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
+    /** 日期时间格式化器，格式为 yyyy-MM-dd HH:mm:ss。 */
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired

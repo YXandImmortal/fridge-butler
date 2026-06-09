@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DailyTipGenerateJob {
 
+    /** 每日小贴士服务层 */
     @Autowired
     private DailyTipService dailyTipService;
 

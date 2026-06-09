@@ -24,6 +24,7 @@ import java.io.IOException;
 @RequestMapping("/captcha")
 public class CaptchaController {
 
+    /** 验证码管理器 */
     @Autowired
     private CaptchaManager captchaManager;
 

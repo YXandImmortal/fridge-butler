@@ -28,10 +28,14 @@ import java.util.Random;
 @Service
 public class DailyTipServiceImpl implements DailyTipService {
 
+    /** 日期格式化器，格式为 yyyy-MM-dd。 */
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    /** 星期格式化器。 */
     private static final DateTimeFormatter WEEKDAY_FORMATTER = DateTimeFormatter.ofPattern("EEEE");
+    /** 小贴士类型列表，用于随机选择生成类型。 */
     private static final List<DailyTipType> TIP_TYPES = List.of(DailyTipType.FACT, DailyTipType.TIP, DailyTipType.JOKE, DailyTipType.RIDDLE);
 
+    /** 每日小贴士AI生成的系统提示词。 */
     private static final String SYSTEM_PROMPT = """
             你是"冰箱管家"的每日小贴士生成专家，擅长用轻松有趣的方式向用户传递冰箱相关的冷知识、实用技巧、冷笑话和谜语。
 
@@ -60,6 +64,7 @@ public class DailyTipServiceImpl implements DailyTipService {
     @Autowired
     private DeepSeekService deepSeekService;
 
+    /** 随机数生成器，用于随机选择小贴士类型。 */
     private final Random random = new Random();
 
     /**

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/admin/system")
 public class AdminSystemController {
 
+    /** 管理员系统配置服务 */
     @Autowired
     private AdminSystemService adminSystemService;
 

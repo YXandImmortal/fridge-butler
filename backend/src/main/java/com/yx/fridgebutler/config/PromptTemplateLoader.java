@@ -25,11 +25,17 @@ import java.util.stream.Collectors;
 @Component
 public class PromptTemplateLoader {
 
+    /** 提示词模板文件通配路径 */
     private static final String PROMPTS_PATH = "classpath:prompts/*.md";
 
+    /** 已加载的提示词模板缓存，key 为文件名（不含扩展名），value 为模板内容 */
     private final Map<String, String> prompts = new ConcurrentHashMap<>();
+    /** 资源路径解析器 */
     private final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
+    /**
+     * 组件初始化：应用启动时立即加载提示词模板。
+     */
     @PostConstruct
     public void init() {
         refresh();
@@ -61,7 +67,7 @@ public class PromptTemplateLoader {
             prompts.keySet().retainAll(loaded.keySet());
             prompts.putAll(loaded);
 
-            log.info("提示词模板刷新完成，共加载 {} 个：{}", loaded.size(), loaded.keySet());
+            log.debug("提示词模板刷新完成，共加载 {} 个：{}", loaded.size(), loaded.keySet());
         } catch (IOException e) {
             log.error("提示词模板刷新失败", e);
         }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NotificationGenerateJob {
 
+    /** 消息提醒服务层 */
     @Autowired
     private NotificationService notificationService;
 

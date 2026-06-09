@@ -27,7 +27,9 @@ import java.util.Map;
 @Service
 public class AdminDashboardServiceImpl implements AdminDashboardService {
 
+    /** 上海时区，用于时间格式化。 */
     private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
+    /** 日期格式化器，格式为 yyyy-MM-dd。 */
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Autowired

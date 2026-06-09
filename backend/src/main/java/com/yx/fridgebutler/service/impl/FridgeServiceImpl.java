@@ -34,7 +34,9 @@ import java.util.List;
 @Service
 public class FridgeServiceImpl implements FridgeService {
 
+    /** 上海时区，用于时间格式化。 */
     private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
+    /** 日期时间格式化器，格式为 yyyy-MM-dd HH:mm:ss。 */
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
@@ -97,7 +99,7 @@ public class FridgeServiceImpl implements FridgeService {
 
         // 校验冰箱名称是否已存在
         if (fridgeRepository.existsByFridgeNameAndOwnerIdAndIsDeletedFalse(request.getFridgeName(), currentUserId)) {
-            log.error("创建冰箱失败，冰箱名称已存在：{}，用户ID：{}", request.getFridgeName(), currentUserId);
+            log.warn("创建冰箱失败，冰箱名称已存在：{}，用户ID：{}", request.getFridgeName(), currentUserId);
             throw BusinessException.fridgeNameExists();
         }
 
@@ -126,6 +128,12 @@ public class FridgeServiceImpl implements FridgeService {
         return saved.getId();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 更新前会校验冰箱名称是否与其他冰箱重复，若设置为默认冰箱则取消其他默认冰箱。
+     * </p>
+     */
     @Override
     @Transactional
     public void updateFridge(Long id, FridgeUpdateRequest request) {
@@ -138,7 +146,7 @@ public class FridgeServiceImpl implements FridgeService {
         // 校验名称是否与其他冰箱重复
         if (!fridge.getFridgeName().equals(request.getFridgeName())
                 && fridgeRepository.existsByFridgeNameAndOwnerIdAndIsDeletedFalse(request.getFridgeName(), currentUserId)) {
-            log.error("更新冰箱失败，冰箱名称已存在：{}，用户ID：{}", request.getFridgeName(), currentUserId);
+            log.warn("更新冰箱失败，冰箱名称已存在：{}，用户ID：{}", request.getFridgeName(), currentUserId);
             throw BusinessException.updateFridgeNameExists();
         }
 

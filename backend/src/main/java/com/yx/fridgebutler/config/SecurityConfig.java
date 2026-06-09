@@ -44,6 +44,7 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    /** JWT 认证过滤器 */
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -59,6 +60,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /** 允许跨域访问的来源列表，从配置项 cors.allowed-origins 读取 */
     @Value("${cors.allowed-origins:http://localhost:5173}")
     private String allowedOrigins;
 

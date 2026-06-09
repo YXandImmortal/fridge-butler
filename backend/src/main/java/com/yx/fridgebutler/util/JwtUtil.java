@@ -26,17 +26,21 @@ import java.util.Map;
 @Component
 public final class JwtUtil {
 
+    /** JWT 签名密钥（从配置文件读取） */
     @Value("${jwt.secret}")
     private String secret;
 
+    /** 普通登录 Token 过期时间（毫秒） */
     @Getter
     @Value("${jwt.expiration}")
     private Long expiration;
 
+    /** 记住我登录 Token 过期时间（毫秒，默认 30 天） */
     @Getter
     @Value("${jwt.remember-me-expiration:2592000000}")
     private Long rememberMeExpiration;
 
+    /** 解析后的 HMAC SHA 签名密钥 */
     private SecretKey key;
 
     @PostConstruct

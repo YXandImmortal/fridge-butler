@@ -87,6 +87,10 @@ public class BizItemAddRecord {
     @ColumnDefault("CURRENT_TIMESTAMP(6)")
     @Column(name = "create_time")
     private Instant createTime;
+
+    /**
+     * 备注信息，可选，默认值为空字符串，最大长度255。
+     */
     @Size(max = 255)
     @ColumnDefault("''")
     @Column(name = "remark")

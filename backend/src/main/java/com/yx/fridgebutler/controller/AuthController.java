@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
+    /** 认证服务 */
     @Autowired
     private AuthService authService;
 

@@ -24,6 +24,7 @@ import java.util.List;
 @RequestMapping("/admin/dashboard")
 public class AdminDashboardController {
 
+    /** 管理员数据看板服务 */
     @Autowired
     private AdminDashboardService adminDashboardService;
 

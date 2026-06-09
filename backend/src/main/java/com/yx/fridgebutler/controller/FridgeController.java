@@ -26,14 +26,18 @@ import java.util.List;
 @RequestMapping("/fridge")
 public class FridgeController {
 
+    /** 冰箱服务 */
     @Autowired
     private FridgeService fridgeService;
 
+    /** 容量统计服务 */
     @Autowired
     private CapacityStatsService capacityStatsService;
 
     /**
      * 查询当前用户拥有的冰箱列表
+     *
+     * @return 冰箱列表
      */
     @GetMapping("/list")
     public Result<List<FridgeVO>> listMyFridges() {
@@ -44,6 +48,9 @@ public class FridgeController {
 
     /**
      * 获取冰箱详情
+     *
+     * @param id 冰箱ID
+     * @return 冰箱详情
      */
     @GetMapping("/detail/{id}")
     public Result<FridgeVO> getFridgeDetail(@PathVariable Long id) {
@@ -54,6 +61,9 @@ public class FridgeController {
 
     /**
      * 创建冰箱
+     *
+     * @param request 冰箱创建请求
+     * @return 新创建冰箱的ID
      */
     @PostMapping("/create")
     public Result<Long> createFridge(@Valid @RequestBody FridgeCreateRequest request) {
@@ -64,6 +74,10 @@ public class FridgeController {
 
     /**
      * 更新冰箱
+     *
+     * @param id      冰箱ID
+     * @param request 冰箱更新请求
+     * @return 操作结果
      */
     @PatchMapping("/update/{id}")
     public Result<Void> updateFridge(@PathVariable Long id, @Valid @RequestBody FridgeUpdateRequest request) {
@@ -74,6 +88,9 @@ public class FridgeController {
 
     /**
      * 删除冰箱（软删除）
+     *
+     * @param id 冰箱ID
+     * @return 操作结果
      */
     @DeleteMapping("/delete/{id}")
     public Result<Void> deleteFridge(@PathVariable Long id) {
@@ -84,6 +101,9 @@ public class FridgeController {
 
     /**
      * 在指定冰箱内添加物品（预留接口，暂不支持）
+     *
+     * @param id 冰箱ID
+     * @return 操作结果
      */
     @PostMapping("/add/{id}/item")
     public Result<Void> addFridgeItem(@PathVariable Long id) {
@@ -93,6 +113,9 @@ public class FridgeController {
 
     /**
      * 搜索冰箱（优先匹配名称，其次地址，再其次备注）
+     *
+     * @param request 搜索请求，包含关键词
+     * @return 匹配的冰箱列表
      */
     @PostMapping("/search")
     public Result<List<FridgeVO>> searchFridges(@Valid @RequestBody FridgeSearchRequest request) {
@@ -106,6 +129,7 @@ public class FridgeController {
      * <p>支持查询所有冰箱或指定单个冰箱。</p>
      *
      * @param fridgeId 指定冰箱ID（可选），为 null 时返回所有冰箱统计
+     * @return 容量利用率统计
      */
     @GetMapping("/capacity-stats")
     public Result<CapacityStatsVO> getCapacityStats(@RequestParam(required = false) Long fridgeId) {
@@ -116,6 +140,8 @@ public class FridgeController {
 
     /**
      * 获取当前用户的默认冰箱
+     *
+     * @return 默认冰箱信息，未设置时返回 null
      */
     @GetMapping("/default")
     public Result<FridgeVO> getDefaultFridge() {

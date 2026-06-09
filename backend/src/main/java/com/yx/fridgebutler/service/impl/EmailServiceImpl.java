@@ -47,12 +47,14 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isEmailEnabled() {
         return mailHost != null && !mailHost.isBlank()
                 && fromAddress != null && !fromAddress.isBlank();
     }
 
+    /** {@inheritDoc} */
     @Async("mailExecutor")
     @Override
     public void sendTextMail(String to, String subject, String content) {
@@ -63,6 +65,7 @@ public class EmailServiceImpl implements EmailService {
         sendMailInternal(to, subject, content, false);
     }
 
+    /** {@inheritDoc} */
     @Async("mailExecutor")
     @Override
     public void sendHtmlMail(String to, String subject, String html) {
@@ -73,6 +76,7 @@ public class EmailServiceImpl implements EmailService {
         sendMailInternal(to, subject, html, true);
     }
 
+    /** {@inheritDoc} */
     @Async("mailExecutor")
     @Override
     public void sendTemplateMail(String to, EmailTemplate template, Object... args) {
@@ -85,6 +89,7 @@ public class EmailServiceImpl implements EmailService {
         sendMailInternal(to, template.getSubject(), htmlContent, true);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void sendTemplateMailSync(String to, EmailTemplate template, Object... args) {
         if (!isEmailEnabled()) {

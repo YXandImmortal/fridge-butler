@@ -67,6 +67,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private NotificationService notificationService;
 
+    /** 绑定邮箱业务类型标识。 */
     private static final String TYPE_BIND = "BIND";
 
     /**
@@ -146,14 +147,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public void changePassword(UserChangePasswordRequest request) {
         if (request.getCaptchaId() == null || !captchaManager.verifyCaptcha(request.getCaptchaId(), request.getCaptcha())) {
-            log.error("修改密码失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
+            log.warn("修改密码失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
             throw BusinessException.loginCaptchaError();
         }
 
         String username = getUsernameFromToken();
 
         if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
-            log.error("修改密码失败，用户名：{}两次密码不一致", username);
+            log.warn("修改密码失败，用户名：{}两次密码不一致", username);
             throw BusinessException.changePasswordNotMatch();
         }
 
@@ -161,7 +162,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(BusinessException::userNotFound);
 
         if (!passwordEncoder.matches(request.getOriginalPassword(), user.getPassword())) {
-            log.error("修改密码失败，用户名：{}，原密码错误", username);
+            log.warn("修改密码失败，用户名：{}，原密码错误", username);
             throw BusinessException.changePasswordOriginalWrong();
         }
 
@@ -216,7 +217,7 @@ public class UserServiceImpl implements UserService {
         String username = getUsernameFromToken();
 
         if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
-            log.error("初始化密码失败，用户名：{}两次密码不一致", username);
+            log.warn("初始化密码失败，用户名：{}两次密码不一致", username);
             throw BusinessException.changePasswordNotMatch();
         }
 
@@ -225,7 +226,7 @@ public class UserServiceImpl implements UserService {
 
         // 仅允许从未修改过密码的用户调用（passwordUpdatedAt 为 null）
         if (user.getPasswordUpdatedAt() != null) {
-            log.error("初始化密码失败，用户名：{}已设置过密码", username);
+            log.warn("初始化密码失败，用户名：{}已设置过密码", username);
             throw BusinessException.initPasswordNotAllowed();
         }
 

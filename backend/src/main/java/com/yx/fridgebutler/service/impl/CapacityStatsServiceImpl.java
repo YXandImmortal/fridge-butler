@@ -96,7 +96,9 @@ public class CapacityStatsServiceImpl implements CapacityStatsService {
     @Qualifier("capacityStatsExecutor")
     private Executor executor;
 
+    /** 缓存刷新间隔小时数。 */
     private static final long REFRESH_INTERVAL_HOURS = 1;
+    /** 数字匹配正则，用于从AI响应中解析占用率。 */
     private static final Pattern DIGIT_PATTERN = Pattern.compile("\\d+");
 
     /**

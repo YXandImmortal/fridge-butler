@@ -6,8 +6,7 @@ import com.yx.fridgebutler.repository.SysRoleRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.util.SecurePasswordGenerator;
 import org.jspecify.annotations.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -40,26 +39,37 @@ import java.util.Set;
         havingValue = "true"
 )
 @Order(2)
+@Slf4j
 public class AdminAccountInitializer implements ApplicationRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(AdminAccountInitializer.class);
 
+
+    /** 凭证文件时间格式器 */
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter
             .ofPattern("yyyy-MM-dd HH:mm:ss")
             .withZone(ZoneId.systemDefault());
 
+    /** 用户数据访问层 */
     @Autowired
     private SysUserRepository userRepository;
 
+    /** 角色数据访问层 */
     @Autowired
     private SysRoleRepository roleRepository;
 
+    /** 密码加密器 */
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /** 管理员自动初始化配置属性 */
     @Autowired
     private AdminAutoInitProperties properties;
 
+    /**
+     * 执行管理员账号自动初始化逻辑。
+     *
+     * @param args 应用启动参数
+     */
     @Override
     public void run(@NonNull ApplicationArguments args) {
         log.info("========== 管理员账号自动初始化开始 ==========");
@@ -202,6 +212,13 @@ public class AdminAccountInitializer implements ApplicationRunner {
         return Paths.get(System.getProperty("java.io.tmpdir"), "fridge-butler");
     }
 
+    /**
+     * 账号初始化结果内部记录。
+     *
+     * @param username 用户名
+     * @param password 明文密码
+     * @param roleCode 角色编码
+     */
     private record AccountResult(String username, String password, String roleCode) {
     }
 }

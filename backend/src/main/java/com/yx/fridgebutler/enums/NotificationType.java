@@ -9,13 +9,28 @@ import lombok.Getter;
 @Getter
 public enum NotificationType {
 
+    /** 食材已过期通知（紧急） */
     EXPIRED("已过期", 2),
+
+    /** 食材1天内过期通知（紧急） */
     EXPIRING_CRITICAL("1天内过期", 2),
+
+    /** 食材3天内过期通知（警告） */
     EXPIRING_WARNING("3天内过期", 1),
+
+    /** 食材7天内过期通知（普通提醒） */
     EXPIRING_NOTICE("7天内过期", 0),
+
+    /** 冰箱容量预警通知（警告） */
     CAPACITY_WARNING("容量预警", 1),
+
+    /** 系统通知（普通） */
     SYSTEM("系统通知", 0),
+
+    /** 重要通知（紧急） */
     IMPORTANT_NOTICE("重要通知", 2),
+
+    /** 绑定邮箱提醒通知（警告） */
     BIND_EMAIL_REMINDER("绑定邮箱提醒", 1);
 
     /**

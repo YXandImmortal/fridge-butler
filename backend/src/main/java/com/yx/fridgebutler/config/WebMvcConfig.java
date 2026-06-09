@@ -11,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
+    /** HTTP 请求日志拦截器 */
     @Autowired
     private LogInterceptor logInterceptor;
 

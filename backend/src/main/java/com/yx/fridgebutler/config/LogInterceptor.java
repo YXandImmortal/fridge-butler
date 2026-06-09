@@ -14,8 +14,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.time.Instant;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * HTTP 请求日志拦截器
@@ -34,12 +38,33 @@ import java.util.concurrent.CompletableFuture;
 @Component
 public class LogInterceptor implements HandlerInterceptor {
 
+    /** 请求追踪 ID 在 MDC 和 request 属性中的键名 */
     private static final String TRACE_ID_KEY = "traceId";
+    /** 请求开始时间在 request 属性中的键名 */
     private static final String START_TIME_KEY = "startTime";
 
+    /** 操作日志数据访问层 */
     @Autowired
     private SysOperLogRepository sysOperLogRepository;
 
+    /** 高频轮询接口 URI 列表（这些接口会产生大量周期性请求日志） */
+    private static final Set<String> POLLING_URIS = Set.of(
+            "/api/notification/unread-count",
+            "/api/notification/list"
+    );
+    /** 轮询接口日志采样率：每 N 次正常请求记录 1 次 INFO，其余降级为 DEBUG */
+    private static final int POLLING_SAMPLE_RATE = 10;
+    /** 各轮询接口的请求计数器（按 URI 维度独立计数） */
+    private final Map<String, AtomicInteger> pollingCounters = new ConcurrentHashMap<>();
+
+    /**
+     * 请求处理前执行：生成追踪 ID，记录请求开始时间和基本信息。
+     *
+     * @param request  HTTP 请求对象
+     * @param response HTTP 响应对象
+     * @param handler  处理器对象
+     * @return 始终返回 true，继续后续处理
+     */
     @Override
     public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
         // 生成请求唯一追踪 ID
@@ -61,10 +86,23 @@ public class LogInterceptor implements HandlerInterceptor {
             uri = uri + "?" + queryString;
         }
 
-        log.info("[请求开始] {} {} | IP: {} | TraceId: {}", method, uri, clientIp, traceId);
+        boolean isPolling = POLLING_URIS.contains(uri);
+        if (isPolling) {
+            log.debug("[请求开始] {} {} | IP: {} | TraceId: {}", method, uri, clientIp, traceId);
+        } else {
+            log.info("[请求开始] {} {} | IP: {} | TraceId: {}", method, uri, clientIp, traceId);
+        }
         return true;
     }
 
+    /**
+     * 请求完成后执行：计算耗时、记录响应状态、异步保存操作日志并清理 MDC。
+     *
+     * @param request  HTTP 请求对象
+     * @param response HTTP 响应对象
+     * @param handler  处理器对象
+     * @param ex       请求处理过程中抛出的异常，无异常则为 null
+     */
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, @NonNull Object handler, Exception ex) {
         Long startTime = (Long) request.getAttribute(START_TIME_KEY);
@@ -75,6 +113,7 @@ public class LogInterceptor implements HandlerInterceptor {
         String uri = request.getRequestURI();
         String traceId = (String) request.getAttribute(TRACE_ID_KEY);
 
+        boolean isPolling = POLLING_URIS.contains(uri);
         if (ex != null) {
             log.error("[请求异常] {} {} | 状态码: {} | 耗时: {}ms | 异常: {}",
                     method, uri, status, duration, ex.getMessage());
@@ -82,6 +121,15 @@ public class LogInterceptor implements HandlerInterceptor {
             log.error("[请求结束] {} {} | 状态码: {} | 耗时: {}ms", method, uri, status, duration);
         } else if (status >= 400) {
             log.warn("[请求结束] {} {} | 状态码: {} | 耗时: {}ms", method, uri, status, duration);
+        } else if (isPolling) {
+            // 轮询接口正常响应：按采样率记录 INFO，其余降级为 DEBUG，避免日志膨胀
+            int count = pollingCounters.computeIfAbsent(uri, k -> new AtomicInteger(0)).incrementAndGet();
+            if (count % POLLING_SAMPLE_RATE == 1) {
+                log.info("[请求结束] {} {} | 状态码: {} | 耗时: {}ms (采样 1/{})",
+                        method, uri, status, duration, POLLING_SAMPLE_RATE);
+            } else {
+                log.debug("[请求结束] {} {} | 状态码: {} | 耗时: {}ms", method, uri, status, duration);
+            }
         } else {
             log.info("[请求结束] {} {} | 状态码: {} | 耗时: {}ms", method, uri, status, duration);
         }

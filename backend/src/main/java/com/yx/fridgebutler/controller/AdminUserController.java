@@ -21,6 +21,7 @@ import java.util.Map;
 @RequestMapping("/admin/users")
 public class AdminUserController {
 
+    /** 管理员用户管理服务 */
     @Autowired
     private AdminUserService adminUserService;
 
