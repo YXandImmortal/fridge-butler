@@ -11,38 +11,42 @@
         @keyup.enter="handleRegister"
     >
       <el-form-item prop="username">
-        <EnhancedInput
+        <CustomInput
             v-model="registerForm.username"
             placeholder="请输入用户名（最多50个字符）"
             icon="icon-contact"
+            size="large"
         />
       </el-form-item>
 
       <el-form-item prop="password">
-        <EnhancedInput
+        <CustomInput
             v-model="registerForm.password"
             placeholder="请输入密码"
             icon="icon-lock"
             type="password"
-            :show-password="true"
+            :showPassword="true"
+            size="large"
         />
       </el-form-item>
 
       <el-form-item prop="confirmPassword">
-        <EnhancedInput
+        <CustomInput
             v-model="registerForm.confirmPassword"
             placeholder="请再次输入密码"
             icon="icon-lock"
             type="password"
-            :show-password="true"
+            :showPassword="true"
+            size="large"
         />
       </el-form-item>
 
       <el-form-item prop="mobile">
-        <EnhancedInput
+        <CustomInput
             v-model="registerForm.mobile"
             placeholder="请输入手机号码（选填,可用于登录）"
             icon="icon-device-phone"
+            size="large"
         />
       </el-form-item>
 
@@ -56,11 +60,12 @@
 
       <transition name="el-zoom-in-top">
         <el-form-item v-show="emailCaptchaVisible" prop="emailCaptcha">
-          <EnhancedInput
+          <CustomInput
               v-model="registerForm.emailCaptcha"
               placeholder="请输入邮箱验证码"
               icon="icon-captcha"
-              maxlength="6"
+              :maxlength="6"
+              size="large"
           />
         </el-form-item>
       </transition>
@@ -73,8 +78,8 @@
       </el-form-item>
 
       <AuthButtonGroup
-          primary-text="注 册"
-          secondary-text="返 回"
+          primary-text="点击注册"
+          secondary-text="已有账号？登录"
           :loading="loading"
           loading-text="注册中..."
           @primary-action="handleRegister"
@@ -93,7 +98,7 @@ import {useSystemStore} from '@/stores/system.js'
 import {useUserStore} from '@/stores/user.js'
 import AuthLayout from "@/layouts/AuthLayout.vue"
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
-import EnhancedInput from "@/components/ui/EnhancedInput.vue"
+import CustomInput from "@/components/ui/CustomInput.vue"
 import CaptchaInput from "@/components/form/CaptchaInput.vue"
 import EmailVerifyInput from "@/components/form/EmailVerifyInput.vue"
 
@@ -295,9 +300,12 @@ const handleBackToLogin = () => {
 </script>
 
 <style scoped lang="scss">
-/* 验证错误时的 focus 样式 */
-.el-form-item.is-error :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+/* 验证错误时的样式 */
+.el-form-item.is-error :deep(.custom-input) {
   border-color: var(--el-color-danger);
+}
+
+.el-form-item.is-error :deep(.custom-input.is-focused) {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
 }
 </style>

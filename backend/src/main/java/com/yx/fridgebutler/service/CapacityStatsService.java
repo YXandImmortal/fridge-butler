@@ -1,6 +1,6 @@
 package com.yx.fridgebutler.service;
 
-import com.yx.fridgebutler.vo.CapacityStatsVO;
+import com.yx.fridgebutler.vo.fridge.CapacityStatsVO;
 
 /**
  * 容量利用率统计服务接口。

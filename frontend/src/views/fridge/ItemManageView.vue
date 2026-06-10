@@ -92,6 +92,8 @@
                 class="filter-select"
                 :options="categoryOptions"
                 @change="handleSortChange"
+                size="large"
+                variant="search"
             />
             <CustomSelect
                 v-model="searchForm.unitTypeId"
@@ -101,6 +103,8 @@
                 class="filter-select"
                 :options="unitTypeOptions"
                 @change="handleSortChange"
+                size="large"
+                variant="search"
             />
             <CustomSelect
                 v-model="searchForm.unitId"
@@ -112,6 +116,8 @@
                 :disabled="!searchForm.unitTypeId"
                 :options="unitOptions"
                 @change="handleSortChange"
+                size="large"
+                variant="search"
             />
             <CustomButton @click="handleReset" type="search-reset">
               重置

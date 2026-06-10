@@ -172,3 +172,15 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
 }
+
+/* ---------------------------------------------------------
+ * el-form 校验错误时 CustomInput 的响应样式
+ * 全局定义，避免各页面重复书写
+ * --------------------------------------------------------- */
+.el-form-item.is-error .custom-input {
+  border-color: var(--el-color-danger);
+}
+
+.el-form-item.is-error .custom-input.is-focused {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
+}

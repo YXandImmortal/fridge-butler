@@ -53,7 +53,7 @@
 
         <!-- 可编辑字段 -->
         <el-form-item label="冰箱名称" required>
-          <EnhancedInput v-model="fridgeForm.fridgeName" placeholder="请输入冰箱名称" maxlength="30" show-word-limit/>
+          <CustomInput v-model="fridgeForm.fridgeName" placeholder="请输入冰箱名称" :maxlength="30" showWordLimit/>
         </el-form-item>
 
         <el-form-item label="冰箱类型">
@@ -78,44 +78,44 @@
         </el-form-item>
 
         <el-form-item label="默认冰箱" required>
-          <el-switch v-model="fridgeForm.isDefault" active-text="是" inactive-text="否"/>
+          <CustomSwitch v-model="fridgeForm.isDefault" active-text="是" inactive-text="否"/>
         </el-form-item>
 
         <el-form-item label="冰箱地址">
-          <EnhancedInput v-model="fridgeForm.fridgeAddress" placeholder="请输入冰箱地址" maxlength="200"
-                         show-word-limit/>
+          <CustomInput v-model="fridgeForm.fridgeAddress" placeholder="请输入冰箱地址" :maxlength="200"
+                         showWordLimit/>
         </el-form-item>
 
         <el-form-item label="总容量">
-          <el-slider
-              v-model="fridgeForm.totalCapacity"
-              :min="0"
+          <CustomInputNumber
+              :model-value="fridgeForm.totalCapacity"
+              :min="50"
               :max="1000"
               placeholder="请输入总容量（L）"
-              show-input
               :step="10"
-              style="padding-left: 12px; --el-border-radius-base: var(--radius-md);"/>
+              width="100%"
+          />
         </el-form-item>
 
         <el-form-item label="状态">
-          <el-switch v-model="fridgeForm.status" :active-value="true" :inactive-value="false" active-text="启用"
+          <CustomSwitch v-model="fridgeForm.status" :active-value="true" :inactive-value="false" active-text="启用"
                      inactive-text="停用"/>
         </el-form-item>
 
         <el-form-item label="备注">
-          <EnhancedInput v-model="fridgeForm.remark" type="textarea" :rows="3" placeholder="请输入备注" maxlength="200"
-                         show-word-limit/>
+          <CustomInput v-model="fridgeForm.remark" type="textarea" :rows="3" placeholder="请输入备注" :maxlength="200"
+                         showWordLimit/>
         </el-form-item>
 
         <!-- 不可编辑字段 -->
         <el-form-item label="物品数量">
-          <EnhancedInput :model-value="fridgeForm.itemCount + ' 件'" disabled/>
+          <CustomInput :model-value="fridgeForm.itemCount + ' 件'" disabled/>
         </el-form-item>
         <el-form-item label="创建时间">
-          <EnhancedInput :model-value="formatDateTime(fridgeForm.createTime)" disabled/>
+          <CustomInput :model-value="formatDateTime(fridgeForm.createTime)" disabled/>
         </el-form-item>
         <el-form-item label="更新时间">
-          <EnhancedInput :model-value="formatDateTime(fridgeForm.updateTime)" disabled/>
+          <CustomInput :model-value="formatDateTime(fridgeForm.updateTime)" disabled/>
         </el-form-item>
       </el-form>
     </div>
@@ -166,8 +166,9 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import showMessage from '@/utils/message'
 import {getFridgeDetail, deleteFridge, listMyFridges, updateFridge, getDefaultFridge} from '@/api/fridge'
 import CustomButton from "@/components/ui/CustomButton.vue";
-import EnhancedInput from "@/components/ui/EnhancedInput.vue";
+import CustomInput from "@/components/ui/CustomInput.vue";
 import CustomSelect from '@/components/ui/CustomSelect.vue'
+import CustomSwitch from '@/components/ui/CustomSwitch.vue'
 import {FRIDGE_TYPE_LIST} from '@/utils/fridgeTypeMap.js'
 
 const route = useRoute()
@@ -396,10 +397,13 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   animation: fade-in-up 0.6s ease-out;
 }
 
-/* 验证错误时的 focus 样式 */
-.el-form-item.is-error :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+/* 验证错误时的样式（已由 global.scss 全局覆盖，此处保留以防需要局部微调） */
+.el-form-item.is-error :deep(.custom-input) {
   border-color: var(--el-color-danger);
+}
+
+.el-form-item.is-error :deep(.custom-input.is-focused) {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
 }
 
 .back-bar {
@@ -489,7 +493,7 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 
 .detail-form {
   align-self: center;
-  max-width: 400px;
+  width: 400px;
 }
 
 .detail-form :deep(.el-form-item__label) {
@@ -520,13 +524,13 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 }
 
 .item-management-inner {
+  margin-top: var(--space-2);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-evenly;
   gap: 4px;
   height: 100%;
-
 }
 
 .item-management-inner .iconfont {

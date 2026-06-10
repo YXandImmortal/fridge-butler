@@ -32,6 +32,8 @@
           clearable
           :options="fridgeTypeOptions"
           @change="handleSearch"
+          size="large"
+          variant="search"
       >
         <template #prefix="{ selected }">
           <img v-if="selected?.icon" :src="selected.icon" class="fridge-type-icon-trigger" alt=""/>
@@ -65,9 +67,13 @@
             v-for="fridge in fridgeList"
             :key="fridge.id"
             class="fridge-card"
-            :class="{ 'fridge-card--default': fridge.isDefault }"
+            :class="{ 'fridge-card--default': fridge.isDefault, 'fridge-card--disabled': fridge.status === false }"
             @click="handleViewDetail(fridge.id)"
         >
+          <div v-if="fridge.status === false" class="disabled-badge">
+            <i class="iconfont icon-forbid-fill"/>
+            已停用
+          </div>
           <div v-if="fridge.isDefault" class="default-badge">
             <i class="iconfont icon-star-fill"/>
             默认冰箱
@@ -384,6 +390,8 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   border: 1px solid var(--gray-40);
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .fridge-card:hover {
@@ -414,6 +422,60 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 
 .fridge-card--default .fridge-name {
   color: var(--badge-gold-text);
+}
+
+/* 已停用冰箱样式 */
+.fridge-card--disabled {
+  border: 1px dashed var(--badge-silver);
+  background: linear-gradient(135deg, var(--badge-silver-bg) 0%, var(--glass-bg) 60%);
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.fridge-card--disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.fridge-card--disabled .fridge-icon {
+  background: linear-gradient(135deg, var(--badge-silver-light) 0%, var(--badge-silver-accent) 100%);
+}
+
+.fridge-card--disabled .fridge-icon .iconfont {
+  color: var(--badge-silver-text);
+}
+
+.fridge-card--disabled .fridge-name {
+  color: var(--text-secondary);
+}
+
+.fridge-card--disabled .fridge-desc {
+  color: var(--text-tertiary);
+}
+
+.fridge-card--disabled .meta-item {
+  color: var(--text-tertiary);
+}
+
+.disabled-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(135deg, var(--badge-silver) 0%, var(--badge-silver-hover) 100%);
+  color: var(--badge-silver-text);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-bottom-right-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 8px var(--badge-silver-shadow);
+  z-index: 1;
+}
+
+.disabled-badge .iconfont {
+  font-size: 12px;
 }
 
 .default-badge {

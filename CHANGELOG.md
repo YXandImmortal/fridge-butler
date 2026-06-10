@@ -4,6 +4,39 @@
 
 ---
 
+## [release 0.4.1] - 2026-6-10
+
+### 新增
+- **前端自定义 UI 组件体系完善**
+  - 新增 `CustomInput.vue`：通用输入框组件，完整替代 `EnhancedInput`，支持 `text` / `password` / `textarea` 三种模式，支持前缀图标、清空按钮、密码显隐切换、字数限制、错误状态、聚焦动画与 `autocomplete` 属性
+  - 新增 `CustomInputNumber.vue`：数字输入框组件，支持 `min` / `max` / `step` / `precision`，支持 `size` 与 `width` 配置，替代 `el-input-number` 与 `el-slider`
+  - 新增 `CustomDatePicker.vue`：日期选择器组件，支持单日期与范围选择，内置日历视图、年月切换、空状态与清除功能，替代 `el-date-picker`
+  - 新增 `CustomSwitch.vue`：开关组件，支持 `activeValue` / `inactiveValue`、前置/后置文本标签、`inline-prompt` 模式、加载状态与键盘无障碍操作，替代 `el-switch`
+  - 新增 `CustomCheckbox.vue`：复选框组件，支持标签文本与禁用状态，替代 `el-checkbox`
+  - `CustomButton.vue` 增强：新增 `round`（全圆角）与 `plain`（朴素/描边）属性，支持三种类型的 plain 变体；字体权重由 200 调整为 400，行高统一为 16px；新增 `focus-visible` 轮廓光环；大尺寸与小尺寸 padding 优化
+  - `CustomSelect.vue` 增强：新增 `size`（large/default/small）与 `variant`（default/search）属性；下拉面板支持空状态插槽与默认空提示文本；选项选中图标逻辑优化
+
+### 优化
+- **Element Plus 基础组件全面替换为自定义组件**
+  - 认证相关页面（登录、注册、激活、忘记密码）：`EnhancedInput` / `el-input` 全面替换为 `CustomInput`，`el-checkbox` 替换为 `CustomCheckbox`，统一使用 `size="large"` 与 `autocomplete` 属性
+  - 物品详情/编辑弹窗：`EnhancedInput` 替换为 `CustomInput`，`el-input-number` 替换为 `CustomInputNumber`，`el-date-picker` 替换为 `CustomDatePicker`，`el-slider`（保质期滑块）替换为 `CustomInputNumber`，输入体验更精准
+  - AI 向导（冰箱创建、物品创建）：`EnhancedInput` 替换为 `CustomInput`，`el-slider` 替换为 `CustomInputNumber`，`el-switch` 替换为 `CustomSwitch`
+  - 系统配置页面：`EnhancedInput` 替换为 `CustomInput`，`el-switch` 替换为 `CustomSwitch`
+  - 邮箱验证码输入：`EnhancedInput` 替换为 `CustomInput`
+  - 落地页 CTA 按钮：`el-button` 替换为 `CustomButton`
+  - 登录注册按钮文案优化：「登 录」→「点击登录」，「注 册」→「没有账号？注册」
+- **验证码主题适配**：后端 `CaptchaController` 接口新增 `theme` 查询参数（`light` / `dark`），根据主题返回对应背景色验证码；前端 `CaptchaInput.vue` 监听主题变化自动刷新验证码；验证码输出格式由 GIF 升级为 PNG，高度由 44 调整为 42，视觉更统一
+- **后端 VO 包结构重构**：所有 VO 类由扁平的 `com.yx.fridgebutler.vo` 包迁移至按业务模块分包的子包：`auth`、`category`、`fridge`、`item`、`system`、`unit`、`unit/type`、`user`，共 17 个文件移动，架构更清晰，import 路径同步更新
+- **冰箱列表页增强**：已停用冰箱支持专属卡片样式（虚线边框、银灰渐变背景、「已停用」角标），状态一目了然
+- **样式系统优化**：`element-overrides.scss` 表单验证错误样式适配自定义组件；`global.scss` 新增阴影变量与工具类；多处表单错误聚焦阴影统一为品牌色/错误色光环
+
+### 工程
+- **版本号统一升级**：后端 `pom.xml`、前端 `package.json` 同步升级至 `release 0.4.1`
+- **构建时间更新**：`application.yaml` 构建时间更新为 `20260610-02`
+- **组件类型声明更新**：`components.d.ts` 移除 `EnhancedInput`，新增 4 个自定义组件声明
+
+---
+
 ## [release 0.4.0] - 2026-6-8
 
 ### 新增

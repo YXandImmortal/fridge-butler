@@ -1,6 +1,6 @@
 package com.yx.fridgebutler.service;
 
-import com.yx.fridgebutler.vo.LoginVO;
+import com.yx.fridgebutler.vo.auth.LoginVO;
 
 /**
  * 用户激活密钥服务接口

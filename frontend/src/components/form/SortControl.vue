@@ -6,9 +6,11 @@
           @update:model-value="handleFieldChange"
           :options="fieldOptions"
           placeholder="排序条件"
+          size="large"
+          variant="search"
           class="sort-select"
       />
-      <CustomButton type="primary" @click="handleToggleOrder" class="sort-btn">
+      <CustomButton type="primary" @click="handleToggleOrder" size="large" class="sort-btn">
         {{ orderLabel }}
       </CustomButton>
     </div>
@@ -70,24 +72,17 @@ const handleFieldChange = (val) => {
 
 /* 下拉列表：只保留左侧圆角，右侧贴合 */
 .sort-control-group :deep(.sort-select .select-trigger) {
+  border-right: none;
   border-radius: var(--radius-md) 0 0 var(--radius-md);
-  border-right: none;
-  height: 40px;
   font-size: 16px;
-}
-
-.sort-control-group :deep(.sort-select.is-open .select-trigger) {
-  border-right: none;
 }
 
 /* 按钮：只保留右侧圆角，左侧贴合 */
 .sort-control-group .sort-btn {
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  padding: 10px 16px;
-  font-weight: 200;
-  height: 40px;
   font-size: 16px;
-  border: none;
+  border-left: none;
+  width: 64px;
 }
 
 /* 按钮悬浮时取消上浮效果，保持与下拉列表贴合 */

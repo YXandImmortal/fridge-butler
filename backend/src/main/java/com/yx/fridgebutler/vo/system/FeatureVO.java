@@ -1,4 +1,4 @@
-package com.yx.fridgebutler.vo;
+package com.yx.fridgebutler.vo.system;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,31 +6,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 关于页面条目VO
+ * 功能特性VO
  */
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AboutItemVO {
+public class FeatureVO {
 
     /**
-     * 标签/标题
+     * 标题
      */
-    private String label;
+    private String title;
 
     /**
-     * 值/内容
+     * 描述
      */
-    private String value;
+    private String description;
 
     /**
-     * 类型
-     */
-    private String type;
-
-    /**
-     *  图标
+     * 图标
      */
     private String icon;
 }

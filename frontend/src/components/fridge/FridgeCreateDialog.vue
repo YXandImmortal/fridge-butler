@@ -18,11 +18,11 @@
               class="create-form"
           >
             <el-form-item label="冰箱名称" prop="name">
-              <EnhancedInput
+              <CustomInput
                   v-model="form.name"
                   placeholder="请输入冰箱名称，如：家用冰箱、办公室冰箱"
-                  maxlength="50"
-                  show-word-limit
+                  :maxlength="50"
+                  showWordLimit
                   icon="icon-notes"
               />
             </el-form-item>
@@ -47,23 +47,23 @@
             </el-form-item>
 
             <el-form-item label="地址" prop="address">
-              <EnhancedInput
+              <CustomInput
                   v-model="form.address"
                   placeholder="请输入冰箱地址（选填）"
-                  maxlength="100"
-                  show-word-limit
+                  :maxlength="100"
+                  showWordLimit
                   icon="icon-building-community"
               />
             </el-form-item>
 
             <el-form-item label="冰箱描述" prop="description">
-              <EnhancedInput
+              <CustomInput
                   v-model="form.description"
                   type="textarea"
                   :rows="3"
                   placeholder="请输入冰箱描述（选填）"
-                  maxlength="200"
-                  show-word-limit
+                  :maxlength="200"
+                  showWordLimit
               />
             </el-form-item>
           </el-form>
@@ -88,7 +88,7 @@
 <script setup>
 import {reactive, ref, watch} from 'vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
-import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import CustomInput from '@/components/ui/CustomInput.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
 import {FRIDGE_TYPE_LIST} from '@/utils/fridgeTypeMap.js'
 

@@ -1,4 +1,4 @@
-package com.yx.fridgebutler.vo;
+package com.yx.fridgebutler.vo.unit;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,23 +6,33 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 物品分类VO
+ * 物品单位VO
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemCategoryVO {
+public class ItemUnitVO {
 
     /**
-     * 分类ID
+     * 单位ID
      */
     private Long id;
 
     /**
-     * 分类名称
+     * 单位名称
      */
-    private String categoryName;
+    private String unitName;
+
+    /**
+     * 单位类型ID
+     */
+    private Long unitTypeId;
+
+    /**
+     * 单位类型名称
+     */
+    private String unitTypeName;
 
     /**
      * 是否系统默认

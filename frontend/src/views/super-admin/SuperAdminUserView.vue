@@ -27,6 +27,8 @@
           placeholder="全部状态"
           clearable
           :options="statusOptions"
+          size="large"
+          variant="search"
         />
         <CustomButton @click="handleReset" type="search-reset">
           重置

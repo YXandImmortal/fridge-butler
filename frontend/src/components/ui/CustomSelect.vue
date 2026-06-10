@@ -1,6 +1,10 @@
 <template>
   <div class="custom-select" ref="selectRef"
-       :class="{ 'is-open': isOpen, 'is-grid': grid, 'is-full-width': fullWidth }">
+       :class="[
+         { 'is-open': isOpen, 'is-grid': grid, 'is-full-width': fullWidth },
+         sizeClass,
+         variantClass
+       ]">
     <div class="select-trigger" :class="{ 'is-disabled': disabled }" @click="toggleOpen">
       <slot name="prefix" :selected="selectedOption"/>
       <span class="select-label" :class="{ 'is-placeholder': !selectedLabel }">
@@ -16,17 +20,22 @@
     <transition name="dropdown">
       <div v-show="isOpen" class="select-dropdown"
            :class="{ 'is-grid': grid, 'align-right': dropdownAlign === 'right' }">
-        <div
-            v-for="option in options"
-            :key="option.value"
-            class="select-option"
-            :class="{ 'is-selected': String(modelValue) === String(option.value) }"
-            @click.stop="handleSelect(option)"
-        >
-          <slot name="option" :option="option" :selected="String(modelValue) === String(option.value)">
-            <span class="option-label">{{ option.label }}</span>
-            <i v-if="!grid && String(modelValue) === String(option.value)" class="iconfont icon-check"/>
-          </slot>
+        <template v-if="options.length > 0">
+          <div
+              v-for="option in options"
+              :key="option.value"
+              class="select-option"
+              :class="{ 'is-selected': String(modelValue) === String(option.value) }"
+              @click.stop="handleSelect(option)"
+          >
+            <slot name="option" :option="option" :selected="String(modelValue) === String(option.value)">
+              <span class="option-label">{{ option.label }}</span>
+              <i v-if="!grid && String(modelValue) === String(option.value)" class="iconfont icon-check"/>
+            </slot>
+          </div>
+        </template>
+        <div v-else class="select-empty">
+          <slot name="empty">{{ emptyText }}</slot>
         </div>
       </div>
     </transition>
@@ -48,6 +57,10 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: '请选择'
+  },
+  emptyText: {
+    type: String,
+    default: '无数据'
   },
   clearable: {
     type: Boolean,
@@ -73,6 +86,16 @@ const props = defineProps({
   fullWidth: {
     type: Boolean,
     default: false
+  },
+  size: {
+    type: String,
+    default: 'default',
+    validator: (val) => ['default', 'large', 'small'].includes(val)
+  },
+  variant: {
+    type: String,
+    default: 'default',
+    validator: (val) => ['default', 'search'].includes(val)
   }
 })
 
@@ -80,6 +103,9 @@ const emit = defineEmits(['update:modelValue', 'change'])
 
 const isOpen = ref(false)
 const selectRef = ref(null)
+
+const sizeClass = computed(() => props.size !== 'default' ? `cs-size--${props.size}` : '')
+const variantClass = computed(() => props.variant !== 'default' ? `cs-variant--${props.variant}` : '')
 
 const hasValue = computed(() => {
   return props.modelValue !== '' && props.modelValue !== null && props.modelValue !== undefined
@@ -128,7 +154,7 @@ onUnmounted(() => {
 .custom-select {
   position: relative;
   width: 140px;
-  height: 40px;
+  height: 38px;
   font-size: 14px;
   user-select: none;
 }
@@ -142,28 +168,50 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   height: 100%;
-  padding: 0 12px;
-  background: transparent;
-  border: 1px solid var(--gray-40);
+  padding: 0 var(--space-3);
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-input);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .select-trigger:hover:not(.is-disabled) {
-  border-color: var(--color-primary-200);
-  box-shadow: 0 4px 12px var(--primary-20);
+  box-shadow: var(--shadow-input-hover);
+  border-color: var(--border-color);
 }
 
 .select-trigger.is-disabled {
   cursor: not-allowed;
-  opacity: 0.6;
-  background: var(--gray-20);
+  opacity: 0.65;
+  background-color: var(--disabled-bg);
+  border: var(--disabled-border);
+  box-shadow: none;
 }
 
 .custom-select.is-open .select-trigger {
   border-color: var(--primary-color);
-  box-shadow: 0 4px 16px var(--primary-30);
+  box-shadow: var(--shadow-input-focus);
+}
+
+/* ---------- 搜索变体 ---------- */
+.custom-select.cs-variant--search .select-trigger {
+  box-shadow: 0 0 0 1px var(--gray-40) inset;
+  border-color: var(--border-color);
+}
+
+.custom-select.cs-variant--search .select-trigger:hover:not(.is-disabled) {
+  box-shadow: 0 0 0 1px var(--gray-40) inset;
+}
+
+.custom-select.cs-variant--search.is-open .select-trigger {
+  box-shadow: 0 0 0 1px var(--primary-color) inset;
+  border-color: var(--primary-color);
+}
+
+.custom-select.cs-variant--search.is-open .select-trigger:hover:not(.is-disabled) {
+  box-shadow: 0 0 0 1px var(--primary-color) inset;
 }
 
 .select-label {
@@ -193,15 +241,20 @@ onUnmounted(() => {
 .select-clear {
   font-size: 12px;
   color: var(--text-tertiary);
-  padding: 2px;
   border-radius: 50%;
   transition: all 0.2s ease;
   margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .select-clear:hover {
-  background: var(--gray-40);
-  color: var(--text-primary);
+  background: var(--primary-light);
+  color: var(--primary-dark);
 }
 
 .select-dropdown {
@@ -211,7 +264,7 @@ onUnmounted(() => {
   width: 100%;
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
-  border: 1px solid var(--gray-40);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   z-index: 100;
@@ -243,7 +296,7 @@ onUnmounted(() => {
   align-items: center;
   padding: 8px 4px;
   text-align: center;
-  border: 1px solid var(--gray-40);
+  border: 1px solid var(--border-color);
   background: var(--card-bg);
   font-size: 13px;
   min-height: 44px;
@@ -255,8 +308,8 @@ onUnmounted(() => {
 }
 
 .select-dropdown.is-grid .select-option.is-selected {
-  background: var(--primary-color);
-  color: var(--text-inverse);
+  background: var(--primary-light);
+  color: var(--primary-color);
   border-color: var(--primary-color);
   font-weight: 600;
 }
@@ -299,6 +352,46 @@ onUnmounted(() => {
   font-size: 12px;
   flex-shrink: 0;
   margin-left: 6px;
+}
+
+/* ---------- 空状态 ---------- */
+.select-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4) var(--space-3);
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+/* ---------- 尺寸系统 ---------- */
+
+/* large */
+.cs-size--large {
+  height: 42px;
+  width: 160px;
+}
+.cs-size--large .select-trigger {
+  padding: 0 var(--space-4);
+  font-size: 16px;
+}
+
+/* small */
+.cs-size--small {
+  height: 28px;
+  width: 120px;
+}
+.cs-size--small .select-trigger {
+  padding: 0 var(--space-2);
+  font-size: 12px;
+}
+.cs-size--small .select-dropdown {
+  padding: 4px;
+}
+.cs-size--small .select-option {
+  padding: 6px 8px;
+  font-size: 12px;
 }
 
 /* 下拉动画 */

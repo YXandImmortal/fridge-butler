@@ -9,7 +9,7 @@ import com.yx.fridgebutler.dto.user.UserUpdateRequest;
 import com.yx.fridgebutler.enums.EmailTemplate;
 import com.yx.fridgebutler.service.EmailService;
 import com.yx.fridgebutler.service.NotificationService;
-import com.yx.fridgebutler.vo.UserInfoVO;
+import com.yx.fridgebutler.vo.user.UserInfoVO;
 import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.entity.SysUser;
 import com.yx.fridgebutler.exception.BusinessException;

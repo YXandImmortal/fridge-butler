@@ -3,7 +3,7 @@ package com.yx.fridgebutler.service;
 import com.yx.fridgebutler.dto.auth.EmailCaptchaRequest;
 import com.yx.fridgebutler.dto.auth.ForgotPasswordRequest;
 import com.yx.fridgebutler.dto.auth.LoginRequest;
-import com.yx.fridgebutler.vo.LoginVO;
+import com.yx.fridgebutler.vo.auth.LoginVO;
 import com.yx.fridgebutler.dto.auth.RegisterRequest;
 import com.yx.fridgebutler.dto.auth.ResetPasswordRequest;
 import jakarta.servlet.http.HttpServletRequest;

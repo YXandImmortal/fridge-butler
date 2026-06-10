@@ -77,14 +77,14 @@
 
       <!-- 操作按钮 -->
       <div class="actions">
-        <el-button type="primary" size="large" class="home-btn" @click="goHome">
+        <CustomButton type="primary" size="large" class="home-btn" @click="goHome">
           <i class="iconfont icon-home"/>
           返回首页
-        </el-button>
-        <el-button size="large" class="back-btn" @click="goBack">
+        </CustomButton>
+        <CustomButton size="large" class="back-btn" @click="goBack">
           <i class="iconfont icon-arrow-left"/>
           上一页
-        </el-button>
+        </CustomButton>
       </div>
     </div>
   </div>
@@ -399,7 +399,8 @@ const goBack = () => {
   transition: all 0.3s ease;
 }
 
-.home-btn:hover {
+.home-btn:hover:not(:disabled) {
+  background: linear-gradient(90deg, var(--danger-color), var(--danger-dark));
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(248, 113, 113, 0.3);
 }
@@ -412,7 +413,10 @@ const goBack = () => {
   transition: all 0.3s ease;
 }
 
-.back-btn:hover {
+.back-btn:hover:not(:disabled) {
+  background: transparent;
+  border-color: var(--gray-40);
+  color: var(--text-primary);
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
 }

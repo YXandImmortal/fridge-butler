@@ -23,24 +23,24 @@
           </h3>
 
           <el-form-item label="公告内容">
-            <EnhancedInput
+            <CustomInput
               v-model="configForm.announcement"
               type="textarea"
               :rows="3"
               placeholder="请输入系统公告内容，将展示在用户首页"
-              maxlength="500"
-              show-word-limit
+              :maxlength="500"
+              showWordLimit
             />
           </el-form-item>
 
           <el-form-item label="系统介绍">
-            <EnhancedInput
+            <CustomInput
               v-model="configForm.systemDescription"
               type="textarea"
               :rows="5"
               placeholder="请输入关于页面的系统介绍部分内容"
-              maxlength="2000"
-              show-word-limit
+              :maxlength="2000"
+              showWordLimit
             />
           </el-form-item>
         </div>
@@ -59,7 +59,7 @@
                 <span class="switch-label">开放注册</span>
                 <span class="switch-desc">关闭后新用户将无法注册账号</span>
               </div>
-              <el-switch
+              <CustomSwitch
                 v-model="configForm.registerOpen"
                 :active-value="true"
                 :inactive-value="false"
@@ -73,7 +73,7 @@
                 <span class="switch-label">AI 智能助手</span>
                 <span class="switch-desc">关闭后用户将无法使用 AI 聊天功能</span>
               </div>
-              <el-switch
+              <CustomSwitch
                 v-model="configForm.aiChatOpen"
                 :active-value="true"
                 :inactive-value="false"
@@ -87,7 +87,7 @@
                 <span class="switch-label">需要激活密钥</span>
                 <span class="switch-desc">开启后，新注册的普通用户必须先输入有效的激活密钥才能使用系统功能</span>
               </div>
-              <el-switch
+              <CustomSwitch
                 v-model="configForm.requireActivationKey"
                 :active-value="true"
                 :inactive-value="false"
@@ -107,10 +107,10 @@
           </h3>
 
           <el-form-item label="管理员邮箱">
-            <EnhancedInput
+            <CustomInput
               v-model="configForm.adminEmail"
               placeholder="请输入管理员联系邮箱，用户可在激活页点击复制"
-              maxlength="100"
+              :maxlength="100"
               icon="icon-mail"
             />
           </el-form-item>
@@ -134,7 +134,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
-import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import CustomInput from '@/components/ui/CustomInput.vue'
+import CustomSwitch from '@/components/ui/CustomSwitch.vue'
 import { getSystemConfig, updateSystemConfig } from '@/api/admin.js'
 import showMessage from '@/utils/message.js'
 

@@ -18,12 +18,13 @@
               class="edit-form"
           >
             <el-form-item :label="label" prop="value">
-              <EnhancedInput
+              <CustomInput
                   v-model="form.value"
                   :placeholder="placeholder"
-                  maxlength="20"
-                  show-word-limit
+                  :maxlength="20"
+                  showWordLimit
                   :icon="icon"
+                  size="large"
               />
             </el-form-item>
           </el-form>
@@ -48,7 +49,7 @@
 <script setup>
 import {reactive, ref, watch} from 'vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
-import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import CustomInput from '@/components/ui/CustomInput.vue'
 
 const props = defineProps({
   visible: {
@@ -222,6 +223,15 @@ const handleSubmit = async () => {
 
 .edit-form :deep(.el-form-item) {
   margin-bottom: 0;
+}
+
+/* 验证错误时的样式 */
+:deep(.el-form-item.is-error) .custom-input {
+  border-color: var(--el-color-danger);
+}
+
+:deep(.el-form-item.is-error) .custom-input.is-focused {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
 }
 
 .dialog-footer {

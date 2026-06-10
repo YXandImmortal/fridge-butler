@@ -12,19 +12,19 @@
       </div>
       <el-form :model="userForm" label-position="top" class="profile-form">
         <el-form-item label="用户名">
-          <EnhancedInput v-model="userForm.username" placeholder="请输入用户名" icon="icon-contact"/>
+          <CustomInput v-model="userForm.username" placeholder="请输入用户名" icon="icon-contact"/>
         </el-form-item>
 
         <el-form-item label="手机号">
-          <EnhancedInput v-model="userForm.mobile" placeholder="请输入手机号" icon="icon-device-phone"/>
+          <CustomInput v-model="userForm.mobile" placeholder="请输入手机号" icon="icon-device-phone"/>
         </el-form-item>
 
         <el-form-item label="邮箱">
-          <EnhancedInput v-model="userForm.email" disabled placeholder="暂无绑定邮箱" icon="icon-mail"/>
+          <CustomInput v-model="userForm.email" disabled placeholder="暂无绑定邮箱" icon="icon-mail"/>
         </el-form-item>
 
         <el-form-item label="注册时间">
-          <EnhancedInput v-model="userForm.createTime" disabled icon="icon-calendar"/>
+          <CustomInput v-model="userForm.createTime" disabled icon="icon-calendar"/>
         </el-form-item>
 
       </el-form>
@@ -60,16 +60,16 @@
               <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-position="top"
                        class="profile-form edit-form">
                 <el-form-item label="原密码" prop="originalPassword">
-                  <EnhancedInput type="password" v-model="passwordForm.originalPassword" placeholder="请输入原密码"
-                                 icon="icon-lock"/>
+                  <CustomInput type="password" v-model="passwordForm.originalPassword" placeholder="请输入原密码"
+                                 icon="icon-lock" size="large"/>
                 </el-form-item>
                 <el-form-item label="新密码" prop="newPassword">
-                  <EnhancedInput type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码"
-                                 icon="icon-lock"/>
+                  <CustomInput type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码"
+                                 icon="icon-lock" size="large"/>
                 </el-form-item>
                 <el-form-item label="确认新密码" prop="confirmNewPassword">
-                  <EnhancedInput type="password" v-model="passwordForm.confirmNewPassword" placeholder="请确认新密码"
-                                 icon="icon-lock"/>
+                  <CustomInput type="password" v-model="passwordForm.confirmNewPassword" placeholder="请确认新密码"
+                                 icon="icon-lock" size="large"/>
                 </el-form-item>
                 <el-form-item label="验证码" prop="captcha">
                   <CaptchaInput
@@ -94,7 +94,7 @@
                   />
                 </el-form-item>
                 <el-form-item label="验证码" prop="captcha">
-                  <EnhancedInput v-model="emailForm.captcha" placeholder="请输入6位验证码" icon="icon-captcha"/>
+                  <CustomInput v-model="emailForm.captcha" placeholder="请输入6位验证码" icon="icon-captcha" size="large"/>
                 </el-form-item>
               </el-form>
             </div>
@@ -167,7 +167,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import showMessage from '@/utils/message'
 import {useUserStore} from '@/stores/user';
 import Avatar from "@/components/ui/Avatar.vue";
-import EnhancedInput from "@/components/ui/EnhancedInput.vue";
+import CustomInput from "@/components/ui/CustomInput.vue";
 import CaptchaInput from "@/components/form/CaptchaInput.vue";
 import EmailVerifyInput from "@/components/form/EmailVerifyInput.vue";
 import {getSystemAvatarIds} from '@/utils/avatarManager';
@@ -658,7 +658,7 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 
 /* 表单项目样式优化 */
 .profile-form .el-form-item {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-4);
 }
 
 .profile-form.edit-form .el-form-item {
@@ -679,7 +679,7 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-5);
-  padding-top: 24px;
+  padding-top: var(--space-4);
   border-top: 1px solid var(--divider-color);
 }
 

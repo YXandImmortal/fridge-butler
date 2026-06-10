@@ -21,19 +21,21 @@
                 class="password-form"
             >
               <el-form-item label="新密码" prop="newPassword">
-                <EnhancedInput
+                <CustomInput
                     v-model="form.newPassword"
                     type="password"
                     placeholder="请输入新密码"
                     icon="icon-lock"
+                    size="large"
                 />
               </el-form-item>
               <el-form-item label="确认密码" prop="confirmNewPassword">
-                <EnhancedInput
+                <CustomInput
                     v-model="form.confirmNewPassword"
                     type="password"
                     placeholder="请确认新密码"
                     icon="icon-lock"
+                    size="large"
                 />
               </el-form-item>
             </el-form>
@@ -58,7 +60,7 @@ import {reactive, ref, watch} from 'vue'
 import showMessage from '@/utils/message'
 import {initPassword} from '@/api/user'
 import CustomButton from './CustomButton.vue'
-import EnhancedInput from './EnhancedInput.vue'
+import CustomInput from './CustomInput.vue'
 
 const props = defineProps({
   visible: {
@@ -252,6 +254,15 @@ const handleSubmit = async () => {
 
 .password-form :deep(.el-form-item:last-child) {
   margin-bottom: 0;
+}
+
+/* 验证错误时的样式 */
+:deep(.el-form-item.is-error) .custom-input {
+  border-color: var(--el-color-danger);
+}
+
+:deep(.el-form-item.is-error) .custom-input.is-focused {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
 }
 
 .dialog-footer {
