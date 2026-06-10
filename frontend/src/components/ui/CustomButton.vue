@@ -47,6 +47,14 @@ const props = defineProps({
     type: String,
     default: 'button',
     validator: (val) => ['button', 'submit', 'reset'].includes(val)
+  },
+  round: {
+    type: Boolean,
+    default: false
+  },
+  plain: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -67,6 +75,12 @@ const buttonClasses = computed(() => {
   if (props.disabled) {
     classes.push('is-disabled')
   }
+  if (props.round) {
+    classes.push('is-round')
+  }
+  if (props.plain) {
+    classes.push('is-plain')
+  }
   return classes
 })
 
@@ -84,9 +98,9 @@ const handleClick = (event) => {
   gap: 6px;
   border-radius: var(--radius-md);
   padding: 10px 20px;
-  font-weight: 200;
+  font-weight: 400;
   font-size: 14px;
-  line-height: 1;
+  line-height: 16px;
   letter-spacing: 0.5px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.3s ease,
@@ -113,10 +127,56 @@ const handleClick = (event) => {
   box-shadow: 0 6px 20px var(--gray-40);
 }
 
+/* ---------- plain 变体 ---------- */
+.custom-button--primary.is-plain {
+  background: transparent;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.custom-button--primary.is-plain:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: var(--text-inverse);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--primary-40);
+}
+
+.custom-button--danger.is-plain {
+  background: transparent;
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.custom-button--danger.is-plain:hover:not(:disabled) {
+  background: var(--danger-color);
+  color: var(--text-inverse);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--danger-40);
+}
+
+.custom-button--default.is-plain {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--gray-40);
+}
+
+.custom-button--default.is-plain:hover:not(:disabled) {
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--gray-40);
+}
+
+/* ---------- round ---------- */
+.custom-button.is-round {
+  border-radius: 9999px;
+}
+
 .custom-button--primary {
   background: var(--primary-color);
   color: var(--text-inverse);
-  border: none;
+  border: 1px solid var(--primary-color);
 }
 
 .custom-button--primary:hover:not(:disabled) {
@@ -128,7 +188,7 @@ const handleClick = (event) => {
 .custom-button--danger {
   background: var(--danger-color);
   color: var(--text-inverse);
-  border: none;
+  border: 1px solid var(--danger-color);
 }
 
 .custom-button--danger:hover:not(:disabled) {
@@ -141,7 +201,7 @@ const handleClick = (event) => {
   background: transparent;
   color: var(--text-secondary);
   border: none;
-  padding: 4px 8px;
+  padding: 6px 8px;
 }
 
 .custom-button--link:hover:not(:disabled) {
@@ -198,14 +258,14 @@ const handleClick = (event) => {
 }
 
 .custom-button--large {
-  padding: 14px 20px;
+  padding: 12px 20px;
   font-size: 16px;
 }
 
 .custom-button--small {
-  padding: 6px 12px;
+  padding: 5px 12px;
   font-size: 12px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
 }
 
 .custom-button.is-loading {
@@ -215,7 +275,12 @@ const handleClick = (event) => {
 
 .custom-button.is-disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.65;
+}
+
+.custom-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-40);
 }
 
 .custom-button__loading-icon {

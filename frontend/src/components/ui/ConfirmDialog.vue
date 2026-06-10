@@ -18,6 +18,7 @@
                 style="width: 100%"
                 :options="mappedOptions"
                 @update:model-value="handleSelectChange"
+                empty-text="未找到可用冰箱"
             />
           </div>
           <slot/>

@@ -22,6 +22,8 @@
           clearable
           :options="methodOptions"
           @change="handleSearch"
+          variant="search"
+          size="large"
         />
         <CustomSelect
           v-model="searchForm.statusCode"
@@ -29,8 +31,10 @@
           clearable
           :options="statusCodeOptions"
           @change="handleSearch"
+          variant="search"
+          size="large"
         />
-        <el-date-picker
+        <CustomDatePicker
             v-model="searchForm.dateRange"
             type="daterange"
             range-separator="至"
@@ -38,8 +42,9 @@
             end-placeholder="结束日期"
             value-format="YYYY-MM-DD"
             @change="handleSearch"
-            class="log-date-picker"
-            style="--el-border-radius-base: var(--radius-md); height: 40px; width: 200px;"
+            variant="search"
+            size="large"
+            width="360px"
         />
         <CustomButton @click="handleReset" type="search-reset">
           重置
@@ -110,6 +115,7 @@ import { ref, reactive, onMounted } from 'vue'
 import SearchBar from '@/components/form/SearchBar.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
+import CustomDatePicker from '@/components/ui/CustomDatePicker.vue'
 import LogDetailDialog from '@/components/super-admin/LogDetailDialog.vue'
 import { getLogList } from '@/api/admin.js'
 import showMessage from '@/utils/message.js'

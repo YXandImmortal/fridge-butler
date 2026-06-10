@@ -68,14 +68,14 @@
 
       <!-- 操作按钮 -->
       <div class="actions">
-        <el-button type="primary" size="large" class="home-btn" @click="goHome">
+        <CustomButton type="primary" size="large" class="home-btn" @click="goHome">
           <i class="iconfont icon-home"/>
           返回首页
-        </el-button>
-        <el-button size="large" class="back-btn" @click="goBack">
+        </CustomButton>
+        <CustomButton size="large" class="back-btn" @click="goBack">
           <i class="iconfont icon-arrow-left"/>
           上一页
-        </el-button>
+        </CustomButton>
       </div>
     </div>
   </div>

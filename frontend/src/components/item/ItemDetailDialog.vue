@@ -18,11 +18,11 @@
               class="add-form"
           >
             <el-form-item label="物品名称" prop="itemName">
-              <EnhancedInput
+              <CustomInput
                   v-model="form.itemName"
                   placeholder="请输入物品名称"
-                  maxlength="50"
-                  show-word-limit
+                  :maxlength="50"
+                  showWordLimit
               />
             </el-form-item>
 
@@ -39,14 +39,13 @@
             </el-form-item>
 
             <el-form-item label="数量" prop="itemNum">
-              <el-input-number
+              <CustomInputNumber
                   v-model="form.itemNum"
                   :min="0"
                   :precision="2"
                   :step="1"
                   placeholder="请输入数量"
-                  style="width: 100%;
-                --el-border-radius-base: var(--radius-md);"
+                  width="100%"
               />
             </el-form-item>
 
@@ -77,17 +76,13 @@
             </el-form-item>
 
             <el-form-item label="生产日期" prop="productionDate">
-              <el-date-picker
+              <CustomDatePicker
                   v-model="form.productionDate"
                   type="date"
                   placeholder="请选择生产日期"
                   value-format="YYYY-MM-DD"
-                  format="YYYY-MM-DD"
-                  style="width: 100%;
-                --el-border-radius-base: var(--radius-md);
-                --el-input-height: 40px;"
                   clearable
-                  :default-value="new Date()"
+                  style="width: 100%;"
               />
             </el-form-item>
 
@@ -101,15 +96,14 @@
                     @change="handleModeChange"
                 />
 
-                <el-slider
-                    v-model="sliderValue"
+                <CustomInputNumber
+                    v-model="inputValue"
                     :min="1"
                     :max="modeMax"
                     :step="1"
-                    :show-stops="shelfLifeMode === 'year'"
-                    show-input
-                    style="padding-left: 12px; --el-border-radius-base: var(--radius-md);"
-                    @change="handleSliderChange"
+                    placeholder="请输入保质期"
+                    width="100%"
+                    @change="handleInputChange"
                 />
 
                 <div class="shelf-life-hint">
@@ -119,26 +113,23 @@
             </el-form-item>
 
             <el-form-item v-if="mode === 'edit'" label="入库时间">
-              <el-date-picker
+              <CustomDatePicker
                   v-model="form.storedDate"
                   type="date"
                   placeholder="暂无入库时间"
                   value-format="YYYY-MM-DD"
-                  format="YYYY-MM-DD"
-                  style="width: 100% ;
-                --el-border-radius-base: var(--radius-md);
-                --el-input-height: 40px;"
+                  style="width: 100%;"
               />
             </el-form-item>
 
             <el-form-item label="备注" prop="remark">
-              <EnhancedInput
+              <CustomInput
                   v-model="form.remark"
                   type="textarea"
                   :rows="3"
                   placeholder="请输入备注信息（选填）"
-                  maxlength="200"
-                  show-word-limit
+                  :maxlength="200"
+                  showWordLimit
               />
             </el-form-item>
           </el-form>
@@ -163,8 +154,10 @@
 <script setup>
 import {computed, reactive, ref, watch} from 'vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
-import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import CustomInput from '@/components/ui/CustomInput.vue'
+import CustomInputNumber from '@/components/ui/CustomInputNumber.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
+import CustomDatePicker from '@/components/ui/CustomDatePicker.vue'
 import {createItem, updateItem} from '@/api/item'
 import showMessage from '@/utils/message'
 
@@ -204,7 +197,7 @@ const emit = defineEmits(['update:visible', 'success'])
 const formRef = ref(null)
 const submitting = ref(false)
 const shelfLifeMode = ref('day')
-const sliderValue = ref(1)
+const inputValue = ref(null)
 
 const shelfLifeOptions = [
   {label: '按天', value: 'day'},
@@ -291,7 +284,11 @@ const handleUnitTypeChange = () => {
   form.itemUnitId = null
 }
 
-const handleSliderChange = (val) => {
+const handleInputChange = (val) => {
+  if (val === null || val === undefined) {
+    form.shelfLifeDays = null
+    return
+  }
   if (shelfLifeMode.value === 'day') {
     form.shelfLifeDays = val
   } else if (shelfLifeMode.value === 'month') {
@@ -302,38 +299,39 @@ const handleSliderChange = (val) => {
 }
 
 const handleModeChange = () => {
-  const days = form.shelfLifeDays || 1
-  if (days > 0) {
+  const days = form.shelfLifeDays
+  if (days && days > 0) {
     if (shelfLifeMode.value === 'day') {
-      sliderValue.value = Math.min(days, 100)
-      form.shelfLifeDays = sliderValue.value
+      inputValue.value = Math.min(days, 100)
+      form.shelfLifeDays = inputValue.value
     } else if (shelfLifeMode.value === 'month') {
-      sliderValue.value = Math.min(Math.max(Math.round(days / 30), 1), 48)
-      form.shelfLifeDays = sliderValue.value * 30
+      inputValue.value = Math.min(Math.max(Math.round(days / 30), 1), 48)
+      form.shelfLifeDays = inputValue.value * 30
     } else if (shelfLifeMode.value === 'year') {
-      sliderValue.value = Math.min(Math.max(Math.round(days / 365), 1), 10)
-      form.shelfLifeDays = sliderValue.value * 365
+      inputValue.value = Math.min(Math.max(Math.round(days / 365), 1), 10)
+      form.shelfLifeDays = inputValue.value * 365
     }
   } else {
-    sliderValue.value = 1
+    inputValue.value = null
+    form.shelfLifeDays = null
   }
 }
 
 const initShelfLifeMode = (days) => {
   if (!days || days <= 0) {
     shelfLifeMode.value = 'day'
-    sliderValue.value = 1
+    inputValue.value = null
     return
   }
   if (days <= 100) {
     shelfLifeMode.value = 'day'
-    sliderValue.value = days
+    inputValue.value = days
   } else if (days <= 1440) {
     shelfLifeMode.value = 'month'
-    sliderValue.value = Math.min(Math.round(days / 30), 48)
+    inputValue.value = Math.min(Math.round(days / 30), 48)
   } else {
     shelfLifeMode.value = 'year'
-    sliderValue.value = Math.min(Math.round(days / 365), 10)
+    inputValue.value = Math.min(Math.round(days / 365), 10)
   }
 }
 
@@ -348,7 +346,7 @@ const resetForm = () => {
   form.storedDate = ''
   form.remark = ''
   shelfLifeMode.value = 'day'
-  sliderValue.value = 1
+  inputValue.value = null
   if (formRef.value) {
     formRef.value.resetFields()
   }
@@ -526,11 +524,6 @@ const handleSubmit = async () => {
 
 .form-select {
   width: 100%;
-}
-
-.form-input-number :deep(.el-input__wrapper) {
-  padding-left: 8px;
-  padding-right: 8px;
 }
 
 .dialog-footer {

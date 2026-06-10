@@ -117,11 +117,11 @@
             label="通知标题"
             :rules="[{ required: true, message: '请输入通知标题', trigger: 'blur' }]"
           >
-            <EnhancedInput
+            <CustomInput
               v-model="noticeForm.title"
               placeholder="请输入通知标题，建议简短有力"
-              maxlength="100"
-              show-word-limit
+              :maxlength="100"
+              showWordLimit
             />
           </el-form-item>
 
@@ -199,7 +199,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import CustomButton from '@/components/ui/CustomButton.vue'
-import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import CustomInput from '@/components/ui/CustomInput.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import { useThemeStore } from '@/stores/theme.js'
 import {

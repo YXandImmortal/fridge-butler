@@ -11,10 +11,11 @@
       @keyup.enter="handleSubmit"
     >
       <el-form-item prop="keyCode">
-        <EnhancedInput
+        <CustomInput
           v-model="form.keyCode"
           placeholder="请输入激活密钥，格式：FB-XXXXXXXX"
           icon="icon-key"
+          size="large"
         />
       </el-form-item>
 
@@ -52,7 +53,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import AuthLayout from '@/layouts/AuthLayout.vue'
-import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import CustomInput from '@/components/ui/CustomInput.vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
 import { verifyActivationKey } from '@/api/activation-key.js'
 import { getPublicConfig } from '@/api/system.js'
@@ -170,6 +171,15 @@ const copyAdminEmail = async () => {
 .activate-btn {
   width: 100%;
   margin-top: var(--space-4);
+}
+
+/* 验证错误时的样式 */
+.el-form-item.is-error :deep(.custom-input) {
+  border-color: var(--el-color-danger);
+}
+
+.el-form-item.is-error :deep(.custom-input.is-focused) {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
 }
 
 .activation-footer {

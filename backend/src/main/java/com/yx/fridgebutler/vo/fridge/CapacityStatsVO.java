@@ -1,4 +1,4 @@
-package com.yx.fridgebutler.vo;
+package com.yx.fridgebutler.vo.fridge;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

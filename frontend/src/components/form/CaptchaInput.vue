@@ -1,11 +1,12 @@
 <template>
   <div class="captcha-input-wrapper">
-    <EnhancedInput
+    <CustomInput
         :model-value="modelValue"
         @update:model-value="$emit('update:modelValue', $event)"
         :placeholder="placeholder"
         icon="icon-captcha"
         :width="inputWidth"
+        size="large"
     />
     <div class="captcha-image-box">
       <img
@@ -21,9 +22,10 @@
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue'
+import {ref, onMounted, watch} from 'vue'
 import axios from 'axios'
-import EnhancedInput from '../ui/EnhancedInput.vue'
+import CustomInput from '../ui/CustomInput.vue'
+import {useThemeStore} from '@/stores/theme.js'
 
 const props = defineProps({
   modelValue: {
@@ -32,7 +34,7 @@ const props = defineProps({
   },
   height: {
     type: Number,
-    default: 44
+    default: 42
   },
   inputWidth: {
     type: String,
@@ -46,6 +48,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+const themeStore = useThemeStore()
+
 // 验证码图片URL
 const captchaUrl = ref('/captcha/generate')
 // 验证码ID
@@ -54,8 +58,9 @@ const captchaId = ref('')
 // 刷新验证码
 const refreshCaptcha = async () => {
   try {
+    const theme = themeStore.theme || 'light'
     const response = await axios({
-      url: `/captcha/generate?timestamp=${Date.now()}`,
+      url: `/captcha/generate?timestamp=${Date.now()}&theme=${theme}`,
       method: 'get',
       responseType: 'blob',
       baseURL: import.meta.env.VITE_API_BASE_URL
@@ -67,6 +72,11 @@ const refreshCaptcha = async () => {
     console.error('刷新验证码失败:', error)
   }
 }
+
+// 监听主题变化，自动刷新验证码
+watch(() => themeStore.theme, () => {
+  refreshCaptcha()
+})
 
 onMounted(() => {
   refreshCaptcha()
@@ -96,13 +106,14 @@ defineExpose({
 .captcha-image {
   cursor: pointer;
   border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-input);
 }
 
 .captcha-image:hover {
   opacity: 0.9;
   transform: scale(1.02);
-  box-shadow: 0 4px 12px var(--primary-20);
+  box-shadow: var(--shadow-input-hover);
 }
 </style>

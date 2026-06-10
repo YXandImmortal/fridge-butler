@@ -2,7 +2,7 @@ package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.dto.activation.ActivationKeyVerifyRequest;
 import com.yx.fridgebutler.service.ActivationKeyService;
-import com.yx.fridgebutler.vo.LoginVO;
+import com.yx.fridgebutler.vo.auth.LoginVO;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

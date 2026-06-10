@@ -46,26 +46,26 @@
     <div v-if="!isLastStep && currentInputConfig" class="wizard-input-area">
       <!-- 文本输入 -->
       <template v-if="inputComponentType === 'text'">
-        <EnhancedInput
+        <CustomInput
             v-model="inputValue"
             :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
             type="text"
             clearable
-            maxlength="50"
-            show-word-limit
+            :maxlength="50"
+            showWordLimit
             :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
         />
       </template>
 
       <!-- 文本域 -->
       <template v-else-if="inputComponentType === 'textarea'">
-        <EnhancedInput
+        <CustomInput
             v-model="inputValue"
             :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
             type="textarea"
             :rows="2"
-            maxlength="200"
-            show-word-limit
+            :maxlength="200"
+            showWordLimit
             :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
         />
       </template>
@@ -84,34 +84,32 @@
 
       <!-- 数字输入（数量） -->
       <template v-else-if="inputComponentType === 'number'">
-        <el-input-number
+        <CustomInputNumber
             v-model="inputValueNum"
             :min="0"
             :precision="2"
             :step="1"
             :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
-            style="width: 100%; --el-border-radius-base: var(--radius-md);"
+            width="100%"
         />
       </template>
 
       <!-- 日期输入 -->
       <template v-else-if="inputComponentType === 'date'">
-        <el-date-picker
+        <CustomDatePicker
             v-model="inputValue"
             type="date"
             :placeholder="currentInputConfig.placeholder || `请选择${currentInputConfig.label}`"
             value-format="YYYY-MM-DD"
-            format="YYYY-MM-DD"
-            style="width: 100%; --el-border-radius-base: var(--radius-md); --el-input-height: 40px;"
             clearable
-            :default-value="new Date()"
+            style="width: 100%;"
         />
       </template>
 
       <!-- 组合输入：数量 + 单位类型 + 单位 -->
       <template v-else-if="inputComponentType === 'combined_unit'">
         <div class="combined-unit-row">
-          <el-input-number
+          <CustomInputNumber
               v-model="inputValueNum"
               :min="1"
               :precision="2"
@@ -119,7 +117,6 @@
               placeholder="数量"
               class="unit-num-input"
               size="large"
-              style="--el-border-radius-base: var(--radius-md);"
           />
           <CustomSelect
               v-model="unitTypeId"
@@ -128,6 +125,7 @@
               grid
               class="unit-type-select"
               @change="handleUnitTypeChange"
+              size="large"
           />
           <CustomSelect
               v-model="unitId"
@@ -136,6 +134,7 @@
               grid
               :disabled="!unitTypeId"
               class="unit-select"
+              size="large"
           />
         </div>
       </template>
@@ -144,23 +143,21 @@
       <template v-else-if="inputComponentType === 'combined_date_number'">
 
         <div class="shelf-life-row">
-          <el-date-picker
+          <CustomDatePicker
               v-model="dateValue"
               type="date"
               placeholder="请选择生产日期（选填）"
               value-format="YYYY-MM-DD"
-              format="YYYY-MM-DD"
-              style="--el-border-radius-base: var(--radius-md); flex: 1 1 0;"
               clearable
-              :default-value="new Date()"
               size="large"
+              style="flex: 1 1 0;"
           />
-          <el-input-number
+          <CustomInputNumber
               v-model="shelfLifeDays"
               :min="1"
               :step="1"
               placeholder="保质期天数（选填）"
-              style="--el-border-radius-base: var(--radius-md); flex: 1 1 0;"
+              width="50%"
               size="large"
           />
           <span class="shelf-life-hint">天</span>
@@ -201,12 +198,11 @@
 
     <!-- 操作按钮 -->
     <div class="wizard-actions">
-      <CustomButton class="dialog-btn dialog-btn-cancel" @click="handleCancel">
+      <CustomButton @click="handleCancel">
         取消
       </CustomButton>
       <CustomButton
           v-if="canSkip"
-          class="dialog-btn dialog-btn-cancel"
           :disabled="stepSubmitting"
           @click="handleSkip"
       >
@@ -215,7 +211,6 @@
       <CustomButton
           v-if="!isLastStep"
           type="primary"
-          class="dialog-btn dialog-btn-confirm"
           :loading="stepSubmitting"
           :disabled="!canGoNext"
           @click="handleNext"
@@ -225,7 +220,6 @@
       <CustomButton
           v-else
           type="primary"
-          class="dialog-btn dialog-btn-confirm"
           :loading="creating"
           @click="handleConfirm"
       >
@@ -239,7 +233,9 @@
 import {ref, computed, watch, onMounted} from 'vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
-import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import CustomInput from '@/components/ui/CustomInput.vue'
+import CustomInputNumber from '@/components/ui/CustomInputNumber.vue'
+import CustomDatePicker from '@/components/ui/CustomDatePicker.vue'
 import {listItemCategories, listItemUnits, listUnitTypes} from '@/api/item'
 
 const props = defineProps({
@@ -586,14 +582,12 @@ function handleCancel() {
 .wizard-input-area {
   margin-bottom: var(--space-3);
 
-  .enhanced-input.is-error :deep(.el-input__wrapper.is-focus) {
-    box-shadow: 0 0 0 1px #F56C6C inset;
+  .custom-input.is-error {
     border-color: var(--el-color-danger);
   }
 
-  .enhanced-input.is-error :deep(.el-textarea__inner.is-focus) {
-    box-shadow: 0 0 0 1px #F56C6C inset;
-    border-color: var(--el-color-danger);
+  .custom-input.is-error.is-focused {
+    box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
   }
 
   .wizard-input-hint {

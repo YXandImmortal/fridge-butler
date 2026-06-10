@@ -1,16 +1,24 @@
 <template>
-  <div class="email-verify-input-wrapper">
-    <EnhancedInput
+  <div
+    class="email-verify-input-wrapper"
+    :class="{ 'is-focused': isFocused, 'is-error': error }"
+    @focusin="handleFocusIn"
+    @focusout="handleFocusOut"
+  >
+    <CustomInput
         :model-value="email"
         @update:model-value="handleEmailChange"
         :placeholder="placeholder"
         icon="icon-mail"
         :clearable="true"
         :disabled="sending"
+        :error="error"
+        size="large"
         class="email-input"
     />
     <CustomButton
         type="primary"
+        size="large"
         class="verify-btn"
         :disabled="!isEmailValid || countdown > 0"
         :loading="sending"
@@ -25,7 +33,7 @@
 import {ref, computed, watch, onUnmounted} from 'vue'
 import request from '@/utils/request.js'
 import showMessage from '@/utils/message.js'
-import EnhancedInput from '../ui/EnhancedInput.vue'
+import CustomInput from '../ui/CustomInput.vue'
 import CustomButton from '../ui/CustomButton.vue'
 
 const props = defineProps({
@@ -45,11 +53,16 @@ const props = defineProps({
   apiUrl: {
     type: String,
     default: '/auth/email/captcha'
+  },
+  error: {
+    type: Boolean,
+    default: false
   }
 })
 
 const emit = defineEmits(['update:modelValue', 'send'])
 
+const isFocused = ref(false)
 const email = ref(props.modelValue || '')
 const sending = ref(false)
 const countdown = ref(0)
@@ -67,6 +80,17 @@ watch(() => props.modelValue, (newVal) => {
     email.value = newVal || ''
   }
 })
+
+function handleFocusIn() {
+  isFocused.value = true
+}
+
+function handleFocusOut(e) {
+  // 检查焦点是否真正离开组件（而非在内部 input/button 之间切换）
+  if (!e.currentTarget.contains(e.relatedTarget)) {
+    isFocused.value = false
+  }
+}
 
 const handleEmailChange = (val) => {
   email.value = val || ''
@@ -137,47 +161,49 @@ onUnmounted(() => {
   background-color: var(--card-bg);
   overflow: hidden;
   transition: all 0.3s ease;
+  max-height: 42px;
+}
+
+.email-verify-input-wrapper:hover {
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-input-hover);
 }
 
 /* Focus 时整个组合控件的边框和阴影同步高亮，无断层 */
-.email-verify-input-wrapper:focus-within {
+.email-verify-input-wrapper.is-focused {
   border-color: var(--primary-color);
   box-shadow: var(--shadow-input-focus);
 }
 
-/* 输入框去掉自身的 border、shadow、圆角和背景，完全融入外层容器 */
-.email-verify-input-wrapper :deep(.enhanced-default .el-input__wrapper) {
+/* CustomInput 去掉自身外观，完全融入外层容器 */
+.email-verify-input-wrapper :deep(.custom-input) {
+  border: none;
+  box-shadow: none;
   border-radius: 0;
-  border: none !important;
-  box-shadow: none !important;
-  background-color: transparent;
-}
-
-.email-verify-input-wrapper :deep(.enhanced-default .el-input__wrapper:hover),
-.email-verify-input-wrapper :deep(.enhanced-default .el-input__wrapper.is-focus) {
-  box-shadow: none !important;
-  border: none !important;
+  background: transparent;
 }
 
 /* 按钮去掉 border 和圆角，融入外层容器 */
 .verify-btn {
-  flex-shrink: 0;
   width: 64px;
-  height: 44px;
-  padding: 0;
   font-size: 13px;
-  border-radius: 0;
   border: none;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  height: 42px;
+}
+
+/* ---------- 错误状态 ---------- */
+.email-verify-input-wrapper.is-error {
+  border-color: var(--el-color-danger);
+}
+
+.email-verify-input-wrapper.is-error.is-focused {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
 }
 
 /* 取消 hover 上浮效果 */
 .verify-btn:hover:not(:disabled) {
   transform: none;
   box-shadow: none;
-}
-
-.verify-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 </style>

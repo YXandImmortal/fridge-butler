@@ -11,20 +11,24 @@
         @keyup.enter="handleLogin"
     >
       <el-form-item prop="account">
-        <EnhancedInput
+        <CustomInput
             v-model="loginForm.account"
             placeholder="请输入用户名或手机号"
             icon="icon-contact"
+            size="large"
+            autocomplete="username"
         />
       </el-form-item>
 
       <el-form-item prop="password">
-        <EnhancedInput
+        <CustomInput
             v-model="loginForm.password"
             placeholder="请输入密码"
             icon="icon-lock"
             type="password"
-            :show-password="true"
+            :showPassword="true"
+            size="large"
+            autocomplete="current-password"
         />
       </el-form-item>
 
@@ -37,9 +41,7 @@
 
       <el-form-item class="remember-me-item">
         <div class="remember-me-wrapper">
-          <el-checkbox v-model="loginForm.rememberMe" class="custom-checkbox">
-            下次自动登录
-          </el-checkbox>
+          <CustomCheckbox v-model="loginForm.rememberMe" label="下次自动登录"/>
           <el-tooltip
               content="勾选后30天内无需输入密码自动登录"
               placement="right"
@@ -52,8 +54,8 @@
       </el-form-item>
 
       <AuthButtonGroup
-          primary-text="登 录"
-          secondary-text="注 册"
+          primary-text="点击登录"
+          secondary-text="没有账号？注册"
           :loading="loading"
           loading-text="登录中..."
           @primary-action="handleLogin"
@@ -77,8 +79,9 @@ import {useSystemStore} from '@/stores/system.js'
 import showMessage from '@/utils/message.js'
 import AuthLayout from "@/layouts/AuthLayout.vue"
 import AuthButtonGroup from "@/components/auth/AuthButtonGroup.vue"
-import EnhancedInput from "@/components/ui/EnhancedInput.vue"
+import CustomInput from "@/components/ui/CustomInput.vue"
 import CaptchaInput from "@/components/form/CaptchaInput.vue"
+import CustomCheckbox from "@/components/ui/CustomCheckbox.vue"
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -199,10 +202,13 @@ const handleForgotPassword = () => {
   transform: scale(1.1);
 }
 
-/* 验证错误时的 focus 样式 */
-.el-form-item.is-error :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+/* 验证错误时的样式 */
+.el-form-item.is-error :deep(.custom-input) {
   border-color: var(--el-color-danger);
+}
+
+.el-form-item.is-error :deep(.custom-input.is-focused) {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
 }
 
 /* 忘记密码入口 */

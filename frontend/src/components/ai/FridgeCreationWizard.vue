@@ -46,26 +46,26 @@
     <div v-if="!isLastStep && currentInputConfig" class="wizard-input-area">
       <!-- 文本输入 -->
       <template v-if="inputComponentType === 'text'">
-        <EnhancedInput
+        <CustomInput
             v-model="inputValue"
             :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
             type="text"
             clearable
-            maxlength="50"
-            show-word-limit
+            :maxlength="50"
+            showWordLimit
             :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
         />
       </template>
 
       <!-- 文本域 -->
       <template v-else-if="inputComponentType === 'textarea'">
-        <EnhancedInput
+        <CustomInput
             v-model="inputValue"
             :placeholder="currentInputConfig.placeholder || `请输入${currentInputConfig.label}`"
             type="textarea"
             :rows="2"
-            maxlength="200"
-            show-word-limit
+            :maxlength="200"
+            showWordLimit
             :class="{ 'is-error': currentInputConfig.required && !isInputValid }"
         />
       </template>
@@ -92,13 +92,13 @@
 
       <!-- 数字输入 -->
       <template v-else-if="inputComponentType === 'number'">
-        <el-slider
+        <CustomInputNumber
             v-model="inputValueNum"
-            :min="1"
+            :min="50"
             :max="1000"
             placeholder="请输入总容量（L）"
-            style="width: 100%; padding-left: 12px; --el-border-radius-base: var(--radius-md);"
-            show-input
+            size="large"
+            width="100%"
         />
       </template>
 
@@ -106,27 +106,27 @@
       <template v-else-if="inputComponentType === 'switch'">
         <div class="wizard-switch-row">
           <span class="wizard-switch-label">{{ currentInputConfig.label }}</span>
-          <el-switch v-model="inputValueBool" size="large"/>
+          <CustomSwitch v-model="inputValueBool" size="large"/>
         </div>
       </template>
 
       <!-- 组合输入（地址+备注） -->
       <template v-else-if="inputComponentType === 'combined'">
-        <EnhancedInput
+        <CustomInput
             v-model="inputValue"
             :placeholder="currentInputConfig.placeholder || '请输入地址（选填）'"
             clearable
-            maxlength="100"
-            show-word-limit
+            :maxlength="100"
+            showWordLimit
             class="combined-input-first"
         />
-        <EnhancedInput
+        <CustomInput
             v-model="remarkValue"
             placeholder="请输入备注（选填）"
             type="textarea"
             :rows="2"
-            maxlength="200"
-            show-word-limit
+            :maxlength="200"
+            showWordLimit
             class="combined-input-second"
         />
       </template>
@@ -203,6 +203,7 @@ import {ref, computed, watch} from 'vue'
 import {getFridgeTypeById, FRIDGE_TYPE_LIST} from '@/utils/fridgeTypeMap.js'
 import CustomButton from '@/components/ui/CustomButton.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
+import CustomSwitch from '@/components/ui/CustomSwitch.vue'
 
 const props = defineProps({
   data: {
@@ -462,14 +463,12 @@ function handleCancel() {
 .wizard-input-area {
   margin-bottom: var(--space-3);
 
-  .enhanced-input.is-error :deep(.el-input__wrapper.is-focus) {
-    box-shadow: 0 0 0 1px #F56C6C inset;
+  .custom-input.is-error {
     border-color: var(--el-color-danger);
   }
 
-  .enhanced-input.is-error :deep(.el-textarea__inner.is-focus) {
-    box-shadow: 0 0 0 1px #F56C6C inset;
-    border-color: var(--el-color-danger);
+  .custom-input.is-error.is-focused {
+    box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
   }
 
   .combined-input-first {

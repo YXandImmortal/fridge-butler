@@ -1,12 +1,12 @@
 package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.service.AdminSystemService;
-import com.yx.fridgebutler.vo.AboutItemVO;
-import com.yx.fridgebutler.vo.FeatureVO;
-import com.yx.fridgebutler.vo.PublicConfigVO;
-import com.yx.fridgebutler.vo.SidebarFeatureVO;
-import com.yx.fridgebutler.vo.SystemInfoVO;
-import com.yx.fridgebutler.vo.UpdateLogVO;
+import com.yx.fridgebutler.vo.system.AboutItemVO;
+import com.yx.fridgebutler.vo.system.FeatureVO;
+import com.yx.fridgebutler.vo.system.PublicConfigVO;
+import com.yx.fridgebutler.vo.system.SidebarFeatureVO;
+import com.yx.fridgebutler.vo.system.SystemInfoVO;
+import com.yx.fridgebutler.vo.system.UpdateLogVO;
 import com.yx.fridgebutler.vo.Result;
 import com.yx.fridgebutler.vo.admin.SystemConfigVO;
 import lombok.extern.slf4j.Slf4j;
@@ -138,6 +138,21 @@ public class SystemController {
 
     /** 系统更新日志列表 */
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
+            UpdateLogVO.builder()
+                    .version("release 0.4.1")
+                    .date("2026-6-10")
+                    .summary("全新自定义组件体系上线，验证码支持主题适配，多处体验优化")
+                    .changes(Arrays.asList(
+                            "全新自定义表单组件体系：输入框、数字输入、日期选择、开关、复选框全面升级为统一风格组件，视觉更精致，交互更一致",
+                            "验证码支持明暗主题自适应：暗色模式下验证码背景自动切换为深色，告别亮白色刺眼问题",
+                            "冰箱列表支持展示已停用冰箱：已停用冰箱卡片带有专属样式与角标，状态一目了然",
+                            "物品保质期输入由滑块升级为数字输入框：输入更精准，操作更直观",
+                            "按钮组件新增圆角与朴素风格：界面风格更多样，视觉层次更丰富",
+                            "下拉选择器新增空状态提示：无选项时给出友好提示，避免空白困惑",
+                            "登录注册按钮文案优化：表达更清晰，指引更明确",
+                            "多处UI细节与样式统一优化，整体视觉体验进一步提升"
+                    ))
+                    .build(),
             UpdateLogVO.builder()
                     .version("release 0.4.0")
                     .date("2026-6-8")

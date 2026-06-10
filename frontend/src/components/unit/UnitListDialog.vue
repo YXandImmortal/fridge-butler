@@ -29,11 +29,11 @@
                 @submit.prevent
             >
               <el-form-item prop="unitName" class="add-unit-input">
-                <EnhancedInput
+                <CustomInput
                     v-model="addForm.unitName"
                     placeholder="请输入新单位名称，如：千克、升、个"
-                    maxlength="20"
-                    show-word-limit
+                    :maxlength="20"
+                    showWordLimit
                     icon="icon-inbox"
                     @keyup.enter="handleAddUnit"
                 />
@@ -43,7 +43,6 @@
                   :loading="adding"
                   @click="handleAddUnit"
                   class="add-unit-btn"
-                  size="large"
               >添加
               </CustomButton>
             </el-form>
@@ -120,7 +119,7 @@
 <script setup>
 import {reactive, ref, watch, computed} from 'vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
-import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import CustomInput from '@/components/ui/CustomInput.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import {createItemUnit, deleteItemUnit, updateItemUnit} from '@/api/item'
 import showMessage from '@/utils/message'

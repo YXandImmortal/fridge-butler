@@ -6,7 +6,7 @@ import com.yx.fridgebutler.dto.user.UserEmailCaptchaRequest;
 import com.yx.fridgebutler.dto.user.UserInitPasswordRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateAvatarRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateRequest;
-import com.yx.fridgebutler.vo.UserInfoVO;
+import com.yx.fridgebutler.vo.user.UserInfoVO;
 import com.yx.fridgebutler.service.UserService;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;

@@ -13,11 +13,12 @@
       <!-- 步骤1：输入邮箱 -->
       <template v-if="step === 1">
         <el-form-item prop="email">
-          <EnhancedInput
+          <CustomInput
             v-model="form.email"
             placeholder="请输入绑定的邮箱地址"
             icon="icon-mail"
             :clearable="true"
+            size="large"
           />
         </el-form-item>
 
@@ -40,31 +41,34 @@
         </div>
 
         <el-form-item prop="captcha">
-          <EnhancedInput
+          <CustomInput
             v-model="form.captcha"
             placeholder="请输入6位邮箱验证码"
             icon="icon-captcha"
-            maxlength="6"
+            :maxlength="6"
+            size="large"
           />
         </el-form-item>
 
         <el-form-item prop="newPassword">
-          <EnhancedInput
+          <CustomInput
             v-model="form.newPassword"
             placeholder="请输入新密码"
             icon="icon-lock"
             type="password"
-            :show-password="true"
+            :showPassword="true"
+            size="large"
           />
         </el-form-item>
 
         <el-form-item prop="confirmPassword">
-          <EnhancedInput
+          <CustomInput
             v-model="form.confirmPassword"
             placeholder="请再次输入新密码"
             icon="icon-lock"
             type="password"
-            :show-password="true"
+            :showPassword="true"
+            size="large"
           />
         </el-form-item>
 
@@ -108,7 +112,7 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import AuthButtonGroup from '@/components/auth/AuthButtonGroup.vue'
-import EnhancedInput from '@/components/ui/EnhancedInput.vue'
+import CustomInput from '@/components/ui/CustomInput.vue'
 
 import CustomButton from '@/components/ui/CustomButton.vue'
 import request from '@/utils/request.js'
@@ -391,9 +395,12 @@ const copyAdminEmail = async () => {
   color: var(--primary-color);
 }
 
-/* 验证错误时的 focus 样式 */
-.el-form-item.is-error :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+/* 验证错误时的样式 */
+.el-form-item.is-error :deep(.custom-input) {
   border-color: var(--el-color-danger);
+}
+
+.el-form-item.is-error :deep(.custom-input.is-focused) {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
 }
 </style>

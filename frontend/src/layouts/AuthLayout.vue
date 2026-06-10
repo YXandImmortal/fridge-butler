@@ -8,13 +8,13 @@
       <ThemeToggle/>
     </div>
     <div class="auth-wrapper">
-      <el-card class="auth-card">
+      <div class="auth-card">
         <AuthHeader
             :title="title"
             :subtitle="subtitle"
         />
         <slot></slot>
-      </el-card>
+      </div>
     </div>
     <CopyrightFooter/>
   </div>
@@ -123,7 +123,7 @@ const props = defineProps({
 
 /* 认证卡片 */
 .auth-card {
-  padding: 0 40px 20px 40px;
+  padding: 20px 40px;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
   border-radius: var(--radius-lg);

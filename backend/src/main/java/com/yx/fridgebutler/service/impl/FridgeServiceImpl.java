@@ -1,7 +1,7 @@
 package com.yx.fridgebutler.service.impl;
 
 import com.yx.fridgebutler.dto.fridge.FridgeCreateRequest;
-import com.yx.fridgebutler.vo.FridgeVO;
+import com.yx.fridgebutler.vo.fridge.FridgeVO;
 import com.yx.fridgebutler.dto.fridge.FridgeSearchRequest;
 import com.yx.fridgebutler.dto.fridge.FridgeUpdateRequest;
 import com.yx.fridgebutler.entity.BizFridge;

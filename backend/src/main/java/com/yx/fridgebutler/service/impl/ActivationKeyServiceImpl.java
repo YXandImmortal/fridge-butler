@@ -7,7 +7,7 @@ import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.SysActivationKeyRepository;
 import com.yx.fridgebutler.repository.SysRoleRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
-import com.yx.fridgebutler.vo.LoginVO;
+import com.yx.fridgebutler.vo.auth.LoginVO;
 import com.yx.fridgebutler.service.ActivationKeyService;
 import com.yx.fridgebutler.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;

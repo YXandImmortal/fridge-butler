@@ -50,7 +50,7 @@
             数据可视化分析，让您的厨房生活更加高效便捷。
           </p>
           <div class="hero-actions">
-            <el-button
+            <CustomButton
                 class="hero-btn-primary"
                 type="primary"
                 size="large"
@@ -59,8 +59,8 @@
             >
               免费开始使用
               <i class="iconfont icon-forwardburger" style="margin-left: 4px;"/>
-            </el-button>
-            <el-button
+            </CustomButton>
+            <CustomButton
                 class="hero-btn-secondary"
                 size="large"
                 round
@@ -68,7 +68,7 @@
                 @click="scrollToFeatures"
             >
               了解更多
-            </el-button>
+            </CustomButton>
           </div>
         </div>
         <div class="hero-visual">
@@ -193,22 +193,22 @@
             立即注册，开启智能食材管理之旅。完全免费，无需信用卡。
           </p>
           <div class="cta-actions">
-            <el-button
+            <CustomButton
                 type="primary"
                 size="large"
                 round
                 @click="goToRegister"
             >
               立即注册
-            </el-button>
-            <el-button
+            </CustomButton>
+            <CustomButton
                 size="large"
                 round
                 plain
                 @click="goToLogin"
             >
               已有账号？登录
-            </el-button>
+            </CustomButton>
           </div>
         </div>
         <div class="cta-decoration">
@@ -1101,24 +1101,26 @@ const scrollToFeatures = () => {
   gap: var(--space-4);
   justify-content: center;
 
-  :deep(.el-button) {
+  :deep(.custom-button) {
     font-weight: 600;
     padding: 0 32px;
     height: 48px;
     font-size: 16px;
   }
 
-  :deep(.el-button--primary) {
+  :deep(.custom-button--primary) {
     background: white;
     color: var(--color-primary-500);
     border-color: white;
 
     &:hover {
       background: rgba(255, 255, 255, 0.9);
+      color: var(--color-primary-500);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     }
   }
 
-  :deep(.el-button.is-plain) {
+  :deep(.custom-button--default.is-plain) {
     background: transparent;
     color: white;
     border-color: rgba(255, 255, 255, 0.5);
@@ -1126,6 +1128,8 @@ const scrollToFeatures = () => {
     &:hover {
       background: rgba(255, 255, 255, 0.1);
       border-color: white;
+      color: white;
+      box-shadow: none;
     }
   }
 }

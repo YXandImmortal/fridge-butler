@@ -29,6 +29,42 @@
   border-color: var(--el-color-danger);
 }
 
+/* =========================================================
+ * CustomInput 验证错误样式
+ * 与 el-form 集成：el-form-item.is-error 自动匹配内部 CustomInput
+ * 独立使用：通过组件的 error prop 控制 .is-error 类
+ * ========================================================= */
+
+/* 基础错误边框（非 focus 状态） */
+.el-form-item.is-error .custom-input,
+.custom-input.is-error {
+  border-color: var(--el-color-danger);
+}
+
+/* 默认 / text / password 输入框 focus 时的错误阴影 */
+.el-form-item.is-error .custom-input.ci-variant--default.is-focused,
+.el-form-item.is-error .custom-input.ci-variant--default.is-error.is-focused,
+.custom-input.is-error.ci-variant--default.is-focused {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
+  border-color: var(--el-color-danger);
+}
+
+/* 搜索变体 focus 时的错误样式（保持 inset 阴影风格） */
+.el-form-item.is-error .custom-input.ci-variant--search.is-focused,
+.el-form-item.is-error .custom-input.ci-variant--search.is-error.is-focused,
+.custom-input.is-error.ci-variant--search.is-focused {
+  box-shadow: 0 0 0 1px var(--el-color-danger) inset, 0 4px 16px rgba(245, 108, 108, 0.2);
+  border-color: var(--el-color-danger);
+}
+
+/* 文本域 focus 时的错误阴影 */
+.el-form-item.is-error .custom-input.ci-variant--textarea.is-focused,
+.el-form-item.is-error .custom-input.ci-variant--textarea.is-error.is-focused,
+.custom-input.is-error.ci-variant--textarea.is-focused {
+  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.3), 0 0 0 3px rgba(245, 108, 108, 0.15);
+  border-color: var(--el-color-danger);
+}
+
 /* 表单项目默认间距 */
 .el-form-item {
   align-items: center;
@@ -51,22 +87,6 @@
   &:hover {
     transform: translateY(-2px);
   }
-}
-
-/* 复选框 */
-.custom-checkbox .el-checkbox__label {
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-.custom-checkbox .el-checkbox__input.is-checked .el-checkbox__inner {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.custom-checkbox .el-checkbox__input .el-checkbox__inner {
-  background-color: transparent;
-  box-shadow: var(--shadow-input);
 }
 
 /* 禁用输入框统一样式 */

@@ -4,7 +4,7 @@ import cn.hutool.core.util.PhoneUtil;
 import com.yx.fridgebutler.dto.auth.EmailCaptchaRequest;
 import com.yx.fridgebutler.dto.auth.ForgotPasswordRequest;
 import com.yx.fridgebutler.dto.auth.LoginRequest;
-import com.yx.fridgebutler.vo.LoginVO;
+import com.yx.fridgebutler.vo.auth.LoginVO;
 import com.yx.fridgebutler.dto.auth.RegisterRequest;
 import com.yx.fridgebutler.dto.auth.ResetPasswordRequest;
 import com.yx.fridgebutler.enums.EmailTemplate;

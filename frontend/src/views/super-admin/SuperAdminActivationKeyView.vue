@@ -15,11 +15,11 @@
           <div class="form-left">
             <div class="form-item">
               <span class="form-label">生成数量</span>
-              <el-input-number v-model="generateForm.count" :min="1" :max="100" size="large" :step="1" style="--el-border-radius-base: var(--radius-md);" />
+              <CustomInputNumber v-model="generateForm.count" :min="1" :max="100" size="large" :step="1" />
             </div>
             <div class="form-item form-item-remark">
               <span class="form-label">备注</span>
-              <EnhancedInput v-model="generateForm.remark" placeholder="可选：备注信息" class="remark-input" />
+              <CustomInput v-model="generateForm.remark" placeholder="可选：备注信息" class="remark-input" />
             </div>
           </div>
           <CustomButton type="primary" :loading="generating" @click="handleGenerate" style="height: 42px">
@@ -204,6 +204,8 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import SearchBar from '@/components/form/SearchBar.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
+import CustomInput from '@/components/ui/CustomInput.vue'
+import CustomInputNumber from '@/components/ui/CustomInputNumber.vue'
 import {
   getActivationKeyList,
   generateActivationKeys,

@@ -1,12 +1,12 @@
 package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.dto.fridge.FridgeCreateRequest;
-import com.yx.fridgebutler.vo.FridgeVO;
+import com.yx.fridgebutler.vo.fridge.FridgeVO;
 import com.yx.fridgebutler.dto.fridge.FridgeSearchRequest;
 import com.yx.fridgebutler.dto.fridge.FridgeUpdateRequest;
 import com.yx.fridgebutler.service.CapacityStatsService;
 import com.yx.fridgebutler.service.FridgeService;
-import com.yx.fridgebutler.vo.CapacityStatsVO;
+import com.yx.fridgebutler.vo.fridge.CapacityStatsVO;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;

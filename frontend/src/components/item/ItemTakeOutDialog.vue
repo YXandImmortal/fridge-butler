@@ -24,15 +24,14 @@
               class="takeout-form"
           >
             <el-form-item label="取出数量" prop="takeOutNum">
-              <el-input-number
+              <CustomInputNumber
                   v-model="form.takeOutNum"
                   :min="0.01"
                   :max="maxTakeOut"
                   :precision="2"
                   :step="1"
                   placeholder="请输入取出数量"
-                  class="form-input-number"
-                  style="--el-border-radius-base: var(--radius-md);"
+                  width="100%"
               />
             </el-form-item>
           </el-form>
@@ -75,6 +74,7 @@
 <script setup>
 import {computed, reactive, ref, watch} from 'vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
+import CustomInputNumber from '@/components/ui/CustomInputNumber.vue'
 import {takeOutItem} from '@/api/item'
 import showMessage from '@/utils/message'
 
@@ -294,11 +294,6 @@ const handleSubmit = async () => {
 
 .form-input-number {
   width: 100%;
-}
-
-.form-input-number :deep(.el-input__wrapper) {
-  padding-left: 8px;
-  padding-right: 8px;
 }
 
 /* 快捷操作 */
