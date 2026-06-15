@@ -4,6 +4,54 @@
 
 ---
 
+## [Unreleased / 0.5.0-part-1] - 2026-06-15
+
+> 本次更新为 **release 0.5.0 的第一部分**，聚焦“游戏性功能的初步引入”，尚未包含 0.5.0 的完整内容。后续还将继续完善游戏化细节与相关测试。
+> 项目根目录及前后端目录下的 `.md` 方案参考文件（如 `gamification-plan.md`、`gamification-backend-plan.md`、`gamification-frontend-plan.md` 等）未纳入 Git 管理，仅作为设计参考。
+
+### 新增
+
+#### 后端
+- 引入游戏化系统（Gamification）核心模块：
+  - 经验值（Exp）系统：记录用户经验获取、等级计算与经验日志。
+  - 徽章（Badge）系统：定义徽章编码、触发类型及用户徽章发放逻辑。
+  - 连续打卡（Streak）系统：支持连续使用天数统计与每日检查任务。
+  - 新鲜度评分（Freshness Score）系统：每日快照冰箱食材新鲜度并生成评分。
+  - 月度报告（Monthly Report）系统：按月汇总用户食材管理数据并生成报告。
+  - 成就配置（Achievement Setting）与结算服务：统一配置行为奖励规则并触发结算。
+- 新增定时任务：
+  - `FreshnessSnapshotJob`：每日生成新鲜度快照。
+  - `MonthlyReportJob`：每月生成用户月度报告。
+  - `StreakDailyCheckJob`：每日检查并更新用户连续打卡状态。
+- 新增 `GamificationController` 提供游戏化相关 API。
+- 新增 `UserContextUtil` 工具类，便于在业务层获取当前登录用户上下文。
+- 新增 `FridgeCreateResultVO`、`ItemCreateVO`、`ItemTakeOutResultVO`、`ItemUpdateResultVO` 等结果 VO，用于前后端数据交互。
+
+#### 前端
+- 新增游戏化相关页面与组件：
+  - 用户中心扩展：展示等级徽章、经验进度、连续打卡、新鲜度评分、月度报告、成就面板等。
+  - 新增 `gamification` 组件集：`AchievementPanel`、`BadgeSection`、`BadgeToast`、`ExpLogSection`、`ExpProgressBar`、`ExpToast`、`FreshnessHeatmap`、`FreshnessScoreCard`、`LevelBadge`、`LevelExpCard`、`LevelUpNotify`、`MonthlyReportSection`、`StreakCard` 等。
+  - 新增用户相关弹窗组件：`BindEmailDialog`、`ChangeAvatarDialog`。
+  - 新增 `SvgIcon` 通用图标组件。
+- 新增游戏化状态管理 `stores/gamification.js` 与 API 层 `api/gamification.js`。
+- 新增游戏化通知工具：`badgeNotify.js`、`expNotify.js`、`gamificationNotify.js`、`gamificationToastContainer.js`、`levelUpNotify.js`。
+- 新增类型定义 `types/gamification.js`。
+- 新增样式文件：`gamification.scss`、`svg-icon.scss`。
+- 扩展 iconfont 字体资源以支持新图标。
+
+#### 集成与配置
+- 在 `SecurityConfig` 中开放/适配游戏化相关接口权限。
+- 在冰箱、物品、用户、AI 聊天、数据中心等既有业务中接入经验获取与徽章触发逻辑。
+- 数据库脚本 `fridge-butler-database.sql` 同步更新以支持新增的游戏化表结构。
+- `application.yaml` 增加相关配置项。
+
+### 优化
+- 优化既有 VO 与部分服务实现，以配合游戏化数据的返回与展示。
+- 调整前端多处视图（登录、注册、冰箱列表/详情、物品管理、数据中心、超级管理员用户管理等）以集成游戏化元素或适配新接口。
+- 更新 `components.d.ts` 与 `main.js` 以注册新增组件与全局配置。
+
+---
+
 ## [release 0.4.1] - 2026-6-10
 
 ### 新增

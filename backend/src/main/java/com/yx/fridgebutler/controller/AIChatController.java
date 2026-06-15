@@ -39,7 +39,9 @@ public class AIChatController {
     public Result<AIChatDataVO> chat(@Valid @RequestBody AIChatRequest request) {
         log.info("AI 聊天请求，sessionId：{}，message：{}", request.getSessionId(), request.getMessage());
         AIChatDataVO result = aiChatService.chat(request);
-        log.info("AI 聊天响应，sessionId：{}，messageType：{}", result.getSessionId(), result.getReply().getMessageType());
+        log.info("AI 聊天响应，sessionId：{}，messageType：{}，是否升级：{}",
+                result.getSessionId(), result.getReply().getMessageType(), result.getLeveledUp());
+
         return Result.success(result);
     }
 
@@ -91,6 +93,7 @@ public class AIChatController {
      *     <li><b>event: text</b> — 自然语言文本片段（text 意图下为逐字流式，结构化意图下一次性发送）</li>
      *     <li><b>event: card</b> — 结构化卡片数据（到达后前端根据 messageType 渲染对应组件）</li>
      *     <li><b>event: done</b> — 结束事件，携带 sessionId 和 suggestions</li>
+     *     <li><b>event: reward</b> — 奖励事件，携带 expGained、dailyExpToday、dailyExpLimit、leveledUp、currentLevel、badgesUnlocked</li>
      *     <li><b>event: error</b> — 异常事件</li>
      * </ul>
      *

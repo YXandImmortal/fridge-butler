@@ -6,6 +6,7 @@ import com.yx.fridgebutler.dto.user.UserEmailCaptchaRequest;
 import com.yx.fridgebutler.dto.user.UserInitPasswordRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateAvatarRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateRequest;
+import com.yx.fridgebutler.vo.gamification.ExpActionResultVO;
 import com.yx.fridgebutler.vo.user.UserInfoVO;
 import com.yx.fridgebutler.service.UserService;
 import com.yx.fridgebutler.vo.Result;
@@ -83,13 +84,13 @@ public class UserController {
     /**
      * 标记当前登录用户的新手指引已完成
      *
-     * @return 标记成功的响应结果
+     * @return 标记成功的响应结果，包含EXP信息
      */
     @PatchMapping("/guide-complete")
-    public Result<Void> completeGuide() {
-        userService.completeGuide();
-        log.info("新手指引标记完成");
-        return Result.success(null);
+    public Result<ExpActionResultVO> completeGuide() {
+        ExpActionResultVO result = userService.completeGuide();
+        log.info("新手指引标记完成，EXP：{}", result.getExpGained());
+        return Result.success(result);
     }
 
     /**
@@ -125,12 +126,13 @@ public class UserController {
      * <p>校验验证码及邮箱是否被其他用户占用，验证通过后更新邮箱。</p>
      *
      * @param request 绑定邮箱请求参数，包含邮箱和验证码
-     * @return 绑定成功返回提示信息
+     * @return 绑定成功返回提示信息，包含EXP信息
      */
     @PostMapping("/email")
-    public Result<Void> bindEmail(@Valid @RequestBody BindEmailRequest request) {
+    public Result<ExpActionResultVO> bindEmail(@Valid @RequestBody BindEmailRequest request) {
         log.info("绑定邮箱请求，邮箱：{}", request.getEmail());
-        userService.bindEmail(request);
-        return Result.success("邮箱绑定成功", null);
+        ExpActionResultVO result = userService.bindEmail(request);
+        log.info("绑定邮箱成功，邮箱：{}，EXP：{}", request.getEmail(), result.getExpGained());
+        return Result.success("邮箱绑定成功", result);
     }
 }

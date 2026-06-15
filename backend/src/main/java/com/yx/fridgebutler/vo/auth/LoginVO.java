@@ -1,9 +1,14 @@
 package com.yx.fridgebutler.vo.auth;
 
+import com.yx.fridgebutler.vo.gamification.BadgeUnlockInfo;
+import com.yx.fridgebutler.vo.gamification.LevelInfoVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 登录响应VO
@@ -89,4 +94,35 @@ public class LoginVO {
      * 用户是否已激活（true=已激活，false=未激活）
      */
     private Boolean isActivated;
+
+    /**
+     * 用户当前等级信息。
+     */
+    private LevelInfoVO level;
+
+    /**
+     * 本次登录是否在操作 EXP + 徽章 EXP 后触发升级。
+     */
+    private Boolean leveledUp;
+
+    /**
+     * 本次登录实际获得的经验值（今日首次登录为 5，否则为 0）。
+     */
+    private Integer expGained;
+
+    /**
+     * 今日已获得经验值。
+     */
+    private Integer dailyExpToday;
+
+    /**
+     * 每日经验值上限。
+     */
+    private Integer dailyExpLimit;
+
+    /**
+     * 本次登录新解锁的徽章列表。
+     */
+    @Builder.Default
+    private List<BadgeUnlockInfo> badgesUnlocked = new ArrayList<>();
 }

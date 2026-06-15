@@ -58,6 +58,7 @@ function parseSSEEvent(raw) {
  * @param {Function} [options.onCard] - 卡片数据回调 (messageType: string, data: any) => void
  * @param {Function} [options.onDone] - 结束回调 (sessionId: string, suggestions: string[]) => void
  * @param {Function} [options.onError] - 错误回调 (msg: string) => void
+ * @param {Function} [options.onReward] - 奖励回调 (reward: object) => void
  * @param {AbortSignal} [options.signal] - 用于中断请求
  */
 export async function sendChatMessageStream({
@@ -70,6 +71,7 @@ export async function sendChatMessageStream({
                                                 onCard,
                                                 onDone,
                                                 onError,
+                                                onReward,
                                                 signal
                                             }) {
     const userStore = useUserStore()
@@ -149,6 +151,9 @@ export async function sendChatMessageStream({
                     case 'error':
                         onError?.(parsed.data.message || '流式响应出错')
                         break
+                    case 'reward':
+                        onReward?.(parsed.data)
+                        break
                 }
             }
 
@@ -174,6 +179,9 @@ export async function sendChatMessageStream({
                         break
                     case 'error':
                         onError?.(parsed.data.message || '流式响应出错')
+                        break
+                    case 'reward':
+                        onReward?.(parsed.data)
                         break
                 }
             }

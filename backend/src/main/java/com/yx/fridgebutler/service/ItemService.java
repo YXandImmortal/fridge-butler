@@ -12,6 +12,9 @@ import com.yx.fridgebutler.dto.unit.ItemUnitCreateRequest;
 import com.yx.fridgebutler.dto.unit.ItemUnitUpdateRequest;
 import com.yx.fridgebutler.dto.item.ItemUpdateRequest;
 import com.yx.fridgebutler.vo.item.ExpiringSummaryVO;
+import com.yx.fridgebutler.vo.item.ItemCreateVO;
+import com.yx.fridgebutler.vo.item.ItemTakeOutResultVO;
+import com.yx.fridgebutler.vo.item.ItemUpdateResultVO;
 import com.yx.fridgebutler.vo.item.TakeOutDailyStatisticsVO;
 import com.yx.fridgebutler.vo.unit.type.UnitTypeVO;
 import com.yx.fridgebutler.dto.unittype.UnitTypeCreateRequest;
@@ -29,16 +32,17 @@ public interface ItemService {
      * 创建新物品并存放到指定冰箱中。
      *
      * @param request 物品创建请求参数
-     * @return 新创建物品的ID
+     * @return 新创建物品结果，包含物品ID与EXP信息
      */
-    Long createItem(ItemCreateRequest request);
+    ItemCreateVO createItem(ItemCreateRequest request);
 
     /**
      * 更新指定物品的信息。
      *
      * @param request 物品更新请求参数
+     * @return 更新结果，包含EXP信息
      */
-    void updateItem(ItemUpdateRequest request);
+    ItemUpdateResultVO updateItem(ItemUpdateRequest request);
 
     /**
      * 按条件搜索物品。
@@ -155,8 +159,9 @@ public interface ItemService {
      * <p>若取出后数量归零或负数，则自动软删除该物品。</p>
      *
      * @param request 物品取出请求参数
+     * @return 取出结果，包含EXP信息
      */
-    void takeOutItem(ItemTakeOutRequest request);
+    ItemTakeOutResultVO takeOutItem(ItemTakeOutRequest request);
 
     /**
      * 查询近30天每日取出次数统计。

@@ -1,9 +1,10 @@
 package com.yx.fridgebutler.service;
 
 import com.yx.fridgebutler.dto.fridge.FridgeCreateRequest;
-import com.yx.fridgebutler.vo.fridge.FridgeVO;
 import com.yx.fridgebutler.dto.fridge.FridgeSearchRequest;
 import com.yx.fridgebutler.dto.fridge.FridgeUpdateRequest;
+import com.yx.fridgebutler.vo.fridge.FridgeCreateResultVO;
+import com.yx.fridgebutler.vo.fridge.FridgeVO;
 
 import java.util.List;
 
@@ -32,9 +33,9 @@ public interface FridgeService {
      * 创建新冰箱。
      *
      * @param request 冰箱创建请求参数
-     * @return 新创建冰箱的ID
+     * @return 冰箱创建结果，包含新冰箱 ID 及本次触发的奖励信息
      */
-    Long createFridge(FridgeCreateRequest request);
+    FridgeCreateResultVO createFridge(FridgeCreateRequest request);
 
     /**
      * 更新指定冰箱的信息。

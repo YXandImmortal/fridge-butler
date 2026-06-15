@@ -139,6 +139,7 @@ import {useRouter} from 'vue-router'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import FridgeCreateDialog from '@/components/fridge/FridgeCreateDialog.vue'
 import showMessage from '@/utils/message'
+import notifyGamificationResult from '@/utils/gamificationNotify'
 import {listMyFridges, deleteFridge, searchFridges, createFridge} from '@/api/fridge'
 import CustomButton from "@/components/ui/CustomButton.vue";
 import SearchBar from "@/components/form/SearchBar.vue";
@@ -271,9 +272,11 @@ const handleCreateSubmit = async ({fridgeName, remark, fridgeAddress, fridgeType
     if (res.code === 200) {
       showMessage.success('冰箱创建成功')
       showCreateDialog.value = false
+      // 展示创建冰箱触发的徽章/EXP奖励弹窗
+      notifyGamificationResult(res, '创建冰箱')
       await router.push({
         name: 'fridge-detail',
-        params: {id: res.data ? res.data : ''}
+        params: {id: res.data?.fridgeId ? String(res.data.fridgeId) : ''}
       })
     } else {
       showMessage.error(res.message || '创建失败')

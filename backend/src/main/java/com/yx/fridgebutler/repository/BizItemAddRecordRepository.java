@@ -46,4 +46,22 @@ public interface BizItemAddRecordRepository extends JpaRepository<BizItemAddReco
      * @return true 表示有新增记录
      */
     boolean existsByFridgeIdAndCreateTimeAfter(Long fridgeId, Instant createTime);
+
+    /**
+     * 统计指定用户的总添加记录数量。
+     *
+     * @param operatorId 操作人ID
+     * @return 添加记录数量
+     */
+    long countByOperatorId(Long operatorId);
+
+    /**
+     * 统计指定用户在指定时间范围内的添加记录数量。
+     *
+     * @param operatorId 操作人ID
+     * @param startTime  起始时间
+     * @param endTime    结束时间
+     * @return 添加记录数量
+     */
+    long countByOperatorIdAndCreateTimeBetween(Long operatorId, Instant startTime, Instant endTime);
 }

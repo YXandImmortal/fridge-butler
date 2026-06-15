@@ -1,11 +1,13 @@
 package com.yx.fridgebutler.controller;
 
 import com.yx.fridgebutler.dto.fridge.FridgeCreateRequest;
-import com.yx.fridgebutler.vo.fridge.FridgeVO;
 import com.yx.fridgebutler.dto.fridge.FridgeSearchRequest;
 import com.yx.fridgebutler.dto.fridge.FridgeUpdateRequest;
+import com.yx.fridgebutler.vo.fridge.FridgeCreateResultVO;
+import com.yx.fridgebutler.vo.fridge.FridgeVO;
 import com.yx.fridgebutler.service.CapacityStatsService;
 import com.yx.fridgebutler.service.FridgeService;
+import com.yx.fridgebutler.util.UserContextUtil;
 import com.yx.fridgebutler.vo.fridge.CapacityStatsVO;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
@@ -63,13 +65,15 @@ public class FridgeController {
      * 创建冰箱
      *
      * @param request 冰箱创建请求
-     * @return 新创建冰箱的ID
+     * @return 冰箱创建结果，包含新冰箱 ID 及本次触发的奖励信息
      */
     @PostMapping("/create")
-    public Result<Long> createFridge(@Valid @RequestBody FridgeCreateRequest request) {
-        Long fridgeId = fridgeService.createFridge(request);
-        log.info("创建冰箱成功，冰箱ID：{}，名称：{}", fridgeId, request.getFridgeName());
-        return Result.success(fridgeId);
+    public Result<FridgeCreateResultVO> createFridge(@Valid @RequestBody FridgeCreateRequest request) {
+        FridgeCreateResultVO result = fridgeService.createFridge(request);
+        log.info("创建冰箱成功，冰箱ID：{}，名称：{}，获得EXP：{}，解锁徽章数：{}，是否升级：{}",
+                result.getFridgeId(), request.getFridgeName(), result.getExpGained(),
+                result.getBadgesUnlocked().size(), result.isLeveledUp());
+        return Result.success(result);
     }
 
     /**

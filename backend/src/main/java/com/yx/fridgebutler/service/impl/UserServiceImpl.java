@@ -10,11 +10,18 @@ import com.yx.fridgebutler.enums.EmailTemplate;
 import com.yx.fridgebutler.service.EmailService;
 import com.yx.fridgebutler.service.NotificationService;
 import com.yx.fridgebutler.vo.user.UserInfoVO;
+import com.yx.fridgebutler.vo.gamification.AchievementSettlementResult;
+import com.yx.fridgebutler.vo.gamification.BadgeTriggerRequest;
+import com.yx.fridgebutler.vo.gamification.ExpActionRequest;
+import com.yx.fridgebutler.vo.gamification.ExpActionResultVO;
 import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.entity.SysUser;
 import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.SysRoleRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
+import com.yx.fridgebutler.enums.BadgeTriggerType;
+import com.yx.fridgebutler.enums.ExpActionType;
+import com.yx.fridgebutler.service.AchievementSettlementService;
 import com.yx.fridgebutler.service.UserService;
 import com.yx.fridgebutler.util.CaptchaManager;
 import com.yx.fridgebutler.util.EmailCaptchaManager;
@@ -27,6 +34,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 用户服务实现类。
@@ -66,6 +75,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private AchievementSettlementService achievementSettlementService;
 
     /** 绑定邮箱业务类型标识。 */
     private static final String TYPE_BIND = "BIND";
@@ -199,13 +211,28 @@ public class UserServiceImpl implements UserService {
      * <p>将当前登录用户的 guide_completed 字段设为 true。</p>
      */
     @Override
-    public void completeGuide() {
+    public ExpActionResultVO completeGuide() {
         String username = getUsernameFromToken();
         SysUser user = userRepository.findByUsername(username)
                 .orElseThrow(BusinessException::userNotFound);
         user.setGuideCompleted(true);
         userRepository.save(user);
+
+        // 统一结算：完成新手指引 EXP + 徽章
+        AchievementSettlementResult settlement = achievementSettlementService.settle(
+                user.getId(), ExpActionType.GUIDE, BadgeTriggerType.COMPLETE_GUIDE, null);
+
         log.info("新手指引标记完成，用户名：{}", username);
+
+        return ExpActionResultVO.builder()
+                .expGained(settlement.getExpGained())
+                .dailyExpToday(settlement.getDailyExpToday())
+                .dailyExpLimit(settlement.getDailyExpLimit())
+                .leveledUp(settlement.isLeveledUp())
+                .currentLevel(settlement.getCurrentLevel())
+                .level(settlement.getLevel())
+                .badgesUnlocked(settlement.getBadgesUnlocked())
+                .build();
     }
 
     /**
@@ -292,7 +319,7 @@ public class UserServiceImpl implements UserService {
      * </ol>
      */
     @Override
-    public void bindEmail(BindEmailRequest request) {
+    public ExpActionResultVO bindEmail(BindEmailRequest request) {
         String email = normalizeEmail(request.getEmail());
         log.info("绑定邮箱请求，邮箱：{}", email);
 
@@ -314,29 +341,39 @@ public class UserServiceImpl implements UserService {
             }
         });
 
-        // 如果邮箱没有变化，直接返回成功
-        if (email.equals(normalizeEmail(currentUser.getEmail()))) {
-            log.info("绑定邮箱成功，邮箱未发生变化，用户：{}，邮箱：{}", currentUsername, email);
-            return;
+        // 更新邮箱（仅在发生变化时持久化）
+        if (!email.equals(normalizeEmail(currentUser.getEmail()))) {
+            currentUser.setEmail(email);
+            currentUser.setUpdateTime(Instant.now());
+            userRepository.save(currentUser);
+
+            // 清除绑定邮箱提醒通知
+            notificationService.clearBindEmailReminder(currentUser.getId());
+
+            // 发送邮箱绑定成功通知
+            notificationService.createSystemNotification(
+                    currentUser.getId(),
+                    "邮箱绑定成功",
+                    "您的账号已绑定邮箱 " + email + "，可用于密码找回和接收安全通知。",
+                    "NONE"
+            );
         }
 
-        // 更新邮箱
-        currentUser.setEmail(email);
-        currentUser.setUpdateTime(Instant.now());
-        userRepository.save(currentUser);
-
-        // 清除绑定邮箱提醒通知
-        notificationService.clearBindEmailReminder(currentUser.getId());
-
-        // 发送邮箱绑定成功通知
-        notificationService.createSystemNotification(
-                currentUser.getId(),
-                "邮箱绑定成功",
-                "您的账号已绑定邮箱 " + email + "，可用于密码找回和接收安全通知。",
-                "NONE"
-        );
+        // 统一结算：绑定邮箱 EXP + 徽章
+        AchievementSettlementResult settlement = achievementSettlementService.settle(
+                currentUser.getId(), ExpActionType.BIND_EMAIL, BadgeTriggerType.BIND_EMAIL, null);
 
         log.info("绑定邮箱成功，用户：{}，邮箱：{}", currentUsername, email);
+
+        return ExpActionResultVO.builder()
+                .expGained(settlement.getExpGained())
+                .dailyExpToday(settlement.getDailyExpToday())
+                .dailyExpLimit(settlement.getDailyExpLimit())
+                .leveledUp(settlement.isLeveledUp())
+                .currentLevel(settlement.getCurrentLevel())
+                .level(settlement.getLevel())
+                .badgesUnlocked(settlement.getBadgesUnlocked())
+                .build();
     }
 
     /**

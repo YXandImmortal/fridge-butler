@@ -334,6 +334,7 @@ import {
   takeOutItem
 } from '@/api/item'
 import {listMyFridges, getDefaultFridge, getCapacityStats} from '@/api/fridge'
+import notifyGamificationResult from '@/utils/gamificationNotify'
 import CustomButton from '@/components/ui/CustomButton.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
 import SortControl from '@/components/form/SortControl.vue'
@@ -604,6 +605,8 @@ const handleTakeOutAll = async (row) => {
     })
     if (res.code === 200) {
       showMessage.success(`已将 ${row.itemName} 全部取出`)
+      const status = getFreshnessStatus(row)
+      notifyGamificationResult(res, status.label === '临期' ? '消耗临期食材' : '整理冰箱')
       fetchItems()
     } else {
       showMessage.error(res.message || '取出失败')
@@ -624,6 +627,8 @@ const handleTakeOutHalf = async (row) => {
     })
     if (res.code === 200) {
       showMessage.success(`已取出一半 ${row.itemName}（${halfNum} ${row.unitName}）`)
+      const status = getFreshnessStatus(row)
+      notifyGamificationResult(res, status.label === '临期' ? '消耗临期食材' : '整理冰箱')
       fetchItems()
     } else {
       showMessage.error(res.message || '取出失败')

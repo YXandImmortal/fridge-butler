@@ -31,6 +31,11 @@ public class AdminUserVO {
     private String mobile;
 
     /**
+     * 电子邮箱
+     */
+    private String email;
+
+    /**
      * 头像标识
      */
     private String avatar;
@@ -51,6 +56,16 @@ public class AdminUserVO {
     private Boolean status;
 
     /**
+     * 是否已激活（密钥激活）
+     */
+    private Boolean isActivated;
+
+    /**
+     * 是否已完成新手引导
+     */
+    private Boolean guideCompleted;
+
+    /**
      * 注册时间
      */
     private String createTime;
@@ -59,6 +74,11 @@ public class AdminUserVO {
      * 最后登录时间
      */
     private String lastLoginTime;
+
+    /**
+     * 密码最后更新时间
+     */
+    private String passwordUpdatedAt;
 
     /**
      * 更新时间

@@ -155,15 +155,21 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .mobile(user.getMobile())
+                .email(user.getEmail())
                 .avatar(user.getAvatar())
                 .roleId(user.getRoleId())
                 .roleName(role != null ? role.getRoleName() : null)
                 .status(!user.getIsDeleted())
+                .isActivated(user.getIsActivated())
+                .guideCompleted(user.getGuideCompleted())
                 .createTime(user.getCreateTime() != null
                         ? user.getCreateTime().atZone(ZONE_ID_SHANGHAI).format(DATE_TIME_FORMATTER)
                         : null)
                 .lastLoginTime(user.getLastLoginTime() != null
                         ? user.getLastLoginTime().atZone(ZONE_ID_SHANGHAI).format(DATE_TIME_FORMATTER)
+                        : null)
+                .passwordUpdatedAt(user.getPasswordUpdatedAt() != null
+                        ? user.getPasswordUpdatedAt().atZone(ZONE_ID_SHANGHAI).format(DATE_TIME_FORMATTER)
                         : null)
                 .updateTime(user.getUpdateTime() != null
                         ? user.getUpdateTime().atZone(ZONE_ID_SHANGHAI).format(DATE_TIME_FORMATTER)

@@ -116,11 +116,32 @@
           :offset="0"
       >
         <template #reference>
-          <div class="user-info">
+          <div class="user-info" :title="userGamificationTooltip">
             <div class="user-avatar">
               <Avatar :avatar-id="currentAvatar" size="small"/>
             </div>
-            <span class="user-name">{{ username }}</span>
+            <div class="user-meta">
+              <div class="user-meta-top">
+                <span class="user-name">{{ username }}</span>
+                <span v-if="showGamificationInfo" class="user-level-badge">
+                  <SvgIcon
+                      v-for="icon in headerLevelIcons"
+                      :key="icon.key"
+                      :name="icon.name"
+                      :size="12"
+                      class="user-level-icon"
+                  />
+                  <span>Lv.{{ headerLevel }}</span>
+                </span>
+              </div>
+              <div v-if="showGamificationInfo" class="user-exp-bar">
+                <div class="user-exp-fill" :style="{ width: `${headerExpProgress}%` }"/>
+              </div>
+              <div v-if="showGamificationInfo" class="user-exp-line">
+                <span class="user-exp-text">{{ headerCurrentExp }} / {{ headerRequiredExp }} EXP</span>
+                <span class="user-exp-today">今日 +{{ headerTodayExp }}/{{ headerTodayExpLimit }}</span>
+              </div>
+            </div>
             <i class="iconfont icon-chevron-down user-arrow" :class="{ 'rotate-180': showUserMenu }"/>
           </div>
         </template>
@@ -154,17 +175,21 @@ import {useUserStore} from "@/stores/user.js"
 import {useSystemStore} from "@/stores/system.js"
 import {useNotificationStore} from "@/stores/notification.js"
 import {useTourStore, TOUR_SCENES} from "@/stores/tour.js"
+import {useGamificationStore} from "@/stores/gamification.js"
+import {consumePendingRewards} from "@/utils/gamificationNotify.js"
 import {getNotificationList, markAllAsRead, markAsRead} from "@/api/notification.js"
 import Logo from '../brand/Logo.vue'
 import Avatar from '../ui/Avatar.vue'
 import ThemeToggle from '../ui/ThemeToggle.vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
 import ChangePasswordDialog from '@/components/ui/ChangePasswordDialog.vue'
+import SvgIcon from '@/components/ui/SvgIcon.vue'
 import router from "@/router/index.js";
 
 const userStore = useUserStore()
 const systemStore = useSystemStore()
 const notificationStore = useNotificationStore()
+const gamificationStore = useGamificationStore()
 const {username, initUser} = userStore;
 const {systemName, getSystemInfo} = systemStore;
 
@@ -173,6 +198,53 @@ const currentAvatar = computed(() => userStore.avatar);
 
 // 判断是否为超级管理员（roleId === 1）
 const isSuperAdmin = computed(() => userStore.roleId === 1);
+
+// ==================== 成就信息展示 ====================
+const showGamificationInfo = computed(() => {
+  return !isSuperAdmin.value && gamificationStore.overview && userStore.isLoggedIn
+})
+
+const headerLevel = computed(() => gamificationStore.overview?.level?.currentLevel ?? 1)
+const headerLevelTitle = computed(() => gamificationStore.overview?.level?.title ?? '')
+const headerTotalExp = computed(() => gamificationStore.overview?.level?.totalExp ?? 0)
+const headerCurrentExp = computed(() => gamificationStore.overview?.level?.currentExp ?? 0)
+const headerRequiredExp = computed(() => gamificationStore.overview?.level?.requiredExp ?? 100)
+const headerTodayExp = computed(() => gamificationStore.overview?.todayExp ?? 0)
+const headerTodayExpLimit = computed(() => gamificationStore.overview?.todayExpLimit ?? 150)
+
+const headerExpProgress = computed(() => {
+  if (!headerRequiredExp.value || headerRequiredExp.value <= 0) return 0
+  return Math.min(100, Math.max(0, (headerCurrentExp.value / headerRequiredExp.value) * 100))
+})
+
+const levelIconConfig = [
+  {key: 'snowman', name: 'level-snowman'},
+  {key: 'iceCream', name: 'level-ice-cream'},
+  {key: 'ice', name: 'level-ice'},
+  {key: 'snowflake', name: 'level-snowflakes'}
+]
+
+const headerLevelIcons = computed(() => {
+  const icons = gamificationStore.overview?.level?.icons || {}
+  const result = []
+  levelIconConfig.forEach(item => {
+    const count = Math.max(0, parseInt(icons?.[item.key], 10) || 0)
+    for (let i = 0; i < count; i++) {
+      result.push({
+        ...item,
+        key: `${item.key}-${i}`
+      })
+    }
+  })
+  return result
+})
+
+const userGamificationTooltip = computed(() => {
+  if (!showGamificationInfo.value) {
+    return '点击打开用户菜单'
+  }
+  return `${headerLevelTitle.value} Lv.${headerLevel.value} | 累计 EXP ${headerTotalExp.value} | 今日 +${headerTodayExp.value}/${headerTodayExpLimit.value} EXP`
+})
 
 // 控制下拉箭头旋转
 const showUserMenu = ref(false);
@@ -193,6 +265,9 @@ onMounted(async () => {
   await getSystemInfo()
   if (!isSuperAdmin.value) {
     notificationStore.init()
+    // 加载成就总览，并消费可能触发的评分突破等奖励
+    await gamificationStore.fetchOverview()
+    await consumePendingRewards()
   }
 })
 
@@ -444,40 +519,125 @@ const handleQuickGuideClick = () => {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
   outline: none;
-  padding: 6px 0;
+  padding: 6px 10px;
   border-radius: 8px;
   transition: all 0.3s ease;
   color: var(--text-secondary);
+  background: transparent;
+  max-width: 420px;
 }
 
 .user-info:hover {
   color: var(--primary-color);
+  background: var(--primary-10);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .user-info:hover .user-avatar {
-  transform: scale(1.1);
+  transform: none;
+  box-shadow: 0 0 0 2px var(--primary-color);
 }
 
 .user-avatar {
   width: 36px;
   height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-width: 180px;
+  width: auto;
+}
+
+.user-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  justify-content: flex-start;
 }
 
 .user-name {
   font-size: 14px;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.user-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gamification-gold);
+  background: rgba(245, 158, 11, 0.12);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.user-level-icon {
+  flex-shrink: 0;
+}
+
+.user-exp-bar {
+  width: 100%;
+  height: 5px;
+  background: var(--input-bg);
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.user-exp-fill {
+  height: 100%;
+  background: var(--gradient-btn);
+  border-radius: 9999px;
+  transition: width 0.6s ease;
+}
+
+.user-exp-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  line-height: 1;
+}
+
+.user-exp-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.user-exp-today {
+  font-size: 11px;
+  color: var(--text-tertiary);
 }
 
 .user-arrow {
   font-size: var(--space-5);
   transition: transform 0.3s ease;
+  flex-shrink: 0;
 }
 
 .user-arrow.rotate-180 {
@@ -628,6 +788,25 @@ const handleQuickGuideClick = () => {
 
   .header-right {
     gap: 16px;
+  }
+
+  .user-name {
+    max-width: 80px;
+  }
+
+  .user-exp-bar,
+  .user-exp-line {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-meta {
+    display: none;
+  }
+
+  .user-info {
+    gap: 6px;
   }
 }
 </style>

@@ -97,6 +97,8 @@ import {ref, computed, onMounted, watch} from 'vue'
 import {listMyFridges, getCapacityStats} from '@/api/fridge'
 import {searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats} from '@/api/item'
 import showMessage from '@/utils/message'
+import {notifyGamificationResult} from '@/utils/gamificationNotify'
+import {enterDataCenter} from '@/api/gamification'
 import StatCard from '@/components/data-center/StatCard.vue'
 import FridgeItemBarChart from '@/components/data-center/FridgeItemBarChart.vue'
 import CategoryPieChart from '@/components/data-center/CategoryPieChart.vue'
@@ -236,7 +238,16 @@ const fetchData = async () => {
 }
 
 onMounted(() => {
-  fetchData()
+  fetchData().then(async () => {
+    // 进入数据中心时向后端请求 EXP/徽章结算
+    // 后端已做每日上限控制，重复调用会返回 expGained: 0
+    try {
+      const res = await enterDataCenter()
+      notifyGamificationResult(res, '查看数据中心')
+    } catch (error) {
+      console.error('数据中心进入结算失败:', error)
+    }
+  })
 })
 // 页面引导
 const tourRef = ref(null)

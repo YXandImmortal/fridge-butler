@@ -88,7 +88,7 @@
 
         <el-form-item label="总容量">
           <CustomInputNumber
-              :model-value="fridgeForm.totalCapacity"
+              v-model="fridgeForm.totalCapacity"
               :min="50"
               :max="1000"
               placeholder="请输入总容量（L）"

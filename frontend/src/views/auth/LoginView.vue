@@ -147,6 +147,26 @@ const handleLogin = async () => {
           : (res.message || '登录成功！')
       showMessage.success(message)
 
+      // 记录登录 EXP 与徽章待展示（跳转到首页后展示）
+      const loginExp = res.data?.expGained ?? 0
+      const loginBadges = res.data?.badgesUnlocked || []
+      if (loginExp > 0 || loginBadges.length > 0) {
+        sessionStorage.setItem('pending_login_exp', JSON.stringify({
+          exp: loginExp,
+          description: '每日登录',
+          badges: loginBadges
+        }))
+      }
+
+      // 记录登录后的等级信息，首页挂载后检测是否触发升级
+      const loginLevel = res.data?.level
+      if (loginLevel) {
+        sessionStorage.setItem('pending_login_level', JSON.stringify({
+          leveledUp: res.data?.leveledUp === true,
+          level: loginLevel
+        }))
+      }
+
       // 根据角色跳转到对应首页
       if (userStore.roleId === 1) {
         await router.push({name: 'super-admin-dashboard'})

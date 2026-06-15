@@ -160,6 +160,7 @@ import CustomSelect from '@/components/ui/CustomSelect.vue'
 import CustomDatePicker from '@/components/ui/CustomDatePicker.vue'
 import {createItem, updateItem} from '@/api/item'
 import showMessage from '@/utils/message'
+import notifyGamificationResult from '@/utils/gamificationNotify'
 
 const props = defineProps({
   visible: {
@@ -419,7 +420,10 @@ const handleSubmit = async () => {
     }
     if (res.code === 200) {
       showMessage.success(props.mode === 'edit' ? '修改成功' : '添加成功')
-      emit('success')
+      // 添加食材 / 整理冰箱 EXP 与徽章解锁提示
+      const description = props.mode === 'edit' ? '整理冰箱' : '添加食材'
+      notifyGamificationResult(res, description)
+      emit('success', res.data?.itemId)
       handleClose()
     } else {
       showMessage.error(res.message || (props.mode === 'edit' ? '修改失败' : '添加失败'))

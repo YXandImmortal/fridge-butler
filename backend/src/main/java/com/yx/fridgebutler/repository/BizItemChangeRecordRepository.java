@@ -22,4 +22,14 @@ public interface BizItemChangeRecordRepository extends JpaRepository<BizItemChan
      * @return true 表示有符合条件的变更记录
      */
     boolean existsByFridgeIdAndCreateTimeAfterAndChangeType(Long fridgeId, Instant createTime, String changeType);
+
+    /**
+     * 统计指定用户在指定时间范围内的变更记录数量。
+     *
+     * @param operatorId 操作人ID
+     * @param startTime  起始时间
+     * @param endTime    结束时间
+     * @return 变更记录数量
+     */
+    long countByOperatorIdAndCreateTimeBetween(Long operatorId, Instant startTime, Instant endTime);
 }

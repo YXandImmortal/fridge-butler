@@ -46,4 +46,14 @@ public interface BizItemTakeOutRecordRepository extends JpaRepository<BizItemTak
      * @return true 表示有取出记录
      */
     boolean existsByFridgeIdAndCreateTimeAfter(Long fridgeId, Instant createTime);
+
+    /**
+     * 统计指定用户在指定时间范围内的取出记录数量。
+     *
+     * @param operatorId 操作人ID
+     * @param startTime  起始时间
+     * @param endTime    结束时间
+     * @return 取出记录数量
+     */
+    long countByOperatorIdAndCreateTimeBetween(Long operatorId, Instant startTime, Instant endTime);
 }

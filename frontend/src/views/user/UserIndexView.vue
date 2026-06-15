@@ -234,6 +234,9 @@ import {ref, computed, onMounted, onUnmounted, nextTick, watch} from 'vue'
 import {useRouter, useRoute} from 'vue-router'
 import {useUserStore} from '@/stores/user'
 import {useThemeStore} from '@/stores/theme'
+import {useAiChatStore} from '@/stores/aiChat'
+import {useGamificationStore} from '@/stores/gamification'
+
 import Logo from '@/components/brand/Logo.vue'
 import FridgeCreationWizard from '@/components/ai/FridgeCreationWizard.vue'
 import ItemCreationWizard from '@/components/ai/ItemCreationWizard.vue'
@@ -244,15 +247,9 @@ import ChatSessionDrawer from '@/components/ai/ChatSessionDrawer.vue'
 import {getFridgeTypeById} from '@/utils/fridgeTypeMap.js'
 import {listMyFridges} from '@/api/fridge'
 import showMessage from '@/utils/message'
+import notifyGamificationResult, {notifyGamificationReward, consumePendingRewards} from '@/utils/gamificationNotify'
 import {searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats, getExpiringSummary} from '@/api/item'
 import {getPublicConfig} from '@/api/system'
-import {
-  sendChatMessage,
-  sendChatMessageStream,
-  getChatSessions,
-  deleteChatSession,
-  getChatSessionMessages
-} from '@/api/ai'
 import {use, graphic} from 'echarts/core'
 import {CanvasRenderer} from 'echarts/renderers'
 import {LineChart} from 'echarts/charts'
@@ -266,6 +263,8 @@ const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const themeStore = useThemeStore()
+const aiChatStore = useAiChatStore()
+const gamificationStore = useGamificationStore()
 
 // ==================== 数据状态 ====================
 const pageLoading = ref(false)
@@ -276,36 +275,11 @@ const takeOutList = ref([])
 const addList = ref([])
 const expiringSummary = ref({expiringCount: 0, expiredCount: 0, totalExpiring: 0})
 
-// AI 聊天状态
-const SESSION_STORAGE_KEY = 'ai_chat_session_id'
-const sessionId = ref(localStorage.getItem(SESSION_STORAGE_KEY) || null)
-const suggestions = ref([])
+// AI 聊天页面级 UI 状态
 const drawerVisible = ref(false)
-const sessions = ref([])
-const sessionLoading = ref(false)
-
-// 向导状态（当前激活的AI向导）
-const activeWizard = ref(null) // { type: 'fridge_creation', currentStep, totalSteps, steps, formData, currentInput }
-const wizardCompleted = ref(false)
-
-// 冰箱选择对话框状态（用于物品向导前置检查）
 const showSelectFridgeDialog = ref(false)
 const selectedFridgeId = ref(null)
 const fridgeListLoading = ref(false)
-const pendingWizardData = ref(null) // 暂存后端返回的 item_creation_wizard 数据
-
-const activeWizardData = computed(() => {
-  if (!activeWizard.value) return null
-  const {type, ...data} = activeWizard.value
-  return data
-})
-
-// 是否处于冰箱创建向导的确认页（最后一步）
-const isWizardConfirmStep = computed(() => {
-  if (!activeWizard.value || activeWizard.value.type !== 'fridge_creation') return false
-  const total = activeWizard.value.totalSteps || 3
-  return activeWizard.value.currentStep >= total - 1
-})
 
 // ==================== 欢迎语 ====================
 const greeting = computed(() => {
@@ -333,29 +307,22 @@ const userAvatarText = computed(() => {
   return name.charAt(0).toUpperCase()
 })
 
-const currentSessionName = computed(() => {
-  if (!sessionId.value) return '新对话'
-  const session = sessions.value.find(s => s.sessionId === sessionId.value)
-  return session?.title || '新对话'
-})
+const currentSessionName = computed(() => aiChatStore.currentSessionName)
 
 // ==================== AI 聊天 ====================
-function generateMsgId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-}
+const messages = computed(() => aiChatStore.messages)
+const aiTyping = computed(() => aiChatStore.aiTyping)
+const suggestions = computed(() => aiChatStore.suggestions)
+const sessionId = computed(() => aiChatStore.sessionId)
+const sessions = computed(() => aiChatStore.sessions)
+const sessionLoading = computed(() => aiChatStore.sessionLoading)
+const activeWizard = computed(() => aiChatStore.activeWizard)
+const activeWizardData = computed(() => aiChatStore.activeWizardData)
+const isWizardConfirmStep = computed(() => aiChatStore.isWizardConfirmStep)
+const pendingWizardData = computed(() => aiChatStore.pendingWizardData)
 
-const messages = ref([
-  {
-    id: generateMsgId(),
-    role: 'assistant',
-    content: '你好！我是你的 AI 冰箱管家 🎉\n我可以帮你：\n• 查询冰箱库存\n• 查看临期提醒\n• 推荐菜谱\n• 回答食材相关问题\n\n试试点击下方快捷按钮，或直接输入你想问的问题~',
-    time: formatTime(new Date())
-  }
-])
 const inputMessage = ref('')
-const aiTyping = ref(false)
 const chatMessagesRef = ref(null)
-const abortController = ref(null)
 
 // 附件状态
 const attachments = ref([])
@@ -367,16 +334,6 @@ const defaultQuickActions = [
   {text: '推荐菜谱'}
 ]
 
-const defaultQuickActionsTextArr = [
-  '查看冰箱', '有什么食材', '临期提醒', '推荐菜谱'
-]
-
-function formatTime(date) {
-  const h = String(date.getHours()).padStart(2, '0')
-  const m = String(date.getMinutes()).padStart(2, '0')
-  return `${h}:${m}`
-}
-
 function scrollToBottom() {
   nextTick(() => {
     const el = chatMessagesRef.value
@@ -386,267 +343,19 @@ function scrollToBottom() {
   })
 }
 
+let scrollTimer = null
+function scheduleScroll() {
+  if (!scrollTimer) {
+    scrollTimer = setTimeout(() => {
+      scrollTimer = null
+      scrollToBottom()
+    }, 50)
+  }
+}
+
 function sendQuickMessage(text) {
   inputMessage.value = text
   sendMessage()
-}
-
-async function doSendChat(text, currentAttachments) {
-  // 用户消息
-  messages.value.push({
-    id: generateMsgId(),
-    role: 'user',
-    content: text,
-    attachments: currentAttachments,
-    time: formatTime(new Date())
-  })
-  scrollToBottom()
-
-  // AI 回复占位
-  aiTyping.value = true
-  messages.value.push({
-    id: generateMsgId(),
-    role: 'assistant',
-    content: '',
-    messageType: 'text',
-    data: null,
-    time: formatTime(new Date())
-  })
-  const assistantMsg = messages.value[messages.value.length - 1]
-  scrollToBottom()
-
-  // 中断之前的流
-  if (abortController.value) {
-    abortController.value.abort()
-  }
-  abortController.value = new AbortController()
-
-  let useFallback = false
-  let scrollTimer = null
-
-  const scheduleScroll = () => {
-    if (!scrollTimer) {
-      scrollTimer = setTimeout(() => {
-        scrollTimer = null
-        scrollToBottom()
-      }, 50)
-    }
-  }
-
-  const payload = {
-    message: text,
-    attachments: currentAttachments
-  }
-  // 首次请求不传 sessionId，让后端自动生成
-  if (sessionId.value) {
-    payload.sessionId = sessionId.value
-  }
-
-  // 如果 URL 中有 fridgeId（来自物品管理页面跳转），传递给后端
-  const queryFridgeId = route.query.fridgeId
-  if (queryFridgeId) {
-    payload.fridgeId = Number(queryFridgeId)
-  }
-
-  // 如果处于向导模式，附加向导上下文
-  if (activeWizard.value) {
-    payload.wizardContext = {
-      type: activeWizard.value.type,
-      currentStep: activeWizard.value.currentStep,
-      formData: activeWizard.value.formData
-    }
-  }
-
-  // 先尝试 SSE 流式接口
-  try {
-    await sendChatMessageStream({
-      ...payload,
-      signal: abortController.value.signal,
-      onText: (chunk) => {
-        assistantMsg.content += chunk
-        scheduleScroll()
-      },
-      onCard: (messageType, data) => {
-        assistantMsg.messageType = messageType
-        assistantMsg.data = data
-        if (messageType === 'fridge_creation_wizard') {
-          wizardCompleted.value = false
-          activeWizard.value = {
-            type: 'fridge_creation',
-            currentStep: data.currentStep,
-            totalSteps: data.totalSteps,
-            steps: data.steps || [],
-            formData: data.formData || {},
-            currentInput: data.currentInput || null
-          }
-        } else if (messageType === 'item_creation_wizard') {
-          wizardCompleted.value = false
-          const currentFridgeId = route.query.fridgeId
-          if (currentFridgeId) {
-            activeWizard.value = {
-              type: 'item_creation',
-              currentStep: data.currentStep,
-              totalSteps: data.totalSteps,
-              steps: data.steps || [],
-              formData: data.formData || {},
-              currentInput: data.currentInput || null
-            }
-          } else {
-            pendingWizardData.value = data
-            checkFridgeBeforeItemWizard(assistantMsg)
-          }
-        } else {
-          activeWizard.value = null
-        }
-        scrollToBottom()
-      },
-      onDone: (newSid, newSuggestions) => {
-        if (scrollTimer) {
-          clearTimeout(scrollTimer)
-          scrollTimer = null
-        }
-        sessionId.value = newSid || sessionId.value
-        if (sessionId.value) {
-          localStorage.setItem(SESSION_STORAGE_KEY, sessionId.value)
-        }
-        suggestions.value = (newSuggestions || []).filter(
-            item => !defaultQuickActionsTextArr.includes(item)
-        )
-        aiTyping.value = false
-        abortController.value = null
-        loadSessions()
-        scrollToBottom()
-      },
-      onError: (msg) => {
-        console.error('SSE 流式错误:', msg)
-        // 默认标记为可降级；如果是 503 HTTP 错误，后续 catch 会覆盖为 false
-        useFallback = true
-        const idx = messages.value.indexOf(assistantMsg)
-        if (idx !== -1) {
-          messages.value[idx] = {
-            ...assistantMsg,
-            content: msg || 'AI 服务繁忙，请稍后重试',
-            messageType: 'text'
-          }
-        }
-      }
-    })
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      // 用户主动中断或组件卸载
-      aiTyping.value = false
-      abortController.value = null
-      return
-    }
-    console.error('SSE 请求失败:', err)
-    if (err.message === 'AI_SERVICE_UNAVAILABLE') {
-      // 503 已在 onError 中展示错误消息，不再降级到同步接口
-      useFallback = false
-      aiTyping.value = false
-      abortController.value = null
-      return
-    }
-    useFallback = true
-    const idx = messages.value.indexOf(assistantMsg)
-    if (idx !== -1) {
-      messages.value.splice(idx, 1)
-    }
-  }
-
-  // 兜底：如果 SSE 流正常结束但 onDone 未被触发（如连接静默关闭），强制重置状态
-  if (!useFallback && aiTyping.value) {
-    aiTyping.value = false
-    abortController.value = null
-  }
-
-  // SSE 失败时降级到旧同步接口
-  if (useFallback) {
-    aiTyping.value = true
-    try {
-      const res = await sendChatMessage(payload)
-
-      if (res.code === 200 && res.data) {
-        const {sessionId: newSid, reply, suggestions: newSuggestions} = res.data
-        sessionId.value = newSid || sessionId.value
-        if (sessionId.value) {
-          localStorage.setItem(SESSION_STORAGE_KEY, sessionId.value)
-        }
-        suggestions.value = newSuggestions || []
-
-        //过滤已有快速操作
-        suggestions.value = suggestions.value.filter(item => !defaultQuickActionsTextArr.includes(item))
-
-        messages.value.push({
-          id: generateMsgId(),
-          role: 'assistant',
-          content: reply.text || '',
-          messageType: reply.messageType || 'text',
-          data: reply.data || null,
-          time: formatTime(new Date())
-        })
-
-        if (reply.messageType === 'fridge_creation_wizard') {
-          wizardCompleted.value = false
-          activeWizard.value = {
-            type: 'fridge_creation',
-            currentStep: reply.data.currentStep,
-            totalSteps: reply.data.totalSteps,
-            steps: reply.data.steps || [],
-            formData: reply.data.formData || {},
-            currentInput: reply.data.currentInput || null
-          }
-        } else if (reply.messageType === 'item_creation_wizard') {
-          wizardCompleted.value = false
-          const currentFridgeId = route.query.fridgeId
-          if (currentFridgeId) {
-            activeWizard.value = {
-              type: 'item_creation',
-              currentStep: reply.data.currentStep,
-              totalSteps: reply.data.totalSteps,
-              steps: reply.data.steps || [],
-              formData: reply.data.formData || {},
-              currentInput: reply.data.currentInput || null
-            }
-          } else {
-            pendingWizardData.value = reply.data
-            const lastMsg = messages.value[messages.value.length - 1]
-            checkFridgeBeforeItemWizard(lastMsg)
-          }
-        } else {
-          activeWizard.value = null
-        }
-
-        // 刷新会话列表（新会话可能已生成标题）
-        loadSessions()
-      } else {
-        messages.value.push({
-          id: generateMsgId(),
-          role: 'assistant',
-          content: '服务暂时不可用，请稍后再试。',
-          messageType: 'text',
-          data: null,
-          time: formatTime(new Date())
-        })
-        suggestions.value = []
-        activeWizard.value = null
-      }
-    } catch (err) {
-      console.error('AI 聊天请求失败:', err)
-      messages.value.push({
-        id: generateMsgId(),
-        role: 'assistant',
-        content: '网络连接异常，请检查网络后重试。',
-        messageType: 'text',
-        data: null,
-        time: formatTime(new Date())
-      })
-      suggestions.value = []
-      activeWizard.value = null
-    } finally {
-      aiTyping.value = false
-      scrollToBottom()
-    }
-  }
 }
 
 async function sendMessage() {
@@ -654,8 +363,27 @@ async function sendMessage() {
   if (!text || aiTyping.value) return
   const currentAttachments = attachments.value.map(a => ({...a}))
   inputMessage.value = ''
-  attachments.value = []  // 发送后清空附件
-  await doSendChat(text, currentAttachments)
+  attachments.value = []
+
+  const wizardContext = activeWizard.value
+      ? {
+        type: activeWizard.value.type,
+        currentStep: activeWizard.value.currentStep,
+        formData: activeWizard.value.formData
+      }
+      : undefined
+
+  const {reward} = await aiChatStore.sendMessage({
+    text,
+    attachments: currentAttachments,
+    fridgeId: route.query.fridgeId,
+    wizardContext
+  })
+
+  // 处理本次 AI 对话的 EXP/徽章/等级提升奖励
+  if (reward) {
+    await notifyGamificationReward(reward, '与 AI 对话')
+  }
 }
 
 // ==================== action_confirm 处理 ====================
@@ -663,11 +391,12 @@ async function handleActionConfirm(msg) {
   const actionData = msg.data
   if (!actionData) return
 
-  // 标记该消息已处理
-  msg.confirmed = true
-  msg.content = `已确认：${actionData.targetName || '操作'}正在执行...`
-  msg.messageType = 'text'
-  msg.data = null
+  aiChatStore.updateMessageById(msg.id, {
+    confirmed: true,
+    content: `已确认：${actionData.targetName || '操作'}正在执行...`,
+    messageType: 'text',
+    data: null
+  })
 
   try {
     switch (actionData.action) {
@@ -675,38 +404,48 @@ async function handleActionConfirm(msg) {
         const {deleteFridge} = await import('@/api/fridge')
         const res = await deleteFridge(actionData.targetId)
         if (res.code === 200) {
-          msg.content = `✅ 已删除「${actionData.targetName}」。`
+          aiChatStore.updateMessageById(msg.id, {
+            content: `✅ 已删除「${actionData.targetName}」。`
+          })
           await fetchPageData()
         } else {
-          msg.content = `❌ 删除失败：${res.message || '未知错误'}`
+          aiChatStore.updateMessageById(msg.id, {
+            content: `❌ 删除失败：${res.message || '未知错误'}`
+          })
         }
         break
       }
       default:
-        msg.content = `✅ 已确认执行「${actionData.action}」。`
+        aiChatStore.updateMessageById(msg.id, {
+          content: `✅ 已确认执行「${actionData.action}」。`
+        })
     }
   } catch (err) {
     console.error('操作执行失败:', err)
-    msg.content = '❌ 操作执行失败，请稍后重试。'
+    aiChatStore.updateMessageById(msg.id, {
+      content: '❌ 操作执行失败，请稍后重试。'
+    })
   }
 
   scrollToBottom()
 }
 
 function handleActionCancel(msg) {
-  msg.confirmed = false
-  msg.content = '已取消操作。'
-  msg.messageType = 'text'
-  msg.data = null
+  aiChatStore.updateMessageById(msg.id, {
+    confirmed: false,
+    content: '已取消操作。',
+    messageType: 'text',
+    data: null
+  })
   scrollToBottom()
 }
 
 // ==================== wizard 处理（冰箱 + 物品）====================
-function handleWizardStepSubmit({field, value, formData}) {
-  const wizardType = activeWizard.value?.type || 'fridge_creation'
+async function handleWizardStepSubmit({field, value, formData}) {
+  const wizardType = aiChatStore.activeWizard?.type || 'fridge_creation'
   // 只更新 formData，不乐观更新 currentStep，避免后端根据 currentStep 推断下一步时跳过步骤
-  activeWizard.value = {
-    ...(activeWizard.value || {}),
+  aiChatStore.activeWizard = {
+    ...(aiChatStore.activeWizard || {}),
     type: wizardType,
     formData
   }
@@ -758,13 +497,31 @@ function handleWizardStepSubmit({field, value, formData}) {
     }
   }
 
-  doSendChat(messageText, [])
+  const wizardContext = aiChatStore.activeWizard
+      ? {
+        type: aiChatStore.activeWizard.type,
+        currentStep: aiChatStore.activeWizard.currentStep,
+        formData
+      }
+      : undefined
+
+  const {reward} = await aiChatStore.sendMessage({
+    text: messageText,
+    attachments: [],
+    fridgeId: route.query.fridgeId,
+    wizardContext
+  })
+
+  // 处理本次 wizard 步骤的 EXP/徽章/等级提升奖励
+  if (reward) {
+    await notifyGamificationReward(reward, '与 AI 对话')
+  }
 }
 
-function handleWizardSkip({field, formData, messageText: customText}) {
-  const wizardType = activeWizard.value?.type || 'fridge_creation'
-  activeWizard.value = {
-    ...(activeWizard.value || {}),
+async function handleWizardSkip({field, formData, messageText: customText}) {
+  const wizardType = aiChatStore.activeWizard?.type || 'fridge_creation'
+  aiChatStore.activeWizard = {
+    ...(aiChatStore.activeWizard || {}),
     type: wizardType,
     formData
   }
@@ -794,27 +551,38 @@ function handleWizardSkip({field, formData, messageText: customText}) {
     }
   }
 
-  doSendChat(messageText, [])
+  const wizardContext = aiChatStore.activeWizard
+      ? {
+        type: aiChatStore.activeWizard.type,
+        currentStep: aiChatStore.activeWizard.currentStep,
+        formData
+      }
+      : undefined
+
+  const {reward} = await aiChatStore.sendMessage({
+    text: messageText,
+    attachments: [],
+    fridgeId: route.query.fridgeId,
+    wizardContext
+  })
+
+  // 处理本次 wizard 跳过的 EXP/徽章/等级提升奖励
+  if (reward) {
+    await notifyGamificationReward(reward, '与 AI 对话')
+  }
 }
 
 async function handleWizardConfirm(formData) {
-  const wizardType = activeWizard.value?.type || 'fridge_creation'
+  const wizardType = aiChatStore.activeWizard?.type || 'fridge_creation'
 
   if (wizardType === 'fridge_creation') {
     if (!formData.name || !formData.name.trim()) {
-      messages.value.push({
-        id: generateMsgId(),
-        role: 'assistant',
-        content: '❌ 冰箱名称不能为空，请重新输入。',
-        messageType: 'text',
-        data: null,
-        time: formatTime(new Date())
-      })
+      aiChatStore.addAssistantMessage('❌ 冰箱名称不能为空，请重新输入。', 'text', null)
       scrollToBottom()
       return
     }
-    wizardCompleted.value = true
-    activeWizard.value = null
+    aiChatStore.wizardCompleted = true
+    aiChatStore.activeWizard = null
     try {
       const {createFridge} = await import('@/api/fridge')
       const res = await createFridge({
@@ -826,65 +594,31 @@ async function handleWizardConfirm(formData) {
         remark: formData.remark || undefined
       })
       if (res.code === 200) {
-        messages.value.push({
-          id: generateMsgId(),
-          role: 'assistant',
-          content: `✅ 冰箱「${formData.name}」创建成功！现在你可以向里面添加食材了~`,
-          messageType: 'text',
-          data: null,
-          time: formatTime(new Date())
-        })
+        aiChatStore.addAssistantMessage(`✅ 冰箱「${formData.name}」创建成功！现在你可以向里面添加食材了~`, 'text', null)
+        notifyGamificationResult(res, '创建冰箱')
         await fetchPageData()
       } else {
-        messages.value.push({
-          id: generateMsgId(),
-          role: 'assistant',
-          content: `❌ 创建失败：${res.message || '未知错误'}`,
-          messageType: 'text',
-          data: null,
-          time: formatTime(new Date())
-        })
+        aiChatStore.addAssistantMessage(`❌ 创建失败：${res.message || '未知错误'}`, 'text', null)
       }
     } catch (err) {
       console.error('创建冰箱失败:', err)
-      messages.value.push({
-        id: generateMsgId(),
-        role: 'assistant',
-        content: '❌ 创建冰箱失败，请稍后重试。',
-        messageType: 'text',
-        data: null,
-        time: formatTime(new Date())
-      })
+      aiChatStore.addAssistantMessage('❌ 创建冰箱失败，请稍后重试。', 'text', null)
     }
   } else if (wizardType === 'item_creation') {
     // 兜底校验：确保有 fridgeId
     const currentFridgeId = route.query.fridgeId
     if (!currentFridgeId) {
-      messages.value.push({
-        id: generateMsgId(),
-        role: 'assistant',
-        content: '❌ 请先选择一个冰箱，才能添加物品。',
-        messageType: 'text',
-        data: null,
-        time: formatTime(new Date())
-      })
+      aiChatStore.addAssistantMessage('❌ 请先选择一个冰箱，才能添加物品。', 'text', null)
       scrollToBottom()
       return
     }
     if (!formData.itemName || !String(formData.itemName).trim()) {
-      messages.value.push({
-        id: generateMsgId(),
-        role: 'assistant',
-        content: '❌ 物品名称不能为空，请重新输入。',
-        messageType: 'text',
-        data: null,
-        time: formatTime(new Date())
-      })
+      aiChatStore.addAssistantMessage('❌ 物品名称不能为空，请重新输入。', 'text', null)
       scrollToBottom()
       return
     }
-    wizardCompleted.value = true
-    activeWizard.value = null
+    aiChatStore.wizardCompleted = true
+    aiChatStore.activeWizard = null
     try {
       const {createItem} = await import('@/api/item')
       const res = await createItem({
@@ -899,59 +633,32 @@ async function handleWizardConfirm(formData) {
         remark: formData.remark || null
       })
       if (res.code === 200) {
-        messages.value.push({
-          id: generateMsgId(),
-          role: 'assistant',
-          content: `✅ 物品「${formData.itemName}」添加成功！`,
-          messageType: 'text',
-          data: null,
-          time: formatTime(new Date())
-        })
+        aiChatStore.addAssistantMessage(`✅ 物品「${formData.itemName}」添加成功！`, 'text', null)
+        notifyGamificationResult(res, '添加食材')
         await fetchPageData()
       } else {
-        messages.value.push({
-          id: generateMsgId(),
-          role: 'assistant',
-          content: `❌ 添加失败：${res.message || '未知错误'}`,
-          messageType: 'text',
-          data: null,
-          time: formatTime(new Date())
-        })
+        aiChatStore.addAssistantMessage(`❌ 添加失败：${res.message || '未知错误'}`, 'text', null)
       }
     } catch (err) {
       console.error('添加物品失败:', err)
-      messages.value.push({
-        id: generateMsgId(),
-        role: 'assistant',
-        content: '❌ 添加物品失败，请稍后重试。',
-        messageType: 'text',
-        data: null,
-        time: formatTime(new Date())
-      })
+      aiChatStore.addAssistantMessage('❌ 添加物品失败，请稍后重试。', 'text', null)
     }
   }
   scrollToBottom()
 }
 
 function handleWizardCancel() {
-  const wizardType = activeWizard.value?.type || 'fridge_creation'
-  activeWizard.value = null
+  const wizardType = aiChatStore.activeWizard?.type || 'fridge_creation'
+  aiChatStore.activeWizard = null
   const cancelText = wizardType === 'fridge_creation'
       ? '已取消创建冰箱。如需创建，请随时告诉我~'
       : '已取消添加物品。如需添加，请随时告诉我~'
-  messages.value.push({
-    id: generateMsgId(),
-    role: 'assistant',
-    content: cancelText,
-    messageType: 'text',
-    data: null,
-    time: formatTime(new Date())
-  })
+  aiChatStore.addAssistantMessage(cancelText, 'text', null)
   scrollToBottom()
 }
 
 // ==================== 冰箱前置检查（物品向导）====================
-async function checkFridgeBeforeItemWizard(assistantMsg) {
+async function checkFridgeBeforeItemWizard() {
   fridgeListLoading.value = true
   try {
     const res = await listMyFridges()
@@ -962,11 +669,16 @@ async function checkFridgeBeforeItemWizard(assistantMsg) {
 
     if (fridges.length === 0) {
       // 没有冰箱，把当前AI消息改为提示
-      assistantMsg.content = '我注意到您还没有创建冰箱，请先创建一个冰箱才能添加物品哦~'
-      assistantMsg.messageType = 'text'
-      assistantMsg.data = null
+      const lastAssistant = aiChatStore.getLastAssistantMessage()
+      if (lastAssistant) {
+        aiChatStore.updateMessageById(lastAssistant.id, {
+          content: '我注意到您还没有创建冰箱，请先创建一个冰箱才能添加物品哦~',
+          messageType: 'text',
+          data: null
+        })
+      }
       scrollToBottom()
-      pendingWizardData.value = null
+      aiChatStore.clearPendingWizardData()
     } else if (fridges.length === 1) {
       // 只有一个冰箱，自动选中
       const onlyFridge = fridges[0]
@@ -974,17 +686,7 @@ async function checkFridgeBeforeItemWizard(assistantMsg) {
         query: {...route.query, fridgeId: String(onlyFridge.id)}
       })
       // 启动暂存的向导
-      if (pendingWizardData.value) {
-        activeWizard.value = {
-          type: 'item_creation',
-          currentStep: pendingWizardData.value.currentStep,
-          totalSteps: pendingWizardData.value.totalSteps,
-          steps: pendingWizardData.value.steps || [],
-          formData: pendingWizardData.value.formData || {},
-          currentInput: pendingWizardData.value.currentInput || null
-        }
-        pendingWizardData.value = null
-      }
+      aiChatStore.startItemWizardFromPending()
     } else {
       // 多个冰箱，弹出选择对话框
       fridgeList.value = fridges
@@ -993,11 +695,16 @@ async function checkFridgeBeforeItemWizard(assistantMsg) {
     }
   } catch (error) {
     console.error('获取冰箱列表失败:', error)
-    assistantMsg.content = '获取冰箱列表失败，请稍后重试。'
-    assistantMsg.messageType = 'text'
-    assistantMsg.data = null
+    const lastAssistant = aiChatStore.getLastAssistantMessage()
+    if (lastAssistant) {
+      aiChatStore.updateMessageById(lastAssistant.id, {
+        content: '获取冰箱列表失败，请稍后重试。',
+        messageType: 'text',
+        data: null
+      })
+    }
     scrollToBottom()
-    pendingWizardData.value = null
+    aiChatStore.clearPendingWizardData()
   } finally {
     fridgeListLoading.value = false
   }
@@ -1014,50 +721,20 @@ function handleSelectFridgeConfirm() {
     query: {...route.query, fridgeId: String(selectedFridgeId.value)}
   })
   // 启动暂存的向导
-  if (pendingWizardData.value) {
-    activeWizard.value = {
-      type: 'item_creation',
-      currentStep: pendingWizardData.value.currentStep,
-      totalSteps: pendingWizardData.value.totalSteps,
-      steps: pendingWizardData.value.steps || [],
-      formData: pendingWizardData.value.formData || {},
-      currentInput: pendingWizardData.value.currentInput || null
-    }
-    pendingWizardData.value = null
-  }
+  aiChatStore.startItemWizardFromPending()
 }
 
 function handleSelectFridgeCancel() {
   showSelectFridgeDialog.value = false
   selectedFridgeId.value = null
-  pendingWizardData.value = null
-  messages.value.push({
-    id: generateMsgId(),
-    role: 'assistant',
-    content: '已取消选择冰箱，如需添加物品请重新发起对话~',
-    messageType: 'text',
-    data: null,
-    time: formatTime(new Date())
-  })
+  aiChatStore.clearPendingWizardData()
+  aiChatStore.addAssistantMessage('已取消选择冰箱，如需添加物品请重新发起对话~', 'text', null)
   scrollToBottom()
 }
 
 // ==================== 会话管理 ====================
 async function loadSessions() {
-  try {
-    sessionLoading.value = true
-    const res = await getChatSessions()
-    if (res.code === 200 && Array.isArray(res.data)) {
-      sessions.value = res.data
-    } else {
-      sessions.value = []
-    }
-  } catch (err) {
-    console.error('加载会话列表失败:', err)
-    sessions.value = []
-  } finally {
-    sessionLoading.value = false
-  }
+  await aiChatStore.loadSessions()
 }
 
 async function switchSession(sid) {
@@ -1065,16 +742,7 @@ async function switchSession(sid) {
     drawerVisible.value = false
     return
   }
-  if (abortController.value) {
-    abortController.value.abort()
-    abortController.value = null
-  }
-  aiTyping.value = false
-  activeWizard.value = null
-  sessionId.value = sid
-  localStorage.setItem(SESSION_STORAGE_KEY, sid)
-  messages.value = []
-  suggestions.value = []
+  await aiChatStore.switchSession(sid)
   drawerVisible.value = false
   // 切换会话时清除 fridgeId，避免历史会话受当前页面上下文影响
   if (route.query.fridgeId) {
@@ -1082,43 +750,11 @@ async function switchSession(sid) {
     delete query.fridgeId
     router.replace({path: '/user/index', query})
   }
-
-  // 尝试加载历史消息
-  try {
-    const res = await getChatSessionMessages(sid)
-    if (res.code === 200 && Array.isArray(res.data)) {
-      messages.value = res.data.map(m => ({
-        id: m.id || generateMsgId(),
-        role: m.role,
-        content: m.content || '',
-        messageType: m.messageType || 'text',
-        data: m.data || null,
-        time: m.createTime ? formatTime(new Date(m.createTime.replace(' ', 'T'))) : formatTime(new Date())
-      }))
-    }
-  } catch (err) {
-    console.error('加载历史消息失败:', err)
-  } finally {
-    scrollToBottom()
-  }
+  scrollToBottom()
 }
 
 function createNewSession() {
-  if (abortController.value) {
-    abortController.value.abort()
-    abortController.value = null
-  }
-  aiTyping.value = false
-  sessionId.value = null
-  activeWizard.value = null
-  messages.value = [{
-    id: generateMsgId(),
-    role: 'assistant',
-    content: '你好！我是你的 AI 冰箱管家 🎉\n我可以帮你：\n• 查询冰箱库存\n• 查看临期提醒\n• 推荐菜谱\n• 回答食材相关问题\n\n试试点击下方快捷按钮，或直接输入你想问的问题~',
-    time: formatTime(new Date())
-  }]
-  suggestions.value = []
-  localStorage.removeItem(SESSION_STORAGE_KEY)
+  aiChatStore.createNewSession()
   drawerVisible.value = false
   // 清除 URL 中的 fridgeId，避免新建会话后仍绑定到特定冰箱
   if (route.query.fridgeId) {
@@ -1130,13 +766,7 @@ function createNewSession() {
 
 async function handleDeleteSession(sid) {
   try {
-    const res = await deleteChatSession(sid)
-    if (res.code === 200) {
-      sessions.value = sessions.value.filter(s => s.sessionId !== sid)
-      if (sessionId.value === sid) {
-        createNewSession()
-      }
-    }
+    await aiChatStore.deleteSession(sid)
   } catch (err) {
     console.error('删除会话失败:', err)
   }
@@ -1381,25 +1011,68 @@ const fetchAnnouncement = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   fetchPageData()
   fetchAnnouncement()
   loadSessions()
 
+  // 将登录时暂存的奖励转入 pendingRewards，由统一消费函数展示
+  const pendingLoginExp = sessionStorage.getItem('pending_login_exp')
+  if (pendingLoginExp) {
+    try {
+      const {exp, description, badges} = JSON.parse(pendingLoginExp)
+      if (exp > 0) {
+        gamificationStore.pushPendingReward({
+          type: 'exp',
+          exp,
+          description: description || '每日登录',
+          source: 'login'
+        })
+      }
+      if (Array.isArray(badges) && badges.length > 0) {
+        badges.forEach((badge) => {
+          gamificationStore.pushPendingReward({
+            type: 'badge',
+            badge,
+            source: 'login'
+          })
+        })
+      }
+    } catch (e) {
+      console.error('解析 pending_login_exp 失败:', e)
+    }
+    sessionStorage.removeItem('pending_login_exp')
+  }
+
+  // 将登录时暂存的等级提升转入 pendingRewards
+  const pendingLoginLevel = sessionStorage.getItem('pending_login_level')
+  if (pendingLoginLevel) {
+    try {
+      const {leveledUp, level} = JSON.parse(pendingLoginLevel)
+      if (level) {
+        // 无论是否升级，都先记录当前等级，避免后续操作升级时重复弹窗
+        sessionStorage.setItem('gamification_last_level', String(level.currentLevel))
+        if (leveledUp) {
+          gamificationStore.pushPendingReward({
+            type: 'levelUp',
+            levelInfo: level,
+            source: 'login'
+          })
+        }
+      }
+    } catch (e) {
+      console.error('解析 pending_login_level 失败:', e)
+    }
+    sessionStorage.removeItem('pending_login_level')
+  }
+
+  // 统一消费待展示奖励（包含登录奖励和 Header 已入队的 overview 奖励）
+  await consumePendingRewards()
+
   // 如果本地有保存的 sessionId，自动恢复该会话的历史消息
   if (sessionId.value) {
-    getChatSessionMessages(sessionId.value)
-        .then(res => {
-          if (res.code === 200 && Array.isArray(res.data) && res.data.length > 0) {
-            messages.value = res.data.map(m => ({
-              role: m.role,
-              content: m.content || '',
-              messageType: m.messageType || 'text',
-              data: m.data || null,
-              time: m.createTime ? formatTime(new Date(m.createTime.replace(' ', 'T'))) : formatTime(new Date())
-            }))
-          }
-        })
+    aiChatStore.loadSessionMessages(sessionId.value)
+        .then(() => scrollToBottom())
         .catch(err => {
           console.error('恢复历史消息失败:', err)
         })
@@ -1414,16 +1087,35 @@ onMounted(() => {
     router.replace({path: '/user/index', query})
     // "AI 帮我创建/添加"应视为新会话，避免携带旧 sessionId 导致冲突
     createNewSession()
-    doSendChat(aiMessage, [])
+    const {reward} = await aiChatStore.sendMessage({
+      text: aiMessage,
+      attachments: [],
+      fridgeId: route.query.fridgeId
+    })
+
+    // 处理本次 AI 快捷指令的 EXP/徽章/等级提升奖励
+    if (reward) {
+      await notifyGamificationReward(reward, '与 AI 对话')
+    }
   }
 })
 
 onUnmounted(() => {
-  if (abortController.value) {
-    abortController.value.abort()
-    abortController.value = null
+  aiChatStore.abortStream()
+})
+
+// 消息变化时自动滚动到底部（包含流式输出）
+watch(() => aiChatStore.messages, () => {
+  scheduleScroll()
+}, {deep: true, flush: 'post'})
+
+// 物品向导需要选择冰箱时触发前置检查
+watch(() => aiChatStore.pendingWizardData, (data) => {
+  if (data) {
+    checkFridgeBeforeItemWizard()
   }
 })
+
 // 页面引导
 const tourRef = ref(null)
 const tourStore = useTourStore()

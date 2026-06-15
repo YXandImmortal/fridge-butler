@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 5163375 */
-  src: url('iconfont.woff2?t=1780534206288') format('woff2'),
-       url('iconfont.woff?t=1780534206288') format('woff'),
-       url('iconfont.ttf?t=1780534206288') format('truetype');
+  src: url('iconfont.woff2?t=1781503803024') format('woff2'),
+       url('iconfont.woff?t=1781503803024') format('woff'),
+       url('iconfont.ttf?t=1781503803024') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,378 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-dollar:before {
+  content: "\eb4c";
+}
+
+.icon-money:before {
+  content: "\eb4d";
+}
+
+.icon-external-link:before {
+  content: "\eb4b";
+}
+
+.icon-chat:before {
+  content: "\eb4a";
+}
+
+.icon-deepseek:before {
+  content: "\e707";
+}
+
+.icon-birthday:before {
+  content: "\e610";
+}
+
+.icon-level-ice-cream:before {
+  content: "\e6c4";
+}
+
+.icon-level-snowflakes:before {
+  content: "\e697";
+}
+
+.icon-level-ice:before {
+  content: "\e6c7";
+}
+
+.icon-level-snowman:before {
+  content: "\e726";
+}
+
+.icon-a-MedallionAward1:before {
+  content: "\e649";
+}
+
+.icon-a-Number1Badge:before {
+  content: "\e64a";
+}
+
+.icon-a-ShieldAward:before {
+  content: "\e64b";
+}
+
+.icon-Award:before {
+  content: "\e64c";
+}
+
+.icon-a-RecognitionBanner:before {
+  content: "\e64d";
+}
+
+.icon-a-SheriffBadge:before {
+  content: "\e64e";
+}
+
+.icon-Banner:before {
+  content: "\e64f";
+}
+
+.icon-a-GlassShieldAward:before {
+  content: "\e650";
+}
+
+.icon-a-ChampionshipAward:before {
+  content: "\e651";
+}
+
+.icon-Certificate:before {
+  content: "\e652";
+}
+
+.icon-a-ChampionBelt:before {
+  content: "\e653";
+}
+
+.icon-a-GuaranteeBadge:before {
+  content: "\e654";
+}
+
+.icon-a-ChampionshipBadge:before {
+  content: "\e655";
+}
+
+.icon-a-AchievementTrophy:before {
+  content: "\e656";
+}
+
+.icon-a-MilitaryMedallion:before {
+  content: "\e657";
+}
+
+.icon-a-StarBanner1:before {
+  content: "\e658";
+}
+
+.icon-a-1stPosition:before {
+  content: "\e659";
+}
+
+.icon-a-PromotionAward:before {
+  content: "\e65a";
+}
+
+.icon-a-PrizeShield:before {
+  content: "\e65b";
+}
+
+.icon-a-PremiumBanner:before {
+  content: "\e65c";
+}
+
+.icon-a-1stPosition1:before {
+  content: "\e65d";
+}
+
+.icon-a-ChampionAward:before {
+  content: "\e65e";
+}
+
+.icon-a-Glasstrophy:before {
+  content: "\e65f";
+}
+
+.icon-a-GuaranteeMedal:before {
+  content: "\e660";
+}
+
+.icon-a-PrestigiousAward:before {
+  content: "\e661";
+}
+
+.icon-a-LeadershipAward:before {
+  content: "\e662";
+}
+
+.icon-a-RecognitionBadge:before {
+  content: "\e663";
+}
+
+.icon-a-ShoulderBadge:before {
+  content: "\e664";
+}
+
+.icon-a-PerformanceAward:before {
+  content: "\e665";
+}
+
+.icon-a-BasketballTrophy:before {
+  content: "\e666";
+}
+
+.icon-a-MilitaryMedal:before {
+  content: "\e667";
+}
+
+.icon-a-FlutteringFlag:before {
+  content: "\e668";
+}
+
+.icon-a-ChampionMeda:before {
+  content: "\e669";
+}
+
+.icon-a-BronzeStarMedal:before {
+  content: "\e66a";
+}
+
+.icon-a-AwardShield:before {
+  content: "\e66b";
+}
+
+.icon-Medallion:before {
+  content: "\e66c";
+}
+
+.icon-a-AwardTrophy:before {
+  content: "\e66d";
+}
+
+.icon-a-StarBadge:before {
+  content: "\e66e";
+}
+
+.icon-a-PrizeAward1:before {
+  content: "\e66f";
+}
+
+.icon-a-PrizeTrophy:before {
+  content: "\e670";
+}
+
+.icon-a-2ndPosition:before {
+  content: "\e671";
+}
+
+.icon-a-PoliceShieldBadge:before {
+  content: "\e672";
+}
+
+.icon-a-ChampionshipTrophy:before {
+  content: "\e673";
+}
+
+.icon-Trophy:before {
+  content: "\e620";
+}
+
+.icon-a-WinnerAward:before {
+  content: "\e621";
+}
+
+.icon-a-ShieldTrophy:before {
+  content: "\e622";
+}
+
+.icon-Reward:before {
+  content: "\e623";
+}
+
+.icon-a-StarFlag:before {
+  content: "\e624";
+}
+
+.icon-a-StarTrophy:before {
+  content: "\e625";
+}
+
+.icon-a-StarMedallion:before {
+  content: "\e626";
+}
+
+.icon-a-WinningCup:before {
+  content: "\e627";
+}
+
+.icon-a-StarSticker:before {
+  content: "\e628";
+}
+
+.icon-a-StarShield:before {
+  content: "\e629";
+}
+
+.icon-a-StarAward:before {
+  content: "\e62a";
+}
+
+.icon-a-StarCertificate:before {
+  content: "\e62c";
+}
+
+.icon-a-WinnerCup:before {
+  content: "\e62d";
+}
+
+.icon-Prize:before {
+  content: "\e62e";
+}
+
+.icon-a-MovieAward:before {
+  content: "\e62f";
+}
+
+.icon-a-RankMedal:before {
+  content: "\e630";
+}
+
+.icon-a-RankingBadge:before {
+  content: "\e631";
+}
+
+.icon-a-PositionBelt:before {
+  content: "\e632";
+}
+
+.icon-a-RomanBadge:before {
+  content: "\e633";
+}
+
+.icon-a-MilitaryFlag:before {
+  content: "\e634";
+}
+
+.icon-a-StarBanner:before {
+  content: "\e635";
+}
+
+.icon-a-RibbonBadge:before {
+  content: "\e636";
+}
+
+.icon-a-PrizeAward:before {
+  content: "\e637";
+}
+
+.icon-a-GlassAward:before {
+  content: "\e638";
+}
+
+.icon-a-RibbonMedal:before {
+  content: "\e639";
+}
+
+.icon-a-WinnerTrophy:before {
+  content: "\e63a";
+}
+
+.icon-a-MilitaryBadge:before {
+  content: "\e63b";
+}
+
+.icon-Goblet:before {
+  content: "\e63c";
+}
+
+.icon-a-MedallionAward:before {
+  content: "\e63d";
+}
+
+.icon-a-GlassShield:before {
+  content: "\e63e";
+}
+
+.icon-a-PrizeBanner:before {
+  content: "\e63f";
+}
+
+.icon-a-ChampionTrophy:before {
+  content: "\e640";
+}
+
+.icon-Medal:before {
+  content: "\e641";
+}
+
+.icon-Crown:before {
+  content: "\e642";
+}
+
+.icon-a-AcademyAward:before {
+  content: "\e643";
+}
+
+.icon-a-SuccessAward:before {
+  content: "\e644";
+}
+
+.icon-a-StarRankingMedal:before {
+  content: "\e645";
+}
+
+.icon-Flagpole:before {
+  content: "\e646";
+}
+
+.icon-a-FirstPositionMedal:before {
+  content: "\e647";
+}
+
+.icon-a-ShieldBanner:before {
+  content: "\e648";
 }
 
 .icon-copy:before {

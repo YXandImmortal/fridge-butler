@@ -6,6 +6,7 @@ import com.yx.fridgebutler.dto.user.UserEmailCaptchaRequest;
 import com.yx.fridgebutler.dto.user.UserInitPasswordRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateAvatarRequest;
 import com.yx.fridgebutler.dto.user.UserUpdateRequest;
+import com.yx.fridgebutler.vo.gamification.ExpActionResultVO;
 import com.yx.fridgebutler.vo.user.UserInfoVO;
 
 /**
@@ -44,8 +45,10 @@ public interface UserService {
 
     /**
      * 标记当前登录用户的新手指引已完成。
+     *
+     * @return 操作结果，包含EXP信息
      */
-    void completeGuide();
+    ExpActionResultVO completeGuide();
 
     /**
      * 首次登录初始化密码（无需原密码和验证码）。
@@ -68,6 +71,7 @@ public interface UserService {
      * <p>校验验证码及邮箱是否被其他用户占用，验证通过后更新邮箱。</p>
      *
      * @param request 绑定邮箱请求参数
+     * @return 操作结果，包含EXP信息
      */
-    void bindEmail(BindEmailRequest request);
+    ExpActionResultVO bindEmail(BindEmailRequest request);
 }

@@ -1,5 +1,8 @@
 import {defineStore} from 'pinia'
 import {computed, ref} from 'vue'
+import notifyGamificationResult from '@/utils/gamificationNotify'
+import {destroyGamificationToastContainer} from '@/utils/gamificationToastContainer'
+import {resetLevelUpNotify} from '@/utils/levelUpNotify'
 import {
     login as loginApi,
     getUserInfo as getUserInfoApi,
@@ -209,6 +212,8 @@ export const useUserStore = defineStore('user', () => {
         localStorage.removeItem('userInfo')
         sessionStorage.removeItem('userInfo')
         localStorage.removeItem('ai_chat_session_id')
+        resetLevelUpNotify()
+        destroyGamificationToastContainer()
     }
 
     // 获取用户信息
@@ -425,10 +430,13 @@ export const useUserStore = defineStore('user', () => {
     // 标记新手指引完成
     const markGuideCompleted = async () => {
         try {
+            const wasAlreadyCompleted = guideCompleted.value
             const res = await completeGuideApi()
             if (res.code === 200) {
                 guideCompleted.value = true
                 syncFieldToStorage('guideCompleted', true)
+                // 完成指引 EXP 与徽章解锁提示
+                notifyGamificationResult(res, '完成新手指引')
             }
             return res
         } catch (error) {

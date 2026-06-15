@@ -71,6 +71,7 @@ import {useSystemStore} from '@/stores/system'
 import {useUserStore} from '@/stores/user'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour'
 import {useNotificationStore} from '@/stores/notification'
+import {useGamificationStore} from '@/stores/gamification'
 import ImportantNoticeDialog from '@/components/notification/ImportantNoticeDialog.vue'
 import ForceChangePasswordDialog from '@/components/ui/ForceChangePasswordDialog.vue'
 
@@ -79,6 +80,7 @@ const systemStore = useSystemStore()
 const userStore = useUserStore()
 const tourStore = useTourStore()
 const notificationStore = useNotificationStore()
+const gamificationStore = useGamificationStore()
 const {getSystemInfo} = systemStore
 const {logout} = userStore
 
@@ -206,6 +208,7 @@ const handleGuideTypeConfirm = (mode) => {
 // 处理退出登录
 const handleLogout = () => {
   logout()
+  gamificationStore.reset()
   showLogoutDialog.value = false
   router.push('/login')
   showMessage.info('已退出登录')

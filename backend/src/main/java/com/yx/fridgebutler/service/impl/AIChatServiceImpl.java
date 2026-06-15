@@ -26,6 +26,9 @@ import com.yx.fridgebutler.repository.BizFridgeRepository;
 import com.yx.fridgebutler.repository.BizItemUnitRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
 import com.yx.fridgebutler.config.PromptTemplateLoader;
+import com.yx.fridgebutler.enums.BadgeTriggerType;
+import com.yx.fridgebutler.enums.ExpActionType;
+import com.yx.fridgebutler.service.AchievementSettlementService;
 import com.yx.fridgebutler.service.AIChatService;
 import com.yx.fridgebutler.service.DeepSeekService;
 import com.yx.fridgebutler.util.AiResponseUtils;
@@ -40,6 +43,9 @@ import com.yx.fridgebutler.vo.aichat.AIChatReplyVO;
 import com.yx.fridgebutler.vo.aichat.AIChatSessionVO;
 import com.yx.fridgebutler.vo.aichat.CalorieCalculationData;
 import com.yx.fridgebutler.vo.aichat.CalorieItem;
+import com.yx.fridgebutler.vo.gamification.AchievementSettlementResult;
+import com.yx.fridgebutler.vo.gamification.BadgeTriggerRequest;
+import com.yx.fridgebutler.vo.gamification.ExpActionRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -230,6 +236,9 @@ public class AIChatServiceImpl implements AIChatService {
     @Autowired
     private PlatformTransactionManager transactionManager;
 
+    @Autowired
+    private AchievementSettlementService achievementSettlementService;
+
     @Value("${ai.chat.max-history-rounds:10}")
     private Integer maxHistoryRounds;
 
@@ -310,12 +319,13 @@ public class AIChatServiceImpl implements AIChatService {
 
         // 5. 根据意图分发处理
         AIChatReplyVO reply;
+        List<BadgeTriggerRequest> badgeTriggers = new ArrayList<>();
         try {
             reply = switch (intent.intent) {
                 case "fridge_list" -> handleFridgeList();
                 case "item_list" -> handleItemList(intent.params);
                 case "expiring_alert" -> handleExpiringAlert();
-                case "recipe_recommend" -> handleRecipeRecommend(userMessage, request.getAttachments());
+                case "recipe_recommend" -> handleRecipeRecommend(userMessage, request.getAttachments(), badgeTriggers);
                 case "calorie_calculation" -> handleCalorieCalculation(userMessage, request.getAttachments());
                 case "trend_chart" -> handleTrendChart(intent.params);
                 case "action_confirm" -> handleActionConfirm(intent.params);
@@ -341,13 +351,25 @@ public class AIChatServiceImpl implements AIChatService {
         session.setLastActiveTime(Instant.now());
         sessionRepository.save(session);
 
-        // 8. 组装响应
+        // 8. 统一结算：AI 对话 EXP + AI 对话徽章 + 意图相关徽章
+        badgeTriggers.add(new BadgeTriggerRequest(BadgeTriggerType.AI_CHAT));
+        AchievementSettlementResult settlement = achievementSettlementService.settle(
+                currentUserId, ExpActionType.AI_CHAT, badgeTriggers);
+
+        // 9. 组装响应
         List<String> suggestions = generateSuggestions(reply.getMessageType());
 
         return AIChatDataVO.builder()
                 .sessionId(sessionId)
                 .reply(reply)
                 .suggestions(suggestions)
+                .expGained(settlement.getExpGained())
+                .dailyExpToday(settlement.getDailyExpToday())
+                .dailyExpLimit(settlement.getDailyExpLimit())
+                .leveledUp(settlement.isLeveledUp())
+                .currentLevel(settlement.getCurrentLevel())
+                .level(settlement.getLevel())
+                .badgesUnlocked(settlement.getBadgesUnlocked())
                 .build();
     }
 
@@ -622,8 +644,10 @@ public class AIChatServiceImpl implements AIChatService {
      *
      * @param userMessage 用户原始输入（含数量要求等）
      * @param attachments 用户引用的附件列表
+     * @param badgeTriggersCollector 本次调用中需要触发的徽章收集器，允许为 null
      */
-    private AIChatReplyVO handleRecipeRecommend(String userMessage, List<AIChatAttachment> attachments) {
+    private AIChatReplyVO handleRecipeRecommend(String userMessage, List<AIChatAttachment> attachments,
+                                                  List<BadgeTriggerRequest> badgeTriggersCollector) {
         Long currentUserId = getCurrentUserId();
 
         // 1. 提取用户指定的食材（附件中的 item）
@@ -704,6 +728,11 @@ public class AIChatServiceImpl implements AIChatService {
 
             Map<String, Object> data = new LinkedHashMap<>();
             data.put("recipes", recipes);
+
+            // 收集 AI 菜谱推荐徽章触发，统一在奖励结算时解锁
+            if (badgeTriggersCollector != null) {
+                badgeTriggersCollector.add(new BadgeTriggerRequest(BadgeTriggerType.AI_RECIPE));
+            }
 
             return AIChatReplyVO.builder()
                     .messageType("recipe_recommend")
@@ -1671,12 +1700,7 @@ public class AIChatServiceImpl implements AIChatService {
             saveAssistantMessage(sessionId, reply);
             session.setLastActiveTime(Instant.now());
             sessionRepository.save(session);
-            List<String> suggestions = generateSuggestions(reply.getMessageType());
-            Map<String, Object> doneEvent = new LinkedHashMap<>();
-            doneEvent.put("sessionId", sessionId);
-            doneEvent.put("suggestions", suggestions);
-            emitter.send(SseEmitter.event().name("done").data(doneEvent));
-            emitter.complete();
+            sendStreamDoneAndReward(emitter, sessionId, reply, new ArrayList<BadgeTriggerRequest>(), currentUserId);
             return;
         }
 
@@ -1688,12 +1712,7 @@ public class AIChatServiceImpl implements AIChatService {
             saveAssistantMessage(sessionId, reply);
             session.setLastActiveTime(Instant.now());
             sessionRepository.save(session);
-            List<String> suggestions = generateSuggestions(reply.getMessageType());
-            Map<String, Object> doneEvent = new LinkedHashMap<>();
-            doneEvent.put("sessionId", sessionId);
-            doneEvent.put("suggestions", suggestions);
-            emitter.send(SseEmitter.event().name("done").data(doneEvent));
-            emitter.complete();
+            sendStreamDoneAndReward(emitter, sessionId, reply, new ArrayList<BadgeTriggerRequest>(), currentUserId);
             return;
         }
 
@@ -1704,6 +1723,7 @@ public class AIChatServiceImpl implements AIChatService {
 
         // 5. 根据意图分发处理
         AIChatReplyVO reply;
+        List<BadgeTriggerRequest> badgeTriggers = new ArrayList<>();
 
         try {
             reply = switch (intent.intent) {
@@ -1723,7 +1743,7 @@ public class AIChatServiceImpl implements AIChatService {
                     yield r;
                 }
                 case "recipe_recommend" -> {
-                    AIChatReplyVO r = handleRecipeRecommend(userMessage, request.getAttachments());
+                    AIChatReplyVO r = handleRecipeRecommend(userMessage, request.getAttachments(), badgeTriggers);
                     streamStructuredReply(emitter, r, fullText);
                     yield r;
                 }
@@ -1773,12 +1793,37 @@ public class AIChatServiceImpl implements AIChatService {
         session.setLastActiveTime(Instant.now());
         sessionRepository.save(session);
 
-        // 8. 发送 done 事件
+        // 8. 发送 done 事件及 reward 事件
+        sendStreamDoneAndReward(emitter, sessionId, reply, badgeTriggers, currentUserId);
+    }
+
+    /**
+     * 发送 SSE 结束事件及奖励事件。
+     * <p>在 AI 回复内容推送完毕后调用，统一发放 AI 对话 EXP、检查徽章，并推送 reward 事件。</p>
+     */
+    private void sendStreamDoneAndReward(SseEmitter emitter, String sessionId, AIChatReplyVO reply,
+                                         List<BadgeTriggerRequest> badgeTriggers, Long currentUserId) throws IOException {
         List<String> suggestions = generateSuggestions(reply.getMessageType());
         Map<String, Object> doneEvent = new LinkedHashMap<>();
         doneEvent.put("sessionId", sessionId);
         doneEvent.put("suggestions", suggestions);
         emitter.send(SseEmitter.event().name("done").data(doneEvent));
+
+        // 统一结算：AI 对话 EXP + AI 对话徽章 + 意图相关徽章
+        badgeTriggers.add(new BadgeTriggerRequest(BadgeTriggerType.AI_CHAT));
+        AchievementSettlementResult settlement = achievementSettlementService.settle(
+                currentUserId, ExpActionType.AI_CHAT, badgeTriggers);
+
+        Map<String, Object> rewardEvent = new LinkedHashMap<>();
+        rewardEvent.put("sessionId", sessionId);
+        rewardEvent.put("expGained", settlement.getExpGained());
+        rewardEvent.put("dailyExpToday", settlement.getDailyExpToday());
+        rewardEvent.put("dailyExpLimit", settlement.getDailyExpLimit());
+        rewardEvent.put("leveledUp", settlement.isLeveledUp());
+        rewardEvent.put("currentLevel", settlement.getCurrentLevel());
+        rewardEvent.put("level", settlement.getLevel());
+        rewardEvent.put("badgesUnlocked", settlement.getBadgesUnlocked());
+        emitter.send(SseEmitter.event().name("reward").data(rewardEvent));
         emitter.complete();
     }
 

@@ -27,14 +27,30 @@
               <span class="detail-value">{{ user?.roleName }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">状态</span>
+              <span class="detail-label">账号状态</span>
               <el-tag :type="user?.status === true ? 'success' : 'danger'" size="small" class="detail-tag">
                 {{ user?.status === true ? '正常' : '禁用' }}
               </el-tag>
             </div>
             <div class="detail-row">
+              <span class="detail-label">激活状态</span>
+              <el-tag :type="user?.isActivated === true ? 'success' : 'warning'" size="small" class="detail-tag">
+                {{ user?.isActivated === true ? '已激活' : '未激活' }}
+              </el-tag>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">邮箱</span>
+              <span class="detail-value">{{ user?.email || '-' }}</span>
+            </div>
+            <div class="detail-row">
               <span class="detail-label">手机号</span>
               <span class="detail-value">{{ user?.mobile }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">新手引导</span>
+              <el-tag :type="user?.guideCompleted === true ? 'success' : 'info'" size="small" class="detail-tag">
+                {{ user?.guideCompleted === true ? '已完成' : '未完成' }}
+              </el-tag>
             </div>
             <div class="detail-row">
               <span class="detail-label">注册时间</span>
@@ -43,6 +59,14 @@
             <div class="detail-row">
               <span class="detail-label">最后登录</span>
               <span class="detail-value">{{ user?.lastLoginTime || '-' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">密码更新</span>
+              <span class="detail-value">{{ user?.passwordUpdatedAt || '-' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">更新时间</span>
+              <span class="detail-value">{{ user?.updateTime || '-' }}</span>
             </div>
           </div>
         </div>

@@ -11,6 +11,8 @@ import {setRouter} from '@/utils/navigate'
 
 import './styles/index.scss'
 import '@/assets/iconfont/iconfont.css'
+// Symbol 彩色图标（需先从 iconfont 项目下载 iconfont.js 放到 src/assets/iconfont/ 目录）
+import '@/assets/iconfont/iconfont.js'
 
 const app = createApp(App)
 const pinia = createPinia()

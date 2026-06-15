@@ -117,6 +117,14 @@ public interface BizFridgeRepository extends JpaRepository<BizFridge, Long> {
     long countByIsDeletedFalse();
 
     /**
+     * 统计指定用户的未删除冰箱数量。
+     *
+     * @param ownerId 所有者ID
+     * @return 冰箱数量
+     */
+    long countByOwnerIdAndIsDeletedFalse(Long ownerId);
+
+    /**
      * 按冰箱类型分组统计未删除的冰箱数量（原生SQL）。
      * <p>LEFT JOIN 冰箱类型表，未分类冰箱的类型名称返回 NULL。</p>
      *

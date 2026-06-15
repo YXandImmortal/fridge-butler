@@ -1,0 +1,168 @@
+/* =========================================================
+ * 成就与游戏化系统公共样式
+ * ========================================================= */
+
+:root,
+html:not(.dark) {
+  --gamification-s: #22c55e;
+  --gamification-a: #3b82f6;
+  --gamification-b: #eab308;
+  --gamification-c: #f97316;
+  --gamification-d: #ef4444;
+  --gamification-empty: #e5e7eb;
+  --gamification-gold: #f59e0b;
+
+  --gamification-s-bg: rgba(34, 197, 94, 0.12);
+  --gamification-a-bg: rgba(59, 130, 246, 0.12);
+  --gamification-b-bg: rgba(234, 179, 8, 0.12);
+  --gamification-c-bg: rgba(249, 115, 22, 0.12);
+  --gamification-d-bg: rgba(239, 68, 68, 0.12);
+
+  --level-snowman: #60a5fa;
+  --level-ice-cream: #f472b6;
+  --level-ice: #67e8f9;
+  --level-snowflake: #bae6fd;
+
+  --exp-toast-bg: rgba(255, 248, 230, 0.92);
+  --exp-toast-border: rgba(245, 158, 11, 0.35);
+  --exp-toast-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+  --exp-toast-text: #92400e;
+  --exp-toast-desc: #b45309;
+  --exp-toast-icon: #f59e0b;
+
+  --badge-toast-bg: rgba(245, 243, 255, 0.92);
+  --badge-toast-border: rgba(139, 92, 246, 0.35);
+  --badge-toast-shadow: 0 8px 24px rgba(139, 92, 246, 0.2);
+  --badge-toast-text: #5b21b6;
+  --badge-toast-sub: #7c3aed;
+  --badge-toast-exp: #8b5cf6;
+  --badge-toast-icon: #8b5cf6;
+}
+
+html.dark {
+  --gamification-s: #4ade80;
+  --gamification-a: #60a5fa;
+  --gamification-b: #facc15;
+  --gamification-c: #fb923c;
+  --gamification-d: #f87171;
+  --gamification-empty: #374151;
+  --gamification-gold: #fbbf24;
+
+  --gamification-s-bg: rgba(74, 222, 128, 0.15);
+  --gamification-a-bg: rgba(96, 165, 250, 0.15);
+  --gamification-b-bg: rgba(250, 204, 21, 0.15);
+  --gamification-c-bg: rgba(251, 146, 60, 0.15);
+  --gamification-d-bg: rgba(248, 113, 113, 0.15);
+
+  --level-snowman: #93c5fd;
+  --level-ice-cream: #f9a8d4;
+  --level-ice: #a5f3fc;
+  --level-snowflake: #e0f2fe;
+
+  --exp-toast-bg: rgba(120, 90, 20, 0.9);
+  --exp-toast-border: rgba(251, 191, 36, 0.35);
+  --exp-toast-shadow: 0 8px 24px rgba(251, 191, 36, 0.18);
+  --exp-toast-text: #fde68a;
+  --exp-toast-desc: #fcd34d;
+  --exp-toast-icon: #fbbf24;
+
+  --badge-toast-bg: rgba(76, 29, 149, 0.9);
+  --badge-toast-border: rgba(167, 139, 250, 0.35);
+  --badge-toast-shadow: 0 8px 24px rgba(139, 92, 246, 0.22);
+  --badge-toast-text: #ede9fe;
+  --badge-toast-sub: #c4b5fd;
+  --badge-toast-exp: #a78bfa;
+  --badge-toast-icon: #a78bfa;
+}
+
+@keyframes float-exp {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+}
+
+@keyframes melt-warning {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes exp-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes exp-toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+}
+
+@keyframes exp-pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes badge-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes badge-pop {
+  0% {
+    transform: scale(0.5) rotate(-15deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2) rotate(5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}

@@ -66,12 +66,13 @@ function start() {
 }
 
 function onFinish() {
+  // 只有点击最后一步的 Finish 才标记完成，发放徽章与经验
   tourStore.completeScene(TOUR_SCENES.GLOBAL_LAYOUT)
 }
 
 function onClose() {
-  // 用户中途关闭也算完成，避免反复打扰
-  tourStore.completeScene(TOUR_SCENES.GLOBAL_LAYOUT)
+  // 用户点击“x”或遮罩关闭时不算完成，不发放徽章与经验
+  // 引导状态保持未完成，下次仍会自动播放或提醒
 }
 
 defineExpose({

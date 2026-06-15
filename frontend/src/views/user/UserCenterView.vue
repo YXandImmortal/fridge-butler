@@ -1,139 +1,108 @@
 <template>
-  <div class="profile-container">
-    <div class="profile-card">
-      <h2 class="profile-title">个人中心</h2>
-      <div class="profile-avatar">
-        <div class="avatar-wrapper" @click="handleChangeAvatar">
-          <Avatar size="x-large" :avatar-id="userForm.avatar"/>
-          <div class="avatar-edit-icon">
-            <i class="iconfont icon-edit-box"/>
+  <div class="user-center-container">
+    <!-- 页面标题 -->
+    <div class="page-header animate-card">
+      <h1 class="page-title">个人中心</h1>
+      <p class="page-subtitle">管理个人信息，查看成就与冰箱保鲜数据</p>
+    </div>
+
+    <!-- 顶部双栏：个人信息 + 成就总览 -->
+    <div class="top-section">
+      <!-- 左侧：个人信息卡 -->
+      <div class="profile-card animate-card card-delay-1">
+        <div class="profile-avatar">
+          <div class="avatar-wrapper" @click="handleChangeAvatar">
+            <Avatar size="x-large" :avatar-id="userForm.avatar"/>
+            <div class="avatar-edit-icon">
+              <i class="iconfont icon-edit-box"/>
+            </div>
           </div>
         </div>
+        <h2 class="profile-title">个人信息</h2>
+        <el-form :model="userForm" label-position="top" class="profile-form">
+          <el-form-item label="用户名">
+            <CustomInput v-model="userForm.username" placeholder="请输入用户名" icon="icon-contact"/>
+          </el-form-item>
+
+          <el-form-item label="手机号">
+            <CustomInput v-model="userForm.mobile" placeholder="请输入手机号" icon="icon-device-phone"/>
+          </el-form-item>
+
+          <el-form-item label="邮箱">
+            <CustomInput v-model="userForm.email" disabled placeholder="暂无绑定邮箱" icon="icon-mail"/>
+          </el-form-item>
+        </el-form>
+
+        <div class="profile-actions">
+          <CustomButton @click="showChangePasswordDialog = true">
+            <i class="iconfont icon-edit-box"/>
+            修改密码
+          </CustomButton>
+          <CustomButton @click="handleChangeEmail">
+            <i class="iconfont icon-mail"/>
+            {{ userForm.email ? '修改邮箱' : '绑定邮箱' }}
+          </CustomButton>
+          <CustomButton type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">
+            <i class="iconfont icon-save"/>
+            保存修改
+          </CustomButton>
+          <CustomButton type="danger" @click="showConfirmLogout = true">
+            <i class="iconfont icon-logout"/>
+            退出登录
+          </CustomButton>
+        </div>
       </div>
-      <el-form :model="userForm" label-position="top" class="profile-form">
-        <el-form-item label="用户名">
-          <CustomInput v-model="userForm.username" placeholder="请输入用户名" icon="icon-contact"/>
-        </el-form-item>
 
-        <el-form-item label="手机号">
-          <CustomInput v-model="userForm.mobile" placeholder="请输入手机号" icon="icon-device-phone"/>
-        </el-form-item>
-
-        <el-form-item label="邮箱">
-          <CustomInput v-model="userForm.email" disabled placeholder="暂无绑定邮箱" icon="icon-mail"/>
-        </el-form-item>
-
-        <el-form-item label="注册时间">
-          <CustomInput v-model="userForm.createTime" disabled icon="icon-calendar"/>
-        </el-form-item>
-
-      </el-form>
-
-      <div class="profile-actions">
-        <CustomButton @click="handleChangePassword">
-          <i class="iconfont icon-edit-box"/>
-          修改密码
-        </CustomButton>
-        <CustomButton @click="handleChangeEmail">
-          <i class="iconfont icon-mail"/>
-          {{ userForm.email ? '修改邮箱' : '绑定邮箱' }}
-        </CustomButton>
-        <CustomButton type="primary" @click="showConfirmSave = true" :loading="loadingSave" loading-text="保存中...">
-          <i class="iconfont icon-save"/>
-          保存修改
-        </CustomButton>
-        <CustomButton type="danger" @click="showConfirmLogout = true">
-          <i class="iconfont icon-logout"/>
-          退出登录
-        </CustomButton>
+      <!-- 右侧：成就总览面板 -->
+      <div class="animate-card card-delay-2 achievement-panel-wrapper">
+        <AchievementPanel
+            :overview="gamificationStore.overview"
+            :settings="gamificationStore.settings"
+            :loading="gamificationStore.isOverviewLoading"
+            @settings-click="activeTab = 'settings'"
+            @toggle-collapse="handleTogglePanel"
+            @tab-change="activeTab = $event"
+        />
       </div>
     </div>
 
-    <!-- 编辑信息区域 -->
-    <Transition name="slide-left">
-      <div class="edit-card" v-show="showEditCard">
-        <div class="edit-content">
-          <!-- 编辑内容将根据编辑类型动态显示 -->
-          <Transition name="switch">
-            <div v-if="editType === 'password'">
-              <h2 class="edit-title">修改密码</h2>
-              <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-position="top"
-                       class="profile-form edit-form">
-                <el-form-item label="原密码" prop="originalPassword">
-                  <CustomInput type="password" v-model="passwordForm.originalPassword" placeholder="请输入原密码"
-                                 icon="icon-lock" size="large"/>
-                </el-form-item>
-                <el-form-item label="新密码" prop="newPassword">
-                  <CustomInput type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码"
-                                 icon="icon-lock" size="large"/>
-                </el-form-item>
-                <el-form-item label="确认新密码" prop="confirmNewPassword">
-                  <CustomInput type="password" v-model="passwordForm.confirmNewPassword" placeholder="请确认新密码"
-                                 icon="icon-lock" size="large"/>
-                </el-form-item>
-                <el-form-item label="验证码" prop="captcha">
-                  <CaptchaInput
-                      v-model="passwordForm.captcha"
-                      ref="captchaInputRef"
-                      :height="40"
-                      input-width="150px"
-                  />
-                </el-form-item>
-              </el-form>
-            </div>
-            <div v-else-if="editType === 'email'">
-              <h2 class="edit-title">{{ userForm.email ? '修改邮箱' : '绑定邮箱' }}</h2>
-              <el-form :model="emailForm" :rules="emailRules" ref="emailFormRef" label-position="top"
-                       class="profile-form edit-form">
-                <el-form-item label="新邮箱" prop="email">
-                  <EmailVerifyInput
-                      v-model="emailForm.email"
-                      placeholder="请输入新邮箱地址"
-                      captcha-type="BIND"
-                      api-url="/user/email/captcha"
-                  />
-                </el-form-item>
-                <el-form-item label="验证码" prop="captcha">
-                  <CustomInput v-model="emailForm.captcha" placeholder="请输入6位验证码" icon="icon-captcha" size="large"/>
-                </el-form-item>
-              </el-form>
-            </div>
-            <div v-else-if="editType === 'avatar'">
-              <h2 class="edit-title">选择头像</h2>
-              <div class="avatar-upload-section">
-                <Avatar size="x-large" :avatar-id="selectedAvatar"/>
-                <div class="avatar-grid">
-                  <div
-                      v-for="avatarId in systemAvatars"
-                      :key="avatarId"
-                      class="avatar-item"
-                      :class="{ 'selected': selectedAvatar === avatarId }"
-                      @click="handleSelectAvatar(avatarId)"
-                  >
-                    <Avatar size="large" :avatar-id="avatarId"/>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Transition>
-        </div>
-        <div class="edit-actions">
-          <CustomButton
-              type="primary"
-              @click="handleEditConfirm"
-              :loading="editConfirmLoading"
-              loading-text="修改中..."
-          >
-            <i class="iconfont icon-check"/>
-            确认
-          </CustomButton>
-          <CustomButton @click="showEditCard = false">
-            <i class="iconfont icon-close"/>
-            取消
-          </CustomButton>
-        </div>
-      </div>
-    </Transition>
+    <!-- 下方成就详情 Tabs -->
+    <div class="achievement-tabs-card animate-card card-delay-3">
+      <el-tabs v-model="activeTab" class="achievement-tabs">
+        <el-tab-pane label="徽章墙" name="badges" lazy>
+          <BadgeSection/>
+        </el-tab-pane>
+        <el-tab-pane label="EXP 日志" name="exp-log" lazy>
+          <ExpLogSection/>
+        </el-tab-pane>
+        <el-tab-pane label="月度报告" name="reports" lazy>
+          <MonthlyReportSection/>
+        </el-tab-pane>
+        <el-tab-pane label="成就设置" name="settings" lazy>
+          <AchievementSettings/>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
+
+    <!-- 修改密码弹窗 -->
+    <ChangePasswordDialog
+        v-model:visible="showChangePasswordDialog"
+        @success="handlePasswordChanged"
+    />
+
+    <!-- 绑定/修改邮箱弹窗 -->
+    <BindEmailDialog
+        v-model:visible="showBindEmailDialog"
+        :current-email="userForm.email"
+        @success="handleEmailChanged"
+    />
+
+    <!-- 选择头像弹窗 -->
+    <ChangeAvatarDialog
+        v-model:visible="showChangeAvatarDialog"
+        :current-avatar="userForm.avatar"
+        @success="handleAvatarChanged"
+    />
 
     <!-- 确认保存修改对话框 -->
     <ConfirmDialog
@@ -160,388 +129,145 @@
 <script setup>
 import UserCenterTour from '@/components/tour/UserCenterTour.vue'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour'
-import {computed, onMounted, ref, watch} from 'vue';
-import {useRoute, useRouter} from 'vue-router';
-import {useNotificationStore} from '@/stores/notification'
-import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import {onMounted, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {useUserStore} from '@/stores/user'
+import {useGamificationStore} from '@/stores/gamification'
+import Avatar from '@/components/ui/Avatar.vue'
+import CustomInput from '@/components/ui/CustomInput.vue'
+import CustomButton from '@/components/ui/CustomButton.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import ChangePasswordDialog from '@/components/ui/ChangePasswordDialog.vue'
+import BindEmailDialog from '@/components/user/BindEmailDialog.vue'
+import ChangeAvatarDialog from '@/components/user/ChangeAvatarDialog.vue'
+import AchievementPanel from '@/components/gamification/AchievementPanel.vue'
+import BadgeSection from '@/components/gamification/BadgeSection.vue'
+import ExpLogSection from '@/components/gamification/ExpLogSection.vue'
+import MonthlyReportSection from '@/components/gamification/MonthlyReportSection.vue'
+import AchievementSettings from '@/components/gamification/AchievementSettings.vue'
 import showMessage from '@/utils/message'
-import {useUserStore} from '@/stores/user';
-import Avatar from "@/components/ui/Avatar.vue";
-import CustomInput from "@/components/ui/CustomInput.vue";
-import CaptchaInput from "@/components/form/CaptchaInput.vue";
-import EmailVerifyInput from "@/components/form/EmailVerifyInput.vue";
-import {getSystemAvatarIds} from '@/utils/avatarManager';
-import CustomButton from "@/components/ui/CustomButton.vue";
+import {resetLevelUpNotify} from '@/utils/levelUpNotify'
+import {consumePendingRewards} from '@/utils/gamificationNotify'
+import {destroyGamificationToastContainer} from '@/utils/gamificationToastContainer'
 
 const router = useRouter()
 const route = useRoute()
-const userStore = useUserStore();
-const notificationStore = useNotificationStore()
-const {getUserInfo, updateUserInfo, changePassword, updateUserAvatar, updateUserEmail, logout} = userStore;
+const userStore = useUserStore()
+const gamificationStore = useGamificationStore()
+const {getUserInfo, updateUserInfo, logout} = userStore
 
-const showConfirmSave = ref(false);
-const showConfirmLogout = ref(false);
+const showConfirmSave = ref(false)
+const showConfirmLogout = ref(false)
+const showChangePasswordDialog = ref(false)
+const showBindEmailDialog = ref(false)
+const showChangeAvatarDialog = ref(false)
+const activeTab = ref('badges')
 
-// 控制编辑卡片显示/隐藏
-const showEditCard = ref(false);
+const loadingSave = ref(false)
 
-// 编辑类型：password 或 avatar
-const editType = ref('');
-
-// 头像相关
-const systemAvatars = ref([]);
-const selectedAvatar = ref('');
-const loadingChangeAvatar = ref(false);
-
-// 加载状态
-const loadingSave = ref(false);
-const loadingChangePassword = ref(false);
-const loadingChangeEmail = ref(false);
-
-// 编辑确认按钮 loading 状态
-const editConfirmLoading = computed(() => {
-  if (editType.value === 'password') return loadingChangePassword.value;
-  if (editType.value === 'email') return loadingChangeEmail.value;
-  return loadingChangeAvatar.value;
-});
-
-const captchaInputRef = ref();
-const passwordFormRef = ref();
-const emailFormRef = ref();
-
-// 密码修改表单
-const passwordForm = ref({
-  originalPassword: '',
-  newPassword: '',
-  confirmNewPassword: '',
-  captcha: ''
-});
-
-// 邮箱修改表单
-const emailForm = ref({
-  email: '',
-  captcha: ''
-});
-
-// 自定义验证规则：新密码
-const validateNewPassword = (rule, value, callback) => {
-  if (value === '') {
-    callback(new Error('请输入新密码'))
-  } else if (value.length < 8 || value.length > 20) {
-    callback(new Error('密码长度应为8-20位'))
-  } else {
-    let typeCount = 0
-    if (/[A-Z]/.test(value)) typeCount++
-    if (/[a-z]/.test(value)) typeCount++
-    if (/[0-9]/.test(value)) typeCount++
-    if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value)) typeCount++
-
-    if (typeCount < 2) {
-      callback(new Error('密码需包含大写字母、小写字母、数字、特殊符号中的至少两种'))
-    } else if (userForm.value.username && value.includes(userForm.value.username)) {
-      callback(new Error('密码不能包含用户名'))
-    } else if (userForm.value.mobile && value.includes(userForm.value.mobile)) {
-      callback(new Error('密码不能包含手机号'))
-    } else {
-      callback()
-    }
-  }
-}
-
-// 自定义验证规则：确认新密码
-const validateConfirmNewPassword = (rule, value, callback) => {
-  if (value === '') {
-    callback(new Error('请再次输入密码'))
-  } else if (value !== passwordForm.value.newPassword) {
-    callback(new Error('两次输入的密码不一致'))
-  } else {
-    callback()
-  }
-}
-
-// 密码修改表单验证规则
-const passwordRules = {
-  originalPassword: [
-    {required: true, message: '原密码不能为空', trigger: 'blur'}
-  ],
-  newPassword: [
-    {required: true, validator: validateNewPassword, trigger: 'blur'}
-  ],
-  confirmNewPassword: [
-    {required: true, validator: validateConfirmNewPassword, trigger: 'blur'}
-  ],
-  captcha: [
-    {required: true, message: '验证码不能为空', trigger: 'blur'},
-    {min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur'}
-  ]
-};
-
-// 邮箱格式校验
-const validateEmail = (rule, value, callback) => {
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-  if (!value) {
-    callback(new Error('请输入邮箱地址'))
-  } else if (!emailRegex.test(value)) {
-    callback(new Error('邮箱格式不正确'))
-  } else if (value === userForm.value.email) {
-    callback(new Error('新邮箱不能与当前邮箱相同'))
-  } else {
-    callback()
-  }
-}
-
-// 邮箱验证码校验
-const validateEmailCaptcha = (rule, value, callback) => {
-  if (!value) {
-    callback(new Error('请输入验证码'))
-  } else if (!/^\d{6}$/.test(value)) {
-    callback(new Error('验证码为6位数字'))
-  } else {
-    callback()
-  }
-}
-
-// 邮箱修改表单验证规则
-const emailRules = {
-  email: [
-    {required: true, validator: validateEmail, trigger: 'blur'}
-  ],
-  captcha: [
-    {required: true, validator: validateEmailCaptcha, trigger: 'blur'}
-  ]
-};
-
-// 用户信息表单
 const userForm = ref({
   username: '',
   mobile: '',
   email: '',
-  createTime: '',
   roleName: '',
   avatar: ''
-});
+})
 
 // 初始化用户信息
 onMounted(async () => {
-  const userInfo = await getUserInfo();
+  const userInfo = await getUserInfo()
   if (userInfo) {
     userForm.value = {
       username: userInfo.username || '',
       mobile: userInfo.mobile || '',
       email: userInfo.email || '',
-      createTime: userInfo.createTime || '',
       roleName: userInfo.roleName || '',
       avatar: userInfo.avatar || 'egg'
-    };
+    }
   } else {
-    showMessage.error('获取用户信息失败');
+    showMessage.error('获取用户信息失败')
   }
-
-  // 加载系统预设头像
-  loadSystemAvatars();
 
   // 若从通知跳转过来，自动打开邮箱绑定面板
   if (route.query.edit === 'email') {
     handleChangeEmail()
   }
-});
 
-// 加载系统预设头像
-const loadSystemAvatars = () => {
-  systemAvatars.value = getSystemAvatarIds();
-};
+  // 加载成就数据
+  await gamificationStore.fetchOverview()
+  await gamificationStore.fetchSettings()
 
+  // 消费可能残留的待展示奖励（Header 通常已经消费过，此处作为兜底）
+  await consumePendingRewards()
+})
 
 // 保存修改
 const handleSave = async () => {
-  if (loadingSave.value) return;
+  if (loadingSave.value) return
 
   try {
-    loadingSave.value = true;
-    const res = await updateUserInfo(userForm.value);
+    loadingSave.value = true
+    const res = await updateUserInfo(userForm.value)
 
     if (res.code === 200) {
-      showMessage.success('保存成功');
+      showMessage.success('保存成功')
       handleLogout('保存成功，请重新登录')
     } else {
-      showMessage.error('保存失败: ' + (res.message || '未知错误'));
+      showMessage.error('保存失败: ' + (res.message || '未知错误'))
     }
   } catch (error) {
-    showMessage.error('保存失败');
-    console.error('保存失败:', error);
+    showMessage.error('保存失败')
+    console.error('保存失败:', error)
   } finally {
-    loadingSave.value = false;
+    loadingSave.value = false
   }
-};
-
-// 编辑确认按钮分发
-const handleEditConfirm = () => {
-  if (editType.value === 'password') {
-    handleChangePasswordSubmit();
-  } else if (editType.value === 'email') {
-    handleChangeEmailSubmit();
-  } else {
-    handleChangeAvatarSubmit();
-  }
-};
+}
 
 // 修改密码
-const handleChangePassword = async () => {
-  editType.value = 'password';
-  showEditCard.value = true;
-  // 初始化验证码
-  await captchaInputRef.value?.refreshCaptcha();
-};
+const handlePasswordChanged = () => {
+  showChangePasswordDialog.value = false
+}
 
 // 修改邮箱
 const handleChangeEmail = () => {
-  editType.value = 'email';
-  emailForm.value = {
-    email: '',
-    captcha: ''
-  };
-  showEditCard.value = true;
-};
+  showBindEmailDialog.value = true
+}
 
-// 提交修改密码
-const handleChangePasswordSubmit = async () => {
-  if (loadingChangePassword.value) return;
-
-  // 先验证表单
-  try {
-    await passwordFormRef.value.validate();
-  } catch {
-    return; // 表单验证失败，直接返回
-  }
-
-  // 执行修改密码请求
-  try {
-    loadingChangePassword.value = true;
-
-    // 传递captchaId到修改密码请求
-    const changePasswordData = {
-      ...passwordForm.value,
-      captchaId: captchaInputRef.value?.captchaId || ''
-    };
-
-    console.log(changePasswordData);
-
-    // 调用修改密码接口
-    const res = await changePassword(changePasswordData);
-
-    if (res.code === 200) {
-      showMessage.success('密码修改成功');
-      showEditCard.value = false;
-      // 重置表单
-      passwordForm.value = {
-        originalPassword: '',
-        newPassword: '',
-        confirmNewPassword: '',
-        captcha: ''
-      };
-    } else {
-      showMessage.error(res.message || '密码修改失败');
-      // 失败时刷新验证码
-      await captchaInputRef.value?.refreshCaptcha();
-    }
-  } catch (error) {
-    // 网络错误、请求超时、拦截器reject等异常情况
-    console.error('修改密码失败:', error);
-    if (!error.response) {
-      // 只有真正的网络/超时错误才兜底提示；业务错误已由响应拦截器处理
-      showMessage.error(error.message || '修改密码失败');
-    }
-    // 异常时刷新验证码
-    await captchaInputRef.value?.refreshCaptcha();
-  } finally {
-    loadingChangePassword.value = false;
-  }
-};
+const handleEmailChanged = (email) => {
+  userForm.value.email = email
+}
 
 // 修改头像
 const handleChangeAvatar = () => {
-  editType.value = 'avatar';
-  selectedAvatar.value = userForm.value.avatar;
-  showEditCard.value = true;
-};
+  showChangeAvatarDialog.value = true
+}
 
-// 选择头像
-const handleSelectAvatar = (avatarId) => {
-  selectedAvatar.value = avatarId;
-};
+const handleAvatarChanged = (avatar) => {
+  userForm.value.avatar = avatar
+}
 
-// 提交修改邮箱
-const handleChangeEmailSubmit = async () => {
-  if (loadingChangeEmail.value) return;
-
-  // 先验证表单
+// 折叠/展开成就面板
+const handleTogglePanel = async () => {
+  const newValue = !gamificationStore.isPanelHidden
   try {
-    await emailFormRef.value.validate();
-  } catch {
-    return;
-  }
-
-  try {
-    loadingChangeEmail.value = true;
-    const res = await updateUserEmail({
-      email: emailForm.value.email,
-      captcha: emailForm.value.captcha
-    });
-
-    if (res.code === 200) {
-      showMessage.success(res.message || '邮箱绑定成功');
-      userForm.value.email = emailForm.value.email;
-      showEditCard.value = false;
-      emailForm.value = {
-        email: '',
-        captcha: ''
-      };
-      // 刷新通知状态（后端会自动标记绑定邮箱提醒为已读）
-      await notificationStore.fetchUnreadCount()
-      await notificationStore.fetchSummary()
-    } else {
-      showMessage.error(res.message || '邮箱绑定失败');
-    }
+    await gamificationStore.updateSettings({panelHidden: newValue})
   } catch (error) {
-    console.error('绑定邮箱失败:', error);
-    if (!error.response) {
-      showMessage.error(error.message || '绑定邮箱失败');
-    }
-  } finally {
-    loadingChangeEmail.value = false;
+    console.error('切换成就面板状态失败:', error)
   }
-};
-
-// 提交修改头像
-const handleChangeAvatarSubmit = async () => {
-  if (loadingChangeAvatar.value) return;
-  try {
-    loadingChangeAvatar.value = true;
-    const res = await updateUserAvatar(selectedAvatar.value);
-
-    if (res.code === 200) {
-      showMessage.success('头像修改成功');
-      userForm.value.avatar = selectedAvatar.value;
-      showEditCard.value = false;
-    } else {
-      showMessage.error('头像修改失败: ' + (res.message || '未知错误'));
-    }
-  } catch (error) {
-    showMessage.error('头像修改失败');
-    console.error('头像修改失败:', error);
-  } finally {
-    loadingChangeAvatar.value = false;
-  }
-};
+}
 
 // 处理退出登录
 const handleLogout = (msg) => {
-  logout();
-  showConfirmSave.value = false;
-  showConfirmLogout.value = false;
-  router.push('/login');
+  logout()
+  gamificationStore.reset()
+  resetLevelUpNotify()
+  destroyGamificationToastContainer()
+  showConfirmSave.value = false
+  showConfirmLogout.value = false
+  router.push('/login')
   showMessage.info(typeof msg === 'string' ? msg : '已退出登录')
-};
+}
+
 // 页面引导
 const tourRef = ref(null)
 const tourStore = useTourStore()
@@ -554,31 +280,81 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 </script>
 
 <style scoped lang="scss">
-.profile-container {
+.user-center-container {
+  max-width: 1200px;
+  margin: 0 auto;
   width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  min-height: 100%;
-  gap: 32px;
+}
+
+.animate-card {
   animation: fade-in-up 0.6s ease-out;
-  flex-wrap: wrap;
+  animation-fill-mode: both;
+}
+
+.card-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.card-delay-2 {
+  animation-delay: 0.2s;
+}
+
+.card-delay-3 {
+  animation-delay: 0.3s;
+}
+
+.achievement-panel-wrapper {
+  min-width: 0;
+}
+
+.page-header {
+  margin-bottom: var(--space-6);
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.top-section {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+  align-items: stretch;
+}
+
+.profile-card {
+  padding: var(--space-6);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  min-width: 0;
+
+  &:hover {
+    box-shadow: var(--shadow-lg);
+  }
 }
 
 .profile-title {
-  font-size: 32px;
+  font-size: 20px;
   font-weight: 600;
-  margin-bottom: 12px;
-  text-align: center;
-  color: var(--text-primary);
-  animation: fade-in-down 0.6s ease-out;
-}
-
-.edit-title {
-  font-size: 32px;
-  font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-5);
   text-align: center;
   color: var(--text-primary);
 }
@@ -586,8 +362,7 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 .profile-avatar {
   display: flex;
   justify-content: center;
-  margin-bottom: 32px;
-  animation: fadeIn 0.8s ease-out;
+  margin-bottom: var(--space-4);
 }
 
 .avatar-wrapper {
@@ -632,37 +407,14 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   font-size: 16px;
 }
 
-.profile-card {
-  max-width: 500px;
-  width: 100%;
-  padding: 40px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-  z-index: 2;
-}
-
-.profile-card:hover {
-  box-shadow: 0 12px 60px var(--glass-lavender-25);
-  transform: translateY(-2px);
-}
-
 .profile-form {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* 表单项目样式优化 */
 .profile-form .el-form-item {
   margin-bottom: var(--space-4);
-}
-
-.profile-form.edit-form .el-form-item {
-  width: 100%;
 }
 
 .profile-form .el-form-item__label {
@@ -671,116 +423,77 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   margin-bottom: 12px;
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .profile-actions {
-  justify-self: center;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-5);
+  gap: var(--space-4);
   padding-top: var(--space-4);
   border-top: 1px solid var(--divider-color);
 }
 
-.edit-content {
-  position: relative;
-  width: 100%;
-}
-
-/* 编辑卡片样式 */
-.edit-card {
-  max-width: 600px;
-  padding: 40px;
+.achievement-tabs-card {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-color);
+  padding: var(--space-5) var(--space-6);
   transition: all 0.3s ease;
-  z-index: 1;
+
+  &:hover {
+    box-shadow: var(--shadow-lg);
+  }
 }
 
-.edit-card:hover {
-  box-shadow: 0 12px 60px var(--glass-lavender-25);
-  transform: translateY(-2px);
+.achievement-tabs :deep(.el-tabs__item) {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
-.avatar-upload-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 20px;
+.achievement-tabs :deep(.el-tabs__item.is-active) {
+  color: var(--primary-color);
 }
 
-.avatar-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  width: 100%;
-  max-width: 300px;
+.achievement-tabs :deep(.el-tabs__active-bar) {
+  background-color: var(--primary-color);
 }
 
-.avatar-item {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.avatar-item:hover {
-  background-color: var(--primary-light);
-  transform: scale(1.05);
-}
-
-.avatar-item.selected {
-  background-color: var(--primary-20);
-  border: 2px solid var(--primary-color);
-}
-
-.avatar-item :deep(.el-avatar) {
-  transition: all 0.3s ease;
-}
-
-.avatar-item:hover :deep(.el-avatar) {
-  box-shadow: var(--shadow-avatar);
-  transition: all 0.3s ease;
-}
-
-.edit-actions {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-5);
-  padding-top: 24px;
-  border-top: 1px solid var(--divider-color);
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 响应式设计 */
 @media (max-width: 1280px) {
-  .profile-container {
-    flex-direction: column;
-    align-items: center;
+  .top-section {
+    grid-template-columns: 1fr;
   }
 
-  .edit-card {
-    animation: fade-in-up 0.6s ease-out;
+  .profile-card {
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
   }
 }
 
 @media (max-width: 768px) {
-  .profile-card,
-  .edit-card {
-    padding: 32px 24px;
-    max-width: 90%;
+  .page-title {
+    font-size: 22px;
   }
 
-  .profile-title {
-    font-size: 28px;
-    margin-bottom: 24px;
+  .profile-card,
+  .achievement-tabs-card {
+    padding: var(--space-4) var(--space-5);
   }
 
   .profile-actions {
@@ -792,32 +505,20 @@ watch(() => tourStore.pendingStartScene, (scene) => {
     width: 100%;
     min-width: auto;
   }
-
-  .edit-actions {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .edit-actions .custom-button {
-    width: 100%;
-    min-width: auto;
-  }
 }
 
-/* 小屏幕适配 */
 @media (max-width: 480px) {
-  .profile-card {
-    padding: 24px 16px;
-    max-width: 95%;
+  .page-title {
+    font-size: 20px;
   }
 
-  .profile-title {
-    font-size: 24px;
-    margin-bottom: 20px;
+  .profile-card,
+  .achievement-tabs-card {
+    padding: var(--space-4);
   }
 
   .profile-form .el-form-item {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 }
 </style>

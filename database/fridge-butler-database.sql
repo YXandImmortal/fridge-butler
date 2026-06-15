@@ -413,7 +413,172 @@ create table sys_user
 )
 comment '系统用户表';
 
+create table daily_freshness_snapshot
+(
+	id bigint auto_increment comment '主键ID'
+		primary key,
+	user_id bigint not null comment '用户ID',
+	snapshot_date date not null comment '快照日期',
+	freshness_score int null comment '保鲜评分 0-100',
+	score_grade varchar(1) null comment '评分等级 S/A/B/C/D',
+	has_expired tinyint default 0 null comment '当日是否有过期物品：1-是 0-否',
+	item_count int default 0 null comment '当日物品总数',
+	expired_count int default 0 null comment '当日过期物品数',
+	expiring_3d_count int default 0 null comment '当日3天内临期物品数',
+	fridge_count int default 0 null comment '当日冰箱数量',
+	capacity_rate_avg decimal(5,2) null comment '当日平均容量利用率',
+	created_at datetime(3) default CURRENT_TIMESTAMP(3) null comment '创建时间',
+	freshness_score_freshness decimal(5,2) default 0.00 not null comment '新鲜度维度得分（临期处理）',
+	freshness_score_turnover decimal(5,2) default 0.00 not null comment '周转效率维度得分（库存周转）',
+	freshness_score_expired decimal(5,2) default 0.00 not null comment '过期控制维度得分',
+	freshness_score_capacity decimal(5,2) default 0.00 not null comment '空间利用维度得分（分类整理）',
+	constraint uk_user_date
+		unique (user_id, snapshot_date),
+	constraint daily_freshness_snapshot_ibfk_1
+		foreign key (user_id) references sys_user (id)
+)
+comment '每日保鲜评分快照（用于热力图和历史趋势）';
+
+create table monthly_report
+(
+	id bigint auto_increment comment '主键ID'
+		primary key,
+	user_id bigint not null comment '用户ID',
+	`year_month` varchar(7) not null comment '报告年月，如 2026-05',
+	avg_score int default 0 null comment '当月平均保鲜评分',
+	max_score int default 0 null comment '当月最高保鲜评分',
+	min_score int default 0 null comment '当月最低保鲜评分',
+	expired_count int default 0 null comment '当月过期物品数',
+	expiring_count int default 0 null comment '当月临期物品数',
+	wasted_amount decimal(10,2) default 0.00 null comment 'AI估算浪费金额（元）',
+	saved_kg decimal(10,2) default 0.00 null comment '避免浪费食材重量（kg）',
+	co2_saved decimal(10,2) default 0.00 null comment '减少CO2排放（kg）',
+	water_saved decimal(10,2) default 0.00 null comment '节约用水（L）',
+	items_added int default 0 null comment '当月添加物品数',
+	items_taken_out int default 0 null comment '当月取出物品数',
+	new_badges int default 0 null comment '当月新解锁徽章数',
+	level_start int default 1 null comment '月初等级',
+	level_end int default 1 null comment '月末等级',
+	streak_max int default 0 null comment '当月最高连续天数',
+	viewed_at datetime(3) null comment '首次查看时间（用于EXP发放控制）',
+	generated_at datetime(3) default CURRENT_TIMESTAMP(3) null comment '生成时间',
+	constraint uk_user_month
+		unique (user_id, `year_month`),
+	constraint monthly_report_ibfk_1
+		foreign key (user_id) references sys_user (id)
+)
+comment '用户月度报告';
+
 create index idx_sys_user_mobile
 	on sys_user (mobile);
+
+create table user_achievement_setting
+(
+	id bigint auto_increment
+		primary key,
+	user_id bigint not null,
+	panel_hidden tinyint default 0 null,
+	auto_streak_protect tinyint default 1 null,
+	streak_protect_notify tinyint default 1 null,
+	updated_at datetime(3) default CURRENT_TIMESTAMP(3) null on update CURRENT_TIMESTAMP(3),
+	constraint user_id
+		unique (user_id),
+	constraint user_achievement_setting_ibfk_1
+		foreign key (user_id) references sys_user (id)
+)
+comment '用户成就系统个性化设置';
+
+create table user_action_counter
+(
+	id bigint auto_increment comment '主键ID'
+		primary key,
+	user_id bigint not null comment '用户ID',
+	counter_type varchar(50) not null comment '计数类型：NIGHT_OWL(夜猫子), EARLY_BIRD(早起鸟), DATA_CENTER_VIEW(数据控), CHEF_COOK(大厨认证), ORGANIZE_DAY(整理专家)',
+	count_value int default 0 null comment '累计计数',
+	count_date date null comment '按日计数时使用（如 ORGANIZE_DAY）',
+	updated_at datetime(3) default CURRENT_TIMESTAMP(3) null on update CURRENT_TIMESTAMP(3) comment '更新时间',
+	constraint uk_user_type_date
+		unique (user_id, counter_type, count_date),
+	constraint user_action_counter_ibfk_1
+		foreign key (user_id) references sys_user (id)
+)
+comment '用户行为计数器（用于徽章解锁判定）';
+
+create table user_badge
+(
+	id bigint auto_increment comment '主键ID'
+		primary key,
+	user_id bigint not null comment '用户ID',
+	badge_code varchar(50) not null comment '徽章唯一编码',
+	unlocked_at datetime(3) default CURRENT_TIMESTAMP(3) null comment '解锁时间',
+	constraint uk_user_badge
+		unique (user_id, badge_code),
+	constraint user_badge_ibfk_1
+		foreign key (user_id) references sys_user (id)
+)
+comment '用户已解锁徽章';
+
+create table user_exp
+(
+	id bigint auto_increment
+		primary key,
+	user_id bigint not null,
+	current_exp int default 0 null,
+	total_exp int default 0 null,
+	current_level int default 1 null,
+	daily_exp_today int default 0 null,
+	daily_exp_date date null,
+	title_custom varchar(50) null,
+	created_at datetime(3) default CURRENT_TIMESTAMP(3) null,
+	updated_at datetime(3) default CURRENT_TIMESTAMP(3) null on update CURRENT_TIMESTAMP(3),
+	constraint user_id
+		unique (user_id),
+	constraint user_exp_ibfk_1
+		foreign key (user_id) references sys_user (id)
+)
+comment '用户经验值与等级';
+
+create table user_exp_log
+(
+	id bigint auto_increment
+		primary key,
+	user_id bigint not null,
+	action_type varchar(50) not null,
+	action_desc varchar(200) null,
+	exp_gained int not null,
+	exp_balance int not null,
+	related_id bigint null,
+	created_at datetime(3) default CURRENT_TIMESTAMP(3) null,
+	constraint user_exp_log_ibfk_1
+		foreign key (user_id) references sys_user (id)
+)
+comment '经验值变动日志';
+
+create index idx_user_date
+	on user_exp_log (user_id, created_at);
+
+create table user_streak
+(
+	id bigint auto_increment
+		primary key,
+	user_id bigint not null,
+	current_streak int default 0 null,
+	max_streak int default 0 null,
+	protect_count_remaining int default 2 null,
+	protect_count_total int default 2 null,
+	protect_count_used int default 0 null,
+	protect_reset_month varchar(7) default '' null,
+	auto_protect_enabled tinyint default 1 null,
+	protect_notify_enabled tinyint default 1 null,
+	last_check_date date null,
+	last_check_result tinyint default 0 null,
+	created_at datetime(3) default CURRENT_TIMESTAMP(3) null,
+	updated_at datetime(3) default CURRENT_TIMESTAMP(3) null on update CURRENT_TIMESTAMP(3),
+	constraint user_id
+		unique (user_id),
+	constraint user_streak_ibfk_1
+		foreign key (user_id) references sys_user (id)
+)
+comment '用户冰鲜连续天数与保护机制';
 
 

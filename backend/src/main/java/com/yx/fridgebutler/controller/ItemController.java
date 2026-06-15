@@ -11,12 +11,16 @@ import com.yx.fridgebutler.dto.unit.ItemUnitCreateRequest;
 import com.yx.fridgebutler.dto.unit.ItemUnitUpdateRequest;
 import com.yx.fridgebutler.dto.item.ItemUpdateRequest;
 import com.yx.fridgebutler.vo.item.ExpiringSummaryVO;
+import com.yx.fridgebutler.vo.item.ItemCreateVO;
+import com.yx.fridgebutler.vo.item.ItemTakeOutResultVO;
+import com.yx.fridgebutler.vo.item.ItemUpdateResultVO;
 import com.yx.fridgebutler.vo.item.TakeOutDailyStatisticsVO;
 import com.yx.fridgebutler.vo.unit.ItemUnitVO;
 import com.yx.fridgebutler.vo.unit.type.UnitTypeVO;
 import com.yx.fridgebutler.dto.unittype.UnitTypeCreateRequest;
 import com.yx.fridgebutler.dto.unittype.UnitTypeUpdateRequest;
 import com.yx.fridgebutler.service.ItemService;
+import com.yx.fridgebutler.util.UserContextUtil;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -51,26 +55,27 @@ public class ItemController {
      * 新增物品
      *
      * @param request 物品创建请求
-     * @return 新创建物品的ID
+     * @return 新创建物品结果，包含物品ID与EXP信息
      */
     @PostMapping("/create")
-    public Result<Long> createItem(@Valid @RequestBody ItemCreateRequest request) {
-        Long itemId = itemService.createItem(request);
-        log.info("新增物品成功，物品ID：{}，名称：{}，冰箱ID：{}", itemId, request.getItemName(), request.getFridgeId());
-        return Result.success(itemId);
+    public Result<ItemCreateVO> createItem(@Valid @RequestBody ItemCreateRequest request) {
+        ItemCreateVO result = itemService.createItem(request);
+        log.info("新增物品成功，物品ID：{}，名称：{}，冰箱ID：{}，EXP：{}",
+                result.getItemId(), request.getItemName(), request.getFridgeId(), result.getExpGained());
+        return Result.success(result);
     }
 
     /**
      * 更新物品
      *
      * @param request 物品更新请求
-     * @return 操作结果
+     * @return 操作结果，包含EXP信息
      */
     @PostMapping("/update")
-    public Result<Void> updateItem(@Valid @RequestBody ItemUpdateRequest request) {
-        itemService.updateItem(request);
-        log.info("更新物品成功，物品ID：{}，名称：{}", request.getId(), request.getItemName());
-        return Result.success(null);
+    public Result<ItemUpdateResultVO> updateItem(@Valid @RequestBody ItemUpdateRequest request) {
+        ItemUpdateResultVO result = itemService.updateItem(request);
+        log.info("更新物品成功，物品ID：{}，名称：{}，EXP：{}", request.getId(), request.getItemName(), result.getExpGained());
+        return Result.success(result);
     }
 
     /**
@@ -270,13 +275,13 @@ public class ItemController {
      * 取出物品
      *
      * @param request 物品取出请求
-     * @return 操作结果
+     * @return 操作结果，包含EXP信息
      */
     @PostMapping("/take-out")
-    public Result<Void> takeOutItem(@Valid @RequestBody ItemTakeOutRequest request) {
-        itemService.takeOutItem(request);
-        log.info("取出物品成功，物品ID：{}，取出数量：{}", request.getId(), request.getTakeOutNum());
-        return Result.success(null);
+    public Result<ItemTakeOutResultVO> takeOutItem(@Valid @RequestBody ItemTakeOutRequest request) {
+        ItemTakeOutResultVO result = itemService.takeOutItem(request);
+        log.info("取出物品成功，物品ID：{}，取出数量：{}，EXP：{}", request.getId(), request.getTakeOutNum(), result.getExpGained());
+        return Result.success(result);
     }
 
     /**

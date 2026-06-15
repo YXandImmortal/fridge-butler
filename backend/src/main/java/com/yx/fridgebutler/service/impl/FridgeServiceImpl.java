@@ -1,17 +1,22 @@
 package com.yx.fridgebutler.service.impl;
 
 import com.yx.fridgebutler.dto.fridge.FridgeCreateRequest;
-import com.yx.fridgebutler.vo.fridge.FridgeVO;
 import com.yx.fridgebutler.dto.fridge.FridgeSearchRequest;
 import com.yx.fridgebutler.dto.fridge.FridgeUpdateRequest;
 import com.yx.fridgebutler.entity.BizFridge;
 import com.yx.fridgebutler.entity.SysUser;
+import com.yx.fridgebutler.enums.BadgeTriggerType;
 import com.yx.fridgebutler.exception.BusinessException;
-import com.yx.fridgebutler.repository.BizFridgeRepository;
 import com.yx.fridgebutler.repository.BizFridgeItemRepository;
+import com.yx.fridgebutler.repository.BizFridgeRepository;
 import com.yx.fridgebutler.repository.BizFridgeTypeRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
+import com.yx.fridgebutler.service.AchievementSettlementService;
 import com.yx.fridgebutler.service.FridgeService;
+import com.yx.fridgebutler.vo.fridge.FridgeCreateResultVO;
+import com.yx.fridgebutler.vo.fridge.FridgeVO;
+import com.yx.fridgebutler.vo.gamification.AchievementSettlementResult;
+import com.yx.fridgebutler.vo.gamification.BadgeTriggerRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -50,6 +55,9 @@ public class FridgeServiceImpl implements FridgeService {
 
     @Autowired
     private BizFridgeTypeRepository fridgeTypeRepository;
+
+    @Autowired
+    private AchievementSettlementService achievementSettlementService;
 
     /**
      * {@inheritDoc}
@@ -90,10 +98,11 @@ public class FridgeServiceImpl implements FridgeService {
      * {@inheritDoc}
      * <p>
      * 创建前会校验冰箱名称在当前用户下是否已存在，避免重复。
+     * 创建成功后会触发创建冰箱相关的徽章检查，并返回本次解锁的徽章与 EXP 奖励。
      */
     @Override
     @Transactional
-    public Long createFridge(FridgeCreateRequest request) {
+    public FridgeCreateResultVO createFridge(FridgeCreateRequest request) {
         Long currentUserId = getCurrentUserId();
         log.info("创建冰箱，用户ID：{}，冰箱名称：{}", currentUserId, request.getFridgeName());
 
@@ -125,7 +134,26 @@ public class FridgeServiceImpl implements FridgeService {
 
         BizFridge saved = fridgeRepository.save(fridge);
         log.info("冰箱创建成功，冰箱ID：{}，名称：{}", saved.getId(), saved.getFridgeName());
-        return saved.getId();
+
+        // 统一结算：创建冰箱本身无直接 EXP，但可能解锁徽章并发放徽章 EXP
+        AchievementSettlementResult settlement = achievementSettlementService.settleBadgesOnly(
+                currentUserId,
+                List.of(new BadgeTriggerRequest(BadgeTriggerType.CREATE_FRIDGE)));
+
+        if (!settlement.getBadgesUnlocked().isEmpty()) {
+            log.info("创建冰箱触发奖励，用户ID：{}，冰箱ID：{}，获得EXP：{}，解锁徽章数：{}，是否升级：{}",
+                    currentUserId, saved.getId(), settlement.getExpGained(),
+                    settlement.getBadgesUnlocked().size(), settlement.isLeveledUp());
+        }
+
+        return FridgeCreateResultVO.builder()
+                .fridgeId(saved.getId())
+                .expGained(settlement.getExpGained())
+                .leveledUp(settlement.isLeveledUp())
+                .currentLevel(settlement.getCurrentLevel())
+                .level(settlement.getLevel())
+                .badgesUnlocked(settlement.getBadgesUnlocked())
+                .build();
     }
 
     /**

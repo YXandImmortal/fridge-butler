@@ -38,6 +38,11 @@ system:
   role:
     init:
       enabled: false
+  # 历史徽章补发开关
+  # 升级时在服务器环境变量设置 BADGE_RETROFIT_ENABLED=true 启动一次补发，跑完请移除或改回 false
+  badge:
+    retrofit:
+      enabled: ${BADGE_RETROFIT_ENABLED:false}
 
 ai:
   history:
@@ -52,3 +57,11 @@ deepseek:
   model: deepseek-v4-pro
   temperature: 0.7
   max-tokens: 4096
+
+# 游戏化/成就系统配置
+gamification:
+  exp:
+    # 每日经验值获取上限
+    daily-cap: 300
+    # AI 对话每日可获取经验值的次数上限
+    ai-chat-daily-limit: 20

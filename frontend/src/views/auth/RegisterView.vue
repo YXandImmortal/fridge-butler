@@ -268,6 +268,25 @@ const handleRegister = async () => {
       // 自动登录：后端已返回和登录相同的响应数据
       if (res.data) {
         userStore.saveLoginData(res.data)
+
+        // 记录注册/登录后的 EXP、徽章、等级信息，首页挂载后展示
+        const loginExp = res.data?.expGained ?? 0
+        const loginBadges = res.data?.badgesUnlocked || []
+        if (loginExp > 0 || loginBadges.length > 0) {
+          sessionStorage.setItem('pending_login_exp', JSON.stringify({
+            exp: loginExp,
+            description: '每日登录',
+            badges: loginBadges
+          }))
+        }
+
+        const loginLevel = res.data?.level
+        if (loginLevel) {
+          sessionStorage.setItem('pending_login_level', JSON.stringify({
+            leveledUp: res.data?.leveledUp === true,
+            level: loginLevel
+          }))
+        }
       }
 
       setTimeout(() => {

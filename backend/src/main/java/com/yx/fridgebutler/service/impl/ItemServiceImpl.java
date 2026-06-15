@@ -12,7 +12,13 @@ import com.yx.fridgebutler.dto.unit.ItemUnitCreateRequest;
 import com.yx.fridgebutler.dto.unit.ItemUnitUpdateRequest;
 import com.yx.fridgebutler.dto.item.ItemUpdateRequest;
 import com.yx.fridgebutler.vo.item.ExpiringSummaryVO;
+import com.yx.fridgebutler.vo.item.ItemCreateVO;
+import com.yx.fridgebutler.vo.item.ItemTakeOutResultVO;
+import com.yx.fridgebutler.vo.item.ItemUpdateResultVO;
 import com.yx.fridgebutler.vo.item.TakeOutDailyStatisticsVO;
+import com.yx.fridgebutler.vo.gamification.AchievementSettlementResult;
+import com.yx.fridgebutler.vo.gamification.BadgeTriggerRequest;
+import com.yx.fridgebutler.vo.gamification.ExpActionRequest;
 import com.yx.fridgebutler.vo.unit.type.UnitTypeVO;
 import com.yx.fridgebutler.dto.unittype.UnitTypeCreateRequest;
 import com.yx.fridgebutler.dto.unittype.UnitTypeUpdateRequest;
@@ -35,6 +41,9 @@ import com.yx.fridgebutler.repository.BizItemChangeRecordRepository;
 import com.yx.fridgebutler.repository.BizItemTakeOutRecordRepository;
 import com.yx.fridgebutler.repository.BizUnitTypeRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
+import com.yx.fridgebutler.enums.BadgeTriggerType;
+import com.yx.fridgebutler.enums.ExpActionType;
+import com.yx.fridgebutler.service.AchievementSettlementService;
 import com.yx.fridgebutler.service.ItemService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +60,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -99,6 +109,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private BizItemChangeRecordRepository changeRecordRepository;
+
+    @Autowired
+    private AchievementSettlementService achievementSettlementService;
 
     /**
      * {@inheritDoc}
@@ -478,7 +491,7 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long createItem(ItemCreateRequest request) {
+    public ItemCreateVO createItem(ItemCreateRequest request) {
         Long currentUserId = getCurrentUserId();
         log.info("新增物品，用户ID：{}，冰箱ID：{}，物品名称：{}", currentUserId, request.getFridgeId(), request.getItemName());
 
@@ -536,7 +549,20 @@ public class ItemServiceImpl implements ItemService {
         addRecordRepository.save(addRecord);
         log.info("保存添加记录成功，记录ID：{}，物品ID：{}", addRecord.getId(), saved.getId());
 
-        return saved.getId();
+        // 统一结算：添加食材 EXP + 添加食材徽章
+        AchievementSettlementResult settlement = achievementSettlementService.settle(
+                currentUserId, ExpActionType.ADD_ITEM, BadgeTriggerType.ADD_ITEM, null);
+
+        return ItemCreateVO.builder()
+                .itemId(saved.getId())
+                .expGained(settlement.getExpGained())
+                .dailyExpToday(settlement.getDailyExpToday())
+                .dailyExpLimit(settlement.getDailyExpLimit())
+                .leveledUp(settlement.isLeveledUp())
+                .currentLevel(settlement.getCurrentLevel())
+                .level(settlement.getLevel())
+                .badgesUnlocked(settlement.getBadgesUnlocked())
+                .build();
     }
 
     /**
@@ -546,7 +572,7 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateItem(ItemUpdateRequest request) {
+    public ItemUpdateResultVO updateItem(ItemUpdateRequest request) {
         Long currentUserId = getCurrentUserId();
         log.info("更新物品，用户ID：{}，物品ID：{}" , currentUserId, request.getId());
 
@@ -604,6 +630,38 @@ public class ItemServiceImpl implements ItemService {
         item.setUpdateTime(now);
 
         itemRepository.save(item);
+
+        // 计算今日取出/变更总数，判断整理冰箱奖励
+        LocalDate today = LocalDate.now(ZONE_ID_SHANGHAI);
+        Instant start = today.atStartOfDay(ZONE_ID_SHANGHAI).toInstant();
+        Instant end = today.plusDays(1).atStartOfDay(ZONE_ID_SHANGHAI).toInstant();
+        long takeOutCount = takeOutRecordRepository.countByOperatorIdAndCreateTimeBetween(currentUserId, start, end);
+        long changeCount = changeRecordRepository.countByOperatorIdAndCreateTimeBetween(currentUserId, start, end);
+        long total = takeOutCount + changeCount;
+
+        List<ExpActionRequest> actions = new ArrayList<>();
+        List<BadgeTriggerRequest> triggers = new ArrayList<>();
+        triggers.add(new BadgeTriggerRequest(BadgeTriggerType.UPDATE_ITEM));
+
+        if (total >= 5) {
+            actions.add(new ExpActionRequest(ExpActionType.ORGANIZE));
+        }
+        if (total >= 10) {
+            triggers.add(new BadgeTriggerRequest(BadgeTriggerType.ORGANIZE));
+        }
+
+        AchievementSettlementResult settlement = achievementSettlementService.settle(
+                currentUserId, actions, triggers);
+
+        return ItemUpdateResultVO.builder()
+                .expGained(settlement.getExpGained())
+                .dailyExpToday(settlement.getDailyExpToday())
+                .dailyExpLimit(settlement.getDailyExpLimit())
+                .leveledUp(settlement.isLeveledUp())
+                .currentLevel(settlement.getCurrentLevel())
+                .level(settlement.getLevel())
+                .badgesUnlocked(settlement.getBadgesUnlocked())
+                .build();
     }
 
     /**
@@ -646,7 +704,7 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     @Transactional
-    public void takeOutItem(ItemTakeOutRequest request) {
+    public ItemTakeOutResultVO takeOutItem(ItemTakeOutRequest request) {
         Long currentUserId = getCurrentUserId();
         log.info("取出物品，用户ID：{}，物品ID：{}，取出数量：{}", currentUserId, request.getId(), request.getTakeOutNum());
 
@@ -693,6 +751,45 @@ public class ItemServiceImpl implements ItemService {
                 .build();
         takeOutRecordRepository.save(record);
         log.info("保存取出记录成功，记录ID：{}，物品ID：{}" , record.getId(), item.getId());
+
+        // 计算今日取出/变更总数，判断整理冰箱奖励
+        LocalDate today = LocalDate.now(ZONE_ID_SHANGHAI);
+        Instant start = today.atStartOfDay(ZONE_ID_SHANGHAI).toInstant();
+        Instant end = today.plusDays(1).atStartOfDay(ZONE_ID_SHANGHAI).toInstant();
+        long takeOutCount = takeOutRecordRepository.countByOperatorIdAndCreateTimeBetween(currentUserId, start, end);
+        long changeCount = changeRecordRepository.countByOperatorIdAndCreateTimeBetween(currentUserId, start, end);
+        long total = takeOutCount + changeCount;
+
+        List<ExpActionRequest> actions = new ArrayList<>();
+        List<BadgeTriggerRequest> triggers = new ArrayList<>();
+
+        // 判定是否消耗临期食材（R ≤ 20 且 > 0）
+        if (isExpiringItem(item)) {
+            actions.add(new ExpActionRequest(ExpActionType.CONSUME_EXPIRING));
+            triggers.add(new BadgeTriggerRequest(BadgeTriggerType.TAKE_OUT_EXPIRING));
+        } else {
+            triggers.add(new BadgeTriggerRequest(BadgeTriggerType.TAKE_OUT_ITEM));
+        }
+
+        if (total >= 5) {
+            actions.add(new ExpActionRequest(ExpActionType.ORGANIZE));
+        }
+        if (total >= 10) {
+            triggers.add(new BadgeTriggerRequest(BadgeTriggerType.ORGANIZE));
+        }
+
+        AchievementSettlementResult settlement = achievementSettlementService.settle(
+                currentUserId, actions, triggers);
+
+        return ItemTakeOutResultVO.builder()
+                .expGained(settlement.getExpGained())
+                .dailyExpToday(settlement.getDailyExpToday())
+                .dailyExpLimit(settlement.getDailyExpLimit())
+                .leveledUp(settlement.isLeveledUp())
+                .currentLevel(settlement.getCurrentLevel())
+                .level(settlement.getLevel())
+                .badgesUnlocked(settlement.getBadgesUnlocked())
+                .build();
     }
 
     /**
@@ -975,6 +1072,24 @@ public class ItemServiceImpl implements ItemService {
         int remainingDays = item.getShelfLifeDays() - (int) diffDays;
         return ((double) remainingDays / item.getShelfLifeDays()) * 100.0;
     }
+
+    /**
+     * 判断物品是否为临期状态（R ≤ 20 且 > 0）。
+     *
+     * @param item 物品实体
+     * @return true 表示临期
+     */
+    private boolean isExpiringItem(BizFridgeItem item) {
+        if (item.getProductionDate() == null || item.getShelfLifeDays() == null) {
+            return false;
+        }
+        LocalDate today = LocalDate.now(ZONE_ID_SHANGHAI);
+        long diffDays = ChronoUnit.DAYS.between(item.getProductionDate(), today);
+        int remainingDays = item.getShelfLifeDays() - (int) diffDays;
+        double r = ((double) remainingDays / item.getShelfLifeDays()) * 100.0;
+        return r > 0 && r <= 20;
+    }
+
 
     /**
      * 将物品实体列表转换为视图对象列表。

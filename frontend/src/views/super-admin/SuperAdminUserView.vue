@@ -42,11 +42,19 @@
       <template v-else>
         <el-table max-height="520px" :data="userList" style="width: 100%">
           <el-table-column prop="username" label="用户名" min-width="120" />
+          <el-table-column prop="email" label="邮箱" min-width="160" />
           <el-table-column prop="roleName" label="角色" width="120" />
-          <el-table-column prop="status" label="状态" width="90">
+          <el-table-column prop="status" label="账号状态" width="90">
             <template #default="{ row }">
               <el-tag :type="row.status === true ? 'success' : 'danger'" size="small">
                 {{ row.status === true ? '正常' : '禁用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="isActivated" label="激活状态" width="90">
+            <template #default="{ row }">
+              <el-tag :type="row.isActivated === true ? 'success' : 'warning'" size="small">
+                {{ row.isActivated === true ? '已激活' : '未激活' }}
               </el-tag>
             </template>
           </el-table-column>

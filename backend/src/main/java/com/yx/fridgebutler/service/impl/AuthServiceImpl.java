@@ -14,9 +14,16 @@ import com.yx.fridgebutler.exception.BusinessException;
 import com.yx.fridgebutler.repository.SysConfigRepository;
 import com.yx.fridgebutler.repository.SysRoleRepository;
 import com.yx.fridgebutler.repository.SysUserRepository;
+import com.yx.fridgebutler.enums.BadgeTriggerType;
+import com.yx.fridgebutler.service.AchievementSettingService;
 import com.yx.fridgebutler.service.AuthService;
+import com.yx.fridgebutler.service.AchievementSettlementService;
 import com.yx.fridgebutler.service.EmailService;
+import com.yx.fridgebutler.service.ExpService;
 import com.yx.fridgebutler.service.NotificationService;
+import com.yx.fridgebutler.vo.gamification.AchievementSettlementResult;
+import com.yx.fridgebutler.vo.gamification.LevelInfoVO;
+import com.yx.fridgebutler.service.StreakService;
 import com.yx.fridgebutler.util.CaptchaManager;
 import com.yx.fridgebutler.util.EmailCaptchaManager;
 import com.yx.fridgebutler.util.JwtUtil;
@@ -29,6 +36,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 认证服务实现类，处理用户登录、注册等认证相关业务逻辑。
@@ -82,6 +91,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private EmailCaptchaManager emailCaptchaManager;
+
+    @Autowired
+    private ExpService expService;
+
+    @Autowired
+    private StreakService streakService;
+
+    @Autowired
+    private AchievementSettingService achievementSettingService;
+
+    @Autowired
+    private AchievementSettlementService achievementSettlementService;
 
     /**
      * {@inheritDoc}
@@ -159,6 +180,16 @@ public class AuthServiceImpl implements AuthService {
         log.info("用户{}（手机号：{}）登录成功，记住我：{}，需要激活：{}，生成token（部分脱敏）：{}",
                 user.getUsername(), user.getMobile(), rememberMe, needActivation, token.substring(0, 10) + "****");
 
+        // 统一结算：登录 EXP + 登录徽章（周年用户、夜猫子、早起鸟）
+        AchievementSettlementResult settlement = achievementSettlementService.settle(
+                user.getId(),
+                com.yx.fridgebutler.enums.ExpActionType.LOGIN,
+                BadgeTriggerType.LOGIN,
+                user);
+
+        // 获取用户当前等级信息
+        LevelInfoVO levelInfo = settlement.getLevel();
+
         // 如果用户未绑定邮箱，发送绑定邮箱提醒（当天仅一次）
         if (user.getEmail() == null || user.getEmail().isBlank()) {
             notificationService.createBindEmailReminderIfAbsent(user.getId());
@@ -188,6 +219,12 @@ public class AuthServiceImpl implements AuthService {
                 .requirePasswordChange(requirePasswordChange)
                 .needActivation(needActivation)
                 .isActivated(user.getIsActivated())
+                .level(levelInfo)
+                .expGained(settlement.getExpGained())
+                .dailyExpToday(settlement.getDailyExpToday())
+                .dailyExpLimit(settlement.getDailyExpLimit())
+                .badgesUnlocked(settlement.getBadgesUnlocked())
+                .leveledUp(settlement.isLeveledUp())
                 .build();
     }
 
@@ -306,6 +343,12 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
         log.info("普通用户注册成功，用户名：{}，手机号：{}，已激活：{}", request.getUsername(), mobile, user.getIsActivated());
 
+        // 为新用户初始化成就系统数据
+        expService.getOrCreateUserExp(user.getId());
+        LevelInfoVO registerLevelInfo = expService.getLevelInfo(user.getId());
+        streakService.getOrCreateUserStreak(user.getId());
+        achievementSettingService.getOrCreateSetting(user.getId());
+
         // 为新用户初始化最新重要通知
         notificationService.initializeImportantNoticeForNewUser(user.getId());
 
@@ -352,6 +395,12 @@ public class AuthServiceImpl implements AuthService {
                 .guideCompleted(user.getGuideCompleted())
                 .needActivation(needActivation)
                 .isActivated(user.getIsActivated())
+                .level(registerLevelInfo)
+                .expGained(0)
+                .dailyExpToday(0)
+                .dailyExpLimit(150)
+                .badgesUnlocked(new ArrayList<>())
+                .leveledUp(false)
                 .build();
     }
 

@@ -77,6 +77,8 @@ import CustomButton from '@/components/ui/CustomButton.vue'
 import CustomInputNumber from '@/components/ui/CustomInputNumber.vue'
 import {takeOutItem} from '@/api/item'
 import showMessage from '@/utils/message'
+import notifyGamificationResult from '@/utils/gamificationNotify'
+import {getFreshnessStatus} from '@/utils/data-analysis'
 
 const props = defineProps({
   visible: {
@@ -172,6 +174,9 @@ const handleSubmit = async () => {
     })
     if (res.code === 200) {
       showMessage.success('取出成功')
+      const status = getFreshnessStatus(props.item)
+      const description = status.label === '临期' ? '消耗临期食材' : '整理冰箱'
+      notifyGamificationResult(res, description)
       emit('success')
       handleClose()
     } else {

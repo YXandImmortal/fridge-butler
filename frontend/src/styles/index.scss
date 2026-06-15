@@ -4,8 +4,10 @@
  * ========================================================= */
 
 @use './css-variables.scss';
+@use './gamification.scss';
 @use './animations.scss';
 @use './mixins.scss';
 @use './element-overrides.scss';
 @use './global.scss';
+@use './svg-icon.scss';
 @use './auth-common.scss';

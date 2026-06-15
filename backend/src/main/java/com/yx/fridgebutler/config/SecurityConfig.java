@@ -61,7 +61,7 @@ public class SecurityConfig {
     }
 
     /** 允许跨域访问的来源列表，从配置项 cors.allowed-origins 读取 */
-    @Value("${cors.allowed-origins:http://localhost:5173}")
+    @Value("${cors.allowed-origins:http://localhost:5173,http://10.0.2.2:8081}")
     private String allowedOrigins;
 
     /**
