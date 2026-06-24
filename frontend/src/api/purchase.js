@@ -68,6 +68,18 @@ export function cancelPurchasePlan(id) {
 }
 
 /**
+ * 发送采购方案到当前用户绑定的邮箱
+ * POST /purchase/plan/{id}/send-email
+ * @param {number} id
+ */
+export function sendPurchasePlanEmail(id) {
+    return request({
+        url: `/purchase/plan/${id}/send-email`,
+        method: 'post'
+    })
+}
+
+/**
  * 核对入库结算
  * POST /purchase/plan/{id}/settle
  * @param {number} id

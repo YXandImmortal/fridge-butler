@@ -6,7 +6,7 @@
 
 > **智能管理您的冰箱，让食材更新鲜**
 
-[![Version](https://img.shields.io/badge/version-release%200.3.1-blue)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-release%200.5.0-blue)](./CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-green)](./LICENSE)
 [![Status](https://img.shields.io/badge/status-Closed%20Beta-orange)](mailto:yxandimmortal@qq.com)
 
@@ -46,6 +46,21 @@
 - **智能菜谱推荐**：根据冰箱现有食材推荐菜谱，优先使用临期食材
 - **热量计算**：基于食材清单自动估算总热量与营养成分
 - **容量智能估算**：AI 估算冰箱空间利用率，辅助整理决策
+- **物品字段智能推荐**：输入食材名称即可 AI 推荐分类、单位、存储位置与存放日期
+
+### 🛒 智能采购助手
+- **三种方式制定采购方案**：手动创建、从个人模板快速创建、AI 智能推荐生成
+- **采购任务管理**：以纸张便签形式展示待采购方案，支持修改、取消与完成
+- **核对入库结算**：逐项核对计划与实际数量，一键完成采购到入库的闭环
+- **场景化 AI 推荐**：支持日常补货与 baby-food / bbq / family-gathering / hotpot 等特殊场景
+- **发送至邮箱**：待采购方案可一键发送到绑定邮箱，手机购物对照更方便
+
+### 🎮 游戏化系统
+- **等级与经验**：完成冰箱管理、采购、物品录入等行为获取 EXP，提升用户等级
+- **徽章成就**：解锁「采购新手」、「派对策划师」、「连续冰鲜」等多样徽章
+- **连续冰鲜（Streak）**：每日无过期食材即可累积连续天数，获得额外加成
+- **新鲜度评分**：基于冰箱食材状态每日生成新鲜度评分，直观了解管理健康度
+- **月度报告**：按月汇总食材消耗、浪费与采购数据，回顾管理成效
 
 ### 🔔 智能提醒与通知
 - **临期/过期预警**：自动计算保质期，分 7 天 / 3 天 / 1 天 / 已过期多级提醒
@@ -107,11 +122,24 @@ fridge-butler/
 |:---:|:---|
 | ![用户首页](docs/screenshots/home.png) | **用户首页**：个性化欢迎、数据统计卡片、AI 聊天入口 |
 | ![冰箱列表](docs/screenshots/fridge-list.png) | **冰箱列表**：多冰箱管理、类型图标、容量利用率展示 |
-| ![物品管理](docs/screenshots/item-manage.png) | **物品管理**：食材列表、新鲜度排序、取出/添加操作 |
+| ![物品管理](docs/screenshots/item-manage.png) | **物品管理**：食材列表、新鲜度排序、批量取出、AI 字段推荐 |
+| ![采购助手](docs/screenshots/purchase-plan.png) | **采购助手**：制定采购方案、AI 推荐、模板管理 |
+| ![采购任务](docs/screenshots/purchase-task.png) | **采购任务**：便签式任务视图、发送至邮箱 |
+| ![核对入库](docs/screenshots/purchase-check-in.png) | **核对入库**：逐项核对计划与实际数量并完成入库 |
+| ![游戏化系统](docs/screenshots/gamification.png) | **游戏化系统**：等级徽章、连续冰鲜、新鲜度评分、月度报告 |
 | ![数据中心](docs/screenshots/data-center.png) | **数据中心**：多维度可视化图表 |
 | ![AI 聊天](docs/screenshots/ai-chat.png) | **AI 聊天**：流式对话、结构化卡片、向导交互 |
 | ![消息中心](docs/screenshots/notification.png) | **消息中心**：临期/过期/容量预警通知 |
 | ![深色模式](docs/screenshots/dark-mode.png) | **深色模式**：全站深色主题适配 |
+
+> 📸 **截图待补充/更新说明**：
+> 1. `docs/screenshots/home.png`：建议重新截取，用户首页已集成游戏化数据卡片（等级、经验、连续冰鲜等）。
+> 2. `docs/screenshots/item-manage.png`：建议重新截取，物品管理页已新增批量取出按钮与 AI 字段推荐交互。
+> 3. `docs/screenshots/purchase-plan.png`：**新增截图**，展示采购助手制定计划页（含手动/模板/AI 推荐创建）。
+> 4. `docs/screenshots/purchase-task.png`：**新增截图**，展示采购任务便签视图与「发送至邮箱」按钮。
+> 5. `docs/screenshots/purchase-check-in.png`：**新增截图**，展示核对入库结算流程。
+> 6. `docs/screenshots/gamification.png`：**新增截图**，展示用户中心游戏化面板（徽章、等级、连续冰鲜、新鲜度评分、月度报告）。
+> 7. `docs/screenshots/ai-chat.png`：建议检查是否需要更新，以体现最新的 AI 推荐与意图识别效果。
 
 ---
 
@@ -124,16 +152,18 @@ fridge-butler/
 - [x] 数据中心可视化
 - [x] 每日小贴士
 - [x] 新手指引系统
+- [x] 游戏化系统（等级、徽章、连续打卡、新鲜度评分、月度报告）
+- [x] 智能采购助手（方案 / 任务 / 核对入库 / AI 推荐）
+- [x] 物品字段 AI 推荐与批量取出
 - [ ] 📄 详细使用手册（内测期间逐步完善）
 - [ ] 📄 API 接口文档（内测期间逐步完善）
 - [ ] 移动端响应式适配
-- [ ] 更多 AI 场景（如智能采购清单）
 
 ---
 
 ## 🤝 参与内测
 
-当前版本为 **内测版本（release 0.3.1）**，采用邀请制 / 激活码机制开放体验。
+当前版本为 **内测版本（release 0.5.0）**，采用邀请制 / 激活码机制开放体验。
 
 如果您对项目感兴趣，欢迎通过以下方式申请：
 

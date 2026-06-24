@@ -162,6 +162,23 @@ public class SystemController {
     /** 系统更新日志列表 */
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
+                    .version("release 0.5.0")
+                    .date("2026-6-24")
+                    .summary("重要更新：游戏化系统、采购助手与 AI 智能推荐全新上线")
+                    .changes(Arrays.asList(
+                            "游戏化系统正式上线：等级经验、徽章成就、连续冰鲜、新鲜度评分、月度报告，让冰箱管理更有趣",
+                            "采购助手全新上线：支持制定采购方案、管理采购任务、核对入库结算，购物到入库一站式完成",
+                            "AI 采购推荐：根据冰箱现状智能推荐日常采购清单，支持 baby-food / bbq / family-gathering / hotpot 等特殊场景",
+                            "物品智能推荐：输入物品名称即可 AI 推荐分类、单位、存储位置与存放日期，录入更省心",
+                            "物品管理支持批量取出，操作效率大幅提升",
+                            "采购方案支持一键发送至绑定邮箱，手机购物更方便",
+                            "AI 聊天提示词全面调优，意图识别与回答准确率进一步提升",
+                            "新手指引适配新功能入口，初次使用也能快速上手",
+                            "多处界面细节与交互体验优化，整体使用更流畅"
+                    ))
+                    .isMajor(true)
+                    .build(),
+            UpdateLogVO.builder()
                     .version("release 0.4.1")
                     .date("2026-6-10")
                     .summary("全新自定义组件体系上线，验证码支持主题适配，多处体验优化")

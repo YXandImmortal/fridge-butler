@@ -110,6 +110,17 @@ export function bindEmail(data) {
 }
 
 /**
+ * 检查当前登录用户是否已绑定合法邮箱
+ * @returns {Promise<{code: number, data: boolean, message?: string}>}
+ */
+export function checkEmailBound() {
+    return request({
+        url: '/user/email/bound',
+        method: 'get'
+    })
+}
+
+/**
  * 标记新手指引完成
  */
 export function completeGuide() {

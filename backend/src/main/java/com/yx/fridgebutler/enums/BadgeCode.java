@@ -46,7 +46,7 @@ public enum BadgeCode {
     /** 首次创建采购方案 */
     FIRST_PURCHASE_PLAN("first_purchase_plan", "采购新手", "icon-a-MedallionAward1", "首次创建采购方案", 50, "首次创建采购方案"),
     /** 累计批量入库10次 */
-    BATCH_MASTER("batch_master", "批量达人", "icon-a-ChampionAward", "累计批量入库10次", 50, "批量入库10次"),
+    BATCH_MASTER("batch_master", "采购达人", "icon-a-ChampionAward", "累计批量入库10次", 50, "批量入库10次"),
     /** 完成3次特殊场景生成的采购方案 */
     PARTY_PLANNER("party_planner", "派对策划师", "icon-a-StarAward", "完成3次特殊场景生成的采购方案", 100, "完成3次特殊场景生成计划"),
     /** 连续5次实际与计划偏差≤10% */

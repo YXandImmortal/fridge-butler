@@ -70,4 +70,11 @@ public interface PurchasePlanService {
      * @return 结算结果
      */
     PurchasePlanSettleResultVO settle(Long planId, PurchasePlanSettleRequest request);
+
+    /**
+     * 将待采购方案发送到当前用户绑定的邮箱。
+     *
+     * @param id 方案ID
+     */
+    void sendPlanEmail(Long id);
 }

@@ -72,7 +72,7 @@ public class StreakDailyCheckJob {
     /**
      * 每日 23:59 执行冰鲜判定。
      */
-    @Scheduled(cron = "0 59 23 * * ?")
+    @Scheduled(cron = "0 59 23 * * ?", zone = "Asia/Shanghai")
     public void dailyStreakCheck() {
         log.info("定时任务开始：每日冰鲜连续天数判定");
         LocalDate today = LocalDate.now(ZONE_ID_SHANGHAI);
@@ -173,10 +173,10 @@ public class StreakDailyCheckJob {
             // 5. 发放今日无过期 EXP
             expService.addExp(userId, ExpActionType.NO_EXPIRE);
 
-            // 6. 计算并发放连续天数加成 EXP
+            // 6. 计算并发放连续天数加成 EXP（绕过每日上限，鼓励用户保持连续）
             int bonus = calculateStreakBonus(currentStreak);
             if (bonus > 0) {
-                expService.addExp(userId, ExpActionType.STREAK_BONUS, bonus, null,
+                expService.addExpBypassDailyCap(userId, ExpActionType.STREAK_BONUS, bonus, null,
                         "连续冰鲜 " + currentStreak + " 天加成");
             }
 
@@ -226,12 +226,12 @@ public class StreakDailyCheckJob {
 
     /**
      * 计算连续天数加成 EXP。
+     * <p>每日加成 = 当前连续天数 × 3，上不封顶，鼓励用户保持连续。</p>
      *
      * @param streak 当前连续天数
      * @return 加成 EXP
      */
     private int calculateStreakBonus(int streak) {
-        int bonus = streak / 7;
-        return Math.min(bonus, 20);
+        return streak * 3;
     }
 }

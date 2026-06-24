@@ -23,6 +23,8 @@ import com.yx.fridgebutler.service.AchievementSettlementService;
 import com.yx.fridgebutler.service.UserService;
 import com.yx.fridgebutler.util.CaptchaManager;
 import com.yx.fridgebutler.util.EmailCaptchaManager;
+import com.yx.fridgebutler.util.EmailUtil;
+import com.yx.fridgebutler.util.UserContextUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -370,6 +372,16 @@ public class UserServiceImpl implements UserService {
                 .level(settlement.getLevel())
                 .badgesUnlocked(settlement.getBadgesUnlocked())
                 .build();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>直接读取当前登录用户的邮箱字段并校验格式。</p>
+     */
+    @Override
+    public boolean hasBoundValidEmail() {
+        SysUser user = UserContextUtil.getCurrentUser();
+        return EmailUtil.isValidEmail(user.getEmail());
     }
 
     /**

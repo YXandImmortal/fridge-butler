@@ -1,6 +1,7 @@
 package com.yx.fridgebutler.service.impl;
 
 import com.yx.fridgebutler.dto.purchase.PurchasePlanCreateRequest;
+import com.yx.fridgebutler.dto.purchase.PurchasePlanEmailContext;
 import com.yx.fridgebutler.dto.purchase.PurchasePlanItemCreateRequest;
 import com.yx.fridgebutler.dto.purchase.PurchasePlanSettleItemRequest;
 import com.yx.fridgebutler.dto.purchase.PurchasePlanSettleRequest;
@@ -15,8 +16,10 @@ import com.yx.fridgebutler.repository.*;
 import com.yx.fridgebutler.dto.purchase.StorageLocationSuggestRequest;
 import com.yx.fridgebutler.service.AchievementSettlementService;
 import com.yx.fridgebutler.service.CapacityStatsService;
+import com.yx.fridgebutler.service.EmailService;
 import com.yx.fridgebutler.service.PurchaseIntelligenceService;
 import com.yx.fridgebutler.service.PurchasePlanService;
+import com.yx.fridgebutler.util.EmailUtil;
 import com.yx.fridgebutler.util.UserContextUtil;
 import com.yx.fridgebutler.vo.gamification.AchievementSettlementResult;
 import com.yx.fridgebutler.vo.gamification.BadgeTriggerRequest;
@@ -33,10 +36,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -88,6 +96,18 @@ public class PurchasePlanServiceImpl implements PurchasePlanService {
 
     @Autowired
     private AchievementSettlementService achievementSettlementService;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private SpringTemplateEngine templateEngine;
+
+    /** 上海时区，用于邮件创建时间格式化。 */
+    private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
+
+    /** 邮件创建时间格式化器，格式为 yyyy年M月d日。 */
+    private static final DateTimeFormatter EMAIL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy年M月d日");
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -414,6 +434,91 @@ public class PurchasePlanServiceImpl implements PurchasePlanService {
                 .level(settlement.getLevel())
                 .badgesUnlocked(settlement.getBadgesUnlocked())
                 .build();
+    }
+
+    @Override
+    public void sendPlanEmail(Long id) {
+        Long currentUserId = UserContextUtil.getCurrentUserId();
+        log.info("发送采购方案邮件，用户ID：{}，方案ID：{}", currentUserId, id);
+
+        // 1. 校验用户邮箱
+        SysUser user = UserContextUtil.getCurrentUser();
+        String email = user.getEmail();
+        if (email == null || email.isBlank()) {
+            log.warn("发送采购方案邮件失败，用户未绑定邮箱，用户ID：{}，方案ID：{}", currentUserId, id);
+            throw BusinessException.emailNotBound();
+        }
+        email = email.trim().toLowerCase();
+        if (!EmailUtil.isValidEmail(email)) {
+            log.warn("发送采购方案邮件失败，邮箱格式不正确，用户ID：{}，邮箱：{}", currentUserId, email);
+            throw BusinessException.emailFormatError();
+        }
+
+        // 2. 校验邮件服务是否启用
+        if (!emailService.isEmailEnabled()) {
+            log.error("发送采购方案邮件失败，邮件服务未启用，用户ID：{}，方案ID：{}", currentUserId, id);
+            throw BusinessException.emailServiceUnavailable();
+        }
+
+        // 3. 获取方案详情并校验状态
+        PurchasePlanVO planVO = getPlan(id);
+        if (!STATUS_PENDING.equals(planVO.getPlanStatus())) {
+            log.warn("发送采购方案邮件失败，方案非待采购状态，用户ID：{}，方案ID：{}，状态：{}",
+                    currentUserId, id, planVO.getPlanStatus());
+            throw BusinessException.purchasePlanCannotSendEmail();
+        }
+
+        // 4. 组装 Thymeleaf 上下文
+        Context context = new Context();
+        context.setVariable("planName", planVO.getPlanName());
+        context.setVariable("createTime", formatEmailCreateTime(planVO.getCreateTime()));
+        context.setVariable("fridgeName", planVO.getFridgeName() != null ? planVO.getFridgeName() : "未选择");
+        context.setVariable("sceneDesc", planVO.getSceneDesc());
+        context.setVariable("items", planVO.getItems().stream()
+                .map(this::convertToEmailItem)
+                .toList());
+
+        // 5. 渲染 HTML 邮件正文
+        String htmlContent = templateEngine.process("mail/purchase-plan", context);
+
+        // 6. 异步发送邮件
+        String subject = "【智鲜·引擎】采购方案：" + planVO.getPlanName();
+        emailService.sendHtmlMail(email, subject, htmlContent);
+
+        log.info("采购方案邮件已提交发送，用户ID：{}，方案ID：{}，收件人：{}", currentUserId, id, email);
+    }
+
+    /**
+     * 将方案物品 VO 转换为邮件模板物品项。
+     */
+    private PurchasePlanEmailContext.Item convertToEmailItem(PurchasePlanItemVO item) {
+        return PurchasePlanEmailContext.Item.builder()
+                .itemName(item.getItemName())
+                .plannedNum(formatDecimal(item.getPlannedNum()))
+                .itemUnitName(item.getItemUnitName() != null ? item.getItemUnitName() : "")
+                .categoryName(item.getCategoryName() != null ? item.getCategoryName() : "-")
+                .build();
+    }
+
+    /**
+     * 格式化创建时间为邮件展示格式。
+     */
+    private String formatEmailCreateTime(Instant createTime) {
+        if (createTime == null) {
+            return "";
+        }
+        return createTime.atZone(ZONE_ID_SHANGHAI).format(EMAIL_DATE_FORMATTER);
+    }
+
+    /**
+     * 格式化数量为邮件展示格式，去掉多余的小数位。
+     * <p>例如 2.00 格式化为 2，2.10 格式化为 2.1。</p>
+     */
+    private String formatDecimal(BigDecimal value) {
+        if (value == null) {
+            return "";
+        }
+        return value.stripTrailingZeros().toPlainString();
     }
 
     /**

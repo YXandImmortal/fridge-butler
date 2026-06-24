@@ -111,6 +111,16 @@ public class PurchasePlanController {
         return Result.success(result);
     }
 
+    /**
+     * 将待采购方案发送到当前用户绑定的邮箱。
+     */
+    @PostMapping("/plan/{id}/send-email")
+    public Result<Void> sendPlanEmail(@PathVariable("id") Long id) {
+        purchasePlanService.sendPlanEmail(id);
+        log.info("采购方案邮件发送请求已提交，方案ID：{}", id);
+        return Result.success(null);
+    }
+
     // ======================== AI 推荐 ========================
 
     /**

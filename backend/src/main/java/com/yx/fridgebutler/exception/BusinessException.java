@@ -598,6 +598,10 @@ public class BusinessException extends RuntimeException {
         return new BusinessException(ResultCode.PURCHASE_PLAN_CANNOT_SETTLE);
     }
 
+    public static BusinessException purchasePlanCannotSendEmail() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_CANNOT_SEND_EMAIL);
+    }
+
     public static BusinessException purchasePlanItemNotFound() {
         return new BusinessException(ResultCode.PURCHASE_PLAN_ITEM_NOT_FOUND);
     }

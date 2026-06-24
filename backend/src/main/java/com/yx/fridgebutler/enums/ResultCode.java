@@ -108,6 +108,7 @@ public enum ResultCode {
     PURCHASE_PLAN_CANNOT_DELETE(400, HttpStatus.BAD_REQUEST, "只有待采购或已取消状态的计划可以删除"),
     PURCHASE_PLAN_CANNOT_CANCEL(400, HttpStatus.BAD_REQUEST, "只有待采购状态的计划可以取消"),
     PURCHASE_PLAN_CANNOT_SETTLE(400, HttpStatus.BAD_REQUEST, "只有待采购状态的计划可以入库结算"),
+    PURCHASE_PLAN_CANNOT_SEND_EMAIL(400, HttpStatus.BAD_REQUEST, "只有待采购状态的计划可以发送邮件"),
     PURCHASE_PLAN_ITEM_NOT_FOUND(404, HttpStatus.NOT_FOUND, "采购方案物品不存在"),
     PURCHASE_PLAN_ITEM_NOT_COVERED(400, HttpStatus.BAD_REQUEST, "请完成所有物品的核对"),
     PURCHASE_PLAN_TEMPLATE_NOT_FOUND(404, HttpStatus.NOT_FOUND, "采购计划模板不存在"),

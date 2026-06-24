@@ -135,4 +135,17 @@ public class UserController {
         log.info("绑定邮箱成功，邮箱：{}，EXP：{}", request.getEmail(), result.getExpGained());
         return Result.success("邮箱绑定成功", result);
     }
+
+    /**
+     * 检查当前登录用户是否已绑定合法邮箱。
+     * <p>用于前端判断是否可以展示“发送到邮箱”等功能入口。</p>
+     *
+     * @return true 表示已绑定且格式合法，false 表示未绑定或格式不合法
+     */
+    @GetMapping("/email/bound")
+    public Result<Boolean> isEmailBound() {
+        boolean bound = userService.hasBoundValidEmail();
+        log.info("查询用户邮箱绑定状态，结果：{}", bound);
+        return Result.success(bound);
+    }
 }

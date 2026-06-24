@@ -74,4 +74,11 @@ public interface UserService {
      * @return 操作结果，包含EXP信息
      */
     ExpActionResultVO bindEmail(BindEmailRequest request);
+
+    /**
+     * 检查当前登录用户是否已绑定合法邮箱。
+     *
+     * @return true 表示已绑定且邮箱格式合法
+     */
+    boolean hasBoundValidEmail();
 }

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>采购方案</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f6f7f9;
+            color: #1f2937;
+        }
+        .paper-card {
+            max-width: 640px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+        .paper-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+            color: #111827;
+        }
+        .paper-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .status-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background-color: #fef3c7;
+            color: #b45309;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .paper-meta {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .paper-divider {
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 20px 0;
+        }
+        .item-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .item-table th {
+            text-align: left;
+            padding: 10px 8px;
+            border-bottom: 1px dashed #d1d5db;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        .item-table td {
+            padding: 12px 8px;
+            border-bottom: 1px dashed #e5e7eb;
+            color: #374151;
+        }
+        .item-name {
+            font-weight: 600;
+            color: #111827;
+        }
+        .scene-desc {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #f9fafb;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #4b5563;
+        }
+        .reminder {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 0 6px 6px 0;
+            font-size: 14px;
+            color: #1e40af;
+        }
+        .footer {
+            margin-top: 24px;
+            font-size: 12px;
+            color: #9ca3af;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="paper-card">
+    <h1 class="paper-title" th:text="${planName}">采购方案名称</h1>
+    <div class="paper-meta-row">
+        <span class="status-tag">待采购</span>
+        <span class="paper-meta" th:text="'创建于 ' + ${createTime}">创建于 2026年6月24日</span>
+        <span class="paper-meta" th:text="'目标冰箱：' + ${fridgeName}">目标冰箱：家用冰箱</span>
+    </div>
+
+    <div class="paper-divider"></div>
+
+    <table class="item-table">
+        <thead>
+        <tr>
+            <th>物品名称</th>
+            <th>计划数量</th>
+            <th>分类</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${items}">
+            <td class="item-name" th:text="${item.itemName}">物品名称</td>
+            <td th:text="${item.plannedNum} + ' ' + ${item.itemUnitName}">1 个</td>
+            <td th:text="${item.categoryName} ?: '-'">分类</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p class="scene-desc" th:if="${sceneDesc}" th:text="'📝 ' + ${sceneDesc}">场景描述</p>
+
+    <div class="reminder">
+        采购完成后，记得回到智鲜·引擎核对入库哦~
+    </div>
+
+    <div class="footer">
+        此邮件由 智鲜·引擎 采购助手发送，请勿回复
+    </div>
+</div>
+</body>
+</html>

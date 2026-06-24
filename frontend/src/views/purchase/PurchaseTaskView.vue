@@ -41,8 +41,9 @@
         </div>
 
         <template v-else>
-          <!-- 纸张卡片 -->
-          <div class="paper-card">
+          <!-- 纸张卡片 + 左侧按钮包装器 -->
+          <div class="paper-wrapper">
+            <div class="paper-card">
             <div class="paper-tape"></div>
             <div class="paper-header">
               <h2 class="paper-title">{{ selectedPlan?.planName }}</h2>
@@ -53,7 +54,7 @@
               </div>
             </div>
 
-            <div class="paper-divider"></div>
+
 
             <!-- 物品清单 -->
             <div class="paper-body">
@@ -89,6 +90,19 @@
                 采购完成
               </button>
             </div>
+
+          </div>
+
+          <!-- 左侧发送至邮箱竖条按钮 -->
+          <button
+              type="button"
+              class="paper-side-btn"
+              :disabled="sendEmailLoading"
+              title="发送至邮箱"
+              @click="handleSendEmailClick"
+          >
+            <span class="paper-side-btn__text">发送至邮箱</span>
+          </button>
           </div>
 
           <!-- 书签栏 -->
@@ -119,6 +133,25 @@
         @confirm="confirmCancel"
         width="400px"
     />
+
+    <!-- 未绑定邮箱确认弹窗 -->
+    <ConfirmDialog
+        v-model:visible="showEmailConfirmDialog"
+        title="发送采购方案"
+        message="您尚未绑定可用邮箱，是否立即绑定？绑定后将自动发送当前采购方案。"
+        confirm-text="去绑定"
+        cancel-text="暂不发送"
+        @confirm="confirmGoBindEmail"
+        width="420px"
+    />
+
+    <!-- 绑定邮箱弹窗 -->
+    <BindEmailDialog
+        v-model:visible="showBindEmailDialog"
+        :current-email="userStore.email"
+        @success="handleEmailBoundSuccess"
+    />
+
     <PurchaseTaskTour ref="tourRef"/>
   </div>
 </template>
@@ -127,11 +160,14 @@
 import {computed, onMounted, ref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useTourStore, TOUR_SCENES} from '@/stores/tour'
+import {useUserStore} from '@/stores/user'
 import PurchaseTaskTour from '@/components/tour/PurchaseTaskTour.vue'
 import PurchasePlanPreview from '@/components/purchase/PurchasePlanPreview.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import BindEmailDialog from '@/components/user/BindEmailDialog.vue'
 import showMessage from '@/utils/message'
-import {listPurchasePlans, cancelPurchasePlan, updatePurchasePlan} from '@/api/purchase'
+import {listPurchasePlans, cancelPurchasePlan, updatePurchasePlan, sendPurchasePlanEmail} from '@/api/purchase'
+import {checkEmailBound} from '@/api/user'
 
 const route = useRoute()
 const router = useRouter()
@@ -154,6 +190,12 @@ const editingItems = ref([])
 
 // 取消确认
 const showCancelDialog = ref(false)
+
+// 发送至邮箱
+const sendEmailLoading = ref(false)
+const showEmailConfirmDialog = ref(false)
+const showBindEmailDialog = ref(false)
+const pendingEmailPlanId = ref(null)
 
 // 计算属性
 const pendingPlans = computed(() => plans.value.filter(p => p.planStatus === 1))
@@ -260,6 +302,55 @@ const confirmCancel = async () => {
   } catch (error) {
     console.error('取消任务失败:', error)
     showMessage.error('取消任务失败')
+  }
+}
+
+// 发送至邮箱
+const userStore = useUserStore()
+
+const handleSendEmailClick = async () => {
+  if (!selectedPlan.value || sendEmailLoading.value) return
+  pendingEmailPlanId.value = selectedPlan.value.id
+
+  try {
+    const res = await checkEmailBound()
+    if (res.code === 200 && res.data) {
+      await doSendEmail(pendingEmailPlanId.value)
+    } else {
+      showEmailConfirmDialog.value = true
+    }
+  } catch (error) {
+    // 401/网络错误由 request 拦截器统一处理
+    console.error('检查邮箱绑定状态失败:', error)
+  }
+}
+
+const confirmGoBindEmail = () => {
+  showEmailConfirmDialog.value = false
+  showBindEmailDialog.value = true
+}
+
+const handleEmailBoundSuccess = async () => {
+  const planId = pendingEmailPlanId.value || selectedPlan.value?.id
+  if (planId) {
+    await doSendEmail(planId)
+  }
+}
+
+const doSendEmail = async (planId) => {
+  sendEmailLoading.value = true
+  try {
+    const res = await sendPurchasePlanEmail(planId)
+    if (res.code === 200) {
+      showMessage.success('采购方案已发送至您的邮箱')
+    } else {
+      showMessage.error(res.message || '发送失败')
+    }
+  } catch (error) {
+    console.error('发送采购方案邮件失败:', error)
+  } finally {
+    sendEmailLoading.value = false
+    pendingEmailPlanId.value = null
   }
 }
 
@@ -454,6 +545,14 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   margin: 0 auto;
 }
 
+/* 纸张包装器（包含纸张和左侧发送至邮箱按钮） */
+.paper-wrapper {
+  position: relative;
+  transform: rotate(-0.5deg);
+  z-index: 2;
+  animation: paper-drop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 /* 纸张卡片 */
 .paper-card {
   position: relative;
@@ -473,9 +572,7 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   box-shadow:
       0 1px 1px rgba(0, 0, 0, 0.08),
       0 4px 12px var(--paper-shadow);
-  transform: rotate(-0.5deg);
   z-index: 2;
-  animation: paper-drop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 /* 顶部胶带 */
@@ -675,6 +772,48 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   background: var(--note-btn-success-hover);
 }
 
+/* 左侧发送至邮箱竖条按钮 */
+.paper-side-btn {
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  min-height: 120px;
+  padding: var(--space-3) var(--space-2);
+  background: var(--primary-light);
+  color: var(--primary-color);
+  border: none;
+  border-radius: 4px 0 0 4px;
+  cursor: pointer;
+  box-shadow: -2px 2px 6px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  z-index: 1;
+}
+
+.paper-side-btn:hover:not(:disabled) {
+  transform: translateY(-50%) translateX(-4px);
+  background: var(--color-primary-100);
+  box-shadow: -3px 4px 10px rgba(0, 0, 0, 0.16);
+}
+
+.paper-side-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.paper-side-btn__text {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
 /* 书签栏 */
 .bookmark-list {
   display: flex;
@@ -761,15 +900,15 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   margin-bottom: var(--space-6);
 }
 
-/* 纸张落入动画 */
+/* 纸张落入动画（旋转由 .paper-wrapper 统一控制） */
 @keyframes paper-drop-in {
   from {
     opacity: 0;
-    transform: rotate(-2.5deg) translateY(40px) scale(0.96);
+    transform: translateY(40px) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: rotate(-0.5deg) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -814,6 +953,17 @@ watch(() => tourStore.pendingStartScene, (scene) => {
     padding: var(--space-6) var(--space-5) var(--space-6) 48px;
   }
 
+  .paper-side-btn {
+    left: -22px;
+    width: 26px;
+    min-height: 100px;
+  }
+
+  .paper-side-btn__text {
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
   .bookmark-list {
     flex-direction: row;
     margin-left: 0;
@@ -850,6 +1000,10 @@ watch(() => tourStore.pendingStartScene, (scene) => {
 @media (max-width: 480px) {
   .paper-card {
     padding: var(--space-5) var(--space-4);
+  }
+
+  .paper-side-btn {
+    display: none;
   }
 
   .paper-title {
