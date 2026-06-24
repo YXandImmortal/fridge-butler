@@ -12,16 +12,17 @@ import com.yx.fridgebutler.vo.gamification.BadgeUnlockInfo;
 import com.yx.fridgebutler.vo.gamification.BadgeVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +51,14 @@ public class BadgeServiceImpl implements BadgeService {
     private static final String COUNTER_AI_FRIEND = "AI_FRIEND";
     /** 计数器类型：预言家。 */
     private static final String COUNTER_PROPHET = "PROPHET";
+    /** 计数器类型：采购方案创建。 */
+    private static final String COUNTER_PURCHASE_PLAN_CREATED = "PURCHASE_PLAN_CREATED";
+    /** 计数器类型：特殊场景采购方案完成。 */
+    private static final String COUNTER_PURCHASE_PLAN_SPECIAL_COMPLETED = "PURCHASE_PLAN_SPECIAL_COMPLETED";
+    /** 计数器类型：批量入库。 */
+    private static final String COUNTER_BATCH_ADD = "BATCH_ADD";
+    /** 计数器类型：连续精准采购。 */
+    private static final String COUNTER_ACCURATE_PURCHASE_STREAK = "ACCURATE_PURCHASE_STREAK";
 
     @Autowired
     private UserBadgeRepository userBadgeRepository;
@@ -67,7 +76,14 @@ public class BadgeServiceImpl implements BadgeService {
     private SysUserRepository sysUserRepository;
 
     @Autowired
-    private UserStreakRepository userStreakRepository;
+    private BizPurchasePlanRepository purchasePlanRepository;
+
+    /**
+     * 自身代理引用，用于解决内部调用 {@code unlockBadge} 时 Spring AOP 事务代理失效的问题。
+     */
+    @Lazy
+    @Autowired
+    private BadgeService self;
 
     @Autowired
     private ExpService expService;
@@ -267,32 +283,29 @@ public class BadgeServiceImpl implements BadgeService {
         LocalTime now = LocalTime.now(ZONE_ID_SHANGHAI);
 
         switch (triggerType) {
-            case ADD_ITEM, TAKE_OUT_ITEM, UPDATE_ITEM -> {
-                // 时间类徽章计数
-                checkAndIncrementTimeCounter(userId, now);
-            }
+            case ADD_ITEM, TAKE_OUT_ITEM, UPDATE_ITEM -> // 时间类徽章计数
+                    checkAndIncrementTimeCounter(userId, now);
             case AI_CHAT -> {
                 incrementGlobalCounter(userId, COUNTER_AI_FRIEND);
                 checkAndIncrementTimeCounter(userId, now);
             }
-            case AI_RECIPE -> {
-                incrementGlobalCounter(userId, COUNTER_CHEF_COOK);
-            }
-            case VIEW_DATA_CENTER -> {
-                incrementGlobalCounter(userId, COUNTER_DATA_CENTER);
-            }
-            case LOGIN -> {
-                checkAndIncrementTimeCounter(userId, now);
-            }
+            case AI_RECIPE -> incrementGlobalCounter(userId, COUNTER_CHEF_COOK);
+            case VIEW_DATA_CENTER -> incrementGlobalCounter(userId, COUNTER_DATA_CENTER);
+            case LOGIN -> checkAndIncrementTimeCounter(userId, now);
             case TAKE_OUT_EXPIRING -> {
-                // 临期取出，增加预言家计数
-                incrementGlobalCounter(userId, COUNTER_PROPHET);
+                // 临期取出，增加预言家计数；支持批量场景按 context.count 递增
+                if (context instanceof Map<?, ?> map && map.get("count") instanceof Integer count) {
+                    incrementGlobalCounterBy(userId, COUNTER_PROPHET, count);
+                } else {
+                    incrementGlobalCounter(userId, COUNTER_PROPHET);
+                }
                 checkAndIncrementTimeCounter(userId, now);
             }
-            case ORGANIZE -> {
-                // 单日整理≥10件，记录一次
-                recordOrganizeDay(userId);
-            }
+            case ORGANIZE -> // 单日整理≥10件，记录一次
+                    recordOrganizeDay(userId);
+            case CREATE_PURCHASE_PLAN -> incrementGlobalCounter(userId, COUNTER_PURCHASE_PLAN_CREATED);
+            case COMPLETE_PURCHASE_PLAN -> handleCompletePurchasePlan(userId, context);
+            case BATCH_ADD_ITEM -> incrementGlobalCounter(userId, COUNTER_BATCH_ADD);
             default -> {
                 // 其他类型不需要计数
             }
@@ -330,6 +343,31 @@ public class BadgeServiceImpl implements BadgeService {
             counter.setUpdatedAt(Instant.now());
         } else {
             counter.setCountValue(counter.getCountValue() + 1);
+            counter.setUpdatedAt(Instant.now());
+        }
+        userActionCounterRepository.save(counter);
+    }
+
+    /**
+     * 按指定数值增加全局累计计数器（count_date 为 null）。
+     */
+    private void incrementGlobalCounterBy(Long userId, String counterType, int count) {
+        if (count <= 0) {
+            return;
+        }
+        UserActionCounter counter = userActionCounterRepository
+                .findByUserIdAndCounterTypeAndCountDateIsNull(userId, counterType)
+                .orElse(null);
+
+        if (counter == null) {
+            counter = new UserActionCounter();
+            counter.setUserId(userId);
+            counter.setCounterType(counterType);
+            counter.setCountValue(count);
+            counter.setCountDate(null);
+            counter.setUpdatedAt(Instant.now());
+        } else {
+            counter.setCountValue(counter.getCountValue() + count);
             counter.setUpdatedAt(Instant.now());
         }
         userActionCounterRepository.save(counter);
@@ -380,41 +418,33 @@ public class BadgeServiceImpl implements BadgeService {
                 checkNightOwl(userId);
                 checkEarlyBird(userId);
             }
-            case CREATE_FRIDGE -> {
-                checkFridgeMaster(userId);
-            }
+            case CREATE_FRIDGE -> checkFridgeMaster(userId);
             case AI_CHAT -> {
                 checkAiFriend(userId);
                 checkNightOwl(userId);
                 checkEarlyBird(userId);
             }
-            case AI_RECIPE -> {
-                checkChefCook(userId);
-            }
-            case VIEW_DATA_CENTER -> {
-                checkDataMaster(userId);
-            }
+            case AI_RECIPE -> checkChefCook(userId);
+            case VIEW_DATA_CENTER -> checkDataMaster(userId);
             case LOGIN -> {
                 checkAnniversary(userId, context);
                 checkNightOwl(userId);
                 checkEarlyBird(userId);
             }
-            case BIND_EMAIL -> {
-                unlockBadge(userId, BadgeCode.SECURITY_EXPERT);
-            }
-            case COMPLETE_GUIDE -> {
-                unlockBadge(userId, BadgeCode.GUIDE_COMPLETE);
-            }
+            case BIND_EMAIL -> self.unlockBadge(userId, BadgeCode.SECURITY_EXPERT);
+            case COMPLETE_GUIDE -> self.unlockBadge(userId, BadgeCode.GUIDE_COMPLETE);
             case STREAK_CHECK -> {
                 checkZeroWaste(userId, context);
                 checkStreakGuardian(userId, context);
             }
-            case FRESHNESS_SCORE -> {
-                checkPerfectFreshness(userId, context);
+            case FRESHNESS_SCORE -> checkPerfectFreshness(userId, context);
+            case ORGANIZE -> checkOrganizeExpert(userId);
+            case CREATE_PURCHASE_PLAN -> checkFirstPurchasePlan(userId);
+            case COMPLETE_PURCHASE_PLAN -> {
+                checkPartyPlanner(userId);
+                checkZeroWasteShopper(userId);
             }
-            case ORGANIZE -> {
-                checkOrganizeExpert(userId);
-            }
+            case BATCH_ADD_ITEM -> checkBatchMaster(userId);
             default -> {
                 // 无操作
             }
@@ -426,21 +456,21 @@ public class BadgeServiceImpl implements BadgeService {
     private void checkFirstItem(Long userId) {
         long count = addRecordRepository.countByOperatorId(userId);
         if (count >= 1) {
-            unlockBadge(userId, BadgeCode.FIRST_ITEM);
+            self.unlockBadge(userId, BadgeCode.FIRST_ITEM);
         }
     }
 
     private void checkFridgeMaster(Long userId) {
         long count = fridgeRepository.countByOwnerIdAndIsDeletedFalse(userId);
         if (count >= 3) {
-            unlockBadge(userId, BadgeCode.FRIDGE_MASTER);
+            self.unlockBadge(userId, BadgeCode.FRIDGE_MASTER);
         }
     }
 
     private void checkZeroWaste(Long userId, Object context) {
         int streak = context instanceof Integer ? (Integer) context : 0;
         if (streak >= 30) {
-            unlockBadge(userId, BadgeCode.ZERO_WASTE);
+            self.unlockBadge(userId, BadgeCode.ZERO_WASTE);
         }
     }
 
@@ -449,7 +479,7 @@ public class BadgeServiceImpl implements BadgeService {
                 .findByUserIdAndCounterTypeAndCountDateIsNull(userId, COUNTER_PROPHET)
                 .orElse(null);
         if (counter != null && counter.getCountValue() >= 10) {
-            unlockBadge(userId, BadgeCode.PROPHET);
+            self.unlockBadge(userId, BadgeCode.PROPHET);
         }
     }
 
@@ -458,7 +488,7 @@ public class BadgeServiceImpl implements BadgeService {
                 .findByUserIdAndCounterTypeAndCountDateIsNull(userId, COUNTER_CHEF_COOK)
                 .orElse(null);
         if (counter != null && counter.getCountValue() >= 10) {
-            unlockBadge(userId, BadgeCode.CHEF_COOK);
+            self.unlockBadge(userId, BadgeCode.CHEF_COOK);
         }
     }
 
@@ -467,7 +497,7 @@ public class BadgeServiceImpl implements BadgeService {
                 .findByUserIdAndCounterTypeAndCountDateIsNull(userId, COUNTER_DATA_CENTER)
                 .orElse(null);
         if (counter != null && counter.getCountValue() >= 50) {
-            unlockBadge(userId, BadgeCode.DATA_MASTER);
+            self.unlockBadge(userId, BadgeCode.DATA_MASTER);
         }
     }
 
@@ -476,7 +506,7 @@ public class BadgeServiceImpl implements BadgeService {
                 .findByUserIdAndCounterTypeAndCountDateIsNull(userId, COUNTER_NIGHT_OWL)
                 .orElse(null);
         if (counter != null && counter.getCountValue() >= 5) {
-            unlockBadge(userId, BadgeCode.NIGHT_OWL);
+            self.unlockBadge(userId, BadgeCode.NIGHT_OWL);
         }
     }
 
@@ -485,7 +515,7 @@ public class BadgeServiceImpl implements BadgeService {
                 .findByUserIdAndCounterTypeAndCountDateIsNull(userId, COUNTER_EARLY_BIRD)
                 .orElse(null);
         if (counter != null && counter.getCountValue() >= 5) {
-            unlockBadge(userId, BadgeCode.EARLY_BIRD);
+            self.unlockBadge(userId, BadgeCode.EARLY_BIRD);
         }
     }
 
@@ -503,28 +533,28 @@ public class BadgeServiceImpl implements BadgeService {
                 user.getCreateTime().atZone(ZONE_ID_SHANGHAI).toLocalDate(),
                 LocalDate.now(ZONE_ID_SHANGHAI));
         if (days >= 365) {
-            unlockBadge(userId, BadgeCode.ANNIVERSARY);
+            self.unlockBadge(userId, BadgeCode.ANNIVERSARY);
         }
     }
 
     private void checkStreakGuardian(Long userId, Object context) {
         int streak = context instanceof Integer ? (Integer) context : 0;
         if (streak >= 90) {
-            unlockBadge(userId, BadgeCode.STREAK_GUARDIAN);
+            self.unlockBadge(userId, BadgeCode.STREAK_GUARDIAN);
         }
     }
 
     private void checkPerfectFreshness(Long userId, Object context) {
         int score = context instanceof Integer ? (Integer) context : 0;
         if (score >= 100) {
-            unlockBadge(userId, BadgeCode.PERFECT_FRESHNESS);
+            self.unlockBadge(userId, BadgeCode.PERFECT_FRESHNESS);
         }
     }
 
     private void checkDiamondButler(Long userId) {
         long count = addRecordRepository.countByOperatorId(userId);
         if (count >= 500) {
-            unlockBadge(userId, BadgeCode.DIAMOND_BUTLER);
+            self.unlockBadge(userId, BadgeCode.DIAMOND_BUTLER);
         }
     }
 
@@ -533,14 +563,89 @@ public class BadgeServiceImpl implements BadgeService {
                 .findByUserIdAndCounterTypeAndCountDateIsNull(userId, COUNTER_AI_FRIEND)
                 .orElse(null);
         if (counter != null && counter.getCountValue() >= 100) {
-            unlockBadge(userId, BadgeCode.AI_FRIEND);
+            self.unlockBadge(userId, BadgeCode.AI_FRIEND);
         }
     }
 
     private void checkOrganizeExpert(Long userId) {
         long dayCount = userActionCounterRepository.countByUserIdAndCounterType(userId, COUNTER_ORGANIZE_DAY);
         if (dayCount >= 5) {
-            unlockBadge(userId, BadgeCode.ORGANIZE_EXPERT);
+            self.unlockBadge(userId, BadgeCode.ORGANIZE_EXPERT);
+        }
+    }
+
+    private void handleCompletePurchasePlan(Long userId, Object context) {
+        // 判断是否为特殊场景生成方案
+        if (context instanceof Map<?, ?> map) {
+            Object source = map.get("source");
+            if ("SPECIAL_GENERATE".equals(String.valueOf(source))) {
+                incrementGlobalCounter(userId, COUNTER_PURCHASE_PLAN_SPECIAL_COMPLETED);
+            }
+
+            // 更新连续精准采购计数
+            Object deviationObj = map.get("deviation");
+            if (deviationObj instanceof BigDecimal deviation) {
+                updateAccuratePurchaseStreak(userId, deviation);
+            }
+        }
+    }
+
+    private void updateAccuratePurchaseStreak(Long userId, BigDecimal deviation) {
+        if (deviation == null) {
+            return;
+        }
+        UserActionCounter counter = userActionCounterRepository
+                .findByUserIdAndCounterTypeAndCountDateIsNull(userId, COUNTER_ACCURATE_PURCHASE_STREAK)
+                .orElse(null);
+
+        // 偏差 ≤ 10% 视为精准
+        boolean accurate = deviation.compareTo(new BigDecimal("0.10")) <= 0;
+        int newValue = accurate ? 1 : 0;
+        if (counter != null && accurate) {
+            newValue = counter.getCountValue() + 1;
+        }
+
+        if (counter == null) {
+            counter = new UserActionCounter();
+            counter.setUserId(userId);
+            counter.setCounterType(COUNTER_ACCURATE_PURCHASE_STREAK);
+        }
+        counter.setCountValue(newValue);
+        counter.setUpdatedAt(Instant.now());
+        userActionCounterRepository.save(counter);
+    }
+
+    private void checkFirstPurchasePlan(Long userId) {
+        long count = purchasePlanRepository.countByUserId(userId);
+        if (count >= 1) {
+            self.unlockBadge(userId, BadgeCode.FIRST_PURCHASE_PLAN);
+        }
+    }
+
+    private void checkBatchMaster(Long userId) {
+        UserActionCounter counter = userActionCounterRepository
+                .findByUserIdAndCounterTypeAndCountDateIsNull(userId, COUNTER_BATCH_ADD)
+                .orElse(null);
+        if (counter != null && counter.getCountValue() >= 10) {
+            self.unlockBadge(userId, BadgeCode.BATCH_MASTER);
+        }
+    }
+
+    private void checkPartyPlanner(Long userId) {
+        UserActionCounter counter = userActionCounterRepository
+                .findByUserIdAndCounterTypeAndCountDateIsNull(userId, COUNTER_PURCHASE_PLAN_SPECIAL_COMPLETED)
+                .orElse(null);
+        if (counter != null && counter.getCountValue() >= 3) {
+            self.unlockBadge(userId, BadgeCode.PARTY_PLANNER);
+        }
+    }
+
+    private void checkZeroWasteShopper(Long userId) {
+        UserActionCounter counter = userActionCounterRepository
+                .findByUserIdAndCounterTypeAndCountDateIsNull(userId, COUNTER_ACCURATE_PURCHASE_STREAK)
+                .orElse(null);
+        if (counter != null && counter.getCountValue() >= 5) {
+            self.unlockBadge(userId, BadgeCode.ZERO_WASTE_SHOPPER);
         }
     }
 }

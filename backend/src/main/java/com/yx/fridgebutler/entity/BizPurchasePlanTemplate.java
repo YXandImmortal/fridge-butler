@@ -1,44 +1,52 @@
 package com.yx.fridgebutler.entity;
 
-@lombok.Builder
-@lombok.AllArgsConstructor
-@lombok.NoArgsConstructor
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "biz_purchase_plan_template", indexes = {@jakarta.persistence.Index(name = "idx_user_id",
-columnList = "user_id")})
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.time.Instant;
+
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Entity
+@Table(name = "biz_purchase_plan_template", indexes = {@Index(name = "idx_user_id",
+        columnList = "user_id")})
 public class BizPurchasePlanTemplate {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-@jakarta.validation.constraints.NotNull
-@jakarta.persistence.Column(name = "user_id", nullable = false)
-private java.lang.Long userId;
+    @NotNull
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-@jakarta.validation.constraints.Size(max = 100)
-@jakarta.validation.constraints.NotNull
-@jakarta.persistence.Column(name = "template_name", nullable = false, length = 100)
-private java.lang.String templateName;
+    @Size(max = 100)
+    @NotNull
+    @Column(name = "template_name", nullable = false, length = 100)
+    private String templateName;
 
-@jakarta.validation.constraints.Size(max = 255)
-@jakarta.persistence.Column(name = "scene_desc")
-private java.lang.String sceneDesc;
+    @Size(max = 255)
+    @Column(name = "scene_desc")
+    private String sceneDesc;
 
-@jakarta.validation.constraints.NotNull
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "item_count", nullable = false)
-private java.lang.Integer itemCount;
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "item_count", nullable = false)
+    private Integer itemCount;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "create_time")
-private java.time.Instant createTime;
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "create_time")
+    private Instant createTime;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "update_time")
-private java.time.Instant updateTime;
-
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "update_time")
+    private Instant updateTime;
 
 
 }

@@ -14,7 +14,8 @@
     <span class="logo-button__content">
       <i v-if="loading" class="iconfont icon-loader logo-button__loading-icon"></i>
       <span class="logo-button__text">
-        <slot>{{ loading ? loadingText : '' }}</slot>
+        <template v-if="loading && loadingText">{{ loadingText }}</template>
+        <slot v-else></slot>
       </span>
     </span>
   </button>
@@ -227,13 +228,13 @@ const handleClick = (event) => {
 
 /* —— 大号 —— */
 .logo-button--large {
-  padding: 12px 32px 12px 52px;
+  padding: 13px 20px 13px 46px;
   font-size: 16px;
 
   .logo-button__logo-wrap {
-    width: 50px;
-    height: 50px;
-    left: -6px;
+    width: 60px;
+    height: 60px;
+    left: -14 px;
   }
 }
 

@@ -7,7 +7,6 @@ import com.yx.fridgebutler.vo.fridge.FridgeCreateResultVO;
 import com.yx.fridgebutler.vo.fridge.FridgeVO;
 import com.yx.fridgebutler.service.CapacityStatsService;
 import com.yx.fridgebutler.service.FridgeService;
-import com.yx.fridgebutler.util.UserContextUtil;
 import com.yx.fridgebutler.vo.fridge.CapacityStatsVO;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;

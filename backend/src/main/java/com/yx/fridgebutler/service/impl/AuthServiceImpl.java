@@ -37,7 +37,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 认证服务实现类，处理用户登录、注册等认证相关业务逻辑。
@@ -124,7 +123,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 验证验证码
         if (request.getCaptchaId() == null || !captchaManager.verifyCaptcha(request.getCaptchaId(), request.getCaptcha())) {
-            log.warn("登陆失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
+            log.warn("登录失败，验证码错误：{}，验证码ID：{}", request.getCaptcha(), request.getCaptchaId());
             throw BusinessException.loginCaptchaError();
         }
 
@@ -134,26 +133,26 @@ public class AuthServiceImpl implements AuthService {
                         request.getAccount() == null ? "" : request.getAccount().trim()
                 )
                 .orElseThrow(() -> {
-                    log.warn("登陆失败，用户不存在：账号：{}", request.getAccount());
+                    log.warn("登录失败，用户不存在：账号：{}", request.getAccount());
                     return BusinessException.loginAuthFailed();
                 });
 
         // 校验密码
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            log.warn("登陆失败，账号：{}密码错误", request.getAccount());
+            log.warn("登录失败，账号：{}密码错误", request.getAccount());
             throw BusinessException.loginAuthFailed();
         }
 
         // 校验账号是否被禁用
         if (user.getIsDeleted() != null && user.getIsDeleted()) {
-            log.warn("登陆失败，账号：{}已被禁用", request.getAccount());
+            log.warn("登录失败，账号：{}已被禁用", request.getAccount());
             throw BusinessException.loginForbidden();
         }
 
         // 查询用户角色
         SysRole role = roleRepository.findById(user.getRoleId())
                 .orElseThrow(() -> {
-                    log.warn("登陆失败，账号：{}的角色ID：{}不存在：", request.getAccount(), user.getRoleId());
+                    log.warn("登录失败，账号：{}的角色ID：{}不存在：", request.getAccount(), user.getRoleId());
                     return BusinessException.loginRoleNotFound();
                 });
 

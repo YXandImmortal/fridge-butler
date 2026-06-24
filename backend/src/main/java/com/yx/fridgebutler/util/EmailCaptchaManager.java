@@ -59,7 +59,7 @@ public final class EmailCaptchaManager {
         long now = System.currentTimeMillis();
 
         CaptchaEntry existing = captchaCache.get(key);
-        if (existing != null && (now - existing.getSendTime()) < SEND_INTERVAL_SECONDS * 1000) {
+        if (existing != null && (now - existing.sendTime()) < SEND_INTERVAL_SECONDS * 1000) {
             throw new IllegalStateException("发送过于频繁");
         }
 
@@ -96,7 +96,7 @@ public final class EmailCaptchaManager {
             return false;
         }
 
-        if (!entry.getCode().equals(userInput)) {
+        if (!entry.code().equals(userInput)) {
             return false;
         }
 
@@ -169,27 +169,12 @@ public final class EmailCaptchaManager {
     private void cleanupExpiredCaptcha() {
         long now = System.currentTimeMillis();
         long expirationMillis = CAPTCHA_EXPIRATION_MINUTES * 60 * 1000;
-        captchaCache.entrySet().removeIf(entry -> (now - entry.getValue().getSendTime()) > expirationMillis);
+        captchaCache.entrySet().removeIf(entry -> (now - entry.getValue().sendTime()) > expirationMillis);
     }
 
     /**
-     * 验证码缓存条目
-     */
-    private static class CaptchaEntry {
-        private final String code;
-        private final long sendTime;
-
-        CaptchaEntry(String code, long sendTime) {
-            this.code = code;
-            this.sendTime = sendTime;
-        }
-
-        String getCode() {
-            return code;
-        }
-
-        long getSendTime() {
-            return sendTime;
-        }
+         * 验证码缓存条目
+         */
+        private record CaptchaEntry(String code, long sendTime) {
     }
 }

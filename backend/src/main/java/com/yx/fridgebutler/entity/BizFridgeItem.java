@@ -102,6 +102,13 @@ public class BizFridgeItem {
     private String remark;
 
     /**
+     * 存储位置，可选，如冷藏室、冷冻室等，最大长度50。
+     */
+    @Size(max = 50)
+    @Column(name = "storage_location", length = 50)
+    private String storageLocation;
+
+    /**
      * 创建时间，默认为当前时间戳。
      */
     @ColumnDefault("CURRENT_TIMESTAMP")

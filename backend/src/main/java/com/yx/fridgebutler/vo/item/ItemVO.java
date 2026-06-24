@@ -88,6 +88,11 @@ public class ItemVO {
     private String remark;
 
     /**
+     * 存储位置
+     */
+    private String storageLocation;
+
+    /**
      * 创建时间
      */
     private String createTime;

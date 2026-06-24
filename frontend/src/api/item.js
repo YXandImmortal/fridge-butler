@@ -35,6 +35,19 @@ export function listUnitTypes() {
 }
 
 /**
+ * 智能推荐物品信息（AI 根据物品名称推荐分类、单位、存放位置等）
+ * @param {string} itemName - 物品名称
+ * @param {number} fridgeId - 冰箱ID
+ */
+export function recommendItem(itemName, fridgeId) {
+    return request({
+        url: '/item/recommend',
+        method: 'post',
+        data: {itemName, fridgeId}
+    })
+}
+
+/**
  * 搜索物品（支持关键字模糊搜索、分类/单位/冰箱筛选、排序）
  * @param {Object} params - 搜索参数
  * @param {string} [params.keyword] - 搜索关键字（模糊匹配物品名称）
@@ -60,6 +73,7 @@ export function searchItems(params = {}) {
  * @param {number} data.itemNum - 数量
  * @param {number} data.itemUnitId - 单位ID
  * @param {number} data.fridgeId - 冰箱ID
+ * @param {string} [data.storageLocation] - 存放位置（可选，最大长度50）
  */
 export function createItem(data) {
     return request({
@@ -77,6 +91,7 @@ export function createItem(data) {
  * @param {number} [data.categoryId] - 分类ID
  * @param {number} [data.itemNum] - 数量
  * @param {number} [data.itemUnitId] - 单位ID
+ * @param {string} [data.storageLocation] - 存放位置（可选，最大长度50）
  */
 export function updateItem(data) {
     return request({
@@ -106,6 +121,19 @@ export function deleteItem(id) {
 export function takeOutItem(data) {
     return request({
         url: '/item/take-out',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 批量取出物品
+ * @param {Object} data - 批量取出数据
+ * @param {Array<{id: number, takeOutNum: number}>} data.items - 取出物品列表
+ */
+export function batchTakeOutItem(data) {
+    return request({
+        url: '/item/batch/take-out',
         method: 'post',
         data
     })

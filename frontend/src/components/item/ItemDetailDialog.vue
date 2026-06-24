@@ -26,6 +26,15 @@
               />
             </el-form-item>
 
+            <el-form-item label="存放位置" prop="storageLocation">
+              <CustomInput
+                  v-model="form.storageLocation"
+                  placeholder="例如：冷藏室、冷冻室（选填）"
+                  :maxlength="50"
+                  showWordLimit
+              />
+            </el-form-item>
+
             <el-form-item label="分类" prop="categoryId">
               <CustomSelect
                   v-model="form.categoryId"
@@ -112,11 +121,11 @@
               </div>
             </el-form-item>
 
-            <el-form-item v-if="mode === 'edit'" label="入库时间">
+            <el-form-item label="入库时间">
               <CustomDatePicker
                   v-model="form.storedDate"
                   type="date"
-                  placeholder="暂无入库时间"
+                  placeholder="请选择入库时间"
                   value-format="YYYY-MM-DD"
                   style="width: 100%;"
               />
@@ -161,6 +170,7 @@ import CustomDatePicker from '@/components/ui/CustomDatePicker.vue'
 import {createItem, updateItem} from '@/api/item'
 import showMessage from '@/utils/message'
 import notifyGamificationResult from '@/utils/gamificationNotify'
+import {applyRecommendToForm} from '@/utils/itemRecommend'
 
 const props = defineProps({
   visible: {
@@ -190,6 +200,10 @@ const props = defineProps({
   fridgeId: {
     type: Number,
     default: null
+  },
+  recommendData: {
+    type: Object,
+    default: () => null
   }
 })
 
@@ -208,6 +222,7 @@ const shelfLifeOptions = [
 
 const form = reactive({
   itemName: '',
+  storageLocation: '',
   categoryId: null,
   itemNum: 1,
   unitTypeId: null,
@@ -241,6 +256,9 @@ const rules = {
   ],
   shelfLifeDays: [
     {required: false, type: 'number', min: 1, message: '保质期至少为1天', trigger: 'change'}
+  ],
+  storageLocation: [
+    {min: 0, max: 50, message: '存放位置最多 50 个字符', trigger: 'blur'}
   ]
 }
 
@@ -338,6 +356,7 @@ const initShelfLifeMode = (days) => {
 
 const resetForm = () => {
   form.itemName = ''
+  form.storageLocation = ''
   form.categoryId = null
   form.itemNum = 1
   form.unitTypeId = null
@@ -356,6 +375,7 @@ const resetForm = () => {
 const initFormFromItemData = () => {
   if (props.itemData) {
     form.itemName = props.itemData.itemName || ''
+    form.storageLocation = props.itemData.storageLocation || ''
     form.categoryId = props.itemData.categoryId || null
     form.itemNum = props.itemData.itemNum || 1
     form.unitTypeId = props.itemData.unitTypeId || null
@@ -368,12 +388,19 @@ const initFormFromItemData = () => {
   }
 }
 
+const applyRecommendation = () => {
+  if (props.mode === 'create' && props.recommendData) {
+    applyRecommendToForm(props.recommendData, form, props.unitList)
+  }
+}
+
 watch(() => props.visible, (val) => {
   if (val) {
     if (props.mode === 'edit' && props.itemData) {
       initFormFromItemData()
     } else {
       resetForm()
+      applyRecommendation()
     }
   }
 })
@@ -393,6 +420,7 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     let res
+    const today = new Date().toISOString().split('T')[0]
     if (props.mode === 'edit') {
       res = await updateItem({
         id: props.itemData.id,
@@ -400,6 +428,7 @@ const handleSubmit = async () => {
         categoryId: form.categoryId,
         itemNum: form.itemNum,
         itemUnitId: form.itemUnitId,
+        storageLocation: form.storageLocation || null,
         storedDate: form.storedDate || null,
         productionDate: form.productionDate || null,
         shelfLifeDays: form.shelfLifeDays || null,
@@ -412,7 +441,8 @@ const handleSubmit = async () => {
         itemNum: form.itemNum,
         itemUnitId: form.itemUnitId,
         fridgeId: props.fridgeId,
-        storedDate: new Date().toISOString().split('T')[0],
+        storageLocation: form.storageLocation || null,
+        storedDate: form.storedDate || today,
         productionDate: form.productionDate || null,
         shelfLifeDays: form.shelfLifeDays || null,
         remark: form.remark || null

@@ -21,9 +21,26 @@
               <CustomInput
                   v-model="form.value"
                   :placeholder="placeholder"
-                  :maxlength="20"
+                  :maxlength="maxlength"
                   showWordLimit
                   :icon="icon"
+                  size="large"
+              />
+            </el-form-item>
+            <el-form-item
+                v-if="showSecondField"
+                style="margin-top: 12px"
+                :label="secondLabel"
+                prop="secondValue"
+            >
+              <CustomInput
+                  v-model="form.secondValue"
+                  type="textarea"
+                  :placeholder="secondPlaceholder"
+                  :maxlength="secondMaxlength"
+                  :rows="secondRows"
+                  showWordLimit
+                  :icon="secondIcon"
                   size="large"
               />
             </el-form-item>
@@ -47,7 +64,7 @@
 </template>
 
 <script setup>
-import {reactive, ref, watch} from 'vue'
+import {computed, reactive, ref, watch} from 'vue'
 import CustomButton from '@/components/ui/CustomButton.vue'
 import CustomInput from '@/components/ui/CustomInput.vue'
 
@@ -87,6 +104,38 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  maxlength: {
+    type: Number,
+    default: 20
+  },
+  showSecondField: {
+    type: Boolean,
+    default: false
+  },
+  secondLabel: {
+    type: String,
+    default: '描述'
+  },
+  secondPlaceholder: {
+    type: String,
+    default: '请输入描述'
+  },
+  secondIcon: {
+    type: String,
+    default: 'icon-edit'
+  },
+  secondMaxlength: {
+    type: Number,
+    default: 200
+  },
+  secondRows: {
+    type: Number,
+    default: 4
+  },
+  secondValueProp: {
+    type: String,
+    default: 'desc'
   }
 })
 
@@ -95,18 +144,29 @@ const emit = defineEmits(['update:visible', 'submit'])
 const formRef = ref(null)
 
 const form = reactive({
-  value: ''
+  value: '',
+  secondValue: ''
 })
 
-const rules = {
-  value: [
-    {required: true, message: props.placeholder, trigger: 'blur'},
-    {min: 1, max: 20, message: '长度为1-20个字符', trigger: 'blur'}
-  ]
-}
+const rules = computed(() => {
+  const baseRules = {
+    value: [
+      {required: true, message: props.placeholder, trigger: 'blur'},
+      {min: 1, max: props.maxlength, message: `长度为1-${props.maxlength}个字符`, trigger: 'blur'}
+    ]
+  }
+  if (props.showSecondField) {
+    baseRules.secondValue = [
+      {required: true, message: props.secondPlaceholder, trigger: 'blur'},
+      {min: 1, max: props.secondMaxlength, message: `长度为1-${props.secondMaxlength}个字符`, trigger: 'blur'}
+    ]
+  }
+  return baseRules
+})
 
 const resetForm = () => {
   form.value = ''
+  form.secondValue = ''
   if (formRef.value) {
     formRef.value.resetFields()
   }
@@ -115,8 +175,12 @@ const resetForm = () => {
 const initForm = () => {
   if (props.data) {
     form.value = props.data[props.valueProp] || ''
+    if (props.showSecondField) {
+      form.secondValue = props.data[props.secondValueProp] || ''
+    }
   } else {
     form.value = ''
+    form.secondValue = ''
   }
 }
 
@@ -142,7 +206,8 @@ const handleSubmit = async () => {
 
   emit('submit', {
     id: props.data?.id,
-    value: form.value.trim()
+    value: form.value.trim(),
+    secondValue: props.showSecondField ? form.secondValue.trim() : undefined
   })
 }
 </script>

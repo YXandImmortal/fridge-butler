@@ -576,4 +576,50 @@ public class BusinessException extends RuntimeException {
         );
     }
 
+    // ======================== 采购助手相关 ========================
+
+    public static BusinessException purchasePlanNotFound() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_NOT_FOUND);
+    }
+
+    public static BusinessException purchasePlanCannotUpdate() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_CANNOT_UPDATE);
+    }
+
+    public static BusinessException purchasePlanCannotDelete() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_CANNOT_DELETE);
+    }
+
+    public static BusinessException purchasePlanCannotCancel() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_CANNOT_CANCEL);
+    }
+
+    public static BusinessException purchasePlanCannotSettle() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_CANNOT_SETTLE);
+    }
+
+    public static BusinessException purchasePlanItemNotFound() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_ITEM_NOT_FOUND);
+    }
+
+    public static BusinessException purchasePlanItemNotCovered() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_ITEM_NOT_COVERED);
+    }
+
+    public static BusinessException purchasePlanTemplateNotFound() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_TEMPLATE_NOT_FOUND);
+    }
+
+    public static BusinessException purchasePlanTemplateLimitReached() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_TEMPLATE_LIMIT_REACHED);
+    }
+
+    public static BusinessException purchasePlanTemplateNameExists() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_TEMPLATE_NAME_EXISTS);
+    }
+
+    public static BusinessException purchasePlanEmptyItems() {
+        return new BusinessException(ResultCode.PURCHASE_PLAN_EMPTY_ITEMS);
+    }
+
 }

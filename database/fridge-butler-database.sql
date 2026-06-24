@@ -92,7 +92,8 @@ create table biz_fridge_item
 	remark varchar(255) default '' null comment '备注',
 	create_time datetime default CURRENT_TIMESTAMP null,
 	update_time datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
-	is_deleted tinyint(1) default 0 null
+	is_deleted tinyint(1) default 0 null,
+	storage_location varchar(50) null comment 'AI推荐的存储位置，如冷藏室、冷冻室'
 );
 
 create index idx_fridge_id
@@ -123,7 +124,9 @@ create table biz_item_add_record
 	remaining_num decimal(10,2) not null comment '添加后剩余数量',
 	operator_id bigint not null comment '操作人ID，关联 sys_user',
 	remark varchar(255) default '' null comment '备注',
-	create_time timestamp(6) default CURRENT_TIMESTAMP(6) not null comment '添加时间'
+	create_time timestamp(6) default CURRENT_TIMESTAMP(6) not null comment '添加时间',
+	item_unit_id bigint null comment '物品单位ID（快照）',
+	unit_name varchar(20) null comment '物品单位名称（快照）'
 )
 comment '物品添加记录表' collate=utf8mb4_unicode_ci;
 
@@ -196,7 +199,9 @@ create table biz_item_take_out_record
 	take_out_num decimal(10,2) not null comment '取出数量',
 	remaining_num decimal(10,2) not null comment '取出后剩余数量',
 	operator_id bigint not null comment '操作人ID',
-	create_time datetime(6) default CURRENT_TIMESTAMP(6) null comment '操作时间'
+	create_time datetime(6) default CURRENT_TIMESTAMP(6) null comment '操作时间',
+	item_unit_id bigint null comment '物品单位ID（快照）',
+	unit_name varchar(20) null comment '物品单位名称（快照）'
 )
 comment '物品取出记录表' collate=utf8mb4_unicode_ci;
 
@@ -230,6 +235,94 @@ create index idx_owner_id
 
 create index idx_unit_type
 	on biz_item_unit (unit_type_id);
+
+create table biz_purchase_plan
+(
+	id bigint auto_increment
+		primary key,
+	user_id bigint not null comment '所属用户ID',
+	fridge_id bigint not null comment '目标冰箱ID（本版仅支持单冰箱）',
+	plan_name varchar(100) not null comment '方案名称',
+	source varchar(50) default 'MANUAL_CREATE' not null comment '计划来源：DAILY_RECOMMEND | SPECIAL_GENERATE | MANUAL_CREATE | TEMPLATE',
+	plan_status tinyint default 1 not null comment '1=待采购, 2=已完成, 3=已取消',
+	scene_desc varchar(255) null comment '场景描述或模板标签，用户可填写',
+	total_items int default 0 not null comment '物品总数',
+	completed_items int default 0 not null comment '已完成/跳过数',
+	create_time datetime default CURRENT_TIMESTAMP null,
+	update_time datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP
+)
+comment '采购方案' collate=utf8mb4_unicode_ci;
+
+create index idx_fridge_id
+	on biz_purchase_plan (fridge_id);
+
+create index idx_status
+	on biz_purchase_plan (plan_status);
+
+create index idx_user_id
+	on biz_purchase_plan (user_id);
+
+create table biz_purchase_plan_item
+(
+	id bigint auto_increment
+		primary key,
+	plan_id bigint not null comment '关联方案ID',
+	item_name varchar(100) not null comment '物品名称',
+	category_id bigint null comment '建议分类ID',
+	planned_num decimal(10,2) not null comment '计划数量',
+	item_unit_id bigint not null comment '单位ID',
+	actual_num decimal(10,2) null comment '实际采购数量（核对时填写）',
+	production_date date null comment '生产日期（核对时填写）',
+	shelf_life_days int null comment '保质期天数（核对时填写）',
+	storage_location varchar(100) null comment '存放位置（核对时填写）',
+	status tinyint default 1 not null comment '1=待采购, 2=已核对, 3=已入库, 4=跳过',
+	remark varchar(255) null comment '备注',
+	create_time datetime default CURRENT_TIMESTAMP null,
+	update_time datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
+	store_in_fridge tinyint(1) default 1 not null comment '是否建议存入冰箱：1=是，0=否'
+)
+comment '采购方案物品清单' collate=utf8mb4_unicode_ci;
+
+create index idx_plan_id
+	on biz_purchase_plan_item (plan_id);
+
+create index idx_status
+	on biz_purchase_plan_item (status);
+
+create table biz_purchase_plan_template
+(
+	id bigint auto_increment
+		primary key,
+	user_id bigint not null comment '所属用户ID',
+	template_name varchar(100) not null comment '模板名称（同一用户下唯一）',
+	scene_desc varchar(255) null comment '场景描述或备注，仅用于展示和管理',
+	item_count int default 0 not null comment '物品数量',
+	create_time datetime default CURRENT_TIMESTAMP null,
+	update_time datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP
+)
+comment '用户采购计划模板（物品清单模板，与特殊场景提示词模板无关）' collate=utf8mb4_unicode_ci;
+
+create index idx_user_id
+	on biz_purchase_plan_template (user_id);
+
+create table biz_purchase_plan_template_item
+(
+	id bigint auto_increment
+		primary key,
+	template_id bigint not null comment '关联模板ID',
+	item_name varchar(100) not null comment '物品名称',
+	category_id bigint null comment '建议分类ID',
+	planned_num decimal(10,2) not null comment '计划数量',
+	item_unit_id bigint not null comment '单位ID',
+	sort_order int default 0 null comment '排序序号',
+	create_time datetime default CURRENT_TIMESTAMP null,
+	update_time datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
+	store_in_fridge tinyint(1) default 1 not null comment '是否建议存入冰箱：1=是，0=否'
+)
+comment '用户采购计划模板物品清单' collate=utf8mb4_unicode_ci;
+
+create index idx_template_id
+	on biz_purchase_plan_template_item (template_id);
 
 create table biz_unit_type
 (

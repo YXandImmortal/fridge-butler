@@ -178,6 +178,9 @@ const routeSceneMap = {
   'item-category-list': TOUR_SCENES.ITEM_CATEGORY,
   'item-unit-type-list': TOUR_SCENES.ITEM_UNIT_TYPE,
   'notification-list': TOUR_SCENES.NOTIFICATION,
+  'purchase-plan': TOUR_SCENES.PURCHASE_PLAN,
+  'purchase-tasks': TOUR_SCENES.PURCHASE_TASK,
+  'purchase-check-in': TOUR_SCENES.PURCHASE_CHECK_IN,
 }
 
 // 监听消息中心/Header 发来的快速指引请求

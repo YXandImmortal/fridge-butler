@@ -85,6 +85,7 @@
           </div>
           <ItemCreationWizard
               :data="activeWizardData"
+              :recommend-data="itemRecommendCache"
               @step-submit="handleWizardStepSubmit"
               @confirm="handleWizardConfirm"
               @cancel="handleWizardCancel"
@@ -248,7 +249,7 @@ import {getFridgeTypeById} from '@/utils/fridgeTypeMap.js'
 import {listMyFridges} from '@/api/fridge'
 import showMessage from '@/utils/message'
 import notifyGamificationResult, {notifyGamificationReward, consumePendingRewards} from '@/utils/gamificationNotify'
-import {searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats, getExpiringSummary} from '@/api/item'
+import {searchItems, getRecent30DaysTakeOutStats, getRecent30DaysAddStats, getExpiringSummary, recommendItem} from '@/api/item'
 import {getPublicConfig} from '@/api/system'
 import {use, graphic} from 'echarts/core'
 import {CanvasRenderer} from 'echarts/renderers'
@@ -280,6 +281,9 @@ const drawerVisible = ref(false)
 const showSelectFridgeDialog = ref(false)
 const selectedFridgeId = ref(null)
 const fridgeListLoading = ref(false)
+
+// 物品创建向导的智能推荐缓存
+const itemRecommendCache = ref(null)
 
 // ==================== 欢迎语 ====================
 const greeting = computed(() => {
@@ -442,6 +446,24 @@ function handleActionCancel(msg) {
 
 // ==================== wizard 处理（冰箱 + 物品）====================
 async function handleWizardStepSubmit({field, value, formData}) {
+  // 物品向导第一步输入名称后，请求智能推荐并暂存
+  if (field === 'itemName' && aiChatStore.activeWizard?.type === 'item_creation') {
+    try {
+      const recRes = await recommendItem(String(value || '').trim(), Number(route.query.fridgeId) || undefined)
+      if (recRes.code === 200 && recRes.data?.valid) {
+        itemRecommendCache.value = recRes.data
+      } else {
+        itemRecommendCache.value = null
+        if (recRes.data?.message) {
+          showMessage.warning(recRes.data.message)
+        }
+      }
+    } catch (error) {
+      console.error('智能推荐失败:', error)
+      itemRecommendCache.value = null
+    }
+  }
+
   const wizardType = aiChatStore.activeWizard?.type || 'fridge_creation'
   // 只更新 formData，不乐观更新 currentStep，避免后端根据 currentStep 推断下一步时跳过步骤
   aiChatStore.activeWizard = {
@@ -492,6 +514,8 @@ async function handleWizardStepSubmit({field, value, formData}) {
       }
     } else if (field === 'remark') {
       messageText = value ? `备注：${value}` : '跳过备注'
+    } else if (field === 'storageLocation') {
+      messageText = value ? `存放位置：${value}` : '跳过存放位置'
     } else {
       messageText = String(value || '')
     }
@@ -627,7 +651,8 @@ async function handleWizardConfirm(formData) {
         itemNum: formData.itemNum || 1,
         itemUnitId: formData.itemUnitId || undefined,
         fridgeId: Number(currentFridgeId) || undefined,
-        storedDate: new Date().toISOString().split('T')[0],
+        storageLocation: formData.storageLocation || null,
+        storedDate: formData.storedDate || new Date().toISOString().split('T')[0],
         productionDate: formData.productionDate || null,
         shelfLifeDays: formData.shelfLifeDays || null,
         remark: formData.remark || null
@@ -650,11 +675,13 @@ async function handleWizardConfirm(formData) {
 function handleWizardCancel() {
   const wizardType = aiChatStore.activeWizard?.type || 'fridge_creation'
   aiChatStore.activeWizard = null
+  itemRecommendCache.value = null
   const cancelText = wizardType === 'fridge_creation'
       ? '已取消创建冰箱。如需创建，请随时告诉我~'
       : '已取消添加物品。如需添加，请随时告诉我~'
   aiChatStore.addAssistantMessage(cancelText, 'text', null)
   scrollToBottom()
+  itemRecommendCache.value = null
 }
 
 // ==================== 冰箱前置检查（物品向导）====================
@@ -1081,16 +1108,29 @@ onMounted(async () => {
   // 处理从其他页面跳转过来的 AI 快捷指令（如冰箱列表页的「AI帮我创建」、物品管理页的「AI帮我添加」）
   const aiMessage = route.query.aiMessage
   if (aiMessage && typeof aiMessage === 'string') {
+    // 先保存 fridgeId，因为 createNewSession 会清除它
+    const fridgeId = route.query.fridgeId
+
     // 保留 fridgeId query（物品向导场景需要），仅移除 aiMessage
     const query = {...route.query}
     delete query.aiMessage
-    router.replace({path: '/user/index', query})
+    await router.replace({path: '/user/index', query})
+
     // "AI 帮我创建/添加"应视为新会话，避免携带旧 sessionId 导致冲突
     createNewSession()
+
+    // 恢复 fridgeId，AI 帮我添加/创建流程需要绑定到具体冰箱
+    if (fridgeId) {
+      await router.replace({
+        path: '/user/index',
+        query: {...route.query, fridgeId: String(fridgeId)}
+      })
+    }
+
     const {reward} = await aiChatStore.sendMessage({
       text: aiMessage,
       attachments: [],
-      fridgeId: route.query.fridgeId
+      fridgeId
     })
 
     // 处理本次 AI 快捷指令的 EXP/徽章/等级提升奖励
@@ -1395,7 +1435,7 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   color: var(--text-secondary);
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 
   &:hover {
     background: var(--primary-light);

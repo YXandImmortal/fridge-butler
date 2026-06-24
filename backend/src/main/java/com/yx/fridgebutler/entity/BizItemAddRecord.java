@@ -96,4 +96,17 @@ public class BizItemAddRecord {
     @Column(name = "remark")
     private String remark;
 
+    /**
+     * 物品单位ID（快照），记录添加时的单位，便于后续按单位格式化展示。
+     */
+    @Column(name = "item_unit_id")
+    private Long itemUnitId;
+
+    /**
+     * 物品单位名称（快照），记录添加时的单位名称，避免单位后续变更或删除后无法展示。
+     */
+    @Size(max = 20)
+    @Column(name = "unit_name", length = 20)
+    private String unitName;
+
 }

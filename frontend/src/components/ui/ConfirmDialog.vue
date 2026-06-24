@@ -1,35 +1,37 @@
 <template>
-  <transition name="dialog-fade">
-    <div v-if="visible" class="confirm-dialog-overlay" @click.self="handleOverlayClick">
-      <div class="confirm-dialog" :style="{ maxWidth: width }">
-        <div class="dialog-header">
-          <div class="dialog-title-container">
-            <i class="iconfont icon-alert dialog-icon"></i>
-            <h3 class="dialog-title">{{ title }}</h3>
+  <teleport to="body">
+    <transition name="dialog-fade">
+      <div v-if="visible" class="confirm-dialog-overlay" @click.self="handleOverlayClick">
+        <div class="confirm-dialog" :style="{ maxWidth: width }">
+          <div class="dialog-header">
+            <div class="dialog-title-container">
+              <i class="iconfont icon-alert dialog-icon"></i>
+              <h3 class="dialog-title">{{ title }}</h3>
+            </div>
+            <i v-if="showClose" class="iconfont icon-close dialog-close" @click="handleCancel"></i>
           </div>
-          <i v-if="showClose" class="iconfont icon-close dialog-close" @click="handleCancel"></i>
-        </div>
-        <div class="dialog-content">
-          <p>{{ message }}</p>
-          <div v-if="type === 'select'" class="dialog-select-wrapper">
-            <CustomSelect
-                :model-value="selectValue"
-                :placeholder="selectPlaceholder"
-                style="width: 100%"
-                :options="mappedOptions"
-                @update:model-value="handleSelectChange"
-                empty-text="未找到可用冰箱"
-            />
+          <div class="dialog-content">
+            <p>{{ message }}</p>
+            <div v-if="type === 'select'" class="dialog-select-wrapper">
+              <CustomSelect
+                  :model-value="selectValue"
+                  :placeholder="selectPlaceholder"
+                  style="width: 100%"
+                  :options="mappedOptions"
+                  @update:model-value="handleSelectChange"
+                  empty-text="未找到可用冰箱"
+              />
+            </div>
+            <slot/>
           </div>
-          <slot/>
-        </div>
-        <div class="dialog-footer">
-          <CustomButton v-if="showCancel" type="danger" @click="handleCancel">{{ cancelText }}</CustomButton>
-          <CustomButton type="primary" @click="handleConfirm">{{ confirmText }}</CustomButton>
+          <div class="dialog-footer">
+            <CustomButton v-if="showCancel" type="danger" @click="handleCancel">{{ cancelText }}</CustomButton>
+            <CustomButton type="primary" @click="handleConfirm">{{ confirmText }}</CustomButton>
+          </div>
         </div>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </teleport>
 </template>
 
 <script setup>

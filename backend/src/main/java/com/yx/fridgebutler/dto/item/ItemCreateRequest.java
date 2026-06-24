@@ -70,4 +70,10 @@ public class ItemCreateRequest {
     @Size(max = 255, message = "备注长度不能超过255")
     private String remark;
 
+    /**
+     * 存储位置
+     */
+    @Size(max = 50, message = "存储位置长度不能超过50")
+    private String storageLocation;
+
 }

@@ -4,8 +4,12 @@ import com.yx.fridgebutler.vo.category.ItemCategoryVO;
 import com.yx.fridgebutler.dto.category.ItemCategoryCreateRequest;
 import com.yx.fridgebutler.dto.category.ItemCategoryUpdateRequest;
 import com.yx.fridgebutler.dto.item.ItemCreateRequest;
+import com.yx.fridgebutler.dto.item.ItemRecommendationRequest;
+import com.yx.fridgebutler.dto.item.ItemRecommendationResult;
 import com.yx.fridgebutler.vo.item.ItemVO;
+import com.yx.fridgebutler.vo.item.ItemRecommendationVO;
 import com.yx.fridgebutler.dto.item.ItemSearchRequest;
+import com.yx.fridgebutler.dto.item.ItemBatchTakeOutRequest;
 import com.yx.fridgebutler.dto.item.ItemTakeOutRequest;
 import com.yx.fridgebutler.dto.unit.ItemUnitCreateRequest;
 import com.yx.fridgebutler.dto.unit.ItemUnitUpdateRequest;
@@ -19,8 +23,8 @@ import com.yx.fridgebutler.vo.unit.ItemUnitVO;
 import com.yx.fridgebutler.vo.unit.type.UnitTypeVO;
 import com.yx.fridgebutler.dto.unittype.UnitTypeCreateRequest;
 import com.yx.fridgebutler.dto.unittype.UnitTypeUpdateRequest;
+import com.yx.fridgebutler.service.ItemIntelligenceService;
 import com.yx.fridgebutler.service.ItemService;
-import com.yx.fridgebutler.util.UserContextUtil;
 import com.yx.fridgebutler.vo.Result;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -51,12 +55,37 @@ public class ItemController {
     @Autowired
     private ItemService itemService;
 
+    /** 物品智能推荐服务 */
+    @Autowired
+    private ItemIntelligenceService itemIntelligenceService;
+
     /**
-     * 新增物品
+     * AI 智能推荐物品字段
+     * <p>根据物品名称推荐分类、单位、存储位置、存放日期等字段。</p>
      *
-     * @param request 物品创建请求
-     * @return 新创建物品结果，包含物品ID与EXP信息
+     * @param request 推荐请求
+     * @return 推荐结果
      */
+    @PostMapping("/recommend")
+    public Result<ItemRecommendationVO> recommendItemFields(@Valid @RequestBody ItemRecommendationRequest request) {
+        ItemRecommendationResult result = itemIntelligenceService.recommend(request.getItemName(), request.getFridgeId());
+        ItemRecommendationVO vo = ItemRecommendationVO.builder()
+                .valid(result.isValid())
+                .itemName(result.getItemName())
+                .categoryId(result.getCategoryId())
+                .categoryName(result.getCategoryName())
+                .unitId(result.getUnitId())
+                .unitName(result.getUnitName())
+                .unitTypeName(result.getUnitTypeName())
+                .storageLocation(result.getStorageLocation())
+                .storedDate(result.getStoredDate())
+                .message(result.getMessage())
+                .build();
+        log.info("AI 推荐物品字段成功，物品名称：{}，valid：{}，分类ID：{}，单位ID：{}",
+                request.getItemName(), result.isValid(), result.getCategoryId(), result.getUnitId());
+        return Result.success(vo);
+    }
+
     @PostMapping("/create")
     public Result<ItemCreateVO> createItem(@Valid @RequestBody ItemCreateRequest request) {
         ItemCreateVO result = itemService.createItem(request);
@@ -281,6 +310,20 @@ public class ItemController {
     public Result<ItemTakeOutResultVO> takeOutItem(@Valid @RequestBody ItemTakeOutRequest request) {
         ItemTakeOutResultVO result = itemService.takeOutItem(request);
         log.info("取出物品成功，物品ID：{}，取出数量：{}，EXP：{}", request.getId(), request.getTakeOutNum(), result.getExpGained());
+        return Result.success(result);
+    }
+
+    /**
+     * 批量取出物品
+     *
+     * @param request 批量取出请求
+     * @return 操作结果，包含EXP信息
+     */
+    @PostMapping("/batch/take-out")
+    public Result<ItemTakeOutResultVO> batchTakeOutItem(
+            @Valid @RequestBody ItemBatchTakeOutRequest request) {
+        ItemTakeOutResultVO result = itemService.batchTakeOutItem(request);
+        log.info("批量取出物品成功，条目数：{}，EXP：{}", request.getItems().size(), result.getExpGained());
         return Result.success(result);
     }
 

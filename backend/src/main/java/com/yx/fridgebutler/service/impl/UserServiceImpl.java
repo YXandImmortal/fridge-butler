@@ -11,8 +11,6 @@ import com.yx.fridgebutler.service.EmailService;
 import com.yx.fridgebutler.service.NotificationService;
 import com.yx.fridgebutler.vo.user.UserInfoVO;
 import com.yx.fridgebutler.vo.gamification.AchievementSettlementResult;
-import com.yx.fridgebutler.vo.gamification.BadgeTriggerRequest;
-import com.yx.fridgebutler.vo.gamification.ExpActionRequest;
 import com.yx.fridgebutler.vo.gamification.ExpActionResultVO;
 import com.yx.fridgebutler.entity.SysRole;
 import com.yx.fridgebutler.entity.SysUser;
@@ -34,8 +32,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 用户服务实现类。

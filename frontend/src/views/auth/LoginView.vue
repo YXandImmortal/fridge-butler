@@ -250,7 +250,7 @@ const handleForgotPassword = () => {
   text-decoration: underline;
   text-decoration-style: dashed;
   text-underline-offset: 3px;
-  transition: color 0.2s ease;
+  transition: color 0.3s ease;
 }
 
 .footer-link:hover {

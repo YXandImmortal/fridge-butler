@@ -128,7 +128,6 @@ public class BadgeRetrofitInitializer implements ApplicationRunner {
         }
         if (addCount >= 500) {
             badgeService.unlockBadge(userId, BadgeCode.DIAMOND_BUTLER, true);
-            any = true;
         }
 
         // 4. 冰箱数量 → 冰箱达人

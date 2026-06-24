@@ -38,7 +38,13 @@ public enum BadgeTriggerType {
     /** 保鲜评分计算 */
     FRESHNESS_SCORE("保鲜评分"),
     /** 整理冰箱 */
-    ORGANIZE("整理冰箱");
+    ORGANIZE("整理冰箱"),
+    /** 创建采购方案 */
+    CREATE_PURCHASE_PLAN("创建采购方案"),
+    /** 完成采购方案 */
+    COMPLETE_PURCHASE_PLAN("完成采购方案"),
+    /** 批量入库 */
+    BATCH_ADD_ITEM("批量入库");
 
     /**
      * 触发行为描述。

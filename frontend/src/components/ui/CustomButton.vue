@@ -7,7 +7,8 @@
   >
     <i v-if="loading" class="iconfont icon-loader custom-button__loading-icon"></i>
     <span class="custom-button__content">
-      <slot>{{ loading ? loadingText : '' }}</slot>
+      <template v-if="loading && loadingText">{{ loadingText }}</template>
+      <slot v-else></slot>
     </span>
   </button>
 </template>

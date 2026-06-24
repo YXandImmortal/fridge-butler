@@ -262,6 +262,38 @@ const router = createRouter({
             name: 'service-unavailable',
             component: () => import('@/views/error/ServiceUnavailableView.vue')
         },
+        // 采购助手路由（使用主布局）
+        {
+            path: '/purchase',
+            component: MainLayout,
+            meta: {requiresAuth: true},
+            children: [
+                {
+                    path: 'plan',
+                    name: 'purchase-plan',
+                    component: () => import('@/views/purchase/PurchasePlanView.vue'),
+                    meta: {
+                        roles: [USER_PERMISSION]
+                    }
+                },
+                {
+                    path: 'tasks',
+                    name: 'purchase-tasks',
+                    component: () => import('@/views/purchase/PurchaseTaskView.vue'),
+                    meta: {
+                        roles: [USER_PERMISSION]
+                    }
+                },
+                {
+                    path: 'check-in',
+                    name: 'purchase-check-in',
+                    component: () => import('@/views/purchase/PurchaseCheckInView.vue'),
+                    meta: {
+                        roles: [USER_PERMISSION]
+                    }
+                }
+            ]
+        },
         // 404路由（放在最后）
         {
             path: '/:pathMatch(.*)*',

@@ -14,6 +14,9 @@ export const TOUR_SCENES = {
     ITEM_CATEGORY: 'item_category',
     ITEM_UNIT_TYPE: 'item_unit_type',
     DATA_CENTER: 'data_center',
+    PURCHASE_PLAN: 'purchase_plan',
+    PURCHASE_TASK: 'purchase_task',
+    PURCHASE_CHECK_IN: 'purchase_check_in',
 }
 
 function getSceneStorageKey(userId) {

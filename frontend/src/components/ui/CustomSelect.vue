@@ -242,7 +242,7 @@ onUnmounted(() => {
   font-size: 12px;
   color: var(--text-tertiary);
   border-radius: 50%;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   margin-left: 4px;
   display: inline-flex;
   align-items: center;
@@ -326,7 +326,7 @@ onUnmounted(() => {
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   color: var(--text-secondary);
   font-size: 14px;
 }
@@ -397,7 +397,7 @@ onUnmounted(() => {
 /* 下拉动画 */
 .dropdown-enter-active,
 .dropdown-leave-active {
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .dropdown-enter-from,

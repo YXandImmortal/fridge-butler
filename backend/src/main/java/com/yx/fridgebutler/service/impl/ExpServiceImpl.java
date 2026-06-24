@@ -13,6 +13,7 @@ import com.yx.fridgebutler.vo.gamification.NextLevelInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,12 +37,8 @@ public class ExpServiceImpl implements ExpService {
     private static final int MAX_PRECOMPUTE_LEVEL = 500;
     /** 等级升级所需经验值差值数组，index 为当前等级。 */
     private static final int[] LEVEL_REQUIRED_DIFF = new int[MAX_PRECOMPUTE_LEVEL + 1];
-    /** 等级累计所需经验值数组，index 为目标等级。 */
-    private static final int[] LEVEL_TOTAL_EXP = new int[MAX_PRECOMPUTE_LEVEL + 1];
 
     static {
-        // Lv.1 初始值
-        LEVEL_TOTAL_EXP[1] = 0;
         LEVEL_REQUIRED_DIFF[1] = 100;  // Lv.1→2
         LEVEL_REQUIRED_DIFF[2] = 200;  // Lv.2→3
         LEVEL_REQUIRED_DIFF[3] = 300;  // Lv.3→4
@@ -50,17 +47,9 @@ public class ExpServiceImpl implements ExpService {
         LEVEL_REQUIRED_DIFF[6] = 700;  // Lv.6→7
         LEVEL_REQUIRED_DIFF[7] = 800;  // Lv.7→8
 
-        // 预计算累计值（Lv.2 到 Lv.8）
-        for (int i = 2; i <= 8; i++) {
-            LEVEL_TOTAL_EXP[i] = LEVEL_TOTAL_EXP[i - 1] + LEVEL_REQUIRED_DIFF[i - 1];
-        }
-
-        // Lv.9 起使用公式：每级所需 EXP = 前一级所需 EXP + 50 × 当前等级
+        // Lv.8 起使用公式：每级所需 EXP = 前一级所需 EXP + 50 × 当前等级
         for (int i = 8; i <= MAX_PRECOMPUTE_LEVEL; i++) {
             LEVEL_REQUIRED_DIFF[i] = LEVEL_REQUIRED_DIFF[i - 1] + 50 * i;
-            if (i + 1 <= MAX_PRECOMPUTE_LEVEL) {
-                LEVEL_TOTAL_EXP[i + 1] = LEVEL_TOTAL_EXP[i] + LEVEL_REQUIRED_DIFF[i];
-            }
         }
     }
 
@@ -79,11 +68,18 @@ public class ExpServiceImpl implements ExpService {
     private UserExpLogRepository userExpLogRepository;
 
     /**
+     * 自身代理引用，用于解决内部调用 {@code addExpWithResult} 时 Spring AOP 事务代理失效的问题。
+     */
+    @Lazy
+    @Autowired
+    private ExpService self;
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public void addExp(Long userId, ExpActionType actionType) {
-        addExpWithResult(userId, actionType, null, null, null);
+        self.addExpWithResult(userId, actionType, null, null, null);
     }
 
     /**
@@ -91,7 +87,7 @@ public class ExpServiceImpl implements ExpService {
      */
     @Override
     public ExpGainResult addExpWithResult(Long userId, ExpActionType actionType) {
-        return addExpWithResult(userId, actionType, null, null, null);
+        return self.addExpWithResult(userId, actionType, null, null, null);
     }
 
     /**
@@ -99,7 +95,7 @@ public class ExpServiceImpl implements ExpService {
      */
     @Override
     public void addExp(Long userId, ExpActionType actionType, Integer customExp) {
-        addExpWithResult(userId, actionType, customExp, null, null);
+        self.addExpWithResult(userId, actionType, customExp, null, null);
     }
 
     /**
@@ -107,7 +103,7 @@ public class ExpServiceImpl implements ExpService {
      */
     @Override
     public ExpGainResult addExpWithResult(Long userId, ExpActionType actionType, Integer customExp) {
-        return addExpWithResult(userId, actionType, customExp, null, null);
+        return self.addExpWithResult(userId, actionType, customExp, null, null);
     }
 
     /**
@@ -115,7 +111,7 @@ public class ExpServiceImpl implements ExpService {
      */
     @Override
     public void addExp(Long userId, ExpActionType actionType, Integer customExp, Long relatedId, String actionDesc) {
-        addExpWithResult(userId, actionType, customExp, relatedId, actionDesc);
+        self.addExpWithResult(userId, actionType, customExp, relatedId, actionDesc);
     }
 
     /**

@@ -333,7 +333,7 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   padding: var(--space-3) var(--space-4);
   margin: 0 calc(-1 * var(--space-4)) var(--space-4);
   border-radius: var(--radius-md);
-  transition: background-color 0.2s ease;
+  transition: background-color 0.3s ease;
 }
 
 .section-header:hover {

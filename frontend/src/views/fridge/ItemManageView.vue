@@ -62,9 +62,19 @@
               AI帮我添加
             </LogoButton>
             <el-tooltip :disabled="hasFridgeId" content="请选择冰箱" placement="top">
-              <CustomButton type="primary" :disabled="!hasFridgeId" @click="showCreateDialog = true">
+              <CustomButton type="primary" :disabled="!hasFridgeId" @click="openItemNameDialog">
                 <i class="iconfont icon-item"/>
                 添加物品
+              </CustomButton>
+            </el-tooltip>
+            <el-tooltip :disabled="hasFridgeId && itemList.length > 0" :content="!hasFridgeId ? '请选择冰箱' : '暂无可取出物品'" placement="top">
+              <CustomButton
+                  type="primary"
+                  :disabled="!hasFridgeId || itemList.length === 0"
+                  @click="openBatchTakeOutDialog"
+              >
+                <i class="iconfont icon-forwardburger"/>
+                批量取出
               </CustomButton>
             </el-tooltip>
           </div>
@@ -151,15 +161,25 @@
                     </div>
                     <div class="item-name-info">
                       <span class="item-name-text">{{ row.itemName }}</span>
-                      <el-tag
-                          v-if="row.categoryName"
-                          size="small"
-                          :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
-                          type="info"
-                          class="item-category-tag">
-                        {{ row.categoryName }}
-                      </el-tag>
-                      <span v-else class="item-category-none">未分类</span>
+                      <div class="item-tags-row">
+                        <el-tag
+                            v-if="row.categoryName"
+                            size="small"
+                            :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
+                            type="info"
+                            class="item-category-tag">
+                          {{ row.categoryName }}
+                        </el-tag>
+                        <el-tag
+                            v-if="row.storageLocation"
+                            size="small"
+                            :effect="themeStore.theme === 'dark' ? 'dark' : 'light'"
+                            type="success"
+                            class="item-storage-tag">
+                          {{ row.storageLocation }}
+                        </el-tag>
+                        <span v-if="!row.categoryName && !row.storageLocation" class="item-category-none">未分类</span>
+                      </div>
                     </div>
                   </div>
                 </template>
@@ -275,6 +295,19 @@
         @cancel="handleSelectFridgeCancel"
     />
 
+    <!-- 输入物品名称弹窗 -->
+    <InputDialog
+        v-model:visible="showItemNameDialog"
+        title="添加物品"
+        label="物品名称"
+        placeholder="请输入你想要添加的物品"
+        icon="icon-item"
+        confirm-text="下一步"
+        :maxlength="50"
+        :loading="itemNameDialogLoading"
+        @submit="handleItemNameSubmit"
+    />
+
     <!-- 添加物品弹窗 -->
     <ItemDetailDialog
         v-model:visible="showCreateDialog"
@@ -282,6 +315,7 @@
         :unit-list="unitList"
         :unit-type-list="unitTypeList"
         :fridge-id="currentFridgeId"
+        :recommend-data="pendingRecommend"
         @success="fetchItems"
     />
 
@@ -300,6 +334,13 @@
     <ItemTakeOutDialog
         v-model:visible="showTakeOutDialog"
         :item="currentTakeOutItem"
+        @success="fetchItems"
+    />
+
+    <!-- 批量取出弹窗 -->
+    <BatchItemTakeOutDialog
+        v-model:visible="showBatchTakeOutDialog"
+        :item-list="itemList"
         @success="fetchItems"
     />
 
@@ -331,7 +372,8 @@ import {
   listUnitTypes,
   searchItems,
   deleteItem,
-  takeOutItem
+  takeOutItem,
+  recommendItem
 } from '@/api/item'
 import {listMyFridges, getDefaultFridge, getCapacityStats} from '@/api/fridge'
 import notifyGamificationResult from '@/utils/gamificationNotify'
@@ -341,6 +383,8 @@ import SortControl from '@/components/form/SortControl.vue'
 import SearchBar from '@/components/form/SearchBar.vue'
 import ItemDetailDialog from '@/components/item/ItemDetailDialog.vue'
 import ItemTakeOutDialog from '@/components/item/ItemTakeOutDialog.vue'
+import BatchItemTakeOutDialog from '@/components/item/BatchItemTakeOutDialog.vue'
+import InputDialog from '@/components/ui/InputDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -411,6 +455,10 @@ const showTakeOutDialog = ref(false)
 const currentTakeOutItem = ref(null)
 const showDeleteDialog = ref(false)
 const currentDeleteItem = ref(null)
+const showItemNameDialog = ref(false)
+const itemNameDialogLoading = ref(false)
+const pendingRecommend = ref(null)
+const showBatchTakeOutDialog = ref(false)
 
 // 存储每行的 popover 实例
 const popoverRefs = ref({})
@@ -645,6 +693,11 @@ const handleTakeOutCustom = (row) => {
   showTakeOutDialog.value = true
 }
 
+// 打开批量取出对话框
+const openBatchTakeOutDialog = () => {
+  showBatchTakeOutDialog.value = true
+}
+
 // 编辑物品
 const handleEditItem = (row) => {
   currentEditItem.value = row
@@ -675,6 +728,33 @@ const handleDeleteConfirm = async () => {
     showDeleteDialog.value = false
     currentDeleteItem.value = null
   }
+}
+
+// 打开输入物品名称弹窗
+const openItemNameDialog = () => {
+  pendingRecommend.value = null
+  showItemNameDialog.value = true
+}
+
+// 输入物品名称后请求推荐并打开创建弹窗
+const handleItemNameSubmit = async ({value}) => {
+  itemNameDialogLoading.value = true
+  try {
+    const res = await recommendItem(value.trim(), currentFridgeId.value)
+    if (res.code === 200 && res.data) {
+      pendingRecommend.value = res.data
+      if (!res.data.valid && res.data.message) {
+        showMessage.warning(res.data.message)
+      }
+    }
+  } catch (error) {
+    console.error('智能推荐失败:', error)
+    pendingRecommend.value = null
+  } finally {
+    itemNameDialogLoading.value = false
+  }
+  showItemNameDialog.value = false
+  showCreateDialog.value = true
 }
 
 // AI 帮我添加
@@ -1015,7 +1095,15 @@ watch(() => tourStore.pendingStartScene, (scene) => {
   white-space: nowrap;
 }
 
-.item-category-tag {
+.item-tags-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.item-category-tag,
+.item-storage-tag {
   width: fit-content;
 }
 

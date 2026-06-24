@@ -28,7 +28,7 @@ public enum BadgeCode {
     /** 在05:00-08:00操作累计5次 */
     EARLY_BIRD("early_bird", "早起鸟", "icon-a-PrizeTrophy", "在05:00-08:00操作累计5次", 30, "早起操作5次"),
     /** 注册满1年 */
-    ANNIVERSARY("anniversary", "周年用户", "icon-birthday", "注册满1年", 100, "注册满1年"),
+    ANNIVERSARY("anniversary", "周年用户", "icon-cake", "注册满1年", 100, "注册满1年"),
     /** 连续冰鲜90天 */
     STREAK_GUARDIAN("streak_guardian", "冰鲜守护者", "icon-a-WinnerCup", "连续冰鲜90天", 150, "连续冰鲜90天"),
     /** 保鲜评分达到100分 */
@@ -42,7 +42,15 @@ public enum BadgeCode {
     /** 单日整理≥10件，累计5次 */
     ORGANIZE_EXPERT("organize_expert", "整理专家", "icon-a-Glasstrophy", "单日整理≥10件，累计5次", 50, "单日整理10件×5次"),
     /** 累计AI对话100次 */
-    AI_FRIEND("ai_friend", "AI好友", "icon-deepseek", "累计AI对话100次", 50, "AI对话100次");
+    AI_FRIEND("ai_friend", "AI好友", "icon-deepseek", "累计AI对话100次", 50, "AI对话100次"),
+    /** 首次创建采购方案 */
+    FIRST_PURCHASE_PLAN("first_purchase_plan", "采购新手", "icon-a-MedallionAward1", "首次创建采购方案", 50, "首次创建采购方案"),
+    /** 累计批量入库10次 */
+    BATCH_MASTER("batch_master", "批量达人", "icon-a-ChampionAward", "累计批量入库10次", 50, "批量入库10次"),
+    /** 完成3次特殊场景生成的采购方案 */
+    PARTY_PLANNER("party_planner", "派对策划师", "icon-a-StarAward", "完成3次特殊场景生成的采购方案", 100, "完成3次特殊场景生成计划"),
+    /** 连续5次实际与计划偏差≤10% */
+    ZERO_WASTE_SHOPPER("zero_waste_shopper", "精明采购", "icon-a-AchievementTrophy", "连续5次实际与计划偏差≤10%", 50, "连续5次精准采购");
 
     /**
      * 徽章唯一编码。

@@ -38,7 +38,13 @@ public enum ExpActionType {
     /** 完成新手指引 */
     GUIDE("完成新手指引", 30, null),
     /** 分享成就卡片 */
-    SHARE("分享成就卡片", 10, 1);
+    SHARE("分享成就卡片", 10, 1),
+    /** 创建采购方案 */
+    CREATE_PURCHASE_PLAN("创建采购方案", 5, 3),
+    /** 完成采购方案 */
+    COMPLETE_PURCHASE_PLAN("完成采购方案", 15, 3),
+    /** 批量入库 */
+    BATCH_ADD_ITEM("批量入库", 10, 5);
 
     /**
      * 行为描述。

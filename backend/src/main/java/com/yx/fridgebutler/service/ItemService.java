@@ -6,6 +6,7 @@ import com.yx.fridgebutler.dto.category.ItemCategoryUpdateRequest;
 import com.yx.fridgebutler.dto.item.ItemCreateRequest;
 import com.yx.fridgebutler.vo.item.ItemVO;
 import com.yx.fridgebutler.dto.item.ItemSearchRequest;
+import com.yx.fridgebutler.dto.item.ItemBatchTakeOutRequest;
 import com.yx.fridgebutler.dto.item.ItemTakeOutRequest;
 import com.yx.fridgebutler.vo.unit.ItemUnitVO;
 import com.yx.fridgebutler.dto.unit.ItemUnitCreateRequest;
@@ -162,6 +163,15 @@ public interface ItemService {
      * @return 取出结果，包含EXP信息
      */
     ItemTakeOutResultVO takeOutItem(ItemTakeOutRequest request);
+
+    /**
+     * 批量取出物品。
+     * <p>统一校验后批量扣减库存、写入取出记录，并一次性结算成就。</p>
+     *
+     * @param request 批量取出请求参数
+     * @return 取出结果，包含EXP信息
+     */
+    ItemTakeOutResultVO batchTakeOutItem(ItemBatchTakeOutRequest request);
 
     /**
      * 查询近30天每日取出次数统计。

@@ -100,6 +100,22 @@ public enum ResultCode {
     DEEPSEEK_API_ERROR(503, HttpStatus.SERVICE_UNAVAILABLE, "AI 服务调用失败"),
 
     /**
+     * 采购助手状态码
+     * <p>采购计划、模板、AI 推荐相关</p>
+     */
+    PURCHASE_PLAN_NOT_FOUND(404, HttpStatus.NOT_FOUND, "采购方案不存在"),
+    PURCHASE_PLAN_CANNOT_UPDATE(400, HttpStatus.BAD_REQUEST, "只有待采购状态的计划可以修改"),
+    PURCHASE_PLAN_CANNOT_DELETE(400, HttpStatus.BAD_REQUEST, "只有待采购或已取消状态的计划可以删除"),
+    PURCHASE_PLAN_CANNOT_CANCEL(400, HttpStatus.BAD_REQUEST, "只有待采购状态的计划可以取消"),
+    PURCHASE_PLAN_CANNOT_SETTLE(400, HttpStatus.BAD_REQUEST, "只有待采购状态的计划可以入库结算"),
+    PURCHASE_PLAN_ITEM_NOT_FOUND(404, HttpStatus.NOT_FOUND, "采购方案物品不存在"),
+    PURCHASE_PLAN_ITEM_NOT_COVERED(400, HttpStatus.BAD_REQUEST, "请完成所有物品的核对"),
+    PURCHASE_PLAN_TEMPLATE_NOT_FOUND(404, HttpStatus.NOT_FOUND, "采购计划模板不存在"),
+    PURCHASE_PLAN_TEMPLATE_LIMIT_REACHED(400, HttpStatus.BAD_REQUEST, "用户采购计划模板数量已达上限（10个）"),
+    PURCHASE_PLAN_TEMPLATE_NAME_EXISTS(400, HttpStatus.BAD_REQUEST, "模板名称已存在"),
+    PURCHASE_PLAN_EMPTY_ITEMS(400, HttpStatus.BAD_REQUEST, "物品清单不能为空"),
+
+    /**
      * 消息通知状态码
      * <p>消息提醒模块使用</p>
      */

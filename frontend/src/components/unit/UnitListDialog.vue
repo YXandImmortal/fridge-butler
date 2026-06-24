@@ -487,7 +487,7 @@ const confirmDeleteUnit = async () => {
   cursor: pointer;
   padding: 4px;
   border-radius: 50%;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .unit-delete-icon:hover {

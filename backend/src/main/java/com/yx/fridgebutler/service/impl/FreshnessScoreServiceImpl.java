@@ -14,6 +14,7 @@ import com.yx.fridgebutler.vo.gamification.FreshnessScoreVO;
 import com.yx.fridgebutler.vo.gamification.HeatmapDayVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,6 +81,13 @@ public class FreshnessScoreServiceImpl implements FreshnessScoreService {
     private BadgeService badgeService;
 
     /**
+     * 自身代理引用，用于解决内部调用 {@code calculate} 时 Spring AOP 事务代理失效的问题。
+     */
+    @Lazy
+    @Autowired
+    private FreshnessScoreService self;
+
+    /**
      * {@inheritDoc}
      * <p>
      * 按四个维度计算保鲜评分：
@@ -128,7 +136,7 @@ public class FreshnessScoreServiceImpl implements FreshnessScoreService {
         double freshnessScore = calculateFreshness(validItems, today);
         double turnoverScore = calculateTurnover(userId);
         double expiredControlScore = calculateExpiredControl(validItems, today);
-        double capacityScore = calculateCapacity(fridges, fridgeIds);
+        double capacityScore = calculateCapacity(fridgeIds);
 
         int total = (int) Math.round(
                 freshnessScore * 0.4 + turnoverScore * 0.3 +
@@ -170,7 +178,7 @@ public class FreshnessScoreServiceImpl implements FreshnessScoreService {
         if (snapshot.isPresent()) {
             return convertToVO(snapshot.get());
         }
-        return calculate(userId);
+        return self.calculate(userId);
     }
 
     /**
@@ -296,7 +304,7 @@ public class FreshnessScoreServiceImpl implements FreshnessScoreService {
     /**
      * 计算空间利用维度得分。
      */
-    private double calculateCapacity(List<BizFridge> fridges, List<Long> fridgeIds) {
+    private double calculateCapacity(List<Long> fridgeIds) {
         if (fridgeIds.isEmpty()) {
             return 100.0;
         }

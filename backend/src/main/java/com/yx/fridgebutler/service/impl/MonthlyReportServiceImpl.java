@@ -30,10 +30,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * 月度报告服务实现类。
@@ -139,7 +137,7 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
         int expiredCount = 0, expiringCount = 0;
         if (!snapshots.isEmpty()) {
             int totalScore = 0, count = 0;
-            maxScore = snapshots.get(0).getFreshnessScore() != null ? snapshots.get(0).getFreshnessScore() : 0;
+            maxScore = snapshots.getFirst().getFreshnessScore() != null ? snapshots.getFirst().getFreshnessScore() : 0;
             minScore = maxScore;
             for (DailyFreshnessSnapshot s : snapshots) {
                 Integer score = s.getFreshnessScore();

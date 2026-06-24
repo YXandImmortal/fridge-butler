@@ -1,6 +1,7 @@
 package com.yx.fridgebutler.util;
 
 import com.wf.captcha.base.Captcha;
+import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -15,6 +16,7 @@ import javax.imageio.ImageIO;
  * 基于 easy-captcha 1.6.2 的 SpecCaptcha 实现，添加了背景色设置能力。
  * </p>
  */
+@Slf4j
 public final class ThemedSpecCaptcha extends Captcha {
 
     /** 亮色主题背景色 - #FFFFFF 纯白 */
@@ -38,10 +40,6 @@ public final class ThemedSpecCaptcha extends Captcha {
         setLen(len);
     }
 
-    public ThemedSpecCaptcha(int width, int height, int len, Font font) {
-        this(width, height, len);
-        setFont(font);
-    }
 
     /**
      * 设置背景色
@@ -63,9 +61,9 @@ public final class ThemedSpecCaptcha extends Captcha {
     }
 
     private boolean graphicsImage(char[] strs, OutputStream out) {
-        try {
-            BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2d = (Graphics2D) bi.getGraphics();
+        BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = (Graphics2D) bi.getGraphics();
+        try (OutputStream os = out) {
             // 填充背景
             g2d.setColor(backgroundColor);
             g2d.fillRect(0, 0, width, height);
@@ -86,19 +84,14 @@ public final class ThemedSpecCaptcha extends Captcha {
                 int fY = height - ((height - (int) fontMetrics.getStringBounds(String.valueOf(strs[i]), g2d).getHeight()) >> 1);
                 g2d.drawString(String.valueOf(strs[i]), i * fW + fSp + 3, fY - 3);
             }
-            g2d.dispose();
-            ImageIO.write(bi, "png", out);
-            out.flush();
+            ImageIO.write(bi, "png", os);
+            os.flush();
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("生成验证码图片失败", e);
+            return false;
         } finally {
-            try {
-                out.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            g2d.dispose();
         }
-        return false;
     }
 }

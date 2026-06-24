@@ -6,6 +6,7 @@ import com.yx.fridgebutler.dto.category.ItemCategoryUpdateRequest;
 import com.yx.fridgebutler.dto.item.ItemCreateRequest;
 import com.yx.fridgebutler.vo.item.ItemVO;
 import com.yx.fridgebutler.dto.item.ItemSearchRequest;
+import com.yx.fridgebutler.dto.item.ItemBatchTakeOutRequest;
 import com.yx.fridgebutler.dto.item.ItemTakeOutRequest;
 import com.yx.fridgebutler.vo.unit.ItemUnitVO;
 import com.yx.fridgebutler.dto.unit.ItemUnitCreateRequest;
@@ -60,7 +61,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -359,8 +359,7 @@ public class ItemServiceImpl implements ItemService {
     /**
      * {@inheritDoc}
      * <p>
-     * 只能删除自己创建的自定义单位类型。删除后该类型下已关联的单位仍保留关联关系，
-     * 但前端展示时会将单位类型名称显示为"未知"。
+     * 只能删除自己创建的自定义单位类型。删除时会同步软删除该类型下用户创建的单位。
      */
     @Override
     @Transactional
@@ -375,9 +374,19 @@ public class ItemServiceImpl implements ItemService {
             throw BusinessException.unitTypeNotEditable();
         }
 
+        Instant now = Instant.now();
+
         unitType.setIsDeleted(true);
-        unitType.setUpdateTime(Instant.now());
+        unitType.setUpdateTime(now);
         unitTypeRepository.save(unitType);
+
+        // 同步软删除该类型下当前用户可用的单位
+        List<BizItemUnit> relatedUnits = unitRepository.findAllByUnitTypeIdAndOwnerIdOrSystemDefault(id, currentUserId);
+        for (BizItemUnit unit : relatedUnits) {
+            unit.setIsDeleted(true);
+            unit.setUpdateTime(now);
+        }
+        unitRepository.saveAll(relatedUnits);
     }
 
     /**
@@ -527,6 +536,7 @@ public class ItemServiceImpl implements ItemService {
         item.setCategoryId(request.getCategoryId());
         item.setItemNum(request.getItemNum());
         item.setRemark(request.getRemark());
+        item.setStorageLocation(request.getStorageLocation());
         item.setOperatorId(currentUserId);
         item.setIsDeleted(false);
 
@@ -537,6 +547,7 @@ public class ItemServiceImpl implements ItemService {
         BizFridgeItem saved = itemRepository.save(item);
 
         // 保存添加记录
+        String unitName = resolveUnitName(saved.getItemUnitId());
         BizItemAddRecord addRecord = BizItemAddRecord.builder()
                 .itemId(saved.getId())
                 .fridgeId(saved.getFridgeId())
@@ -545,6 +556,8 @@ public class ItemServiceImpl implements ItemService {
                 .remainingNum(saved.getItemNum())
                 .operatorId(currentUserId)
                 .createTime(Instant.now())
+                .itemUnitId(saved.getItemUnitId())
+                .unitName(unitName)
                 .build();
         addRecordRepository.save(addRecord);
         log.info("保存添加记录成功，记录ID：{}，物品ID：{}", addRecord.getId(), saved.getId());
@@ -618,6 +631,7 @@ public class ItemServiceImpl implements ItemService {
         saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_CATEGORY", "category_id", item.getCategoryId(), request.getCategoryId());
         saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_NUM", "item_num", item.getItemNum(), request.getItemNum());
         saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_REMARK", "remark", item.getRemark(), request.getRemark());
+        saveChangeRecordIfDifferent(itemId, fridgeId, currentUserId, "UPDATE_STORAGE_LOCATION", "storage_location", item.getStorageLocation(), request.getStorageLocation());
 
         item.setItemName(request.getItemName());
         item.setItemUnitId(request.getItemUnitId());
@@ -627,6 +641,7 @@ public class ItemServiceImpl implements ItemService {
         item.setCategoryId(request.getCategoryId());
         item.setItemNum(request.getItemNum());
         item.setRemark(request.getRemark());
+        item.setStorageLocation(request.getStorageLocation());
         item.setUpdateTime(now);
 
         itemRepository.save(item);
@@ -740,6 +755,7 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.save(item);
 
         // 保存取出记录
+        String unitName = resolveUnitName(item.getItemUnitId());
         BizItemTakeOutRecord record = BizItemTakeOutRecord.builder()
                 .itemId(item.getId())
                 .fridgeId(item.getFridgeId())
@@ -748,6 +764,8 @@ public class ItemServiceImpl implements ItemService {
                 .remainingNum(remainingNum.compareTo(BigDecimal.ZERO) <= 0 ? BigDecimal.ZERO : remainingNum)
                 .operatorId(currentUserId)
                 .createTime(Instant.now())
+                .itemUnitId(item.getItemUnitId())
+                .unitName(unitName)
                 .build();
         takeOutRecordRepository.save(record);
         log.info("保存取出记录成功，记录ID：{}，物品ID：{}" , record.getId(), item.getId());
@@ -770,6 +788,148 @@ public class ItemServiceImpl implements ItemService {
         } else {
             triggers.add(new BadgeTriggerRequest(BadgeTriggerType.TAKE_OUT_ITEM));
         }
+
+        if (total >= 5) {
+            actions.add(new ExpActionRequest(ExpActionType.ORGANIZE));
+        }
+        if (total >= 10) {
+            triggers.add(new BadgeTriggerRequest(BadgeTriggerType.ORGANIZE));
+        }
+
+        AchievementSettlementResult settlement = achievementSettlementService.settle(
+                currentUserId, actions, triggers);
+
+        return ItemTakeOutResultVO.builder()
+                .expGained(settlement.getExpGained())
+                .dailyExpToday(settlement.getDailyExpToday())
+                .dailyExpLimit(settlement.getDailyExpLimit())
+                .leveledUp(settlement.isLeveledUp())
+                .currentLevel(settlement.getCurrentLevel())
+                .level(settlement.getLevel())
+                .badgesUnlocked(settlement.getBadgesUnlocked())
+                .build();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 批量取出逻辑：
+     * <ol>
+     *   <li>统一校验所有物品存在性、未删除、冰箱归属、取出数量合法</li>
+     *   <li>批量扣减库存，归零则软删除</li>
+     *   <li>批量写入取出记录</li>
+     *   <li>按临期数量构造 EXP actions 与徽章 triggers，统一结算</li>
+     * </ol>
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ItemTakeOutResultVO batchTakeOutItem(ItemBatchTakeOutRequest request) {
+        Long currentUserId = getCurrentUserId();
+        List<ItemTakeOutRequest> items = request.getItems();
+        log.info("批量取出物品，用户ID：{}，条目数：{}", currentUserId, items.size());
+
+        // 1. 批量查询物品并校验存在性、未删除
+        List<Long> itemIds = items.stream()
+                .map(ItemTakeOutRequest::getId)
+                .distinct()
+                .toList();
+        List<BizFridgeItem> itemEntities = itemRepository.findAllById(itemIds);
+        if (itemEntities.size() != itemIds.size()) {
+            throw BusinessException.itemNotFound();
+        }
+        for (BizFridgeItem item : itemEntities) {
+            if (Boolean.TRUE.equals(item.getIsDeleted())) {
+                throw BusinessException.itemNotFound();
+            }
+        }
+        Map<Long, BizFridgeItem> itemMap = itemEntities.stream()
+                .collect(Collectors.toMap(BizFridgeItem::getId, Function.identity()));
+
+        // 2. 校验冰箱归属当前用户
+        Set<Long> fridgeIds = itemEntities.stream()
+                .map(BizFridgeItem::getFridgeId)
+                .collect(Collectors.toSet());
+        List<BizFridge> userFridges = fridgeRepository.findByOwnerIdAndIsDeletedFalse(currentUserId, Sort.unsorted());
+        Set<Long> userFridgeIds = userFridges.stream()
+                .map(BizFridge::getId)
+                .collect(Collectors.toSet());
+        if (!userFridgeIds.containsAll(fridgeIds)) {
+            throw BusinessException.fridgeNotFound();
+        }
+
+        // 3. 校验取出数量不能超过现有数量
+        for (ItemTakeOutRequest req : items) {
+            BizFridgeItem item = itemMap.get(req.getId());
+            if (req.getTakeOutNum().compareTo(item.getItemNum()) > 0) {
+                throw BusinessException.takeOutNumExceed();
+            }
+        }
+
+        // 4. 批量扣减库存并生成取出记录
+        Instant now = Instant.now();
+        List<BizFridgeItem> itemsToSave = new ArrayList<>(items.size());
+        List<BizItemTakeOutRecord> recordsToSave = new ArrayList<>(items.size());
+        int expiringCount = 0;
+
+        for (ItemTakeOutRequest req : items) {
+            BizFridgeItem item = itemMap.get(req.getId());
+            // 在修改前判定是否临期
+            boolean expiring = isExpiringItem(item);
+            if (expiring) {
+                expiringCount++;
+            }
+
+            BigDecimal remainingNum = item.getItemNum().subtract(req.getTakeOutNum());
+            if (remainingNum.compareTo(BigDecimal.ZERO) <= 0) {
+                item.setIsDeleted(true);
+                item.setItemNum(BigDecimal.ZERO);
+                remainingNum = BigDecimal.ZERO;
+            } else {
+                item.setItemNum(remainingNum);
+            }
+            item.setUpdateTime(now);
+            itemsToSave.add(item);
+
+            String unitName = resolveUnitName(item.getItemUnitId());
+            BizItemTakeOutRecord record = BizItemTakeOutRecord.builder()
+                    .itemId(item.getId())
+                    .fridgeId(item.getFridgeId())
+                    .itemName(item.getItemName())
+                    .takeOutNum(req.getTakeOutNum())
+                    .remainingNum(remainingNum)
+                    .operatorId(currentUserId)
+                    .createTime(now)
+                    .itemUnitId(item.getItemUnitId())
+                    .unitName(unitName)
+                    .build();
+            recordsToSave.add(record);
+        }
+
+        itemRepository.saveAll(itemsToSave);
+        takeOutRecordRepository.saveAll(recordsToSave);
+        log.info("批量取出保存成功，用户ID：{}，物品数：{}，临期数：{}", currentUserId, items.size(), expiringCount);
+
+        // 5. 计算今日取出/变更总数，判断整理冰箱奖励
+        LocalDate today = LocalDate.now(ZONE_ID_SHANGHAI);
+        Instant start = today.atStartOfDay(ZONE_ID_SHANGHAI).toInstant();
+        Instant end = today.plusDays(1).atStartOfDay(ZONE_ID_SHANGHAI).toInstant();
+        long takeOutCount = takeOutRecordRepository.countByOperatorIdAndCreateTimeBetween(currentUserId, start, end);
+        long changeCount = changeRecordRepository.countByOperatorIdAndCreateTimeBetween(currentUserId, start, end);
+        long total = takeOutCount + changeCount;
+
+        List<ExpActionRequest> actions = new ArrayList<>();
+        List<BadgeTriggerRequest> triggers = new ArrayList<>();
+
+        // 构造 expiringCount 个 CONSUME_EXPIRING EXP action
+        for (int i = 0; i < expiringCount; i++) {
+            actions.add(new ExpActionRequest(ExpActionType.CONSUME_EXPIRING));
+        }
+
+        // 触发 1 次 TAKE_OUT_ITEM
+        triggers.add(new BadgeTriggerRequest(BadgeTriggerType.TAKE_OUT_ITEM));
+
+        // 触发 1 次 TAKE_OUT_EXPIRING，context 传 Map.of("count", expiringCount)
+        triggers.add(new BadgeTriggerRequest(BadgeTriggerType.TAKE_OUT_EXPIRING, Map.of("count", expiringCount)));
 
         if (total >= 5) {
             actions.add(new ExpActionRequest(ExpActionType.ORGANIZE));
@@ -1159,6 +1319,7 @@ public class ItemServiceImpl implements ItemService {
                 .categoryName(resolveCategoryName(item.getCategoryId(), categoryMap))
                 .itemNum(item.getItemNum())
                 .remark(item.getRemark())
+                .storageLocation(item.getStorageLocation())
                 .createTime(formatInstant(item.getCreateTime()))
                 .updateTime(formatInstant(item.getUpdateTime()))
                 .build();
@@ -1181,6 +1342,23 @@ public class ItemServiceImpl implements ItemService {
         }
         String name = categoryMap.get(categoryId);
         return name != null ? name : "未知";
+    }
+
+    /**
+     * 根据单位ID查询单位名称（过滤已删除）。
+     * <p>用于在生成库存/存取记录时快照单位信息。</p>
+     *
+     * @param itemUnitId 单位ID
+     * @return 单位名称，未找到或已删除则返回 null
+     */
+    private String resolveUnitName(Long itemUnitId) {
+        if (itemUnitId == null) {
+            return null;
+        }
+        return unitRepository.findById(itemUnitId)
+                .filter(unit -> !Boolean.TRUE.equals(unit.getIsDeleted()))
+                .map(BizItemUnit::getUnitName)
+                .orElse(null);
     }
 
     /**

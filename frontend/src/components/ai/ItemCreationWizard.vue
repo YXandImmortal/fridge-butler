@@ -40,6 +40,10 @@
         <span class="summary-label">备注：</span>
         <span class="summary-value">{{ data.formData.remark }}</span>
       </div>
+      <div v-if="data.formData.storageLocation" class="summary-item">
+        <span class="summary-label">存放位置：</span>
+        <span class="summary-value">{{ data.formData.storageLocation }}</span>
+      </div>
     </div>
 
     <!-- 输入区（非最后一步时显示） -->
@@ -184,6 +188,9 @@
             <span v-if="categoryName" class="confirm-meta-item">{{ categoryName }}</span>
             <span v-if="data.formData.itemNum != null && data.formData.itemNum !== ''"
                   class="confirm-meta-item">{{ data.formData.itemNum }} {{ unitName }}</span>
+            <span v-if="data.formData.storageLocation" class="confirm-meta-item">
+              <i class="iconfont icon-location"/> {{ data.formData.storageLocation }}
+            </span>
           </div>
           <div v-if="data.formData.productionDate" class="confirm-address">
             <i class="iconfont icon-calendar"/> 生产日期：{{ data.formData.productionDate }}
@@ -237,6 +244,7 @@ import CustomInput from '@/components/ui/CustomInput.vue'
 import CustomInputNumber from '@/components/ui/CustomInputNumber.vue'
 import CustomDatePicker from '@/components/ui/CustomDatePicker.vue'
 import {listItemCategories, listItemUnits, listUnitTypes} from '@/api/item'
+import {applyRecommendToForm} from '@/utils/itemRecommend'
 
 const props = defineProps({
   data: {
@@ -249,6 +257,10 @@ const props = defineProps({
       formData: {},
       currentInput: null
     })
+  },
+  recommendData: {
+    type: Object,
+    default: () => null
   }
 })
 
@@ -393,7 +405,8 @@ const hasFormData = computed(() => {
       (fd.itemNum != null && fd.itemNum !== '') ||
       fd.productionDate ||
       fd.shelfLifeDays ||
-      fd.remark
+      fd.remark ||
+      fd.storageLocation
   )
 })
 
@@ -411,6 +424,15 @@ function handleUnitTypeChange() {
   unitId.value = ''
 }
 
+function applyRecommendToWizard() {
+  if (!props.recommendData || !props.data.formData) return
+  const formData = {...props.data.formData}
+  applyRecommendToForm(props.recommendData, formData, unitList.value)
+  // 将回填结果同步回 formData（通过事件或父级 data 已在 handleWizardStepSubmit 中更新）
+  // 这里仅用于初始化当前步骤输入
+  return formData
+}
+
 function initInputFromFormData() {
   const config = currentInputConfig.value
   if (!config) {
@@ -418,8 +440,12 @@ function initInputFromFormData() {
     return
   }
 
+  // 优先使用真实 formData，空值时尝试推荐数据
+  const recommendForm = applyRecommendToWizard()
+  const mergedFormData = recommendForm || props.data.formData
+
   const field = config.field
-  const existing = props.data.formData?.[field]
+  const existing = mergedFormData?.[field]
 
   if (inputComponentType.value === 'number') {
     inputValueNum.value = existing !== undefined && existing !== null && existing !== '' ? Number(existing) : null
@@ -428,12 +454,12 @@ function initInputFromFormData() {
   } else if (inputComponentType.value === 'date') {
     inputValue.value = existing !== undefined && existing !== null ? String(existing) : ''
   } else if (inputComponentType.value === 'combined_unit') {
-    inputValueNum.value = props.data.formData?.itemNum !== undefined && props.data.formData?.itemNum !== null ? Number(props.data.formData.itemNum) : null
-    unitTypeId.value = props.data.formData?.unitTypeId || ''
-    unitId.value = props.data.formData?.itemUnitId || ''
+    inputValueNum.value = mergedFormData?.itemNum !== undefined && mergedFormData?.itemNum !== null ? Number(mergedFormData.itemNum) : null
+    unitTypeId.value = mergedFormData?.unitTypeId || ''
+    unitId.value = mergedFormData?.itemUnitId || ''
   } else if (inputComponentType.value === 'combined_date_number') {
-    dateValue.value = props.data.formData?.productionDate || ''
-    shelfLifeDays.value = props.data.formData?.shelfLifeDays || null
+    dateValue.value = mergedFormData?.productionDate || ''
+    shelfLifeDays.value = mergedFormData?.shelfLifeDays || null
   } else {
     inputValue.value = existing !== undefined && existing !== null ? String(existing) : ''
   }
@@ -447,6 +473,16 @@ watch(
       initInputFromFormData()
     },
     {immediate: true}
+)
+
+// 推荐数据异步到达时，重新初始化当前步骤输入
+watch(
+    () => props.recommendData,
+    () => {
+      resetInput()
+      initInputFromFormData()
+    },
+    {deep: true}
 )
 
 // ==================== 事件处理 ====================

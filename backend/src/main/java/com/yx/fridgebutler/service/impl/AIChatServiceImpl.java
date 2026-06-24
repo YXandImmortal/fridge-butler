@@ -45,7 +45,6 @@ import com.yx.fridgebutler.vo.aichat.CalorieCalculationData;
 import com.yx.fridgebutler.vo.aichat.CalorieItem;
 import com.yx.fridgebutler.vo.gamification.AchievementSettlementResult;
 import com.yx.fridgebutler.vo.gamification.BadgeTriggerRequest;
-import com.yx.fridgebutler.vo.gamification.ExpActionRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -1068,7 +1067,8 @@ public class AIChatServiceImpl implements AIChatService {
     private AIChatReplyVO handleText(String userMessage, List<AIChatHistoryMessage> history, String attachmentContext) {
         List<DeepSeekChatMessage> messages = new ArrayList<>();
 
-        String chatPrompt = promptLoader.getPrompt("general-chat", GENERAL_CHAT_SYSTEM_PROMPT);
+        String chatPrompt = promptLoader.getPrompt("general-chat", GENERAL_CHAT_SYSTEM_PROMPT)
+                .replace("{{currentDate}}", LocalDate.now().toString());
         messages.add(DeepSeekChatMessage.builder().role("system").content(chatPrompt).build());
 
         if (history != null && !history.isEmpty()) {
@@ -1700,7 +1700,7 @@ public class AIChatServiceImpl implements AIChatService {
             saveAssistantMessage(sessionId, reply);
             session.setLastActiveTime(Instant.now());
             sessionRepository.save(session);
-            sendStreamDoneAndReward(emitter, sessionId, reply, new ArrayList<BadgeTriggerRequest>(), currentUserId);
+            sendStreamDoneAndReward(emitter, sessionId, reply, new ArrayList<>(), currentUserId);
             return;
         }
 
@@ -1712,7 +1712,7 @@ public class AIChatServiceImpl implements AIChatService {
             saveAssistantMessage(sessionId, reply);
             session.setLastActiveTime(Instant.now());
             sessionRepository.save(session);
-            sendStreamDoneAndReward(emitter, sessionId, reply, new ArrayList<BadgeTriggerRequest>(), currentUserId);
+            sendStreamDoneAndReward(emitter, sessionId, reply, new ArrayList<>(), currentUserId);
             return;
         }
 
@@ -1847,7 +1847,8 @@ public class AIChatServiceImpl implements AIChatService {
                                           String attachmentContext) {
         List<DeepSeekChatMessage> messages = new ArrayList<>();
 
-        String chatPrompt = promptLoader.getPrompt("general-chat", GENERAL_CHAT_SYSTEM_PROMPT);
+        String chatPrompt = promptLoader.getPrompt("general-chat", GENERAL_CHAT_SYSTEM_PROMPT)
+                .replace("{{currentDate}}", LocalDate.now().toString());
         messages.add(DeepSeekChatMessage.builder().role("system").content(chatPrompt).build());
 
         if (history != null && !history.isEmpty()) {
@@ -1916,6 +1917,7 @@ public class AIChatServiceImpl implements AIChatService {
         formData.put("itemNum", null);
         formData.put("unitTypeId", null);
         formData.put("itemUnitId", null);
+        formData.put("storageLocation", "");
         formData.put("productionDate", null);
         formData.put("shelfLifeDays", null);
         formData.put("remark", "");
@@ -1987,33 +1989,45 @@ public class AIChatServiceImpl implements AIChatService {
             if (formData.get("itemNum") == null || formData.get("itemUnitId") == null) {
                 return buildItemWizardReply(2, formData, "请填写数量并选择单位。");
             }
-            return buildItemWizardReply(3, formData, "好的，接下来请填写生产日期和保质期（选填）。");
+            return buildItemWizardReply(3, formData, "好的，接下来请选择存放位置（选填）。");
         }
 
-        // 步骤3：生产日期与保质期（combined_date_number，选填）
+        // 步骤3：存放位置（text，选填）
         if (currentStep == 3) {
+            if (isSkipIntent(userMessage)) {
+                formData.put("storageLocation", "");
+                return buildItemWizardReply(4, formData, "好的，接下来请填写生产日期和保质期（选填）。");
+            }
+            if (!formData.containsKey("storageLocation")) {
+                formData.put("storageLocation", "");
+            }
+            return buildItemWizardReply(4, formData, "好的，接下来请填写生产日期和保质期（选填）。");
+        }
+
+        // 步骤4：生产日期与保质期（combined_date_number，选填）
+        if (currentStep == 4) {
             if (isSkipIntent(userMessage)) {
                 formData.put("productionDate", null);
                 formData.put("shelfLifeDays", null);
-                return buildItemWizardReply(4, formData, "好的，接下来请填写备注（选填）。");
+                return buildItemWizardReply(5, formData, "好的，接下来请填写备注（选填）。");
             }
             // 前端已更新 formData，直接推进
-            return buildItemWizardReply(4, formData, "好的，接下来请填写备注（选填）。");
+            return buildItemWizardReply(5, formData, "好的，接下来请填写备注（选填）。");
         }
 
-        // 步骤4：备注（textarea，选填）
-        if (currentStep == 4) {
+        // 步骤5：备注（textarea，选填）
+        if (currentStep == 5) {
             if (isSkipIntent(userMessage)) {
                 formData.put("remark", "");
-                return buildItemWizardReply(5, formData, "请确认以下信息，无误后点击确认添加：");
+                return buildItemWizardReply(6, formData, "请确认以下信息，无误后点击确认添加：");
             }
             if (!formData.containsKey("remark")) {
                 formData.put("remark", "");
             }
-            return buildItemWizardReply(5, formData, "请确认以下信息，无误后点击确认添加：");
+            return buildItemWizardReply(6, formData, "请确认以下信息，无误后点击确认添加：");
         }
 
-        // 步骤5：确认页（兜底保护）
+        // 步骤6：确认页（兜底保护）
         return AIChatReplyVO.builder()
                 .messageType("text")
                 .text("信息已填写完整，请点击确认添加按钮完成添加。如需修改，可以取消后重新开始。")
@@ -2022,7 +2036,7 @@ public class AIChatServiceImpl implements AIChatService {
     }
 
     /**
-     * 构建物品创建向导的标准回复结构（6 步）。
+     * 构建物品创建向导的标准回复结构（7 步）。
      *
      * @param currentStep 当前步骤索引（0-based）
      * @param formData    已收集的表单数据
@@ -2034,6 +2048,7 @@ public class AIChatServiceImpl implements AIChatService {
                 Map.of("title", "名称", "description", "请告诉我你想添加什么物品？"),
                 Map.of("title", "分类", "description", "请选择物品的分类"),
                 Map.of("title", "数量单位", "description", "请填写数量并选择单位"),
+                Map.of("title", "存放位置", "description", "请选择存放位置（选填）"),
                 Map.of("title", "保质期", "description", "请填写生产日期和保质期（选填）"),
                 Map.of("title", "备注", "description", "还有其他要补充的吗？（选填）"),
                 Map.of("title", "确认", "description", "请确认以下信息无误")
@@ -2041,11 +2056,11 @@ public class AIChatServiceImpl implements AIChatService {
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("currentStep", currentStep);
-        data.put("totalSteps", 6);
+        data.put("totalSteps", 7);
         data.put("steps", steps);
         data.put("formData", formData);
 
-        if (currentStep < 5) {
+        if (currentStep < 6) {
             Map<String, Object> currentInput = new LinkedHashMap<>();
             switch (currentStep) {
                 case 0 -> {
@@ -2070,13 +2085,20 @@ public class AIChatServiceImpl implements AIChatService {
                     currentInput.put("placeholder", "填写数量并选择单位");
                 }
                 case 3 -> {
+                    currentInput.put("field", "storageLocation");
+                    currentInput.put("type", "text");
+                    currentInput.put("label", "存放位置");
+                    currentInput.put("required", false);
+                    currentInput.put("placeholder", "例如：冷藏室、冷冻室（选填）");
+                }
+                case 4 -> {
                     currentInput.put("field", "productionDate");
                     currentInput.put("type", "combined_date_number");
                     currentInput.put("label", "生产日期与保质期");
                     currentInput.put("required", false);
                     currentInput.put("placeholder", "选择生产日期并填写保质期天数");
                 }
-                case 4 -> {
+                case 5 -> {
                     currentInput.put("field", "remark");
                     currentInput.put("type", "textarea");
                     currentInput.put("label", "备注");

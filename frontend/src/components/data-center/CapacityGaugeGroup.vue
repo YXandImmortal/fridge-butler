@@ -167,7 +167,7 @@ function getGaugeOption(item) {
   color: var(--text-secondary);
   cursor: pointer;
   margin-left: 4px;
-  transition: color 0.2s;
+  transition: color 0.3s;
 
   &:hover {
     color: var(--primary-color);

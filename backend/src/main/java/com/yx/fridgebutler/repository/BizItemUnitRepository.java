@@ -49,4 +49,17 @@ public interface BizItemUnitRepository extends JpaRepository<BizItemUnit, Long> 
      * @return 系统默认物品单位列表
      */
     List<BizItemUnit> findByIsSystemDefaultTrueAndIsDeletedFalse();
+
+    /**
+     * 查询指定单位类型下，指定用户可用的未删除单位列表。
+     * <p>包含系统默认单位和该用户的自定义单位。</p>
+     *
+     * @param unitTypeId 单位类型ID
+     * @param ownerId    所有者ID
+     * @return 符合条件的未删除单位列表
+     */
+    @Query("SELECT u FROM BizItemUnit u WHERE u.unitTypeId = :unitTypeId AND u.isDeleted = false AND (u.isSystemDefault = true OR u.ownerId = :ownerId)")
+    List<BizItemUnit> findAllByUnitTypeIdAndOwnerIdOrSystemDefault(
+            @Param("unitTypeId") Long unitTypeId,
+            @Param("ownerId") Long ownerId);
 }

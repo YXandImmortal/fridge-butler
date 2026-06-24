@@ -1,0 +1,22 @@
+{
+  "properties": [
+    {
+      "name": "system.data.init.enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否启用业务系统默认数据自动初始化（单位类型、物品分类、物品单位、冰箱类型等）。",
+      "defaultValue": false
+    },
+    {
+      "name": "system.role.init.enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否启用系统预设角色自动初始化。首次部署时建议开启，确保 sys_role 表中有预设角色数据。",
+      "defaultValue": false
+    },
+    {
+      "name": "system.badge.retrofit.enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否启用历史徽章补发。升级时可通过环境变量 BADGE_RETROFIT_ENABLED=true 启动一次，跑完后请改回 false。",
+      "defaultValue": false
+    }
+  ]
+}

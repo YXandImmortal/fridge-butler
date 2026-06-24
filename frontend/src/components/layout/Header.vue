@@ -522,8 +522,7 @@ const handleQuickGuideClick = () => {
   gap: 10px;
   cursor: pointer;
   outline: none;
-  padding: 6px 10px;
-  border-radius: 8px;
+  padding: var(--space-1) var(--space-3) var(--space-1) 0;
   transition: all 0.3s ease;
   color: var(--text-secondary);
   background: transparent;
@@ -559,7 +558,6 @@ const handleQuickGuideClick = () => {
   flex-direction: column;
   justify-content: center;
   gap: 3px;
-  min-width: 180px;
   width: auto;
 }
 
@@ -568,7 +566,7 @@ const handleQuickGuideClick = () => {
   align-items: center;
   gap: 8px;
   min-width: 0;
-  justify-content: flex-start;
+  justify-content: space-between;
 }
 
 .user-name {

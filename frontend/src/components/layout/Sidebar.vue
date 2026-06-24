@@ -465,7 +465,7 @@ const loadTodayTip = async () => {
 /* 子菜单展开/收起动画 */
 .submenu-enter-active,
 .submenu-leave-active {
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
 }
 
 .submenu-enter-from,
