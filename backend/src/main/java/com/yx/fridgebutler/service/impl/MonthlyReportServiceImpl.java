@@ -35,7 +35,7 @@ import java.util.List;
 
 /**
  * 月度报告服务实现类。
- * <p>处理月度报告生成、DeepSeek AI 浪费金额估算、环保价值换算、报告查询等逻辑。</p>
+ * <p>处理月度报告生成、AI 浪费金额估算、环保价值换算、报告查询等逻辑。</p>
  */
 @Slf4j
 @Service
@@ -115,7 +115,7 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
      *   <li>获取月初/月末等级</li>
      *   <li>获取当月最高连续天数</li>
      *   <li>统计当月新解锁徽章数</li>
-     *   <li>调用 DeepSeek AI 估算浪费金额和重量</li>
+     *   <li>调用 AI 估算浪费金额和重量</li>
      *   <li>计算环保价值（CO₂、水）</li>
      *   <li>保存报告记录</li>
      * </ol>
@@ -300,7 +300,7 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
     }
 
     /**
-     * 调用 DeepSeek AI 估算浪费金额和重量。
+     * 调用 AI 估算浪费金额和重量。
      *
      * @param userId      用户ID
      * @param expiredCount 当月过期总数
@@ -357,7 +357,7 @@ public class MonthlyReportServiceImpl implements MonthlyReportService {
                     BigDecimal.valueOf(wastedKg).setScale(2, RoundingMode.HALF_UP)
             );
         } catch (Exception e) {
-            log.warn("DeepSeek AI 浪费金额估算失败，用户ID：{}，使用默认值", userId, e);
+            log.warn("AI 浪费金额估算失败，用户ID：{}，使用默认值", userId, e);
             return new WasteEstimate(
                     BigDecimal.valueOf(expiredCount * DEFAULT_WASTE_PRICE).setScale(2, RoundingMode.HALF_UP),
                     BigDecimal.valueOf(expiredCount * DEFAULT_WASTE_KG).setScale(2, RoundingMode.HALF_UP)

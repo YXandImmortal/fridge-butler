@@ -199,6 +199,14 @@ const router = createRouter({
                     }
                 },
                 {
+                    path: 'ai',
+                    name: 'super-admin-ai',
+                    component: () => import('@/views/super-admin/SuperAdminAiConfigView.vue'),
+                    meta: {
+                        roles: [SUPER_ADMIN_PERMISSION]
+                    }
+                },
+                {
                     path: 'notification',
                     name: 'super-admin-notification',
                     component: () => import('@/views/super-admin/SuperAdminNotificationView.vue'),

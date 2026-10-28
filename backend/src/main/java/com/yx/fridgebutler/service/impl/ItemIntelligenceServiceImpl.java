@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 /**
  * 物品智能推荐服务实现类。
- * <p>调用 DeepSeek AI，结合系统预设及用户自定义的分类、单位数据，为用户输入的物品名称生成推荐。</p>
+ * <p>调用 AI，结合系统预设及用户自定义的分类、单位数据，为用户输入的物品名称生成推荐。</p>
  */
 @Slf4j
 @Service

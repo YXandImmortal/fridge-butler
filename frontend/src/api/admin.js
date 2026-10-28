@@ -17,6 +17,12 @@ export const getLogList = (params) => request.get('/admin/logs', { params })
 export const getSystemConfig = () => request.get('/admin/system/config')
 export const updateSystemConfig = (data) => request.put('/admin/system/config', data)
 
+// ========== AI 配置与用量 ==========
+export const getAiProviders = () => request.get('/admin/ai/providers')
+export const getAiConfig = () => request.get('/admin/ai/config')
+export const updateAiConfig = (data) => request.put('/admin/ai/config', data)
+export const getAiUsage = (days) => request.get('/admin/ai/usage', { params: { days } })
+
 // ========== 重要通知广播 ==========
 // 已迁移至 @/api/notification.js，此处保留 re-export 以保持兼容
 export { broadcastImportantNotice } from '@/api/notification.js'

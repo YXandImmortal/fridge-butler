@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: fridge-butler-backend
   profiles:
@@ -50,9 +52,10 @@ ai:
     purge-days: 30
   chat:
     max-history-rounds: 10
+  config-encryption-key: ${AI_CONFIG_SECRET:}
 
 deepseek:
-  api-key: ${DEEPSEEK_API_KEY}
+  api-key: ${DEEPSEEK_API_KEY:}
   base-url: https://api.deepseek.com
   model: deepseek-v4-pro
   temperature: 0.7

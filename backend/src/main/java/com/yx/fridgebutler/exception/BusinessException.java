@@ -554,7 +554,7 @@ public class BusinessException extends RuntimeException {
     // ======================== AI 服务相关 ========================
 
     /**
-     * 创建 DeepSeek API 调用失败异常
+     * 创建 AI API 调用失败异常
      *
      * @return AI 服务调用失败业务异常
      */
@@ -563,7 +563,7 @@ public class BusinessException extends RuntimeException {
     }
 
     /**
-     * 创建 DeepSeek API 调用失败异常（携带详细错误信息）
+     * 创建 AI API 调用失败异常（携带详细错误信息）
      *
      * @param detail 详细错误信息
      * @return AI 服务调用失败业务异常
@@ -573,6 +573,14 @@ public class BusinessException extends RuntimeException {
                 ResultCode.DEEPSEEK_API_ERROR.getCode(),
                 ResultCode.DEEPSEEK_API_ERROR.getHttpStatus(),
                 ResultCode.DEEPSEEK_API_ERROR.getMessage() + ": " + detail
+        );
+    }
+
+    public static BusinessException aiConfigError(String detail) {
+        return new BusinessException(
+                ResultCode.AI_CONFIG_ERROR.getCode(),
+                ResultCode.AI_CONFIG_ERROR.getHttpStatus(),
+                ResultCode.AI_CONFIG_ERROR.getMessage() + ": " + detail
         );
     }
 

@@ -111,7 +111,7 @@ public class DailyTipServiceImpl implements DailyTipService {
     }
 
     /**
-     * 调用 DeepSeek 生成小贴士并保存到数据库。
+     * 调用 AI 生成小贴士并保存到数据库。
      * <p>首次调用 AI 后，如果 content 为空或解析失败，会自动重试一次；
      * 两次均失败则使用兜底内容。</p>
      *
@@ -161,7 +161,7 @@ public class DailyTipServiceImpl implements DailyTipService {
     }
 
     /**
-     * 解析 DeepSeek 返回的 JSON 响应。
+     * 解析 AI 返回的 JSON 响应。
      * <p>仅在 JSON 解析成功且关键字段 {@code content} 非空时返回结果；
      * 否则返回 {@code null}，由上层决定是否重试或使用兜底。</p>
      *

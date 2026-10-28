@@ -6,14 +6,14 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * DeepSeek AI 大模型配置类。
- * <p>提供调用 DeepSeek API 所需的 RestTemplate Bean。</p>
+ * AI 大模型调用配置类。
+ * <p>提供调用各厂商 OpenAI 兼容接口所需的 RestTemplate Bean。</p>
  */
 @Configuration
 public class DeepSeekConfig {
 
     /**
-     * 创建用于调用 DeepSeek API 的 RestTemplate。
+     * 创建用于调用 AI API 的 RestTemplate。
      *
      * @return RestTemplate 实例
      */

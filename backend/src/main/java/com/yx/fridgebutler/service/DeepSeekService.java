@@ -7,8 +7,8 @@ import com.yx.fridgebutler.dto.deepseek.DeepSeekChatResponse;
 import java.util.List;
 
 /**
- * DeepSeek AI 大模型服务接口。
- * <p>封装与 DeepSeek API 的交互，提供简洁的对话调用方式。</p>
+ * AI 大模型服务接口。
+ * <p>封装与各厂商 OpenAI 兼容接口的交互，提供简洁的对话调用方式。</p>
  */
 public interface DeepSeekService {
 

@@ -33,3 +33,6 @@ build/
 .vscode/
 /Commit Message.txt
 /CHANGELOG.md
+
+### Local environment variables ###
+/.env

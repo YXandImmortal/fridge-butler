@@ -95,9 +95,10 @@ public enum ResultCode {
 
     /**
      * AI 服务状态码
-     * <p>DeepSeek AI 大模型调用相关</p>
+     * <p>大模型调用与全局配置相关</p>
      */
     DEEPSEEK_API_ERROR(503, HttpStatus.SERVICE_UNAVAILABLE, "AI 服务调用失败"),
+    AI_CONFIG_ERROR(400, HttpStatus.BAD_REQUEST, "AI 配置错误"),
 
     /**
      * 采购助手状态码

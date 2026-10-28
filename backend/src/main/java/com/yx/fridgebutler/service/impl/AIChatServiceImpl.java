@@ -249,7 +249,7 @@ public class AIChatServiceImpl implements AIChatService {
      *   <li>查找或创建会话（支持跨页面刷新恢复历史）</li>
      *   <li>从数据库加载历史消息</li>
      *   <li>保存用户消息到数据库</li>
-     *   <li>调用 DeepSeek 进行意图识别</li>
+     *   <li>调用 AI 进行意图识别</li>
      *   <li>根据意图类型调用对应 Handler 获取业务数据</li>
      *   <li>保存 AI 回复到数据库</li>
      *   <li>更新会话最后活跃时间</li>
@@ -375,7 +375,7 @@ public class AIChatServiceImpl implements AIChatService {
     // ======================== 意图识别 ========================
 
     /**
-     * 调用 DeepSeek 进行意图识别。
+     * 调用 AI 进行意图识别。
      *
      * @param userMessage        用户当前输入
      * @param history            对话历史
@@ -415,7 +415,7 @@ public class AIChatServiceImpl implements AIChatService {
     }
 
     /**
-     * 解析 DeepSeek 返回的意图 JSON。
+     * 解析 AI 返回的意图 JSON。
      */
     private IntentResult parseIntentJson(String jsonStr) {
         String cleaned = AiResponseUtils.cleanJsonResponse(jsonStr);
@@ -1561,8 +1561,8 @@ public class AIChatServiceImpl implements AIChatService {
     }
 
     /**
-     * 规范化消息角色，将前端可能的非法 role 映射为 DeepSeek 支持的值。
-     * <p>DeepSeek 支持的 role：system, user, assistant, tool。</p>
+     * 规范化消息角色，将前端可能的非法 role 映射为 AI 支持的值。
+     * <p>AI 支持的 role：system, user, assistant, tool。</p>
      *
      * @param role 原始 role
      * @return 规范化后的 role，如果不合法则返回 null（表示应丢弃该消息）

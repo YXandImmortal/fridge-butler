@@ -11,7 +11,7 @@ public interface MonthlyReportService {
 
     /**
      * 生成指定用户的月度报告。
-     * <p>聚合当月数据，调用 DeepSeek AI 估算浪费金额，计算环保价值，保存报告记录。</p>
+     * <p>聚合当月数据，调用 AI 估算浪费金额，计算环保价值，保存报告记录。</p>
      *
      * @param userId    用户ID
      * @param yearMonth 年月，如 2026-05

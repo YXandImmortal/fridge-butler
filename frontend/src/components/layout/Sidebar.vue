@@ -146,6 +146,7 @@ const adminFeatures = [
   {id: 'admin-logs', name: '操作日志', icon: 'icon-script-text', path: '/super-admin/logs'},
   {id: 'admin-notification', name: '通知发布', icon: 'icon-megaphone', path: '/super-admin/notification'},
   {id: 'admin-system', name: '系统配置', icon: 'icon-sliders', path: '/super-admin/system'},
+  {id: 'admin-ai', name: 'AI 配置', icon: 'icon-deepseek', path: '/super-admin/ai'},
 ]
 
 // 根据角色切换菜单

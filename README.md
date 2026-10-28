@@ -28,7 +28,7 @@
 
 ## ✨ 项目简介
 
-**智鲜·引擎（Fridge Butler）** 是一款面向个人与家庭的智能冰箱管理 Web 应用，致力于帮助用户轻松管理冰箱食材、追踪保质期、减少食物浪费。项目深度融合了 **DeepSeek AI 大模型**，提供自然语言交互、智能推荐与自动化管家服务。
+**智鲜·引擎（Fridge Butler）** 是一款面向个人与家庭的智能冰箱管理 Web 应用，致力于帮助用户轻松管理冰箱食材、追踪保质期、减少食物浪费。项目支持 **DeepSeek、通义千问与 OpenAI 大模型**，提供自然语言交互、智能推荐与自动化管家服务。
 
 ---
 
@@ -39,7 +39,7 @@
 - 食材入库、取出、变更全生命周期记录，操作可追溯
 - 自定义物品分类与计量单位，灵活适配不同生活习惯
 
-### 🤖 AI 智能管家（DeepSeek 驱动）
+### 🤖 AI 智能管家（多模型可配置）
 - **自然语言对话**：基于 SSE 流式输出，实现逐字打字机效果的实时交互体验
 - **AI 冰箱创建向导**：通过聊天引导，6 步完成冰箱信息录入
 - **AI 物品创建向导**：对话式添加食材，自动识别分类、保质期与单位
@@ -47,6 +47,7 @@
 - **热量计算**：基于食材清单自动估算总热量与营养成分
 - **容量智能估算**：AI 估算冰箱空间利用率，辅助整理决策
 - **物品字段智能推荐**：输入食材名称即可 AI 推荐分类、单位、存储位置与存放日期
+- **模型与用量管理**：超级管理员可配置全局厂商、模型和加密密钥，查看请求次数及调用趋势
 
 ### 🛒 智能采购助手
 - **三种方式制定采购方案**：手动创建、从个人模板快速创建、AI 智能推荐生成
@@ -86,9 +87,27 @@
 |:---:|:---|
 | **前端** | Vue 3 · Vite · Element Plus · Pinia · Vue Router · Axios · ECharts · SCSS |
 | **后端** | Spring Boot 4 · Java 25 · Spring Security · Spring Data JPA · JWT |
-| **AI** | DeepSeek API (deepseek-v4-pro) · SSE 流式推送 |
+| **AI** | DeepSeek · 通义千问 · OpenAI 兼容接口 · SSE 流式推送 |
 | **数据库** | MySQL 8 |
 | **构建工具** | Maven (后端) · npm (前端) |
+
+### AI 管理配置
+
+超级管理员可在后台「AI 配置」页选择全局厂商和模型、填写 API 密钥，并查看累计/今日/成功/失败请求次数及近 7 或 30 天趋势。保存后对新发起的 AI 请求生效。
+
+首次通过页面保存加密密钥前，需要为后端设置 `AI_CONFIG_SECRET` 环境变量，其值必须是 Base64 编码的 32 字节随机密钥：
+
+```bash
+# Linux、macOS 或 Git Bash
+openssl rand -base64 32
+```
+
+```powershell
+# PowerShell
+$bytes = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes); [Convert]::ToBase64String($bytes)
+```
+
+请安全备份该主密钥；更换或丢失后，已保存的密钥密文将无法解密，需要重新填写。尚未在后台保存配置时，系统继续兼容原有 `DEEPSEEK_API_KEY` 和 `deepseek.*` 配置。现有数据库启用本功能前，请执行 `database/migrations/20261027_add_ai_request_log.sql`。
 
 ---
 

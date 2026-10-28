@@ -20,9 +20,20 @@
     <transition name="dropdown">
       <div v-show="isOpen" class="select-dropdown"
            :class="{ 'is-grid': grid, 'align-right': dropdownAlign === 'right' }">
-        <template v-if="options.length > 0">
+        <div v-if="filterable" class="select-filter">
+          <input
+              ref="filterInputRef"
+              v-model="searchText"
+              class="select-filter-input"
+              :placeholder="filterPlaceholder"
+              @click.stop
+              @keydown.enter.prevent="handleEnter"
+              @keydown.esc.prevent="handleEscape"
+          />
+        </div>
+        <template v-if="filteredOptions.length > 0">
           <div
-              v-for="option in options"
+              v-for="option in filteredOptions"
               :key="option.value"
               class="select-option"
               :class="{ 'is-selected': String(modelValue) === String(option.value) }"
@@ -34,7 +45,14 @@
             </slot>
           </div>
         </template>
-        <div v-else class="select-empty">
+        <div
+            v-if="showCreateOption"
+            class="select-option select-create-option"
+            @click.stop="handleCreate"
+        >
+          <span class="option-label">使用“{{ normalizedSearchText }}”</span>
+        </div>
+        <div v-if="filteredOptions.length === 0 && !showCreateOption" class="select-empty">
           <slot name="empty">{{ emptyText }}</slot>
         </div>
       </div>
@@ -43,7 +61,7 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted, onUnmounted} from 'vue'
+import {ref, computed, nextTick, onMounted, onUnmounted} from 'vue'
 
 const props = defineProps({
   modelValue: {
@@ -96,6 +114,18 @@ const props = defineProps({
     type: String,
     default: 'default',
     validator: (val) => ['default', 'search'].includes(val)
+  },
+  filterable: {
+    type: Boolean,
+    default: false
+  },
+  allowCreate: {
+    type: Boolean,
+    default: false
+  },
+  filterPlaceholder: {
+    type: String,
+    default: '搜索选项'
   }
 })
 
@@ -103,6 +133,8 @@ const emit = defineEmits(['update:modelValue', 'change'])
 
 const isOpen = ref(false)
 const selectRef = ref(null)
+const filterInputRef = ref(null)
+const searchText = ref('')
 
 const sizeClass = computed(() => props.size !== 'default' ? `cs-size--${props.size}` : '')
 const variantClass = computed(() => props.variant !== 'default' ? `cs-variant--${props.variant}` : '')
@@ -116,18 +148,64 @@ const selectedOption = computed(() => {
 })
 
 const selectedLabel = computed(() => {
-  return selectedOption.value ? selectedOption.value.label : ''
+  if (selectedOption.value) return selectedOption.value.label
+  return props.allowCreate && hasValue.value ? String(props.modelValue) : ''
 })
 
-const toggleOpen = () => {
+const normalizedSearchText = computed(() => searchText.value.trim())
+const filteredOptions = computed(() => {
+  if (!props.filterable || !normalizedSearchText.value) return props.options
+  const keyword = normalizedSearchText.value.toLowerCase()
+  return props.options.filter(option => {
+    const label = String(option.label ?? '').toLowerCase()
+    const value = String(option.value ?? '').toLowerCase()
+    return label.includes(keyword) || value.includes(keyword)
+  })
+})
+const showCreateOption = computed(() => {
+  if (!props.allowCreate || !normalizedSearchText.value) return false
+  return !props.options.some(option => String(option.value) === normalizedSearchText.value)
+})
+
+const closeSelect = () => {
+  isOpen.value = false
+  searchText.value = ''
+}
+
+const toggleOpen = async () => {
   if (props.disabled) return
-  isOpen.value = !isOpen.value
+  if (isOpen.value) {
+    closeSelect()
+    return
+  }
+  isOpen.value = true
+  searchText.value = ''
+  if (props.filterable) {
+    await nextTick()
+    filterInputRef.value?.focus()
+  }
 }
 
 const handleSelect = (option) => {
   emit('update:modelValue', option.value)
   emit('change', option.value)
-  isOpen.value = false
+  closeSelect()
+}
+
+const handleCreate = () => {
+  handleSelect({label: normalizedSearchText.value, value: normalizedSearchText.value})
+}
+
+const handleEnter = () => {
+  if (showCreateOption.value) {
+    handleCreate()
+  } else if (filteredOptions.value.length > 0) {
+    handleSelect(filteredOptions.value[0])
+  }
+}
+
+const handleEscape = () => {
+  closeSelect()
 }
 
 const handleClear = () => {
@@ -137,7 +215,7 @@ const handleClear = () => {
 
 const handleClickOutside = (event) => {
   if (selectRef.value && !selectRef.value.contains(event.target)) {
-    isOpen.value = false
+    closeSelect()
   }
 }
 
@@ -262,14 +340,49 @@ onUnmounted(() => {
   top: calc(100% + 6px);
   left: 0;
   width: 100%;
+  max-height: 320px;
+  overflow-y: auto;
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   z-index: 100;
-  overflow: hidden;
   padding: 6px;
+}
+
+.select-filter {
+  padding: 4px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.select-filter-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 var(--space-3);
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+  &::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  &:focus {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-input-focus);
+  }
+}
+
+.select-create-option {
+  color: var(--primary-color);
+  font-weight: 500;
 }
 
 .select-dropdown.align-right {

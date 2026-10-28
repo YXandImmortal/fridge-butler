@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 
 /**
  * 容量利用率统计服务实现类。
- * <p>基于 DeepSeek AI 大模型估算冰箱空间占用率，支持缓存与异步更新机制。</p>
+ * <p>基于 AI 大模型估算冰箱空间占用率，支持缓存与异步更新机制。</p>
  */
 @Slf4j
 @Service
