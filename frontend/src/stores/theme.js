@@ -5,6 +5,9 @@ const THEME_STORAGE_KEY = 'app-theme'
 
 export const useThemeStore = defineStore('theme', () => {
     const theme = ref('light')
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let activeTransition = null
+    let activeAnimation = null
 
     // 从 localStorage 加载主题
     const loadTheme = () => {
@@ -29,34 +32,80 @@ export const useThemeStore = defineStore('theme', () => {
         }
     }
 
+    const clearTransitionState = () => {
+        document.documentElement.classList.remove('theme-switching')
+        activeTransition = null
+        activeAnimation = null
+    }
+
+    const cleanupTransition = (transition) => {
+        if (transition && activeTransition !== transition) return
+        clearTransitionState()
+    }
+
+    const cancelActiveTransition = () => {
+        if (activeTransition) {
+            try {
+                activeTransition.skip()
+            } catch {
+                // 已结束或尚未开始的过渡无需处理
+            }
+        }
+        activeAnimation?.cancel()
+        clearTransitionState()
+    }
+
+    const getTransitionOrigin = (event) => {
+        const rect = event?.currentTarget?.getBoundingClientRect?.()
+        if (rect && (rect.width > 0 || rect.height > 0)) {
+            return {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+            }
+        }
+        return {
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2
+        }
+    }
+
     // 切换主题（带扩散动画）
     const toggleTheme = (event) => {
-        const isDark = theme.value === 'dark'
+        const nextTheme = theme.value === 'dark' ? 'light' : 'dark'
 
-        // 降级：浏览器不支持 View Transitions API 时直接切换
-        if (!document.startViewTransition) {
-            theme.value = isDark ? 'light' : 'dark'
+        // 减少动态效果偏好及不支持 View Transitions API 时直接切换
+        if (reducedMotionQuery.matches || !document.startViewTransition) {
+            cancelActiveTransition()
+            theme.value = nextTheme
             return
         }
 
-        // 获取点击位置（无事件时取视口中心）
-        const x = event?.clientX ?? window.innerWidth / 2
-        const y = event?.clientY ?? window.innerHeight / 2
+        cancelActiveTransition()
 
-        // 计算到最远角落的扩散半径
+        const {x, y} = getTransitionOrigin(event)
         const endRadius = Math.hypot(
             Math.max(x, window.innerWidth - x),
             Math.max(y, window.innerHeight - y)
         )
 
-        // 启动视图过渡
-        const transition = document.startViewTransition(() => {
-            theme.value = isDark ? 'light' : 'dark'
-        })
+        const html = document.documentElement
+        html.classList.add('theme-switching')
 
-        // 自定义圆形扩散动画
+        let transition
+        try {
+            transition = document.startViewTransition(() => {
+                theme.value = nextTheme
+            })
+        } catch {
+            theme.value = nextTheme
+            clearTransitionState()
+            return
+        }
+        activeTransition = transition
+
         transition.ready.then(() => {
-            document.documentElement.animate(
+            if (activeTransition !== transition) return
+            activeAnimation = html.animate(
                 {
                     clipPath: [
                         `circle(0px at ${x}px ${y}px)`,
@@ -65,11 +114,19 @@ export const useThemeStore = defineStore('theme', () => {
                 },
                 {
                     duration: 400,
-                    easing: 'ease-in-out',
+                    easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
                     pseudoElement: '::view-transition-new(root)'
                 }
             )
+            return activeAnimation.finished
+        }).catch(() => {
+            // 动画取消或页面隐藏导致的拒绝无需打断主题切换
         })
+
+        transition.finished.then(
+            () => cleanupTransition(transition),
+            () => cleanupTransition(transition)
+        )
     }
 
     // 设置指定主题

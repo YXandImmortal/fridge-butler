@@ -27,8 +27,7 @@ setRouter(router)
 const userStore = useUserStore()
 userStore.initUser()
 
-// 初始化主题（在挂载前应用，避免闪烁）
+// 初始化主题 Store，内部完成主题加载并在挂载前应用
 const themeStore = useThemeStore()
-themeStore.loadTheme()
 
 app.mount('#app')

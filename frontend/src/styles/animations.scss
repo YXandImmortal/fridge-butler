@@ -185,3 +185,14 @@
 ::view-transition-new(root) {
   z-index: 2147483647;
 }
+
+/* 整页过渡期间由 View Transition 统一呈现，避免非主题控件重复过渡 */
+.theme-switching body,
+.theme-switching body *:not(.theme-toggle):not(.theme-toggle *) {
+  transition: none !important;
+}
+
+.theme-switching body *:not(.theme-toggle):not(.theme-toggle *)::before,
+.theme-switching body *:not(.theme-toggle):not(.theme-toggle *)::after {
+  transition: none !important;
+}

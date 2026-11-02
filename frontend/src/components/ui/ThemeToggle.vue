@@ -68,7 +68,9 @@ const themeStore = useThemeStore()
   background: var(--input-bg);
   border-radius: 14px;
   border: 1px solid var(--border-color);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+  border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+  box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
 
@@ -156,7 +158,8 @@ const themeStore = useThemeStore()
 /* 图标过渡动画 */
 .theme-icon-enter-active,
 .theme-icon-leave-active {
-  transition: all 0.25s ease;
+  transition: opacity 0.18s ease,
+  transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .theme-icon-enter-from {
@@ -167,5 +170,17 @@ const themeStore = useThemeStore()
 .theme-icon-leave-to {
   opacity: 0;
   transform: rotate(90deg) scale(0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle-track,
+  .theme-toggle-thumb,
+  .theme-icon,
+  .theme-icon-enter-active,
+  .theme-icon-leave-active,
+  .star {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 </style>
