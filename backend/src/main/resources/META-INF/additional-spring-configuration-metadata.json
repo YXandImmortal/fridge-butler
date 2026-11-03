@@ -23,6 +23,12 @@
       "type": "java.lang.String",
       "description": "全局 AI API 密钥的 AES-GCM 主密钥，必须为 Base64 编码的 32 字节随机密钥，通过 AI_CONFIG_SECRET 环境变量配置。",
       "defaultValue": ""
+    },
+    {
+      "name": "captcha.enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否启用图形验证码，默认开启。仅 dev profile 允许通过 CAPTCHA_ENABLED=false 关闭用于本地自动化测试，其他环境强制开启。",
+      "defaultValue": true
     }
   ]
 }

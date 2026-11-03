@@ -109,6 +109,10 @@ $bytes = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Cr
 
 请安全备份该主密钥；更换或丢失后，已保存的密钥密文将无法解密，需要重新填写。尚未在后台保存配置时，系统继续兼容原有 `DEEPSEEK_API_KEY` 和 `deepseek.*` 配置。现有数据库启用本功能前，请执行 `database/migrations/20261027_add_ai_request_log.sql`。
 
+### 开发环境验证码开关
+
+图形验证码默认开启。仅在 `dev` 环境进行本地自动化测试时，可在 `backend/.env` 中设置 `CAPTCHA_ENABLED=false` 并重启后端，随后登录和注册可固定填写四位 `TEST`，无需识别验证码图片。非 `dev` 环境即使配置为 `false` 也会强制校验，邮件验证码不受该开关影响。正常开发和生产部署请保持 `CAPTCHA_ENABLED=true`。
+
 ---
 
 ## 📁 项目结构

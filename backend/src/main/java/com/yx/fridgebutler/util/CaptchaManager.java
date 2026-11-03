@@ -1,7 +1,9 @@
 package com.yx.fridgebutler.util;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,6 +30,12 @@ public final class CaptchaManager {
     // 定时清理任务
     private final ScheduledExecutorService cleanupScheduler = Executors.newSingleThreadScheduledExecutor();
 
+    @Value("${captcha.enabled:true}")
+    private boolean captchaEnabled;
+
+    @Value("${spring.profiles.active:}")
+    private String activeProfiles;
+
     public CaptchaManager() {
         // 每10分钟清理一次过期验证码
         cleanupScheduler.scheduleAtFixedRate(this::cleanupExpiredCaptcha, 10, 10, TimeUnit.MINUTES);
@@ -44,9 +52,12 @@ public final class CaptchaManager {
      */
     public String generateCaptcha(String captchaCode) {
         String captchaId = UUID.randomUUID().toString();
+        if (isCaptchaDisabledForDevelopment()) {
+            return captchaId;
+        }
         captchaCache.put(captchaId, captchaCode);
 
-        // 设置过期时间（5分钟后自动删除）
+        // 设置过期时间（2分钟后自动删除）
         cleanupScheduler.schedule(() -> captchaCache.remove(captchaId),
                 CAPTCHA_EXPIRATION_MINUTES, TimeUnit.MINUTES);
 
@@ -57,6 +68,7 @@ public final class CaptchaManager {
      * 验证验证码
      * <p>
      * 根据验证码ID和用户输入进行校验，验证码验证成功后会被立即移除（一次性使用）。
+     * 仅 dev 环境允许通过配置关闭校验，其他环境始终执行原有校验。
      * </p>
      *
      * @param captchaId  验证码ID
@@ -66,6 +78,9 @@ public final class CaptchaManager {
     public boolean verifyCaptcha(String captchaId, String userInput) {
         if (captchaId == null || userInput == null) {
             return false;
+        }
+        if (isCaptchaDisabledForDevelopment()) {
+            return !captchaId.isBlank() && !userInput.isBlank();
         }
 
         String storedCaptcha = captchaCache.get(captchaId);
@@ -77,6 +92,12 @@ public final class CaptchaManager {
         captchaCache.remove(captchaId);
 
         return storedCaptcha.equalsIgnoreCase(userInput);
+    }
+
+    private boolean isCaptchaDisabledForDevelopment() {
+        return !captchaEnabled && Arrays.stream(activeProfiles.split(","))
+                .map(String::trim)
+                .anyMatch("dev"::equals);
     }
 
     /**

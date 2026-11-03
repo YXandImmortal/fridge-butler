@@ -16,6 +16,9 @@ jwt:
   expiration: ${JWT_EXPIRATION}
   remember-me-expiration: ${JWT_REMEMBER_ME_EXPIRATION}
 
+captcha:
+  enabled: ${CAPTCHA_ENABLED:true}
+
 system:
   name: 智鲜·引擎
   version: release 0.5.0
