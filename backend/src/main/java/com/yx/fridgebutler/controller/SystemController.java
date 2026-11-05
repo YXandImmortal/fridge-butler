@@ -162,6 +162,21 @@ public class SystemController {
     /** 系统更新日志列表 */
     private static final List<UpdateLogVO> SYSTEM_UPDATES = List.of(
             UpdateLogVO.builder()
+                    .version("release 0.6.0")
+                    .date("2026-11-4")
+                    .summary("重要更新：多模型 AI 管理、请求用量统计与主题切换体验全面升级")
+                    .changes(Arrays.asList(
+                            "超级管理员新增 AI 配置：支持 DeepSeek、通义千问与 OpenAI，可选择预设模型或自定义模型 ID，全局配置保存即生效",
+                            "API 密钥采用 AES-GCM 加密存储，后台仅展示脱敏信息，密钥管理更安全",
+                            "新增 AI 请求用量统计：累计、今日、成功与失败次数，以及近 7 天 / 30 天调用趋势一目了然",
+                            "多模型调用统一适配普通与流式输出，覆盖聊天、智能推荐、容量估算、每日小贴士与月度报告等场景",
+                            "明暗主题切换动画优化：支持减少动态效果偏好，键盘操作与连续切换更稳定，首屏主题加载更自然",
+                            "Element Plus 组件内置文案全面中文化，日期、分页与弹窗等界面更易读",
+                            "新增开发环境验证码开关，便于本地自动化测试，生产环境仍强制校验"
+                    ))
+                    .isMajor(true)
+                    .build(),
+            UpdateLogVO.builder()
                     .version("release 0.5.0")
                     .date("2026-6-24")
                     .summary("重要更新：游戏化系统、采购助手与 AI 智能推荐全新上线")
